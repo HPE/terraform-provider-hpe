@@ -39,11 +39,23 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, found, diags := getLoadBalancerMonitorAsState(
+	state, apiObj, found, diags := getLoadBalancerMonitorAsState(
 		ctx, data.LoadBalancerId.ValueInt64(), data.Id.ValueInt64(), client,
 	)
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
 		return
+	}
+
+	// Compare the appliance's hash of the stored secret with the baseline
+	// recorded when the provider last sent it; an inequality means the secret
+	// was changed out of band and the next plan re-sends the configured value.
+	if found {
+		drifted, driftDiags := wo.CheckDrift(ctx, resp.Private, apiObj)
+		resp.Diagnostics.Append(driftDiags...)
+		if len(drifted) > 0 {
+			tflog.Info(ctx, "write-only value changed on the appliance",
+				map[string]any{"attributes": drifted})
+		}
 	}
 
 	// The monitor was deleted out of band (Morpheus returned 404); remove it
@@ -108,14 +120,14 @@ func getLoadBalancerMonitorAsState(
 	loadBalancerID int64,
 	id int64,
 	client *sdk.APIClient,
-) (LoadBalancerMonitorModel, bool, diag.Diagnostics) {
+) (LoadBalancerMonitorModel, *sdk.GetLoadBalancerMonitor200ResponseLoadBalancerMonitor, bool, diag.Diagnostics) {
 	var state LoadBalancerMonitorModel
 	var diags diag.Diagnostics
 
 	monitorResp, httpResp, err := client.LoadBalancersAPI.
 		GetLoadBalancerMonitor(ctx, loadBalancerID, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
-		return state, false, diags
+		return state, nil, false, diags
 	}
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		diags.AddError(
@@ -124,7 +136,7 @@ func getLoadBalancerMonitorAsState(
 				errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, false, diags
+		return state, nil, false, diags
 	}
 
 	m := monitorResp.LoadBalancerMonitor
@@ -134,7 +146,7 @@ func getLoadBalancerMonitorAsState(
 			fmt.Sprintf("load balancer monitor %d response did not contain a monitor", id),
 		)
 
-		return state, false, diags
+		return state, nil, false, diags
 	}
 
 	state.Id = convert.Int64ToType(m.Id)
@@ -205,7 +217,7 @@ func getLoadBalancerMonitorAsState(
 		state.Config = NewConfigValueNull()
 	}
 
-	return state, true, diags
+	return state, m, true, diags
 }
 
 // preserveUnreturnedFields restores values the API accepts on create/update but

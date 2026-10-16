@@ -153,6 +153,7 @@ The write-only value `monitor_password_wo` is not stored in state, so the import
 cannot tell whether the value in your configuration matches the appliance: it is taken as already
 applied, the plan after import is empty, and a later change to it is only detected once the
 resource is next updated for another reason (Terraform warns about this on every plan until then).
+
 To have changes detected from the start, append the sha256 digest of each configured write-only
 value to the import ID:
 
@@ -162,5 +163,12 @@ terraform import hpe_morpheus_load_balancer_monitor.example "42.101#monitor_pass
 
 The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
 `id = "42.101#monitor_password_wo=${sha256(var.monitor_password_wo)}"`.
+
+### Changes made outside Terraform
+
+If `monitor_password_wo` is changed on the appliance outside Terraform (in the Morpheus UI or API), the next
+`terraform plan` reports it and `apply` re-sends the configured value. This detection is separate
+from the import digest above: it starts with the first `apply` that sets the attribute, so an
+imported resource is covered from its first update onwards. On Morpheus 9.1.x a monitor password changed through the API is accepted but not stored, so a change made that way is neither effective nor detected; a change made in the UI is.
 
 ~> The API accepts `receive_data` and `data_length` on create and update but never returns them (`receive_data` is stored encrypted, and `data_length` is only round-tripped for ICMP monitors). They therefore cannot be populated on import and will be null in the imported state. Set them in your configuration and apply to reconcile.

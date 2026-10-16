@@ -175,6 +175,15 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	clusterId := *clusterResp.Cluster.Id
 	plan.Id = convert.Int64ToType(&clusterId)
 
+	// Record the configured-value digests unconditionally, right after the
+	// create call succeeded and before any early return, so that even a failed
+	// read-back leaves the configured-value digests on record (the appliance
+	// baseline is only taken later, after a successful read-back).
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// write the ID now
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -260,7 +269,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	plan.WriteOnlyRevision = wodigest.NewRevision()
-	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	state, found, diag := getClusterAsState(ctx, clusterId, client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
@@ -271,6 +279,13 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 		return
 	}
+
+	// Record the appliance-hash drift baseline only now that the read-back
+	// succeeded, so private state and state move together. clusterHostHashes
+	// reads each host so the per-host sshPasswordHash map for the password we
+	// just set becomes the baseline compared on every later read.
+	resp.Diagnostics.Append(wo.Observe(ctx, resp.Private,
+		clusterHostHashes(ctx, client, clusterId))...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {

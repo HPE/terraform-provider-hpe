@@ -345,6 +345,8 @@ terraform import hpe_morpheus_cloud.example "123#config_vmware.password=<sha256 
 The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
 `id = "123#config_vmware.password=${sha256(var.vcenter_password)}"`.
 
+~> Changes to `config_vmware.password` or `config_azure.client_secret` made outside Terraform (in the UI or by another tool) are detected on the next plan and the configured value is re-sent. This appliance-side detection begins only after the first apply that sends the value; the import digest above seeds the config-side comparison, not the appliance baseline (the import digest does not seed the appliance baseline).
+
 ## Notes
 
 ### Agent Installation Modes

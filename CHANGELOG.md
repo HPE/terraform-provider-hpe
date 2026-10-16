@@ -160,6 +160,43 @@ authenticate to a target system take a stored credential via `credential_id`.
 
 ## Improvements
 
+### Changes made to a secret on the appliance are detected (MORPH-19005)
+
+A write-only secret — a password, key or client secret the provider sends to Morpheus but never
+stores in state — used to be tracked only against the configuration: a change in HCL planned an
+update, but a change made on the appliance (in the Morpheus UI, through the API or by another tool)
+went unnoticed, and Terraform never restored the configured value.
+
+Morpheus returns a fingerprint of each stored secret beside its masked value. The provider now
+records that fingerprint after it sends a value and compares it on every refresh. When the secret
+has been changed on the appliance, the next plan reports it and re-sends the configured value; for a
+secret that cannot be changed in place (a cluster's or instance node's host SSH password) the plan
+carries a warning instead, since a re-send would replace the resource. Nothing changes in the
+configuration or the state file; detection starts with the first apply that sets the secret, so an
+imported resource has no baseline until then.
+
+Covered: `hpe_morpheus_image` (`ssh_password_wo`), `hpe_morpheus_load_balancer_monitor`
+(`monitor_password_wo`), `hpe_morpheus_network_router_bgp_neighbor` (`password_wo`),
+`hpe_morpheus_storage_server` and `hpe_morpheus_network_pool_server` (`service_password_wo`),
+`hpe_morpheus_cloud` (`config_vmware.password`, `config_azure.client_secret`),
+`hpe_morpheus_instance_node` (`ssh_password`) and `hpe_morpheus_cluster` (`server.ssh_password_wo`).
+Morpheus returns no fingerprint for `hpe_morpheus_user`, `hpe_morpheus_storage_bucket`,
+`hpe_morpheus_backup_host` and `hpe_morpheus_provisioning_license`, which keep the configuration-only
+behaviour.
+
+On Morpheus 9.1.x a load balancer monitor password changed through the API is not actually stored
+(the stored-secret fingerprint is unchanged), so no drift arises from that path; the detection
+mechanism is unchanged and is exercised live on resources whose secret the appliance does store.
+
+Acceptance tests that create a network pool server or a storage server now need a reachable
+service: Morpheus 9.1.2 verifies the connection and the credentials on create (`TF_ACC_IPAM_*`,
+`TF_ACC_STORAGE_SERVER_*`); they skip when it is not configured. Because Morpheus 9.1.x also
+re-validates those credentials on update, an out-of-band password rotation cannot be staged against
+an ordinary integration, so the network pool server and storage server write-only and drift
+acceptance tests are currently skipped pending an IPAM or storage service with rotatable
+credentials; set `TF_ACC_IPAM_ROTATABLE=1` or `TF_ACC_STORAGE_SERVER_ROTATABLE=1` to re-enable them
+against such a service.
+
 ### New read-only and query attributes across several resources and data sources (MORPH-18721)
 
 Schemas were refreshed against the current Morpheus API, surfacing attributes the provider did not

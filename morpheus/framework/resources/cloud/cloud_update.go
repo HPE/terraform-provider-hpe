@@ -488,7 +488,7 @@ func (r *Resource) Update(
 
 	prior := state
 
-	state, found, pdiags := getCloudAsState(ctx, newid, client, plan)
+	state, _, found, pdiags := getCloudAsState(ctx, newid, client, plan)
 	if !found && !pdiags.HasError() {
 		pdiags.AddError(updateOperation, fmt.Sprintf("cloud %d: not found after update", id))
 	}
@@ -512,8 +512,10 @@ func (r *Resource) Update(
 	if resend {
 		state.WriteOnlyRevision = wodigest.NewRevision()
 	}
-	// Always record the digests of the configured values, sent or not.
-	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	// Always record the digests of the configured values, sent or not, and
+	// re-baseline the appliance-hash drift detection off a fresh read of the
+	// zone (see write_only.go).
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, zoneForDrift(ctx, newid, client))...)
 
 	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

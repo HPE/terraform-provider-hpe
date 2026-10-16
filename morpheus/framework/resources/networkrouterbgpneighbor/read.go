@@ -28,14 +28,14 @@ func getNetworkRouterBgpNeighborAsState(
 	routerID int64,
 	client *sdk.APIClient,
 	plan NetworkRouterBgpNeighborModel,
-) (NetworkRouterBgpNeighborModel, bool, diag.Diagnostics) {
+) (NetworkRouterBgpNeighborModel, *sdk.GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor, bool, diag.Diagnostics) {
 	var state NetworkRouterBgpNeighborModel
 	var diags diag.Diagnostics
 
 	resp, hresp, err := client.NetworksAPI.
 		GetNetworkRouterBgpNeighbor(ctx, id, routerID).Execute()
 	if errfmt.IsNotFound(hresp) {
-		return state, false, diags
+		return state, nil, false, diags
 	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
@@ -44,7 +44,7 @@ func getNetworkRouterBgpNeighborAsState(
 				errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, false, diags
+		return state, nil, false, diags
 	}
 
 	neighbor := resp.NetworkRouterBgpNeighbor
@@ -54,7 +54,7 @@ func getNetworkRouterBgpNeighborAsState(
 			fmt.Sprintf("bgp neighbor %d GET succeeded but response payload was missing", id),
 		)
 
-		return state, false, diags
+		return state, nil, false, diags
 	}
 
 	state.Id = convert.Int64ToType(neighbor.Id)
@@ -227,7 +227,7 @@ func getNetworkRouterBgpNeighborAsState(
 		}
 	}
 
-	return state, true, diags
+	return state, neighbor, true, diags
 }
 
 func (r *Resource) Read(
@@ -255,10 +255,22 @@ func (r *Resource) Read(
 	id := plan.Id.ValueInt64()
 	routerID := plan.RouterId.ValueInt64()
 
-	state, found, diags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
+	state, apiObj, found, diags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	// Compare the appliance's hash of the stored secret with the baseline
+	// recorded when the provider last sent it; an inequality means the secret
+	// was changed out of band and the next plan re-sends the configured value.
+	if found {
+		drifted, driftDiags := wo.CheckDrift(ctx, resp.Private, apiObj)
+		resp.Diagnostics.Append(driftDiags...)
+		if len(drifted) > 0 {
+			tflog.Info(ctx, "write-only value changed on the appliance",
+				map[string]any{"attributes": drifted})
+		}
 	}
 
 	// The BGP neighbor was deleted out of band (Morpheus returned 404); remove

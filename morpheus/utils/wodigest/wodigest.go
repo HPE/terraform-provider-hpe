@@ -57,8 +57,17 @@ import (
 )
 
 // Version changes when the canonical form changes, so a digest written by an
-// older provider is treated as missing rather than compared.
-const Version = 2
+// older provider is treated as missing rather than compared. Version 3 added
+// the Observed and Drift maps for appliance-side drift detection; a version 2
+// record is still loaded and used (its digests are unchanged), it simply
+// carries no drift baseline yet.
+const Version = 3
+
+// minVersion is the oldest record version whose digests are still comparable
+// with the current ones. A version 2 record shares the All/Immutable/Attrs
+// canonical form of version 3 -- only the derived Observed/Drift maps were
+// added -- so it is kept rather than discarded, leaving those maps empty.
+const minVersion = 2
 
 // ImportSentinel marks digests stored by ImportState without digests: nothing
 // has been hashed, and the configured values are accepted as applied until the
@@ -77,12 +86,19 @@ type Digests struct {
 	// Attrs are the per-attribute digests All and Immutable were computed
 	// from, kept so a resource can compare only the attributes that are
 	// configured (DecideConfigured).
-	Attrs   Attrs `json:"attrs,omitempty"`
-	Version int   `json:"v"`
+	Attrs Attrs `json:"attrs,omitempty"`
+	// Observed is, per attribute, the appliance's hash of the stored secret as
+	// read back right after the provider last sent the value. Opaque: compared
+	// only for equality with later reads. Absent until the first send.
+	Observed map[string]string `json:"observed,omitempty"`
+	// Drift is, per attribute, whether the hash read most recently differs from
+	// Observed -- the secret was changed (or cleared) on the appliance.
+	Drift   map[string]bool `json:"drift,omitempty"`
+	Version int             `json:"v"`
 }
 
 // Equal reports whether two Digests have the same digests, sentinel and
-// version (Attrs are derived and not compared).
+// version. Attrs, Observed and Drift are derived and not compared.
 func (d Digests) Equal(o Digests) bool {
 	return d.All == o.All && d.Immutable == o.Immutable && d.Sentinel == o.Sentinel && d.Version == o.Version
 }
@@ -412,7 +428,7 @@ func Load(ctx context.Context, private PrivateState, key string) (d Digests, ok 
 		return Digests{}, false, diags
 	}
 
-	if err := json.Unmarshal(raw, &d); err != nil || d.Version != Version {
+	if err := json.Unmarshal(raw, &d); err != nil || d.Version < minVersion || d.Version > Version {
 		return Digests{}, false, diags
 	}
 

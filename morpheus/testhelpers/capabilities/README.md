@@ -280,6 +280,17 @@ Exit codes:
 | `TF_VAR_testacc_pce_identity_space` | GreenLake space containing the PCE instance. Required by the `pce` test — the `pce_identity` block rejects a null `space` |
 | `TF_VAR_testacc_pce_identity_broker_url` | PCE broker URL override. Optional; leave unset to use the HPE-hosted cloud broker |
 | `TF_ACC_PCE_IDENTITY_CLOUD_NAME` | Name of a cloud to read back through the PCE token exchange. Required by the `pce` test; there is no default, as the reachable clouds differ per GreenLake tenant. Not a `TF_VAR_`, because the test renders it into HCL rather than passing it through a Terraform variable |
+| `TF_ACC_IPAM_TYPE` | Pool server type code (e.g. `infoblox`, `phpipam`, `bluecat`) of a reachable IPAM. Required by the network pool server create-based tests — Morpheus 9.1.2 verifies the service URL on create, so these tests skip without a reachable IPAM |
+| `TF_ACC_IPAM_URL` | Reachable IPAM service URL. Required by the network pool server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_IPAM_USERNAME` | IPAM service username. Required by the network pool server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_IPAM_PASSWORD` | IPAM service password. Required by the network pool server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_STORAGE_SERVER_TYPE` | Storage server type code (e.g. `alletra-mp`) of a reachable storage service. Required by the storage server create-based tests — Morpheus 9.1.2 verifies the service URL on create, so these tests skip without a reachable service |
+| `TF_ACC_STORAGE_SERVER_URL` | Reachable storage service URL. Required by the storage server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_STORAGE_SERVER_USERNAME` | Storage service username. Required by the storage server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_STORAGE_SERVER_PASSWORD` | Storage service password. Required by the storage server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_IPAM_ROTATABLE` | Set to `1` to re-enable the network pool server write-only matrix and drift tests. They are skipped by default because Morpheus 9.1.x validates the IPAM credentials on create and update, so an out-of-band password rotation cannot be staged against an ordinary integration; set this against an IPAM whose credentials can be rotated (MORPH-19005 follow-up) |
+| `TF_ACC_STORAGE_SERVER_ROTATABLE` | Set to `1` to re-enable the storage server write-only matrix and drift tests. They are skipped by default because Morpheus 9.1.x validates the storage server credentials on create and update, so an out-of-band password rotation cannot be staged; set this against a storage server whose credentials can be rotated (MORPH-19005 follow-up) |
+| `TF_ACC_BGP_SOURCE_ADDRESS` | Overrides the BGP source address used by the network router BGP neighbor drift test (`config_nsxt.source_addresses`). Optional; no fixture carries it, so set it to a valid source address on the target tier-0 router when running that test |
 
 ### Examples
 

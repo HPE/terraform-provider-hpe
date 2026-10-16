@@ -45,6 +45,76 @@ type Tracker struct {
 	Attributes map[string]string
 	// Immutable lists the attributes whose change requires replacement.
 	Immutable []string
+	// APIHash maps an attribute to an extractor of the appliance's hash of the
+	// stored secret from the resource's read response. Only attributes listed
+	// here take part in appliance-side drift detection; every other attribute
+	// keeps today's config-side behaviour. The hash is compared for equality
+	// across reads only; its algorithm is never assumed.
+	APIHash map[string]HashExtractor
+	// OnDrift is what a detected out-of-band change plans. An attribute in
+	// Immutable always behaves as Warn regardless of this, since re-sending an
+	// immutable value would be a replacement.
+	OnDrift DriftPolicy
+}
+
+// HashExtractor returns the appliance's hash for one attribute from the
+// resource's read response. present=false means the response has no such field
+// at all (older appliance, a different object shape): nothing can be concluded.
+// present=true with hash=="" means the field is there and null or empty: the
+// appliance holds no secret -- a real, comparable value.
+//
+// Binding rule for implementers -- distinguish "the API omitted the field"
+// from "the API rendered the field as null":
+//
+//   - field omitted by the API (no information)      -> ("", false)
+//   - field rendered null/empty (no secret stored)   -> ("", true)
+//   - field rendered with a hash                      -> (hash, true)
+//
+// An extractor that cannot tell omitted from null must prefer present=false:
+// asserting "no secret" when the field was merely omitted would record a false
+// drift. NullableStringHash implements the rule for a nullable field; a plain
+// *string cannot tell omitted from null, so an extractor over one must read a
+// nil pointer as present=false.
+type HashExtractor func(resp any) (hash string, present bool)
+
+// DriftPolicy is what ModifyPlan does when an attribute's stored secret was
+// changed on the appliance. The value names carry a Policy suffix because the
+// package already exports a Resend function (whether Update should re-send the
+// values), which must keep its name for its many call sites.
+type DriftPolicy int
+
+const (
+	// ResendPolicy plans one update that re-sends the configured value. The
+	// default (zero value).
+	ResendPolicy DriftPolicy = iota
+	// WarnPolicy reports the drift as a warning and plans nothing.
+	WarnPolicy
+)
+
+func cloneStrMap(m map[string]string) map[string]string {
+	if m == nil {
+		return nil
+	}
+
+	out := make(map[string]string, len(m))
+	for k, v := range m {
+		out[k] = v
+	}
+
+	return out
+}
+
+func cloneBoolMap(m map[string]bool) map[string]bool {
+	if m == nil {
+		return nil
+	}
+
+	out := make(map[string]bool, len(m))
+	for k, v := range m {
+		out[k] = v
+	}
+
+	return out
 }
 
 // Key is the private-state key.
@@ -198,7 +268,15 @@ func (t Tracker) ModifyPlan(
 		return
 	}
 
-	if decision == Unchanged && !marker {
+	// Appliance-side drift (CheckDrift recorded it on the last Read). planDrift
+	// decides, per attribute, whether to re-send the configured value and emits
+	// the diagnostics; ModifyPlan never writes private state, so the recorded
+	// Drift flags are left as they are and the next successful apply re-baselines
+	// them through StoreObserved.
+	driftResend, driftDiags := t.planDrift(stored, current)
+	resp.Diagnostics.Append(driftDiags...)
+
+	if decision == Unchanged && !marker && !driftResend {
 		return
 	}
 
@@ -239,6 +317,34 @@ func (t Tracker) ModifyPlan(
 	}
 }
 
+// driftedConfigured returns, sorted, the tracked attributes that CheckDrift
+// recorded as drifted and that are still configured (present in current). An
+// attribute with no extractor, no recorded drift, or no configured value is
+// excluded: there is nothing to restore. Read-only; it does not persist.
+func (t Tracker) driftedConfigured(stored Digests, current Attrs) []string {
+	if len(stored.Drift) == 0 || len(t.APIHash) == 0 {
+		return nil
+	}
+
+	var names []string
+
+	for attr := range t.APIHash {
+		if !stored.Drift[attr] {
+			continue
+		}
+
+		if _, configured := current[attr]; !configured {
+			continue
+		}
+
+		names = append(names, attr)
+	}
+
+	sort.Strings(names)
+
+	return names
+}
+
 // immutableMarkerChanged reports whether the marker of an immutable attribute
 // was set or changed to a new value between state and plan. A marker that is
 // being removed from the configuration (planned null) does not count: removing
@@ -275,7 +381,10 @@ func (t Tracker) markerHint() string {
 }
 
 // Resend reports whether Update should send the write-only values: ModifyPlan
-// marked write_only_revision unknown.
+// marked write_only_revision unknown. It learns about appliance-side drift
+// through the same signal -- ModifyPlan marks the revision unknown for a
+// ResendPolicy attribute whose stored secret drifted -- so this needs no
+// change and no new channel for the drift case.
 func Resend(ctx context.Context, plan tfsdk.Plan) bool {
 	var v types.Int64
 	if plan.GetAttribute(ctx, path.Root(RevisionAttribute), &v).HasError() {
@@ -298,6 +407,20 @@ func (t Tracker) Store(ctx context.Context, private PrivateState, cfg tfsdk.Conf
 	stored, ok, ldiags := Load(ctx, private, t.Key())
 	diags.Append(ldiags...)
 
+	var observed map[string]string
+
+	var drift map[string]bool
+
+	if ok {
+		// Carry the drift baseline forward across every Store: a Store that
+		// does not re-send a secret must not discard what Observe/CheckDrift
+		// recorded, whatever kind of record was stored before (including an
+		// import sentinel, whose per-read Drift is still meaningful).
+		// StoreObserved re-baselines the affected attributes itself.
+		observed = cloneStrMap(stored.Observed)
+		drift = cloneBoolMap(stored.Drift)
+	}
+
 	if ok && stored.Sentinel == "" {
 		merged := Attrs{}
 		for k, v := range stored.Attrs {
@@ -311,7 +434,11 @@ func (t Tracker) Store(ctx context.Context, private PrivateState, cfg tfsdk.Conf
 		current = merged
 	}
 
-	diags.Append(Store(ctx, private, t.Key(), Compute(current, t.Immutable))...)
+	d := Compute(current, t.Immutable)
+	d.Observed = observed
+	d.Drift = drift
+
+	diags.Append(Store(ctx, private, t.Key(), d)...)
 
 	return diags
 }

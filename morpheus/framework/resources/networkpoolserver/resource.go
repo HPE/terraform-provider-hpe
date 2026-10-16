@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -165,6 +166,14 @@ func (r *networkPoolServerResource) Create(
 
 	id := *result.NetworkPoolServer.Id
 
+	// Store the configured-value digests now the create POST succeeded, before
+	// the read-back's early returns -- a read-back failure must not discard
+	// them and make the next apply see a spurious change.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	readResult, httpResp, err := client.NetworksAPI.GetNetworkPoolServer(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_pool_server", plan.Name.ValueString(), err, httpResp)
@@ -186,7 +195,9 @@ func (r *networkPoolServerResource) Create(
 	mapReadResponseToModel(ctx, &plan, readResult.NetworkPoolServer)
 
 	plan.WriteOnlyRevision = wodigest.NewRevision()
-	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	// Record the appliance-side drift baseline now the read-back succeeded;
+	// the configured-value digests were already stored above after the POST.
+	resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, readResult.NetworkPoolServer)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -226,6 +237,16 @@ func (r *networkPoolServerResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 	mapReadResponseToModel(ctx, &state, server)
+
+	// Compare the appliance's hash of the stored secret with the baseline
+	// recorded when the provider last sent it; an inequality means the secret
+	// was changed out of band and the next plan re-sends the configured value.
+	drifted, driftDiags := wo.CheckDrift(ctx, resp.Private, server)
+	resp.Diagnostics.Append(driftDiags...)
+	if len(drifted) > 0 {
+		tflog.Info(ctx, "write-only value changed on the appliance",
+			map[string]any{"attributes": drifted})
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
@@ -352,7 +373,8 @@ func (r *networkPoolServerResource) Update(
 	if wodigest.Resend(ctx, req.Plan) {
 		plan.WriteOnlyRevision = wodigest.NewRevision()
 	}
-	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	// Re-baseline the appliance-side drift hash from the read-back object.
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, server)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

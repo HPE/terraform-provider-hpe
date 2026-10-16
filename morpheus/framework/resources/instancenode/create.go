@@ -259,7 +259,28 @@ func (r *Resource) Create(
 	}
 
 	plan.WriteOnlyRevision = wodigest.NewRevision()
-	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
+	// Record the configured-value digests. This runs after the read-back
+	// because the drift baseline needs the node's server id, which only the
+	// read-back provides; the error returns above all taint the node, so a
+	// node that reaches this point without digests does not exist: a tainted
+	// node is replaced on the next apply and its write-only values re-sent.
+	//
+	// serverForDrift reads the node's server so the sshPasswordHash Morpheus
+	// rendered for the password we just sent becomes the drift baseline. At
+	// create time the hash is frequently not rendered yet (provisioning is
+	// asynchronous), in which case the extractor reports not-present and
+	// Observe records no baseline here; the first Read that sees a hash seeds
+	// it instead (see read.go). That is safe: the appliance value is ours
+	// until proven otherwise.
+	driftResp := serverForDrift(ctx, client, plan.ServerID.ValueInt64())
+	if _, present := serverSSHPasswordHashExtractor(driftResp); !present {
+		tflog.Info(ctx, "instance_node: sshPasswordHash not yet rendered at create; "+
+			"drift baseline will be taken on the next read",
+			map[string]any{"instance": instanceID, "container": containerID})
+	}
+
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, driftResp)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

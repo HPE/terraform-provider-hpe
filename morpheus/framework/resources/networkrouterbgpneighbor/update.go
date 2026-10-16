@@ -155,7 +155,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	newState, found, diags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
+	newState, apiObj, found, diags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
 	if !found && !diags.HasError() {
 		diags.AddError(updateOperation, fmt.Sprintf("bgp neighbor %d not found after update", id))
 	}
@@ -173,8 +173,9 @@ func (r *Resource) Update(
 	if resend {
 		newState.WriteOnlyRevision = wodigest.NewRevision()
 	}
-	// Always record the digests of the configured values, sent or not.
-	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	// Always record the digests of the configured values, sent or not, and
+	// re-baseline the appliance-side drift hash from the read-back object.
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, apiObj)...)
 
 	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)

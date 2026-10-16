@@ -240,8 +240,10 @@ func (r *Resource) Update(
 	}
 
 	// Record the digests once the read-back succeeded, so private state and
-	// state move together.
-	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	// state move together, and re-baseline the appliance-hash drift detection
+	// off a fresh read of the cluster's hosts (see write_only.go).
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config,
+		clusterHostHashes(ctx, client, id))...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedState)...)
 }

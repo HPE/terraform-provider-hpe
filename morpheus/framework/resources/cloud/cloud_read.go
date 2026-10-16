@@ -36,13 +36,13 @@ func getCloudAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan CloudModel,
-) (CloudModel, bool, diag.Diagnostics) {
+) (CloudModel, *sdk.GetClouds200ResponseZone, bool, diag.Diagnostics) {
 	var state CloudModel
 	var diags diag.Diagnostics
 
 	c, hresp, err := client.CloudsAPI.GetClouds(ctx, id).Execute()
 	if errfmt.IsNotFound(hresp) {
-		return state, false, diags
+		return state, nil, false, diags
 	}
 	if err != nil || c == nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
@@ -50,7 +50,7 @@ func getCloudAsState(
 			fmt.Sprintf("cloud %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, false, diags
+		return state, nil, false, diags
 	}
 
 	if c.Zone == nil {
@@ -59,7 +59,7 @@ func getCloudAsState(
 			fmt.Sprintf("cloud %d missing zone", id),
 		)
 
-		return state, false, diags
+		return state, nil, false, diags
 	}
 
 	cloud := c.Zone
@@ -70,7 +70,7 @@ func getCloudAsState(
 			fmt.Sprintf("cloud %d missing config", id),
 		)
 
-		return state, false, diags
+		return state, cloud, false, diags
 	}
 
 	importing := plan.Name.IsNull()
@@ -352,7 +352,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode AWS configuration", id),
 			)
 
-			return state, false, diags
+			return state, cloud, false, diags
 		}
 
 		state.ConfigAws = configAws
@@ -390,7 +390,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode HVM configuration", id),
 			)
 
-			return state, false, diags
+			return state, cloud, false, diags
 		}
 
 		state.ConfigHvm = configHvm
@@ -512,7 +512,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode VMware configuration", id),
 			)
 
-			return state, false, diags
+			return state, cloud, false, diags
 		}
 
 		state.ConfigVmware = configVmware
@@ -599,7 +599,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode Azure configuration", id),
 			)
 
-			return state, false, diags
+			return state, cloud, false, diags
 		}
 
 		state.ConfigAzure = configAzure
@@ -613,7 +613,7 @@ func getCloudAsState(
 				"cloud: generic config missing from API response",
 			)
 
-			return state, false, diags
+			return state, cloud, false, diags
 		}
 
 		cfgValue := *cfg
@@ -676,7 +676,7 @@ func getCloudAsState(
 					"cloud: failed to convert generic config: "+err.Error(),
 				)
 
-				return state, false, diags
+				return state, cloud, false, diags
 			}
 		}
 	}
@@ -684,7 +684,7 @@ func getCloudAsState(
 	// write_only_revision is not in the API; carried from prior state.
 	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
-	return state, true, diags
+	return state, cloud, true, diags
 }
 
 func (r *Resource) Read(
@@ -711,7 +711,7 @@ func (r *Resource) Read(
 
 	id := plan.Id.ValueInt64()
 
-	state, found, pdiags := getCloudAsState(ctx, id, client, plan)
+	state, zone, found, pdiags := getCloudAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -729,6 +729,20 @@ func (r *Resource) Read(
 		resp.State.RemoveResource(ctx)
 
 		return
+	}
+
+	// Appliance-side drift detection: compare the current hash of each stored
+	// secret with the baseline recorded after the provider last sent it. Any
+	// drift is recorded in private state for ModifyPlan to act on; it is
+	// logged, not surfaced as an error, so a read is never blocked by it. The
+	// zone read by getCloudAsState above is reused -- Read does not GET the
+	// cloud a second time for drift detection.
+	drifted, ddiags := wo.CheckDrift(ctx, resp.Private, zone)
+	resp.Diagnostics.Append(ddiags...)
+	if len(drifted) > 0 {
+		tflog.Info(ctx, "cloud: write-only secret changed on the appliance", map[string]any{
+			"cloud": id, "attributes": drifted,
+		})
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

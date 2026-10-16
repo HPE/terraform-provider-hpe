@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -178,6 +179,14 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 	id := *ss.Id
 	plan.Id = types.Int64Value(id)
 
+	// Store the configured-value digests now the create POST succeeded, before
+	// the read-back's early returns -- a read-back failure must not discard
+	// them and make the next apply see a spurious change.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Helper to taint the resource state on an error after the POST request
 	taintResourceState := func(id int64) {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
@@ -211,6 +220,10 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 		return response, backoff.RetryAfter(5)
 	}
 
+	// observed captures the read-back object so the appliance-side drift
+	// baseline can be recorded after the create completes.
+	var observed *sdk.GetStorageServers200ResponseStorageServer
+
 	if r, err := backoff.Retry(
 		ctx,
 		waitForReady,
@@ -242,10 +255,14 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 		}
 
 		mapGetResponseToModel(ctx, &plan, storageServer, &resp.Diagnostics)
+
+		observed = storageServer
 	}
 
 	plan.WriteOnlyRevision = wodigest.NewRevision()
-	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	// Record the appliance-side drift baseline now the read-back succeeded;
+	// the configured-value digests were already stored above after the POST.
+	resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, observed)...)
 
 	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -287,6 +304,16 @@ func (r *storageServerResource) Read(ctx context.Context, req resource.ReadReque
 	}
 
 	mapGetResponseToModel(ctx, &state, ss, &resp.Diagnostics)
+
+	// Compare the appliance's hash of the stored secret with the baseline
+	// recorded when the provider last sent it; an inequality means the secret
+	// was changed out of band and the next plan re-sends the configured value.
+	drifted, driftDiags := wo.CheckDrift(ctx, resp.Private, ss)
+	resp.Diagnostics.Append(driftDiags...)
+	if len(drifted) > 0 {
+		tflog.Info(ctx, "write-only value changed on the appliance",
+			map[string]any{"attributes": drifted})
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
@@ -410,6 +437,10 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 		return response, backoff.RetryAfter(5)
 	}
 
+	// observed captures the read-back object so the appliance-side drift
+	// baseline can be recorded after the update completes.
+	var observed *sdk.GetStorageServers200ResponseStorageServer
+
 	if r, err := backoff.Retry(
 		ctx,
 		waitForReady,
@@ -446,6 +477,8 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 		}
 
 		mapGetResponseToModel(ctx, &plan, storageServer, &resp.Diagnostics)
+
+		observed = storageServer
 	}
 
 	// write_only_revision is not in the API. Keep the prior value unless a
@@ -457,7 +490,8 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 	if wodigest.Resend(ctx, req.Plan) {
 		plan.WriteOnlyRevision = wodigest.NewRevision()
 	}
-	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	// Re-baseline the appliance-side drift hash from the read-back object.
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, observed)...)
 
 	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

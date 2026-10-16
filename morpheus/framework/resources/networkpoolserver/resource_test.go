@@ -31,6 +31,10 @@ func TestAccMorpheusNetworkPoolServerResourceExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	// Morpheus 9.1.2 verifies the service URL on create, so a reachable IPAM
+	// is required; without the fixture there is no appliance to create against.
+	f := testhelpers.RequireIpamFixture(t)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -38,7 +42,11 @@ func TestAccMorpheusNetworkPoolServerResourceExampleOk(t *testing.T) {
 	resourceName := "hpe_morpheus_network_pool_server.example"
 
 	resourceConfig, err := networkpoolserver.RenderNetworkPoolServerInfobloxConfig(t, map[string]string{
-		"Name": name,
+		"Name":            name,
+		"TypeCode":        f.TypeCode,
+		"ServiceUrl":      f.URL,
+		"ServiceUsername": f.Username,
+		"ServicePassword": f.Password,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -51,21 +59,41 @@ func TestAccMorpheusNetworkPoolServerResourceExampleOk(t *testing.T) {
 		1,
 	)
 
-	checks := resource.ComposeAggregateTestCheckFunc(
+	// zone_filter, tenant_match and service_mode are Infoblox-specific; the
+	// shared Infoblox template always emits them, but a non-Infoblox fixture
+	// must not be sent attributes its type does not accept, so strip them
+	// unless the fixture is an Infoblox server.
+	if f.TypeCode != "infoblox" {
+		resourceConfig = stripInfobloxOnlyAttrs(resourceConfig)
+	}
+	resourceConfig = f.WithAppID(resourceConfig)
+
+	checkList := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "type_code", "infoblox"),
+		resource.TestCheckResourceAttr(resourceName, "type_code", f.TypeCode),
 		resource.TestCheckResourceAttrSet(resourceName, "type_id"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-		resource.TestCheckResourceAttr(resourceName, "service_url", "https://infoblox.example.com/wapi/v2.12"),
-		resource.TestCheckResourceAttr(resourceName, "service_username", "admin"),
+		resource.TestCheckResourceAttr(resourceName, "service_url", f.URL),
+		resource.TestCheckResourceAttr(resourceName, "service_username", f.Username),
 		resource.TestCheckResourceAttr(resourceName, "ignore_ssl", "true"),
 		resource.TestCheckResourceAttr(resourceName, "network_filter", "10.0.0.0/8"),
-		resource.TestCheckResourceAttr(resourceName, "zone_filter", "example.com"),
-		resource.TestCheckResourceAttr(resourceName, "tenant_match", ".*"),
-		resource.TestCheckResourceAttr(resourceName, "service_mode", "static"),
 		resource.TestCheckResourceAttr(resourceName, "service_throttle_rate", "0"),
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
-	)
+	}
+
+	// zone_filter, tenant_match and service_mode are Infoblox-specific
+	// attributes (part of the Infoblox pool server schema); the example
+	// template always emits them, but only Infoblox echoes them back, so
+	// assert them only when the fixture is an Infoblox server.
+	if f.TypeCode == "infoblox" {
+		checkList = append(checkList,
+			resource.TestCheckResourceAttr(resourceName, "zone_filter", "example.com"),
+			resource.TestCheckResourceAttr(resourceName, "tenant_match", ".*"),
+			resource.TestCheckResourceAttr(resourceName, "service_mode", "static"),
+		)
+	}
+
+	checks := resource.ComposeAggregateTestCheckFunc(checkList...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
@@ -100,6 +128,10 @@ func TestAccMorpheusNetworkPoolServerResourceUpdateOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	// Morpheus 9.1.2 verifies the service URL on create, so a reachable IPAM
+	// is required; without the fixture there is no appliance to create against.
+	f := testhelpers.RequireIpamFixture(t)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -107,7 +139,11 @@ func TestAccMorpheusNetworkPoolServerResourceUpdateOk(t *testing.T) {
 	resourceName := "hpe_morpheus_network_pool_server.example"
 
 	createConfig, err := networkpoolserver.RenderNetworkPoolServerInfobloxConfig(t, map[string]string{
-		"Name": name,
+		"Name":            name,
+		"TypeCode":        f.TypeCode,
+		"ServiceUrl":      f.URL,
+		"ServiceUsername": f.Username,
+		"ServicePassword": f.Password,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -120,51 +156,75 @@ func TestAccMorpheusNetworkPoolServerResourceUpdateOk(t *testing.T) {
 		1,
 	)
 
+	// zone_filter, tenant_match and service_mode are Infoblox-specific; strip
+	// them from the create config unless the fixture is an Infoblox server so a
+	// non-Infoblox type is not sent attributes it does not accept.
+	if f.TypeCode != "infoblox" {
+		createConfig = stripInfobloxOnlyAttrs(createConfig)
+	}
+	createConfig = f.WithAppID(createConfig)
+
+	// zone_filter, tenant_match and service_mode are Infoblox-specific; include
+	// them in the update config only for an Infoblox fixture so a non-Infoblox
+	// type is not sent attributes it does not accept.
+	infobloxExtra := ""
+	if f.TypeCode == "infoblox" {
+		infobloxExtra = `
+  zone_filter                 = "example.com"
+  tenant_match                = ".*"
+  service_mode                = "static"`
+	}
+
 	updateConfig := `
 resource "hpe_morpheus_network_pool_server" "example" {
   name                        = "` + name + `"
-  type_code                   = "infoblox"
+  type_code                   = "` + f.TypeCode + `"
   enabled                     = false
-  service_url                 = "https://infoblox.example.com/wapi/v2.12"
-  service_username            = "admin"
-  service_password_wo         = "changeme"
+  service_url                 = "` + f.URL + `"
+  service_username            = "` + f.Username + `"
+  service_password_wo         = "` + f.Password + `"
   service_password_wo_version = 1
   ignore_ssl                  = true
-  network_filter              = "192.168.0.0/16"
-  zone_filter                 = "example.com"
-  tenant_match                = ".*"
-  service_mode                = "static"
+  network_filter              = "192.168.0.0/16"` + infobloxExtra + `
   service_throttle_rate       = 25
 }
 `
+	updateConfig = f.WithAppID(updateConfig)
 
-	createChecks := resource.ComposeAggregateTestCheckFunc(
+	createCheckList := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "type_code", "infoblox"),
+		resource.TestCheckResourceAttr(resourceName, "type_code", f.TypeCode),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-		resource.TestCheckResourceAttr(resourceName, "service_url", "https://infoblox.example.com/wapi/v2.12"),
-		resource.TestCheckResourceAttr(resourceName, "service_username", "admin"),
+		resource.TestCheckResourceAttr(resourceName, "service_url", f.URL),
+		resource.TestCheckResourceAttr(resourceName, "service_username", f.Username),
 		resource.TestCheckResourceAttr(resourceName, "ignore_ssl", "true"),
 		resource.TestCheckResourceAttr(resourceName, "network_filter", "10.0.0.0/8"),
-		resource.TestCheckResourceAttr(resourceName, "zone_filter", "example.com"),
-		resource.TestCheckResourceAttr(resourceName, "tenant_match", ".*"),
-		resource.TestCheckResourceAttr(resourceName, "service_mode", "static"),
 		resource.TestCheckResourceAttr(resourceName, "service_throttle_rate", "0"),
-	)
+	}
 
-	updateChecks := resource.ComposeAggregateTestCheckFunc(
+	updateCheckList := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "type_code", "infoblox"),
+		resource.TestCheckResourceAttr(resourceName, "type_code", f.TypeCode),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
-		resource.TestCheckResourceAttr(resourceName, "service_url", "https://infoblox.example.com/wapi/v2.12"),
-		resource.TestCheckResourceAttr(resourceName, "service_username", "admin"),
+		resource.TestCheckResourceAttr(resourceName, "service_url", f.URL),
+		resource.TestCheckResourceAttr(resourceName, "service_username", f.Username),
 		resource.TestCheckResourceAttr(resourceName, "ignore_ssl", "true"),
 		resource.TestCheckResourceAttr(resourceName, "network_filter", "192.168.0.0/16"),
-		resource.TestCheckResourceAttr(resourceName, "zone_filter", "example.com"),
-		resource.TestCheckResourceAttr(resourceName, "tenant_match", ".*"),
-		resource.TestCheckResourceAttr(resourceName, "service_mode", "static"),
 		resource.TestCheckResourceAttr(resourceName, "service_throttle_rate", "25"),
-	)
+	}
+
+	if f.TypeCode == "infoblox" {
+		infobloxChecks := []resource.TestCheckFunc{
+			resource.TestCheckResourceAttr(resourceName, "zone_filter", "example.com"),
+			resource.TestCheckResourceAttr(resourceName, "tenant_match", ".*"),
+			resource.TestCheckResourceAttr(resourceName, "service_mode", "static"),
+		}
+		createCheckList = append(createCheckList, infobloxChecks...)
+		updateCheckList = append(updateCheckList, infobloxChecks...)
+	}
+
+	createChecks := resource.ComposeAggregateTestCheckFunc(createCheckList...)
+	updateChecks := resource.ComposeAggregateTestCheckFunc(updateCheckList...)
 
 	checkInPlaceUpdate := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{
@@ -289,4 +349,23 @@ func TestAccMorpheusNetworkPoolServerResourcePhpIpamOk(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps:                    steps,
 	})
+}
+
+// stripInfobloxOnlyAttrs removes the Infoblox-specific HCL lines (zone_filter,
+// tenant_match, service_mode) from a rendered network_pool_server config. The
+// shared Infoblox example template always emits them; a non-Infoblox fixture
+// must not be sent attributes its type does not accept.
+func stripInfobloxOnlyAttrs(config string) string {
+	var kept []string
+	for _, line := range strings.Split(config, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "zone_filter") ||
+			strings.HasPrefix(trimmed, "tenant_match") ||
+			strings.HasPrefix(trimmed, "service_mode") {
+			continue
+		}
+		kept = append(kept, line)
+	}
+
+	return strings.Join(kept, "\n")
 }

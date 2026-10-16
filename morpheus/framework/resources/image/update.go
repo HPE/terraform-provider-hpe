@@ -246,7 +246,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, found, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
+	state, apiObj, found, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
@@ -266,8 +266,9 @@ func (r *Resource) Update(
 	}
 
 	// Record the digests of the configured values, sent or not, once the
-	// read-back succeeded, so private state and state move together.
-	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	// read-back succeeded, so private state and state move together, and
+	// re-baseline the appliance-side drift hash from the read-back object.
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, apiObj)...)
 
 	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

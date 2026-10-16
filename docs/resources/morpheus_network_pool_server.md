@@ -253,6 +253,7 @@ The write-only value `service_password_wo` is not stored in state, so the import
 cannot tell whether the value in your configuration matches the appliance: it is taken as already
 applied, the plan after import is empty, and a later change to it is only detected once the
 resource is next updated for another reason (Terraform warns about this on every plan until then).
+
 To have changes detected from the start, append the sha256 digest of each configured write-only
 value to the import ID:
 
@@ -262,3 +263,10 @@ terraform import hpe_morpheus_network_pool_server.example "42#service_password_w
 
 The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
 `id = "42#service_password_wo=${sha256(var.service_password_wo)}"`.
+
+### Changes made outside Terraform
+
+If `service_password_wo` is changed on the appliance outside Terraform (in the Morpheus UI or API), the next
+`terraform plan` reports it and `apply` re-sends the configured value. This detection is separate
+from the import digest above: it starts with the first `apply` that sets the attribute, so an
+imported resource is covered from its first update onwards.

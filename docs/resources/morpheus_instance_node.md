@@ -99,6 +99,8 @@ Optional:
 - `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
+~> A change to `ssh_password` made outside Terraform (in the UI or by another tool) is reported as a warning on the next plan; because the attribute cannot be changed after the node is provisioned, set it to the appliance's value or replace the node.
+
 ## Import
 
 Instance nodes cannot be imported. They are managed exclusively through the add-node / remove-node lifecycle.

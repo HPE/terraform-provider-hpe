@@ -224,7 +224,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, found, diags := getLoadBalancerMonitorAsState(
+	state, apiObj, found, diags := getLoadBalancerMonitorAsState(
 		ctx, loadBalancerID, id, client,
 	)
 	if !found && !diags.HasError() {
@@ -245,8 +245,9 @@ func (r *Resource) Update(
 	if resend {
 		state.WriteOnlyRevision = wodigest.NewRevision()
 	}
-	// Always record the digests of the configured values, sent or not.
-	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	// Always record the digests of the configured values, sent or not, and
+	// re-baseline the appliance-side drift hash from the read-back object.
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, apiObj)...)
 
 	// Preserve plan config since the API may not return it verbatim.
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {

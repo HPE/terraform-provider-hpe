@@ -66,6 +66,53 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
+	// Appliance-side drift detection: compare the current per-host
+	// sshPasswordHash map of the cluster's hosts with the baseline recorded
+	// after the provider last set the password. Any drift is recorded in
+	// private state for ModifyPlan to act on (a warning only, since the
+	// attribute is immutable); it is logged, not surfaced as an error, so a
+	// read is never blocked by it.
+	//
+	// Three cases are distinguished, to avoid the 1+N host GETs when they can
+	// teach nothing and to avoid reporting a host-set change as secret drift:
+	//
+	//   - No baseline recorded yet: nothing to compare against, so skip the
+	//     per-host reads entirely. (A baseline is seeded no earlier than a
+	//     successful Create/Update read-back; import never seeds one.)
+	//   - The current server-id set differs from the id set in the baseline (a
+	//     host was added or removed): re-baseline (wo.Observe) instead of
+	//     comparing, since the map would differ for a reason that is not a
+	//     secret change. Logged so the host-set change is visible.
+	//   - The baseline does not parse as a per-host map: it can never be
+	//     compared, so re-baseline it rather than warn on every read.
+	//   - Otherwise: compare (wo.CheckDrift).
+	observedIDs, haveBaseline, unknownIDs := observedHostIDs(ctx, resp.Private)
+	if haveBaseline {
+		digest := clusterHostHashes(ctx, client, data.Id.ValueInt64())
+
+		switch {
+		case digest.present && unknownIDs:
+			tflog.Warn(ctx, "cluster: unreadable write-only drift baseline, re-baselining",
+				map[string]any{"cluster": data.Id.ValueInt64()})
+			resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, digest)...)
+		case digest.present && !sameIDs(observedIDs, digestHostIDs(digest)):
+			// Host set changed: re-baseline rather than report spurious drift.
+			tflog.Info(ctx, "cluster: host set changed, re-baselining write-only drift detection",
+				map[string]any{
+					"cluster": data.Id.ValueInt64(),
+					"was":     observedIDs, "now": digestHostIDs(digest),
+				})
+			resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, digest)...)
+		default:
+			drifted, ddiags := wo.CheckDrift(ctx, resp.Private, digest)
+			resp.Diagnostics.Append(ddiags...)
+			if len(drifted) > 0 {
+				tflog.Info(ctx, "cluster: write-only secret changed on the appliance",
+					map[string]any{"cluster": data.Id.ValueInt64(), "attributes": drifted})
+			}
+		}
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
