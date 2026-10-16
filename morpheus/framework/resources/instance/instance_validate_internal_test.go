@@ -122,6 +122,7 @@ func hvmValidateReq(
 		"nested_virtualization": tftypes.String,
 		"no_agent":              tftypes.Bool,
 		"resource_pool_id":      tftypes.String,
+		"user_data":             tftypes.String,
 	}}
 
 	hvmAttrs := map[string]tftypes.Value{
@@ -130,6 +131,7 @@ func hvmValidateReq(
 		"nested_virtualization": tftypes.NewValue(tftypes.String, nil),
 		"no_agent":              tftypes.NewValue(tftypes.Bool, nil),
 		"resource_pool_id":      tftypes.NewValue(tftypes.String, nil),
+		"user_data":             tftypes.NewValue(tftypes.String, nil),
 	}
 
 	if kvmHostId != nil {

@@ -160,6 +160,17 @@ authenticate to a target system take a stored credential via `credential_id`.
 
 ## Improvements
 
+### Cloud-init user data on HVM instances and clones (MORPH-19115)
+
+`hpe_morpheus_instance` and `hpe_morpheus_instance_clone` gain `config_hvm.user_data`: cloud-init
+user data (cloud-config YAML or a plain script) applied once, at the VM's first boot, on top of the
+user data Morpheus generates. Your `bootcmd`/`runcmd` entries run before Morpheus's own, so a guest
+network fix-up (for example a netplan drop-in keeping a second NIC off the default route) can be in
+place before the agent is installed. Map keys merge; list values replace Morpheus's. The value is
+provision-time only, so changing it replaces the instance. Previously the only way to pass user data
+was the untyped `config` block, which cannot be combined with `config_hvm`. Only the HVM provisioning
+path honours per-instance user data as a typed attribute; the generic `config` block remains the
+route for plugin-based clouds.
 ### Changes made to a secret on the appliance are detected (MORPH-19005)
 
 A write-only secret — a password, key or client secret the provider sends to Morpheus but never

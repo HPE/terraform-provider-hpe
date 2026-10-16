@@ -451,6 +451,12 @@ func buildCloneConfig(
 			configHvm.KvmHostId = plan.ConfigHvm.KvmHostId.ValueInt64Pointer()
 		}
 
+		// Cloud-init user data: provision-time only (RequiresReplace in the
+		// schema). Morpheus trims it; the practitioner is told to trimspace().
+		if !plan.ConfigHvm.UserData.IsNull() && !plan.ConfigHvm.UserData.IsUnknown() {
+			configHvm.UserData = *sdk.NewNullableString(plan.ConfigHvm.UserData.ValueStringPointer())
+		}
+
 		return &sdk.CloneInstanceRequestConfig{HVMInstanceConfiguration1: configHvm}, diags
 
 	// VMware config

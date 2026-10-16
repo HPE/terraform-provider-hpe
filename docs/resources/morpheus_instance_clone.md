@@ -504,6 +504,18 @@ Optional:
 - `nested_virtualization` (String) Enable nested virtualization on the clone. Can be a number of valid string values:
    "on", "off", "0", "1", "true", "false", "yes", "no", "".  The default is "off".
 - `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the clone.  The default is 'true'
+- `user_data` (String) Cloud-init user data for the virtual machine: cloud-config YAML (starting `#cloud-config`)
+or a plain script. Applied once, when the virtual machine is first provisioned, so changing
+it replaces the instance; use `lifecycle { ignore_changes }` to update the stored value for
+later clones without replacing the VM. Your `bootcmd` and `runcmd` entries run *before* the
+ones Morpheus generates (which install the agent), so `bootcmd` is the place for guest
+network fix-ups that must precede the agent install. Other keys are merged over the user
+data of the cloud, OS type, image, layout and type set; list values (for example
+`write_files`, `packages`) *replace* Morpheus's rather than append to them. All `runcmd`
+entries run as one shell script, so a failing command of yours stops Morpheus's: guard
+with `|| true` where a failure is acceptable. Morpheus trims the value, so wrap it in
+`trimspace()` to avoid a perpetual diff. Honoured by HVM; the generic `config` block carries
+`userData` for other clouds, where support depends on the appliance's cloud plugin.
 
 
 <a id="nestedatt--config_vmware"></a>

@@ -332,6 +332,17 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "The resource pool to provision the instance into, as `pool-<id>`. For an HVM cluster this is the\npool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source\nas `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the\ncloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`\ncannot find it by name. A network belongs to the pool of the cluster it was discovered on; a\npool that does not contain the requested network fails with `Invalid network`.",
 						MarkdownDescription: "The resource pool to provision the instance into, as `pool-<id>`. For an HVM cluster this is the\npool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source\nas `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the\ncloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`\ncannot find it by name. A network belongs to the pool of the cluster it was discovered on; a\npool that does not contain the requested network fails with `Invalid network`.",
 					},
+					"user_data": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Cloud-init user data for the virtual machine: cloud-config YAML (starting `#cloud-config`)\nor a plain script. Applied once, when the virtual machine is first provisioned, so changing\nit replaces the instance; use `lifecycle { ignore_changes }` to update the stored value for\nlater clones without replacing the VM. Your `bootcmd` and `runcmd` entries run *before* the\nones Morpheus generates (which install the agent), so `bootcmd` is the place for guest\nnetwork fix-ups that must precede the agent install. Other keys are merged over the user\ndata of the cloud, OS type, image, layout and type set; list values (for example\n`write_files`, `packages`) *replace* Morpheus's rather than append to them. All `runcmd`\nentries run as one shell script, so a failing command of yours stops Morpheus's: guard\nwith `|| true` where a failure is acceptable. Morpheus trims the value, so wrap it in\n`trimspace()` to avoid a perpetual diff. Honoured by HVM; the generic `config` block carries\n`userData` for other clouds, where support depends on the appliance's cloud plugin.",
+						MarkdownDescription: "Cloud-init user data for the virtual machine: cloud-config YAML (starting `#cloud-config`)\nor a plain script. Applied once, when the virtual machine is first provisioned, so changing\nit replaces the instance; use `lifecycle { ignore_changes }` to update the stored value for\nlater clones without replacing the VM. Your `bootcmd` and `runcmd` entries run *before* the\nones Morpheus generates (which install the agent), so `bootcmd` is the place for guest\nnetwork fix-ups that must precede the agent install. Other keys are merged over the user\ndata of the cloud, OS type, image, layout and type set; list values (for example\n`write_files`, `packages`) *replace* Morpheus's rather than append to them. All `runcmd`\nentries run as one shell script, so a failing command of yours stops Morpheus's: guard\nwith `|| true` where a failure is acceptable. Morpheus trims the value, so wrap it in\n`trimspace()` to avoid a perpetual diff. Honoured by HVM; the generic `config` block carries\n`userData` for other clouds, where support depends on the appliance's cloud plugin.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
+					},
 				},
 				CustomType: ConfigHvmType{
 					ObjectType: types.ObjectType{
@@ -3776,6 +3787,24 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
 	}
 
+	userDataAttribute, ok := attributes["user_data"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`user_data is missing from object`)
+
+		return nil, diags
+	}
+
+	userDataVal, ok := userDataAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`user_data expected to be basetypes.StringValue, was: %T`, userDataAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -3788,6 +3817,7 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
 		ResourcePoolId:       resourcePoolIdVal,
+		UserData:             userDataVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -3981,6 +4011,24 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
 	}
 
+	userDataAttribute, ok := attributes["user_data"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`user_data is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	userDataVal, ok := userDataAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`user_data expected to be basetypes.StringValue, was: %T`, userDataAttribute))
+	}
+
 	if diags.HasError() {
 		return NewConfigHvmValueUnknown(), diags
 	}
@@ -3993,6 +4041,7 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
 		ResourcePoolId:       resourcePoolIdVal,
+		UserData:             userDataVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -4070,11 +4119,12 @@ type ConfigHvmValue struct {
 	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
 	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
 	ResourcePoolId       basetypes.StringValue `tfsdk:"resource_pool_id"`
+	UserData             basetypes.StringValue `tfsdk:"user_data"`
 	state                attr.ValueState
 }
 
 func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 7)
+	attrTypes := make(map[string]tftypes.Type, 8)
 
 	var val tftypes.Value
 	var err error
@@ -4086,12 +4136,13 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["user_data"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 7)
+		vals := make(map[string]tftypes.Value, 8)
 
 		val, err = v.AffinityGroupId.ToTerraformValue(ctx)
 		if err != nil {
@@ -4142,6 +4193,13 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 
 		vals["resource_pool_id"] = val
 
+		val, err = v.UserData.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["user_data"] = val
+
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4179,6 +4237,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
+		"user_data":             basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -4199,6 +4258,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 			"nested_virtualization": v.NestedVirtualization,
 			"no_agent":              v.NoAgent,
 			"resource_pool_id":      v.ResourcePoolId,
+			"user_data":             v.UserData,
 		})
 
 	return objVal, diags
@@ -4247,6 +4307,10 @@ func (v ConfigHvmValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.UserData.Equal(other.UserData) {
+		return false
+	}
+
 	return true
 }
 
@@ -4267,6 +4331,7 @@ func (v ConfigHvmValue) AttributeTypes(ctx context.Context) map[string]attr.Type
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
+		"user_data":             basetypes.StringType{},
 	}
 }
 

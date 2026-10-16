@@ -670,6 +670,15 @@ func getInstanceHVMConfig(
 
 	configHvm.ImageId = imageIDFromConfig(apiConfig)
 
+	// user_data is provision-time only and forces replacement, so like
+	// affinity_group_id it is read back for import: without it the next plan
+	// would see a change from null and propose recreating the instance. The
+	// response model keeps it among the untyped keys.
+	configHvm.UserData = types.StringNull()
+	if ud, ok := apiConfig.AdditionalProperties["userData"].(string); ok && ud != "" {
+		configHvm.UserData = types.StringValue(ud)
+	}
+
 	configHvm.state = attr.ValueStateKnown
 
 	return configHvm, diag.Diagnostics{}

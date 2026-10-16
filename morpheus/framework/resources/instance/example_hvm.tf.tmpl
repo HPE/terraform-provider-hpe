@@ -86,6 +86,15 @@ resource "hpe_morpheus_instance" "example" {
     # layout default. Changing it replaces the instance, because the image is
     # only applied at provision time.
     image_id = data.hpe_morpheus_image.hvm.id
+{{- if .UserData}}
+
+    # Cloud-init user data, applied once at first boot. See the
+    # "HVM Instance with cloud-init user data" example for what it can do.
+    user_data = trimspace(<<-EOT
+{{.UserData}}
+    EOT
+    )
+{{- end}}
   }
 
   timeouts = {

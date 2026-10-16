@@ -175,6 +175,12 @@ func (g *Resource) Create(
 			configHvm.KvmHostId = plan.ConfigHvm.KvmHostId.ValueInt64Pointer()
 		}
 
+		// Cloud-init user data: provision-time only (RequiresReplace in the
+		// schema). Morpheus trims it; the practitioner is told to trimspace().
+		if !plan.ConfigHvm.UserData.IsNull() && !plan.ConfigHvm.UserData.IsUnknown() {
+			configHvm.UserData = *sdk.NewNullableString(plan.ConfigHvm.UserData.ValueStringPointer())
+		}
+
 		if !plan.ConfigHvm.ImageId.IsNull() && !plan.ConfigHvm.ImageId.IsUnknown() {
 			configHvm.ImageId = plan.ConfigHvm.ImageId.ValueInt64Pointer()
 		}

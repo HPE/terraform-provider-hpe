@@ -47,8 +47,10 @@ type HVMInstanceConfiguration struct {
 	// Enable or disable the QEMU boot menu at VM startup. When enabled, the VM displays a boot selection menu. Defaults to true for new HVM VMs.
 	BootToBios NullableBool `json:"bootToBios,omitempty"`
 	// Boot menu display duration in seconds (0-30). Only applicable when bootToBios is true. A value of 0 means no delay.
-	BootToBiosMenuTimeout NullableInt32          `json:"bootToBiosMenuTimeout,omitempty"`
-	AdditionalProperties  map[string]interface{} `json:",remain"`
+	BootToBiosMenuTimeout NullableInt32 `json:"bootToBiosMenuTimeout,omitempty"`
+	// Cloud-init user data for the virtual machine, as cloud-config YAML or a plain script. Applied once, when the virtual machine is first provisioned (or cloned); changing it on an existing instance has no effect until the instance is reprovisioned or cloned. The `bootcmd` and `runcmd` lists run before the entries Morpheus generates; other keys are merged over the user data from the cloud, OS type, image, layout and type set, with list values replaced rather than appended.
+	UserData             NullableString         `json:"userData,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _HVMInstanceConfiguration HVMInstanceConfiguration
@@ -101,6 +103,9 @@ func (o HVMInstanceConfiguration) ToMap() (map[string]interface{}, error) {
 	}
 	if o.BootToBiosMenuTimeout.IsSet() {
 		toSerialize["bootToBiosMenuTimeout"] = o.BootToBiosMenuTimeout.Get()
+	}
+	if o.UserData.IsSet() {
+		toSerialize["userData"] = o.UserData.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

@@ -152,6 +152,17 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 
 {{ tffile "morpheus/framework/resources/instance/example_twonetworks.tf" }}
 
+## HVM Instance with cloud-init user data
+
+`config_hvm.user_data` carries cloud-init user data (cloud-config YAML or a plain script) that is
+applied once, at the VM's first boot, on top of the user data Morpheus generates. Your `bootcmd`
+and `runcmd` entries run before Morpheus's, which is what makes a guest network fix-up possible
+before the agent is installed; list values replace Morpheus's rather than append; and changing
+the value replaces the instance (see the comments in the example). The same attribute exists on
+`hpe_morpheus_instance_clone`.
+
+{{ tffile "morpheus/framework/resources/instance/example_hvm_user_data.tf" }}
+
 ## HVM Instance with timeouts
 
 We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
