@@ -22,10 +22,11 @@ import (
 )
 
 var (
-	_ resource.Resource                = &networkPoolServerResource{}
-	_ resource.ResourceWithConfigure   = &networkPoolServerResource{}
-	_ resource.ResourceWithImportState = &networkPoolServerResource{}
-	_ resource.ResourceWithModifyPlan  = &networkPoolServerResource{}
+	_ resource.Resource                   = &networkPoolServerResource{}
+	_ resource.ResourceWithConfigure      = &networkPoolServerResource{}
+	_ resource.ResourceWithImportState    = &networkPoolServerResource{}
+	_ resource.ResourceWithModifyPlan     = &networkPoolServerResource{}
+	_ resource.ResourceWithValidateConfig = &networkPoolServerResource{}
 )
 
 type networkPoolServerResource struct {
@@ -143,9 +144,8 @@ func (r *networkPoolServerResource) Create(
 		infoblox.Credential = cred
 	}
 
-	serverReq := sdk.CreateNetworkPoolServerRequestNetworkPoolServer{
-		InfobloxNetworkPoolServer: infoblox,
-	}
+	// Convert the superset to the typed variant for the type (see request.go).
+	serverReq := createRequest(typeCode, infoblox, appIDValue(plan.AppId))
 
 	result, httpResp, err := client.NetworksAPI.CreateNetworkPoolServer(ctx).
 		CreateNetworkPoolServerRequest(sdk.CreateNetworkPoolServerRequest{
@@ -314,9 +314,8 @@ func (r *networkPoolServerResource) Update(
 		infobloxUpdate.Credential = cred
 	}
 
-	serverReq := sdk.UpdateNetworkPoolServerRequestNetworkPoolServer{
-		InfobloxNetworkPoolServerUpdate: infobloxUpdate,
-	}
+	// type_code replaces on change, so the state's code is the server's type.
+	serverReq := updateRequest(plan.TypeCode.ValueString(), infobloxUpdate, appIDValue(plan.AppId))
 
 	_, httpResp, err := client.NetworksAPI.UpdateNetworkPoolServer(ctx, id).
 		UpdateNetworkPoolServerRequest(sdk.UpdateNetworkPoolServerRequest{
@@ -489,6 +488,15 @@ func mapReadResponseToModel(
 				model.InventoryExisting = types.BoolValue(convert.StringToBool(ctx, val).ValueBool())
 			}
 		}
+		// app_id (phpIPAM config.appId): mirror what the appliance holds, so a
+		// server-side change surfaces as drift. The appliance refuses an empty
+		// value on create and update, so an empty echo carries no information
+		// and the plan/state value is kept.
+		if isPhpIPAM(server) {
+			if str, ok := server.Config["appId"].(string); ok && str != "" {
+				model.AppId = types.StringValue(str)
+			}
+		}
 	}
 }
 
@@ -537,4 +545,18 @@ func resolveNetworkPoolServerTypeCode(
 	)
 
 	return "", diags
+}
+
+// appIDValue returns the planned app_id, or nil when it is not set.
+func appIDValue(v types.String) *string {
+	if v.IsNull() || v.IsUnknown() {
+		return nil
+	}
+
+	return v.ValueStringPointer()
+}
+
+// isPhpIPAM reports whether the read pool server is of the phpIPAM type.
+func isPhpIPAM(server *sdk.GetNetworkPoolServer200ResponseNetworkPoolServer) bool {
+	return server.Type != nil && server.Type.Code != nil && *server.Type.Code == typeCodePhpIPAM
 }

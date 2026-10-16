@@ -1,14 +1,15 @@
 # phpIPAM Network Pool Server
 #
 # Applicable attributes for phpIPAM:
-#   name, type_code, enabled, service_url, service_username, service_password_wo,
-#   service_password_wo_version, credential_id, ignore_ssl, inventory_existing,
-#   network_filter, service_throttle_rate
+#   name, type_code, enabled, service_url, app_id (required), service_username,
+#   service_password_wo, service_password_wo_version, credential_id, ignore_ssl,
+#   inventory_existing, network_filter, service_throttle_rate
 resource "hpe_morpheus_network_pool_server" "phpipam" {
   name                        = "phpIPAM"
   type_code                   = "phpipam"
   enabled                     = true
   service_url                 = "https://phpipam.example.com/api/app"
+  app_id                      = "morpheus"
   service_username            = "admin"
   service_password_wo         = "changeme"
   service_password_wo_version = 1

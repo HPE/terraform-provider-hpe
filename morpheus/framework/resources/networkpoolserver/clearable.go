@@ -21,6 +21,7 @@ var clearableAttributes = clearable.Attributes{
 var notClearable = clearable.NotClearable{ //nolint:gosec // attribute names and reasons, not credentials
 	"service_mode":                "has a default on the API side; the current mode is kept when it is removed",
 	"credential_id":               "a credential reference; the current credential is kept when it is removed",
+	"app_id":                      "required by phpIPAM and unused by other types; the current value is kept when it is removed",
 	"enabled":                     "has a default; Terraform plans the default when it is removed",
 	"ignore_ssl":                  "has a default; Terraform plans the default when it is removed",
 	"inventory_existing":          "has a default; Terraform plans the default when it is removed",

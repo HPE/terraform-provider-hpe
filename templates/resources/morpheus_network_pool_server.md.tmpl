@@ -39,6 +39,13 @@ on which integrations and plugins are installed.
 
 ## Attribute Applicability by Type
 
+The request sent to the appliance is typed per `type_code`: Infoblox, BlueCat, phpIPAM and
+SolarWinds each receive only the attributes their type defines, and a type-specific attribute
+set for another type produces a warning at plan time (`app_id` set for a non-phpIPAM type, or
+missing for phpIPAM, is an error). Types without a dedicated request shape — the plugin-provided
+and built-in types in the table above — receive the full attribute set, which the appliance
+filters.
+
 | Attribute | Infoblox | Bluecat | phpIPAM | SolarWinds | EfficientIP |
 |-----------|:--------:|:-------:|:-------:|:----------:|:-----------:|
 | `name` | Yes | Yes | Yes | Yes | Yes |
@@ -56,6 +63,7 @@ on which integrations and plugins are installed.
 | `zone_filter` | Yes | - | - | - | - |
 | `tenant_match` | Yes | - | - | - | - |
 | `service_mode` | Yes | - | - | - | - |
+| `app_id` | - | - | **Required** | - | - |
 
 ## Example Usage
 

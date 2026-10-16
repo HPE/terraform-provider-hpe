@@ -39,6 +39,13 @@ on which integrations and plugins are installed.
 
 ## Attribute Applicability by Type
 
+The request sent to the appliance is typed per `type_code`: Infoblox, BlueCat, phpIPAM and
+SolarWinds each receive only the attributes their type defines, and a type-specific attribute
+set for another type produces a warning at plan time (`app_id` set for a non-phpIPAM type, or
+missing for phpIPAM, is an error). Types without a dedicated request shape — the plugin-provided
+and built-in types in the table above — receive the full attribute set, which the appliance
+filters.
+
 | Attribute | Infoblox | Bluecat | phpIPAM | SolarWinds | EfficientIP |
 |-----------|:--------:|:-------:|:-------:|:----------:|:-----------:|
 | `name` | Yes | Yes | Yes | Yes | Yes |
@@ -56,6 +63,7 @@ on which integrations and plugins are installed.
 | `zone_filter` | Yes | - | - | - | - |
 | `tenant_match` | Yes | - | - | - | - |
 | `service_mode` | Yes | - | - | - | - |
+| `app_id` | - | - | **Required** | - | - |
 
 ## Example Usage
 
@@ -114,14 +122,15 @@ resource "hpe_morpheus_network_pool_server" "bluecat" {
 # phpIPAM Network Pool Server
 #
 # Applicable attributes for phpIPAM:
-#   name, type_code, enabled, service_url, service_username, service_password_wo,
-#   service_password_wo_version, credential_id, ignore_ssl, inventory_existing,
-#   network_filter, service_throttle_rate
+#   name, type_code, enabled, service_url, app_id (required), service_username,
+#   service_password_wo, service_password_wo_version, credential_id, ignore_ssl,
+#   inventory_existing, network_filter, service_throttle_rate
 resource "hpe_morpheus_network_pool_server" "phpipam" {
   name                        = "phpIPAM"
   type_code                   = "phpipam"
   enabled                     = true
   service_url                 = "https://phpipam.example.com/api/app"
+  app_id                      = "morpheus"
   service_username            = "admin"
   service_password_wo         = "changeme"
   service_password_wo_version = 1
@@ -208,6 +217,7 @@ resource "hpe_morpheus_network_pool_server" "with_credential" {
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
+- `app_id` (String) The phpIPAM application ID (API app). Required when `type_code` is `phpipam` and rejected for other pool server types.
 - `credential_id` (Number) The ID of a stored credential to use for authentication. Conflicts with service_username and service_password_wo.
 - `enabled` (Boolean) Whether the network pool server is enabled.
 - `ignore_ssl` (Boolean) Whether to ignore SSL certificate errors.

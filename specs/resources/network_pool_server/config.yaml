@@ -13,6 +13,12 @@ network_pool_server:
       bool:
         computed_optional_required: computed_optional
         description: Whether to inventory existing networks from the pool server.
+    app_id:
+      string:
+        computed_optional_required: optional
+        description: >-
+          The phpIPAM application ID (API app). Required when `type_code` is `phpipam` and rejected
+          for other pool server types.
     credential_id:
       int64:
         computed_optional_required: optional
@@ -52,6 +58,7 @@ network_pool_server:
     - template-type_id: type_id
     - template-type_code: type_code
     - template-inventory_existing: inventory_existing
+    - template-app_id: app_id
     - template-credential_id: credential_id
     - template-service_password_wo: service_password_wo
     - template-service_password_wo_version: service_password_wo_version

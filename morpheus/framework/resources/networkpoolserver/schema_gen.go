@@ -23,6 +23,11 @@ import (
 func NetworkPoolServerResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"app_id": schema.StringAttribute{
+				Optional:            true,
+				Description:         "The phpIPAM application ID (API app). Required when `type_code` is `phpipam` and rejected for other pool server types.",
+				MarkdownDescription: "The phpIPAM application ID (API app). Required when `type_code` is `phpipam` and rejected for other pool server types.",
+			},
 			"credential_id": schema.Int64Attribute{
 				Optional:            true,
 				Description:         "The ID of a stored credential to use for authentication. Conflicts with service_username and service_password_wo.",
@@ -174,6 +179,7 @@ func NetworkPoolServerResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkPoolServerModel struct {
+	AppId                    types.String `tfsdk:"app_id"`
 	CredentialId             types.Int64  `tfsdk:"credential_id"`
 	Enabled                  types.Bool   `tfsdk:"enabled"`
 	Id                       types.Int64  `tfsdk:"id"`

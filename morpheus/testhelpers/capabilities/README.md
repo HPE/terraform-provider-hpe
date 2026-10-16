@@ -258,6 +258,7 @@ Exit codes:
 |----------|-------------|
 | `TF_ACC_CAPABILITIES` | Comma-separated list of available capabilities |
 | `TF_ACC_CAPABILITIES_VERBOSE` | Set to `1` to log when tests don't run |
+| `TF_ACC_PHPIPAM_URL`, `TF_ACC_PHPIPAM_APP_ID`, `TF_ACC_PHPIPAM_USERNAME`, `TF_ACC_PHPIPAM_PASSWORD` | A reachable phpIPAM service for the phpIPAM pool-server test, which skips without them. Optional `TF_ACC_PHPIPAM_APP_ID_2` names a second application for the app-ID change step |
 | `TF_VAR_testacc_morpheus_affinity_cloud_id` | ID of a cloud that supports affinity groups. Required by the `affinity_group` + `vmware` tests, which skip without it |
 | `TF_VAR_testacc_morpheus_affinity_cluster_id` | ID of an HVM cluster that supports affinity groups. Required by the `affinity_group` + `hvm` tests, which skip without it |
 | `TF_VAR_testacc_morpheus_affinity_pool_id` | ID of a resource pool of type Cluster on the cloud above. Morpheus rejects a cloud affinity group created without a pool, so the `affinity_group` + `vmware` resource tests skip without it |
