@@ -286,11 +286,23 @@ func (r *Resource) Create(
 	// Post-clone resize: some clouds (notably VMware) only resize the root
 	// disk during clone, leaving data disks at the source size. If any
 	// requested volume is larger than the actual provisioned volume, issue a
-	// resize so the clone matches the configuration.
+	// resize so the clone matches the configuration. The request pairs the
+	// planned volumes and interfaces with the ones the clone actually got so
+	// that each carries its id (see resizeVolumes).
 	getResp, _, gErr := client.InstancesAPI.GetInstance(ctx, cloneID).Execute()
 	needsResize := false
+
+	var actualVolumes []VolumesValue
+	var actualIfaces []NetworkInterfacesValue
+
 	if gErr == nil && getResp != nil && getResp.Instance != nil {
-		resize, nrDiags := cloneNeedsResize(ctx, plan.Volumes, getResp.Instance.Volumes)
+		actualVolumes = volumesFromAPI(getResp.Instance.Volumes)
+
+		var ldiags diag.Diagnostics
+		actualIfaces, ldiags = interfacesFromAPI(ctx, getResp.Instance.Interfaces)
+		resp.Diagnostics.Append(ldiags...)
+
+		resize, nrDiags := cloneNeedsResize(ctx, plan.Volumes, actualVolumes)
 		resp.Diagnostics.Append(nrDiags...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -299,9 +311,9 @@ func (r *Resource) Create(
 	}
 
 	if needsResize {
-		resizeVolumes, rvDiags := buildResizeVolumes(ctx, plan.Volumes)
+		resizeVolumes, _, rvDiags := resizeVolumes(ctx, plan.Volumes, actualVolumes)
 		resp.Diagnostics.Append(rvDiags...)
-		resizeIfaces, riDiags := buildResizeNetworkInterfaces(ctx, plan.NetworkInterfaces)
+		resizeIfaces, _, riDiags := resizeNetworkInterfaces(ctx, plan.NetworkInterfaces, actualIfaces)
 		resp.Diagnostics.Append(riDiags...)
 		if resp.Diagnostics.HasError() {
 			return

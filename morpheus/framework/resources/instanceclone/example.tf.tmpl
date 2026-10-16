@@ -1,3 +1,24 @@
+{{- if .SourceInstanceName}}
+# The instance to clone, by name.
+data "hpe_morpheus_instance" "source" {
+  name = "{{.SourceInstanceName}}"
+}
+{{- end}}
+{{- if .ClusterName}}
+
+# The network the clone attaches to, looked up within its cluster: every HVM
+# cluster has networks of the same name (Management, for one), so the cluster
+# is what makes the name unique.
+data "hpe_morpheus_cluster" "clone" {
+  name = "{{.ClusterName}}"
+}
+
+data "hpe_morpheus_network" "clone" {
+  name       = "{{.NetworkName}}"
+  cluster_id = data.hpe_morpheus_cluster.clone.id
+}
+{{- end}}
+
 resource "hpe_morpheus_instance_clone" "example" {
   source_instance_id = {{.SourceInstanceId}}
   name               = "{{.Name}}"
@@ -10,6 +31,9 @@ resource "hpe_morpheus_instance_clone" "example" {
       name        = "root"
       size        = 20
       root_volume = true
+{{- if .DatastoreId}}
+      datastore_id = {{.DatastoreId}}
+{{- end}}
 {{- if .StorageProfile}}
       storage_profile = "{{.StorageProfile}}"
 {{- end}}

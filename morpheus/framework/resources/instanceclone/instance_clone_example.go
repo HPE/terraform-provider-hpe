@@ -11,17 +11,25 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_instance_clone/example.tf example.tf.tmpl SourceInstanceId 1 Name "my-clone" NetworkId 1
+//go:generate ../../../../bin/render -out examples/resources/morpheus_instance_clone/example.tf example.tf.tmpl Name "my-clone" SourceInstanceName "my-instance" SourceInstanceId "data.hpe_morpheus_instance.source.id" ClusterName "MyCluster" NetworkName "MyNetwork" NetworkId "data.hpe_morpheus_network.clone.id"
 
 func RenderInstanceCloneConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	// The defaults render the published example: a source instance and a
+	// network looked up by name. The tests override SourceInstanceId and
+	// NetworkId with references to resources and data sources of their own
+	// and leave the name fields empty, so no lookup block is rendered.
 	defaults := map[string]string{
-		"SourceInstanceId": "1",
-		"Name":             "my-clone",
-		"NetworkId":        "1",
-		"UserGroup":        "",
-		"StorageProfile":   "",
+		"Name":               "my-clone",
+		"SourceInstanceName": "my-instance",
+		"SourceInstanceId":   "data.hpe_morpheus_instance.source.id",
+		"ClusterName":        "MyCluster",
+		"NetworkName":        "MyNetwork",
+		"NetworkId":          "data.hpe_morpheus_network.clone.id",
+		"DatastoreId":        "",
+		"UserGroup":          "",
+		"StorageProfile":     "",
 	}
 
 	for key, value := range overrides {

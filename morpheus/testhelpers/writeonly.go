@@ -43,6 +43,13 @@ type WriteOnlyCase struct {
 	// value passed to WriteOnlyImportSteps -- for a non-string attribute it is
 	// sha256 of the value's JSON form; default sha256 of the string itself.
 	ImportDigest func(value string) string
+	// ValueFromState, when set, resolves the value to digest for the import
+	// step from the state at that point, for a write-only value that the
+	// configuration takes from another resource (a reference such as
+	// hpe_morpheus_instance.source.id) rather than a literal. The value
+	// passed to WriteOnlyImportSteps is then the reference, which the digest
+	// must not be taken of.
+	ValueFromState func(s *terraform.State) (string, error)
 }
 
 // Sha256Hex is the digest an importer puts in the import ID for value.
@@ -222,9 +229,17 @@ func WriteOnlyImportSteps(c WriteOnlyCase, value string, ignore ...string) []res
 			return "", err
 		}
 
-		digest := Sha256Hex(value)
+		digested := value
+		if c.ValueFromState != nil {
+			digested, err = c.ValueFromState(s)
+			if err != nil {
+				return "", err
+			}
+		}
+
+		digest := Sha256Hex(digested)
 		if c.ImportDigest != nil {
-			digest = c.ImportDigest(value)
+			digest = c.ImportDigest(digested)
 		}
 
 		return id + "#" + c.Attribute + "=" + digest, nil

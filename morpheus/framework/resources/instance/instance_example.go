@@ -27,6 +27,38 @@ import (
 //go:generate ../../../../bin/render example_azure.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-12284" AzureRegion "eastus"
 //go:generate ../../../../bin/render example_azure_subnet.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-12284" AzureRegion "eastus" SubnetId "1"
 
+// The data sources example.tf.tmpl declares, by address, for configurations
+// that build on the rendered instance (the clone tests add a clone and a
+// second instance beside it and reuse these lookups rather than declare their
+// own). Keep in step with the template: a rename there would otherwise show
+// up only as an acceptance failure in another package.
+const (
+	// ExampleCloudData is the cloud: data.hpe_morpheus_cloud.vme_cloud.
+	ExampleCloudData = "data.hpe_morpheus_cloud.vme_cloud"
+	// ExampleClusterData is the cluster: data.hpe_morpheus_cluster.vme.
+	ExampleClusterData = "data.hpe_morpheus_cluster.vme"
+	// ExampleLayoutData is the layout (and its instance_type):
+	// data.hpe_morpheus_instance_type_layout.vme.
+	ExampleLayoutData = "data.hpe_morpheus_instance_type_layout.vme"
+	// ExampleNetworkData is the network, within the cluster:
+	// data.hpe_morpheus_network.vme.
+	ExampleNetworkData = "data.hpe_morpheus_network.vme"
+	// ExampleDatastoreData is the datastore, within the cluster -- declared
+	// only when the fixture names one (DatastoreName):
+	// data.hpe_morpheus_datastore.vme.
+	ExampleDatastoreData = "data.hpe_morpheus_datastore.vme"
+	// ExamplePlanData is the service plan: data.hpe_morpheus_service_plan.vme_plan.
+	ExamplePlanData = "data.hpe_morpheus_service_plan.vme_plan"
+	// ExampleImageData is the image -- declared only when the fixture names one
+	// (ImageName): data.hpe_morpheus_image.vme.
+	ExampleImageData = "data.hpe_morpheus_image.vme"
+	// ExampleGroupData is the group: data.hpe_morpheus_group.example. The
+	// tests point it at a per-run group resource (GroupName).
+	ExampleGroupData = "data.hpe_morpheus_group.example"
+	// ExampleInstance is the rendered instance: hpe_morpheus_instance.example.
+	ExampleInstance = "hpe_morpheus_instance.example"
+)
+
 // RenderInstanceConfig renders example.tf.tmpl: an HVM/KVM instance whose
 // cloud, cluster (and so resource pool), network, datastore, layout (and so
 // instance type), plan and image are all looked up by name through data

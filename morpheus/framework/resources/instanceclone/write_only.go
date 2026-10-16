@@ -24,11 +24,14 @@ var wo = wodigest.Tracker{ //nolint:gosec // attribute names, not credentials
 }
 
 // ModifyPlan plans a replacement when a write-only value changed (or a
-// deprecated marker did).
+// deprecated marker did), and refuses a volume renamed or the volumes
+// reordered in place, neither of which can be carried out (see
+// rejectVolumeNameChanges in update.go).
 func (r *Resource) ModifyPlan(
 	ctx context.Context,
 	req resource.ModifyPlanRequest,
 	resp *resource.ModifyPlanResponse,
 ) {
 	wo.ModifyPlan(ctx, req, resp)
+	rejectVolumeNameChanges(ctx, req, resp)
 }

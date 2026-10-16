@@ -18,8 +18,25 @@ is cloned.
 ## Example Usage
 
 ```terraform
+# The instance to clone, by name.
+data "hpe_morpheus_instance" "source" {
+  name = "my-instance"
+}
+
+# The network the clone attaches to, looked up within its cluster: every HVM
+# cluster has networks of the same name (Management, for one), so the cluster
+# is what makes the name unique.
+data "hpe_morpheus_cluster" "clone" {
+  name = "MyCluster"
+}
+
+data "hpe_morpheus_network" "clone" {
+  name       = "MyNetwork"
+  cluster_id = data.hpe_morpheus_cluster.clone.id
+}
+
 resource "hpe_morpheus_instance_clone" "example" {
-  source_instance_id = 1
+  source_instance_id = data.hpe_morpheus_instance.source.id
   name               = "my-clone"
 
   volumes = [
@@ -32,7 +49,7 @@ resource "hpe_morpheus_instance_clone" "example" {
 
   network_interfaces = [
     {
-      network_id = 1
+      network_id = data.hpe_morpheus_network.clone.id
       ip_mode    = ""
     }
   ]
@@ -57,6 +74,18 @@ comes from the source.
   ignored. Where a platform only resizes the root disk during the clone (e.g.
   VMware), the provider automatically issues a follow-up resize so data disks
   reach the size you requested.
+- A volume's `name` is fixed once the clone exists: Morpheus never renames a
+  disk, so a rename is refused at plan time. Keep the name, or replace the clone
+  (`terraform apply -replace=...`) to re-clone with the new one. The list's
+  **order** is fixed too: the volumes are matched to the clone's disks by
+  position, so a reordered list is refused as well -- list them in the clone's
+  order (as in state), and put a new disk last.
+- The virtual CD/DVD drive Morpheus attaches to a clone that boots from an ISO or
+  takes its cloud-init data from one is **not** one of its volumes and never
+  appears in `volumes`. A clone created with an earlier provider release may hold
+  that drive in state as an extra volume (every plan then proposed removing it);
+  the first refresh drops it. If the configuration lists it -- added to silence
+  that plan -- remove it, or Terraform will plan a new disk by that name.
 
 How disks are matched to the source — and how sizing behaves — varies by platform:
 

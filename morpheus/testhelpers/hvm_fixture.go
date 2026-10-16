@@ -52,6 +52,13 @@ const (
 	// layout's own image is used.
 	EnvHVMImageName = "TF_VAR_testacc_morpheus_hvm_image_name"
 
+	// EnvHVMAffinityGroupName names a cluster affinity group of the HVM
+	// cluster, for the tests that place an instance in one. It has to exist
+	// already: Morpheus 9.1 refuses to create an affinity group with no
+	// members, and the instance that would be its first member cannot be
+	// created before the group it is placed in.
+	EnvHVMAffinityGroupName = "TF_VAR_testacc_morpheus_hvm_affinity_group_name"
+
 	// EnvHVMGrowingImageName names a virtual image whose raw size is a little
 	// over its minimum disk, so a volume requested at the minimum is grown by
 	// the platform (a 10 GB request on a 10.002 GB image becomes 11 GB). The
@@ -165,4 +172,12 @@ func HVMGrowingImageName(t *testing.T) string {
 
 	return envOrSkip(t, EnvHVMGrowingImageName,
 		"a virtual image whose raw size is just over its minimum disk (10 GB requested -> 11 GB)")
+}
+
+// HVMAffinityGroupName returns the name of a cluster affinity group of the HVM
+// cluster, skipping the test when EnvHVMAffinityGroupName is unset.
+func HVMAffinityGroupName(t *testing.T) string {
+	t.Helper()
+
+	return envOrSkip(t, EnvHVMAffinityGroupName, "an existing cluster affinity group of the HVM cluster")
 }
