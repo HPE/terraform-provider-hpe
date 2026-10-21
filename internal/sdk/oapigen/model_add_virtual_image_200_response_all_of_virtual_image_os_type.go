@@ -24,10 +24,10 @@ type AddVirtualImage200ResponseAllOfVirtualImageOsType struct {
 	Code                 *string                `json:"code,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
 	Description          NullableString         `json:"description,omitempty"`
-	Vendor               *string                `json:"vendor,omitempty"`
-	Category             *string                `json:"category,omitempty"`
-	OsFamily             *string                `json:"osFamily,omitempty"`
-	OsVersion            *string                `json:"osVersion,omitempty"`
+	Vendor               NullableString         `json:"vendor,omitempty"`
+	Category             NullableString         `json:"category,omitempty"`
+	OsFamily             NullableString         `json:"osFamily,omitempty"`
+	OsVersion            NullableString         `json:"osVersion,omitempty"`
 	BitCount             *int64                 `json:"bitCount,omitempty"`
 	Platform             *string                `json:"platform,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -57,17 +57,17 @@ func (o AddVirtualImage200ResponseAllOfVirtualImageOsType) ToMap() (map[string]i
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.Vendor) {
-		toSerialize["vendor"] = o.Vendor
+	if o.Vendor.IsSet() {
+		toSerialize["vendor"] = o.Vendor.Get()
 	}
-	if !IsNil(o.Category) {
-		toSerialize["category"] = o.Category
+	if o.Category.IsSet() {
+		toSerialize["category"] = o.Category.Get()
 	}
-	if !IsNil(o.OsFamily) {
-		toSerialize["osFamily"] = o.OsFamily
+	if o.OsFamily.IsSet() {
+		toSerialize["osFamily"] = o.OsFamily.Get()
 	}
-	if !IsNil(o.OsVersion) {
-		toSerialize["osVersion"] = o.OsVersion
+	if o.OsVersion.IsSet() {
+		toSerialize["osVersion"] = o.OsVersion.Get()
 	}
 	if !IsNil(o.BitCount) {
 		toSerialize["bitCount"] = o.BitCount

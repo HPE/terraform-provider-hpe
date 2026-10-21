@@ -59,7 +59,7 @@ func (o GetVirtualImage200ResponseVirtualImageLocationsInner) ToMap() (map[strin
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
-	if !IsNil(o.Cloud) {
+	if o.Cloud != nil {
 		toSerialize["cloud"] = o.Cloud
 	}
 	if !IsNil(o.Code) {

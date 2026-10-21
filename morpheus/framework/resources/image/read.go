@@ -152,7 +152,7 @@ func getImageAsState(
 	}
 
 	// owner_id
-	state.OwnerId = convert.Int64ToType(image.OwnerId)
+	state.OwnerId = convert.Int64ToType(image.OwnerId.Get())
 
 	// raw_size
 	state.RawSize = convert.Int64ToType(image.RawSize.Get())
