@@ -9,8 +9,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -36,18 +34,54 @@ type ClientResource struct {
 
 // ClientModel maps Terraform schema attributes to the provider model.
 type ClientModel struct {
-	Id          types.Int64  `tfsdk:"id"`
-	UniqueId    types.String `tfsdk:"unique_id"`
-	Name        types.String `tfsdk:"name"`
-	Address     types.String `tfsdk:"address"`
-	City        types.String `tfsdk:"city"`
-	State       types.String `tfsdk:"state"`
-	Country     types.String `tfsdk:"country"`
-	Zip         types.String `tfsdk:"zip"`
-	TimeZone    types.String `tfsdk:"time_zone"`
-	PhoneNumber types.String `tfsdk:"phone_number"`
-	Addons      types.Set    `tfsdk:"addons"`
-	Packages    types.Set    `tfsdk:"packages"`
+	Id                     types.Int64  `tfsdk:"id"`
+	UniqueId               types.String `tfsdk:"unique_id"`
+	Name                   types.String `tfsdk:"name"`
+	Address                types.String `tfsdk:"address"`
+	City                   types.String `tfsdk:"city"`
+	State                  types.String `tfsdk:"state"`
+	Country                types.String `tfsdk:"country"`
+	Zip                    types.String `tfsdk:"zip"`
+	TimeZone               types.String `tfsdk:"time_zone"`
+	PhoneNumber            types.String `tfsdk:"phone_number"`
+	Addons                 types.Set    `tfsdk:"addons"`
+	Packages               types.Set    `tfsdk:"packages"`
+	LogMonitoringEnabled   types.Bool   `tfsdk:"log_monitoring_enabled"`
+	TraceMonitoringEnabled types.Bool   `tfsdk:"trace_monitoring_enabled"`
+}
+
+const (
+	clientLogAddon   = "Log Management"
+	clientTraceAddon = "Trace Management"
+)
+
+func clientAddonsForRequest(addons []string) ([]string, bool, bool) {
+	regular := make([]string, 0, len(addons))
+	var logEnabled, traceEnabled bool
+	for _, addon := range addons {
+		switch addon {
+		case clientLogAddon:
+			logEnabled = true
+		case clientTraceAddon:
+			traceEnabled = true
+		default:
+			regular = append(regular, addon)
+		}
+	}
+
+	return regular, logEnabled, traceEnabled
+}
+
+func clientAddonsFromResponse(existing *client.ClientResponse) []string {
+	addons, _, _ := clientAddonsForRequest(existing.Addons)
+	if existing.LogMonitoringEnabled {
+		addons = append(addons, clientLogAddon)
+	}
+	if existing.TraceMonitoringEnabled {
+		addons = append(addons, clientTraceAddon)
+	}
+
+	return addons
 }
 
 func stringSliceFromSet(ctx context.Context, set types.Set) ([]string, error) {
@@ -117,6 +151,8 @@ func mapClientResponseToState(state *ClientModel, existing *client.ClientRespons
 	} else {
 		state.PhoneNumber = types.StringNull()
 	}
+	state.LogMonitoringEnabled = types.BoolValue(existing.LogMonitoringEnabled)
+	state.TraceMonitoringEnabled = types.BoolValue(existing.TraceMonitoringEnabled)
 }
 
 // NewClient creates a new instance of the resource.
@@ -182,34 +218,26 @@ func (r *ClientResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				MarkdownDescription: "The phone number of the client.",
 			},
 			"addons": schema.SetAttribute{
-				Optional:            true,
-				Computed:            true,
-				ElementType:         types.StringType,
-				MarkdownDescription: "List of addons enabled in the Client.",
-				Validators: []validator.Set{
-					setvalidator.ValueStringsAre(
-						stringvalidator.OneOf(
-							"Adapter Integrations",
-							"Extended Data Retention",
-							"Knowledgebase Management",
-							"OS Service Start/Stop Actions",
-							"Offline Alerts",
-							"Process Automation",
-							"Remote Access Management",
-							"SMS and Voice",
-							"Alert Problem Area",
-						),
-					),
-				},
+				Optional:    true,
+				Computed:    true,
+				ElementType: types.StringType,
+				MarkdownDescription: "List of addons enabled in the Client. Recommended values include `Adapter Integrations`" +
+					", `Alert Problem Area`, `Application Management`, `Batch Exports`, `Knowledgebase Management`, `Offline Alerts`" +
+					", `OS Service Start/Stop Actions`, `Process Automation`, `Remote Access Management`, `Scheduled Task Management`" +
+					", `SKU Management`, `SLA Management`, `Stream Exports`." +
+					" The special addons `" + clientLogAddon + "` and `" + clientTraceAddon + "` are kept in Terraform state" +
+					" but sent as the API flags `logMonitoringEnabled` and `traceMonitoringEnabled`, not in `addOns`." +
+					" Removing a special addon disables its monitoring flag.",
 				Default: setdefault.StaticValue(
 					types.SetValueMust(types.StringType, []attr.Value{}),
 				),
 			},
 			"packages": schema.SetAttribute{
-				Optional:            true,
-				Computed:            true,
-				ElementType:         types.StringType,
-				MarkdownDescription: "List of packages enabled in the Client. (e.g. `Hybrid Discovery and Monitoring`, `Event and Incident Management`, `Remediation and Automation`.)",
+				Optional:    true,
+				Computed:    true,
+				ElementType: types.StringType,
+				MarkdownDescription: "List of packages enabled in the Client. (e.g. `Hybrid Discovery and Monitoring`" +
+					", `Event and Incident Management`, `Remediation and Automation`.)",
 				Validators: []validator.Set{
 					SetMustContainAndAllow(
 						[]string{ // mandatory
@@ -231,6 +259,14 @@ func (r *ClientResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 						},
 					),
 				),
+			},
+			"log_monitoring_enabled": schema.BoolAttribute{
+				Computed:            true,
+				MarkdownDescription: "Whether log monitoring is enabled for the client. Configure through the `Log Management` addon.",
+			},
+			"trace_monitoring_enabled": schema.BoolAttribute{
+				Computed:            true,
+				MarkdownDescription: "Whether trace monitoring is enabled for the client. Configure through the `Trace Management` addon.",
 			},
 		},
 	}
@@ -269,9 +305,9 @@ func (r *ClientResource) Create(ctx context.Context, req resource.CreateRequest,
 		Zip:         plan.Zip.ValueString(),
 		TimeZone:    plan.TimeZone.ValueString(),
 		PhoneNumber: plan.PhoneNumber.ValueString(),
-		Addons:      addons,
 		Packages:    packages,
 	}
+	createClient.Addons, createClient.LogMonitoringEnabled, createClient.TraceMonitoringEnabled = clientAddonsForRequest(addons)
 
 	created, err := r.apiClient.CreateClient(createClient)
 	if err != nil {
@@ -334,8 +370,9 @@ func (r *ClientResource) Read(ctx context.Context, req resource.ReadRequest, res
 	// state was non-null; if the user omitted the attribute and the API echoes
 	// nothing back, keep null so we don't produce a null [] drift on the
 	// next plan.
-	if len(existing.Addons) > 0 || !state.Addons.IsNull() {
-		state.Addons, err = stringSetFromSlice(existing.Addons)
+	addons := clientAddonsFromResponse(existing)
+	if len(addons) > 0 || !state.Addons.IsNull() {
+		state.Addons, err = stringSetFromSlice(addons)
 		if err != nil {
 			resp.Diagnostics.AddError("Read Error", err.Error())
 
@@ -389,9 +426,9 @@ func (r *ClientResource) Update(ctx context.Context, req resource.UpdateRequest,
 		Zip:         plan.Zip.ValueString(),
 		TimeZone:    plan.TimeZone.ValueString(),
 		PhoneNumber: plan.PhoneNumber.ValueString(),
-		Addons:      addons,
 		Packages:    packages,
 	}
+	updateClient.Addons, updateClient.LogMonitoringEnabled, updateClient.TraceMonitoringEnabled = clientAddonsForRequest(addons)
 
 	updated, err := r.apiClient.UpdateClient(state.UniqueId.ValueString(), updateClient)
 	if err != nil {
@@ -414,8 +451,6 @@ func (r *ClientResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	mapClientResponseToState(&plan, updatedState)
-	plan.Addons = state.Addons
-	plan.Packages = state.Packages
 
 	diags = resp.State.Set(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -471,7 +506,7 @@ func (r *ClientResource) ImportState(ctx context.Context, req resource.ImportSta
 		state.PhoneNumber = types.StringValue(existing.PhoneNumber)
 	}
 
-	state.Addons, err = stringSetFromSlice(existing.Addons)
+	state.Addons, err = stringSetFromSlice(clientAddonsFromResponse(existing))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Importing Client",

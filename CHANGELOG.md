@@ -1,3 +1,23 @@
+# v2.3.0 Release Notes
+
+## Breaking changes
+
+### `hpe_opsramp_alert_correlation_policy.algorithm_correlation.alerts_time_window`
+
+`alerts_time_window` is now a number (`Int64`) instead of a string. Update configurations that
+quoted this value; for example, change `alerts_time_window = "30"` to
+`alerts_time_window = 30`. Existing state is upgraded automatically — the resource implements
+`ResourceWithUpgradeState` to convert a stored string value to a number — so no `terraform state`
+surgery is needed.
+
+### `organization_matching_type` drops `EXCLUDE`
+
+`hpe_opsramp_alert_correlation_policy`, `hpe_opsramp_alert_escalation_policy`,
+`hpe_opsramp_alert_prediction_policy` and `hpe_opsramp_first_response_policy` accept only `ALL` and
+`INCLUDE` for `organization_matching_type`; `EXCLUDE` is no longer a valid value. A configuration
+that set `organization_matching_type = "EXCLUDE"` must be changed to scope the policy with `ALL` or
+with `INCLUDE` and an explicit `included_clients` list.
+
 # v2.2.0 Release Notes
 
 ## Support

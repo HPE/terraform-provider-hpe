@@ -6,14 +6,20 @@ resource "hpe_opsramp_client" "example_client" {
 
   addons = [
     "Adapter Integrations",
-    "Extended Data Retention",
+    "Alert Problem Area",
+    "Application Management",
+    "Batch Exports",
     "Knowledgebase Management",
-    "OS Service Start/Stop Actions",
     "Offline Alerts",
+    "OS Service Start/Stop Actions",
     "Process Automation",
     "Remote Access Management",
-    "SMS and Voice",
-    "Alert Problem Area"
+    "Scheduled Task Management",
+    "SKU Management",
+    "SLA Management",
+    "Stream Exports",
+    "Log Management",
+    "Trace Management"
   ]
 
   packages = [

@@ -103,13 +103,31 @@ resource "hpe_opsramp_servicemap" "test_sm_root" {
 	name = "%s"
 	type = "Service"
 	%s
+	threshold_type = "count"
+	threshold_limit = 2
 }
 
 resource "hpe_opsramp_servicemap" "test_sm_child" {
 	name   = "%s"
-	type   = "Service"
+	type   = "Resource"
 	parent = hpe_opsramp_servicemap.test_sm_root.id
 	%s
+
+	search_query = "name CONTAINS \"testing\""
+	alert_type = "critical-alert"
+
+	metrics = ["testing_metric1", "testing_metric2"]
+	metric_criteria = [
+		{
+			metric_name = "testing_metric1"
+			operator = "="
+			components = ["testing-component1", "testing-component2"]
+		},
+		{
+			metric_name = "testing_metric2"
+			operator = "-"
+		}
+	]
 }
 `, acctest.ProviderConfigHCL(), rootName, clientAttr, childName, clientAttr)
 }

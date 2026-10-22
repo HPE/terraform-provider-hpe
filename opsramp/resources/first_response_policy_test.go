@@ -32,13 +32,15 @@ func makeFirstResponsePolicyPlan(t *testing.T, model FirstResponsePolicyModel) t
 
 func newFirstResponsePolicyModel(attributeActions, patternActions types.Object) FirstResponsePolicyModel {
 	return FirstResponsePolicyModel{
-		Client:           types.StringNull(),
-		Id:               types.StringNull(),
-		Name:             types.StringValue("policy"),
-		EnabledMode:      types.StringValue("OBSERVED"),
-		FilterQuery:      types.StringValue(""),
-		AttributeActions: attributeActions,
-		PatternActions:   patternActions,
+		Client:                   types.StringNull(),
+		Id:                       types.StringNull(),
+		Name:                     types.StringValue("policy"),
+		EnabledMode:              types.StringValue("OBSERVED"),
+		FilterQuery:              types.StringValue(""),
+		OrganizationMatchingType: types.StringNull(),
+		IncludedClients:          types.ListNull(types.StringType),
+		AttributeActions:         attributeActions,
+		PatternActions:           patternActions,
 	}
 }
 
@@ -51,7 +53,7 @@ func TestUnitBuildFirstResponsePolicyRequestOmitsUnsetComputedBlocks(t *testing.
 		FilterQuery:      types.StringValue("objectName = \"LAB-WINDOWS-SERVER01\""),
 		AttributeActions: types.ObjectNull(attributeActionsAttrTypes),
 		PatternActions:   types.ObjectNull(patternActionsAttrTypes),
-	})
+	}, &client.OpsRampClient{Scope: "CLIENT"})
 
 	if policy.AttributeActions != nil {
 		t.Fatalf("expected attribute_actions to be omitted, got %#v", policy.AttributeActions)
@@ -84,7 +86,7 @@ func TestUnitMapFirstResponsePolicyToStateLeavesOmittedNestedBlocksNull(t *testi
 			SeasonalityTimeFrame: "",
 			Suppress:             nil,
 		},
-	}, state)
+	}, state, false, true)
 
 	if state.AttributeActions.IsNull() {
 		t.Fatal("expected attribute_actions object to be present")

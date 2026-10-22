@@ -9,6 +9,7 @@ type FirstResponsePolicy struct {
 	EnabledMode              string                       `json:"enabledMode,omitempty"`
 	OrganizationMatchingType string                       `json:"organizationMatchingType,omitempty"`
 	IncludedClients          []string                     `json:"includedClients,omitempty"`
+	ClientsIncluded          string                       `json:"clientsIncluded,omitempty"`
 	FilterQuery              string                       `json:"filterQuery"`
 	AttributeActions         *FirstResponseAttrActions    `json:"attributeActions,omitempty"`
 	PatternActions           *FirstResponsePatternActions `json:"patternActions,omitempty"`

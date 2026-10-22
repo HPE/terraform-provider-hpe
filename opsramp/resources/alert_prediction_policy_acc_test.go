@@ -26,7 +26,7 @@ func TestAccAlertPredictionPolicyResource(t *testing.T) {
 			CheckDestroy:             testAccCheckAlertPredictionPolicyDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccAlertPredictionPolicyConfig(policyName, clientOverride, isMSPCreds),
+					Config: testAccAlertPredictionPolicyConfig(policyName, clientOverride, isMSPCreds, ""),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureAlertPredictionPolicyExists(t, "hpe_opsramp_alert_prediction_policy.test_policy"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_prediction_policy.test_policy", "id"),
@@ -43,11 +43,50 @@ func TestAccAlertPredictionPolicyResource(t *testing.T) {
 	})
 }
 
-func testAccAlertPredictionPolicyConfig(name string, clientOverride string, isMSPCreds bool) string {
+func TestAccAlertPredictionPolicyResourceWithInclude(t *testing.T) {
+	acctest.SkipIfNotMSPWithClientOverride(t)
+	includedClient := acctest.OptionalClientOverride(t)
+
+	t.Run("create_with_include", func(t *testing.T) {
+		policyName := acctest.RandomName("pred-policy")
+
+		resource.ParallelTest(t, resource.TestCase{
+			PreCheck:                 acctest.PreCheck(t),
+			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
+			CheckDestroy:             testAccCheckAlertPredictionPolicyDestroy(t),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccAlertPredictionPolicyConfig(policyName, "", true, includedClient),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						testAccEnsureAlertPredictionPolicyExists(t, "hpe_opsramp_alert_prediction_policy.test_policy"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_prediction_policy.test_policy", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_alert_prediction_policy.test_policy", "name", policyName),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_alert_prediction_policy.test_policy",
+							"organization_matching_type",
+							"INCLUDE",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_alert_prediction_policy.test_policy",
+							"included_clients.#",
+							"1",
+						),
+					),
+				},
+			},
+		})
+	})
+}
+
+func testAccAlertPredictionPolicyConfig(name string, clientOverride string, isMSPCreds bool, targetClient string) string {
 	clientAttr := acctest.ClientAttrHCL(clientOverride)
 	orgMatchingType := ""
 	if isMSPCreds {
-		orgMatchingType = `  organization_matching_type = "ALL"`
+		if targetClient != "" {
+			orgMatchingType = fmt.Sprintf("organization_matching_type = \"INCLUDE\"\n\tincluded_clients = [\"%s\"]", targetClient)
+		} else {
+			orgMatchingType = `organization_matching_type = "ALL"`
+		}
 	}
 
 	return fmt.Sprintf(`

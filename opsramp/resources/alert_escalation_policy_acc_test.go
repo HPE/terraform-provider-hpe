@@ -15,6 +15,7 @@ import (
 
 func TestAccAlertEscalationPolicyResource(t *testing.T) {
 	clientOverride := acctest.OptionalClientOverride(t)
+	isMSPLevel := acctest.EffectiveScope(t) == "MSP"
 
 	t.Run("create", func(t *testing.T) {
 		policyName := acctest.RandomName("esc-policy")
@@ -26,7 +27,7 @@ func TestAccAlertEscalationPolicyResource(t *testing.T) {
 			CheckDestroy:             testAccCheckAlertEscalationPolicyDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccAlertEscalationPolicyConfig(policyName, groupName, clientOverride),
+					Config: testAccAlertEscalationPolicyConfig(policyName, groupName, clientOverride, isMSPLevel, ""),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureAlertEscalationPolicyExists(t, "hpe_opsramp_alert_escalation_policy.test_policy"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_escalation_policy.test_policy", "id"),
@@ -43,8 +44,52 @@ func TestAccAlertEscalationPolicyResource(t *testing.T) {
 	})
 }
 
-func testAccAlertEscalationPolicyConfig(policyName string, groupName string, clientOverride string) string {
+func TestAccAlertEscalationPolicyResourceWithInclude(t *testing.T) {
+	acctest.SkipIfNotMSPWithClientOverride(t)
+	includedClient := acctest.OptionalClientOverride(t)
+
+	t.Run("create_with_include", func(t *testing.T) {
+		policyName := acctest.RandomName("esc-policy")
+		groupName := acctest.RandomName("esc-group")
+
+		resource.ParallelTest(t, resource.TestCase{
+			PreCheck:                 acctest.PreCheck(t),
+			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
+			CheckDestroy:             testAccCheckAlertEscalationPolicyDestroy(t),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccAlertEscalationPolicyConfig(policyName, groupName, "", true, includedClient),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						testAccEnsureAlertEscalationPolicyExists(t, "hpe_opsramp_alert_escalation_policy.test_policy"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_escalation_policy.test_policy", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_alert_escalation_policy.test_policy", "name", policyName),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_alert_escalation_policy.test_policy",
+							"organization_matching_type",
+							"INCLUDE",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_alert_escalation_policy.test_policy",
+							"included_clients.#",
+							"1",
+						),
+					),
+				},
+			},
+		})
+	})
+}
+
+func testAccAlertEscalationPolicyConfig(policyName string, groupName string, clientOverride string, mspLevel bool, targetClient string) string {
 	clientAttr := acctest.ClientAttrHCL(clientOverride)
+	organizationMatchingTypeAttribute := ""
+	if mspLevel {
+		if targetClient != "" {
+			organizationMatchingTypeAttribute = fmt.Sprintf("organization_matching_type = \"INCLUDE\"\n\tincluded_clients = [\"%s\"]", targetClient)
+		} else {
+			organizationMatchingTypeAttribute = "organization_matching_type = \"ALL\""
+		}
+	}
 
 	return fmt.Sprintf(`
 %s
@@ -58,6 +103,7 @@ resource "hpe_opsramp_alert_escalation_policy" "test_policy" {
 	name         = "%s"
 	precedence   = 1
 	enabled_mode = "OBSERVED"
+	%s
 	%s
 
 	escalation_type = "AUTOMATIC_UNTIL_ACKNOWLEDGED_CLOSED_SUPPRESSED_TICKETED"
@@ -92,7 +138,7 @@ resource "hpe_opsramp_alert_escalation_policy" "test_policy" {
 	search_query = "subject CONTAINS \"test\""
 	resource_search_query = "name CONTAINS \"test\""
 }
-`, acctest.ProviderConfigHCL(), groupName, clientAttr, policyName, clientAttr)
+`, acctest.ProviderConfigHCL(), groupName, clientAttr, policyName, clientAttr, organizationMatchingTypeAttribute)
 }
 
 func testAccEnsureAlertEscalationPolicyExists(t *testing.T, resourceName string) resource.TestCheckFunc {

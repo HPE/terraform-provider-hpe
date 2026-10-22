@@ -22,6 +22,7 @@ type AlertEscalationPolicy struct {
 
 type ClientRef struct {
 	UniqueId string `json:"uniqueId"`
+	Name     string `json:"name,omitempty"`
 }
 
 // EscalationScope defines the scope of the policy

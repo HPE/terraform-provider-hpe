@@ -20,14 +20,20 @@ resource "hpe_opsramp_client" "example_client" {
 
   addons = [
     "Adapter Integrations",
-    "Extended Data Retention",
+    "Alert Problem Area",
+    "Application Management",
+    "Batch Exports",
     "Knowledgebase Management",
-    "OS Service Start/Stop Actions",
     "Offline Alerts",
+    "OS Service Start/Stop Actions",
     "Process Automation",
     "Remote Access Management",
-    "SMS and Voice",
-    "Alert Problem Area"
+    "Scheduled Task Management",
+    "SKU Management",
+    "SLA Management",
+    "Stream Exports",
+    "Log Management",
+    "Trace Management"
   ]
 
   packages = [
@@ -47,7 +53,7 @@ resource "hpe_opsramp_client" "example_client" {
 
 ### Optional
 
-- `addons` (Set of String) List of addons enabled in the Client.
+- `addons` (Set of String) List of addons enabled in the Client. Recommended values include `Adapter Integrations`, `Alert Problem Area`, `Application Management`, `Batch Exports`, `Knowledgebase Management`, `Offline Alerts`, `OS Service Start/Stop Actions`, `Process Automation`, `Remote Access Management`, `Scheduled Task Management`, `SKU Management`, `SLA Management`, `Stream Exports`. The special addons `Log Management` and `Trace Management` are kept in Terraform state but sent as the API flags `logMonitoringEnabled` and `traceMonitoringEnabled`, not in `addOns`. Removing a special addon disables its monitoring flag.
 - `address` (String) The address of the client.
 - `city` (String) The city of the client.
 - `country` (String) The country of the client.
@@ -61,5 +67,7 @@ resource "hpe_opsramp_client" "example_client" {
 ### Read-Only
 
 - `id` (Number) The unique identifier of the client.
+- `log_monitoring_enabled` (Boolean) Whether log monitoring is enabled for the client. Configure through the `Log Management` addon.
+- `trace_monitoring_enabled` (Boolean) Whether trace monitoring is enabled for the client. Configure through the `Trace Management` addon.
 
 

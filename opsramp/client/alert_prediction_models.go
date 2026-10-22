@@ -9,6 +9,7 @@ type AlertPredictionPolicy struct {
 	EnabledMode              string   `json:"enabledMode"`
 	OrganizationMatchingType string   `json:"organizationMatchingType,omitempty"`
 	IncludedClients          []string `json:"includedClients,omitempty"`
+	ClientsIncluded          string   `json:"clientsIncluded,omitempty"`
 	SeasonalityTimeFrame     string   `json:"seasonalityTimeFrame"`
 	GeneratePredictionAlert  bool     `json:"generatePredictionAlert"`
 	FilterQuery              string   `json:"filterQuery"`

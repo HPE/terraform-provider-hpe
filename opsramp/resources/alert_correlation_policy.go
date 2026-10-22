@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -22,9 +23,10 @@ import (
 
 // Ensure implementation satisfies the expected interfaces
 var (
-	_ resource.Resource                = &AlertCorrelationPolicyResource{}
-	_ resource.ResourceWithModifyPlan  = &AlertCorrelationPolicyResource{}
-	_ resource.ResourceWithImportState = &AlertCorrelationPolicyResource{}
+	_ resource.Resource                 = &AlertCorrelationPolicyResource{}
+	_ resource.ResourceWithModifyPlan   = &AlertCorrelationPolicyResource{}
+	_ resource.ResourceWithImportState  = &AlertCorrelationPolicyResource{}
+	_ resource.ResourceWithUpgradeState = &AlertCorrelationPolicyResource{}
 )
 
 // AlertCorrelationPolicyResource defines the resource implementation.
@@ -39,6 +41,7 @@ type AlertCorrelationPolicyModel struct {
 	Name                     types.String               `tfsdk:"name"`
 	EnabledMode              types.String               `tfsdk:"enabled_mode"`
 	OrganizationMatchingType types.String               `tfsdk:"organization_matching_type"`
+	IncludedClients          types.List                 `tfsdk:"included_clients"`
 	Precedence               types.Int64                `tfsdk:"precedence"`
 	Type                     types.String               `tfsdk:"type"`
 	FilterQuery              types.String               `tfsdk:"filter_query"`
@@ -52,7 +55,7 @@ type AlertCorrelationPolicyModel struct {
 // AlgorithmCorrelationModel represents algorithm correlation settings
 type AlgorithmCorrelationModel struct {
 	MatchingConditions []MatchingConditionModel `tfsdk:"matching_conditions"`
-	AlertsTimeWindow   types.String             `tfsdk:"alerts_time_window"`
+	AlertsTimeWindow   types.Int64              `tfsdk:"alerts_time_window"`
 	AlertTrigger       *AlertTriggerModel       `tfsdk:"alert_trigger"`
 }
 
@@ -97,9 +100,39 @@ func (r *AlertCorrelationPolicyResource) Metadata(
 	resp.TypeName = req.ProviderTypeName + "_alert_correlation_policy"
 }
 
+// ModifyPlan enforces the shared "client" attribute check plus organization_matching_type /
+// included_clients scope rules.
+func (r *AlertCorrelationPolicyResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	r.BaseResource.ModifyPlan(ctx, req, resp)
+	r.ValidateOrganizationMatching(ctx, req, resp)
+}
+
 // Schema defines the schema for the resource.
 func (r *AlertCorrelationPolicyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = alertCorrelationPolicySchema(1, int64TimeWindowAttribute())
+}
+
+// int64TimeWindowAttribute is the current (schema version 1) definition of alerts_time_window,
+// shared between Schema and the test for alertCorrelationPolicySchemaV0's upgrade target.
+func int64TimeWindowAttribute() schema.Attribute {
+	return schema.Int64Attribute{
+		Optional:            true,
+		MarkdownDescription: "Time window in minutes for correlating alerts.",
+	}
+}
+
+// alertCorrelationPolicySchema builds the resource schema; alertsTimeWindow is the one attribute
+// that differs between the current schema (version 1, where alerts_time_window is a number) and
+// schema version 0 (where it was a string, the shape of every released state before this change).
+// alertCorrelationPolicySchemaV0, in alert_correlation_policy_upgrade_state.go, shares every other
+// attribute definition with it by calling this function with version 0 and a StringAttribute.
+func alertCorrelationPolicySchema(version int64, alertsTimeWindow schema.Attribute) schema.Schema {
+	return schema.Schema{
+		Version:             version,
 		MarkdownDescription: "Manages an OpsRamp Alert Correlation Policy. Correlates related alerts to reduce noise and identify root causes.",
 		Attributes: map[string]schema.Attribute{
 			"client": schema.StringAttribute{
@@ -119,12 +152,21 @@ func (r *AlertCorrelationPolicyResource) Schema(_ context.Context, _ resource.Sc
 			"organization_matching_type": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "The organization matching type for partner policies. Required when creating a policy at MSP level with a client override. Valid values: `ALL`, `INCLUDE`, `EXCLUDE`.",
+				MarkdownDescription: "The organization matching type for the policy. Applies only when the operation is performed at the MSP level; must not be set at the client level. Defaults to `ALL` when omitted at the MSP level. Valid values: `ALL`, `INCLUDE`.",
 				Validators: []validator.String{
-					stringvalidator.OneOf("ALL", "INCLUDE", "EXCLUDE"),
+					stringvalidator.OneOf("ALL", "INCLUDE"),
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"included_clients": schema.ListAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "List of client names or UUIDs to include when `organization_matching_type` is `INCLUDE`. Required and must be non-empty in that case; must not be set at the client level.",
+				ElementType:         types.StringType,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
@@ -211,10 +253,7 @@ func (r *AlertCorrelationPolicyResource) Schema(_ context.Context, _ resource.Sc
 							},
 						},
 					},
-					"alerts_time_window": schema.StringAttribute{
-						Optional:            true,
-						MarkdownDescription: "Time window in minutes for correlating alerts.",
-					},
+					"alerts_time_window": alertsTimeWindow,
 					"alert_trigger": schema.SingleNestedAttribute{
 						Optional:            true,
 						MarkdownDescription: "Alert trigger conditions for algorithm correlation.",
@@ -288,7 +327,7 @@ func (r *AlertCorrelationPolicyResource) Schema(_ context.Context, _ resource.Sc
 	}
 }
 
-func buildAlertCorrelationPolicyRequest(plan AlertCorrelationPolicyModel) client.AlertCorrelationPolicy {
+func buildAlertCorrelationPolicyRequest(plan AlertCorrelationPolicyModel, apiClient *client.OpsRampClient) client.AlertCorrelationPolicy {
 	policy := client.AlertCorrelationPolicy{
 		Name:             plan.Name.ValueString(),
 		EnabledMode:      plan.EnabledMode.ValueString(),
@@ -299,8 +338,19 @@ func buildAlertCorrelationPolicyRequest(plan AlertCorrelationPolicyModel) client
 		InferenceSubject: plan.InferenceSubject.ValueString(),
 	}
 
-	if !plan.OrganizationMatchingType.IsNull() && !plan.OrganizationMatchingType.IsUnknown() {
-		policy.OrganizationMatchingType = plan.OrganizationMatchingType.ValueString()
+	isMSP := apiClient.Scope == "MSP" && (plan.Client.IsNull() || plan.Client.ValueString() == "")
+	if isMSP {
+		if !plan.OrganizationMatchingType.IsNull() && !plan.OrganizationMatchingType.IsUnknown() {
+			policy.OrganizationMatchingType = plan.OrganizationMatchingType.ValueString()
+		}
+
+		if !plan.IncludedClients.IsNull() && !plan.IncludedClients.IsUnknown() {
+			var includedClients []types.String
+			_ = plan.IncludedClients.ElementsAs(context.Background(), &includedClients, false)
+			for _, c := range includedClients {
+				policy.IncludedClients = append(policy.IncludedClients, c.ValueString())
+			}
+		}
 	}
 
 	if !plan.Precedence.IsNull() && !plan.Precedence.IsUnknown() {
@@ -310,7 +360,7 @@ func buildAlertCorrelationPolicyRequest(plan AlertCorrelationPolicyModel) client
 	if plan.AlgorithmCorrelation != nil {
 		ac := &client.AlgorithmCorrelation{}
 		if !plan.AlgorithmCorrelation.AlertsTimeWindow.IsNull() && !plan.AlgorithmCorrelation.AlertsTimeWindow.IsUnknown() {
-			ac.AlertsTimeWindow = plan.AlgorithmCorrelation.AlertsTimeWindow.ValueString()
+			ac.AlertsTimeWindow = int(plan.AlgorithmCorrelation.AlertsTimeWindow.ValueInt64())
 		}
 		for _, mc := range plan.AlgorithmCorrelation.MatchingConditions {
 			ac.MatchingConditions = append(ac.MatchingConditions, client.MatchingCondition{
@@ -365,7 +415,9 @@ func buildAlertCorrelationPolicyRequest(plan AlertCorrelationPolicyModel) client
 	return policy
 }
 
-func mapAlertCorrelationPolicyToState(resp *client.AlertCorrelationPolicy, state *AlertCorrelationPolicyModel) {
+func mapAlertCorrelationPolicyToState(
+	resp *client.AlertCorrelationPolicy, state *AlertCorrelationPolicyModel, isMSP bool, fromRead bool,
+) {
 	state.Id = types.StringValue(resp.Id)
 	state.Name = types.StringValue(resp.Name)
 	state.EnabledMode = types.StringValue(resp.EnabledMode)
@@ -374,11 +426,11 @@ func mapAlertCorrelationPolicyToState(resp *client.AlertCorrelationPolicy, state
 	state.InferenceQuery = types.StringValue(resp.InferenceQuery)
 	state.Review = types.BoolValue(resp.Review)
 
-	if resp.OrganizationMatchingType != "" {
-		state.OrganizationMatchingType = types.StringValue(resp.OrganizationMatchingType)
-	} else if state.OrganizationMatchingType.IsNull() || state.OrganizationMatchingType.IsUnknown() {
-		state.OrganizationMatchingType = types.StringNull()
-	}
+	// The API reports MSP scope via either a populated "includedClients" list (INCLUDE) or
+	// "clientsIncluded":"ALL" (ALL); it never echoes back "organizationMatchingType".
+	applyIncludedClientsTargeting(
+		resp.IncludedClients, resp.ClientsIncluded, isMSP, fromRead, &state.OrganizationMatchingType, &state.IncludedClients,
+	)
 
 	if resp.Precedence != 0 {
 		state.Precedence = types.Int64Value(int64(resp.Precedence))
@@ -388,8 +440,8 @@ func mapAlertCorrelationPolicyToState(resp *client.AlertCorrelationPolicy, state
 
 	if resp.AlgorithmCorrelation != nil {
 		ac := &AlgorithmCorrelationModel{}
-		if resp.AlgorithmCorrelation.AlertsTimeWindow != "" {
-			ac.AlertsTimeWindow = types.StringValue(resp.AlgorithmCorrelation.AlertsTimeWindow)
+		if resp.AlgorithmCorrelation.AlertsTimeWindow != 0 {
+			ac.AlertsTimeWindow = types.Int64Value(int64(resp.AlgorithmCorrelation.AlertsTimeWindow))
 		}
 		if len(resp.AlgorithmCorrelation.MatchingConditions) > 0 {
 			ac.MatchingConditions = make([]MatchingConditionModel, len(resp.AlgorithmCorrelation.MatchingConditions))
@@ -455,7 +507,7 @@ func (r *AlertCorrelationPolicyResource) Create(ctx context.Context, req resourc
 		tenantId = plan.Client.ValueString()
 	}
 
-	policy := buildAlertCorrelationPolicyRequest(plan)
+	policy := buildAlertCorrelationPolicyRequest(plan, r.apiClient)
 
 	created, err := r.apiClient.CreateAlertCorrelationPolicy(tenantId, policy)
 	if err != nil {
@@ -464,7 +516,8 @@ func (r *AlertCorrelationPolicyResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	mapAlertCorrelationPolicyToState(created, &plan)
+	isMSP := r.apiClient.Scope == "MSP" && (plan.Client.IsNull() || plan.Client.ValueString() == "")
+	mapAlertCorrelationPolicyToState(created, &plan, isMSP, false)
 
 	diags = resp.State.Set(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -496,7 +549,9 @@ func (r *AlertCorrelationPolicyResource) Read(ctx context.Context, req resource.
 		return
 	}
 
-	mapAlertCorrelationPolicyToState(existing, &state)
+	mapAlertCorrelationPolicyToState(
+		existing, &state, r.apiClient.Scope == "MSP" && (state.Client.IsNull() || state.Client.ValueString() == ""), true,
+	)
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -518,7 +573,7 @@ func (r *AlertCorrelationPolicyResource) Update(ctx context.Context, req resourc
 		tenantId = state.Client.ValueString()
 	}
 
-	policy := buildAlertCorrelationPolicyRequest(plan)
+	policy := buildAlertCorrelationPolicyRequest(plan, r.apiClient)
 
 	updated, err := r.apiClient.UpdateAlertCorrelationPolicy(tenantId, state.Id.ValueString(), policy)
 	if err != nil {
@@ -528,7 +583,8 @@ func (r *AlertCorrelationPolicyResource) Update(ctx context.Context, req resourc
 	}
 
 	plan.Client = state.Client
-	mapAlertCorrelationPolicyToState(updated, &plan)
+	isMSP := r.apiClient.Scope == "MSP" && (plan.Client.IsNull() || plan.Client.ValueString() == "")
+	mapAlertCorrelationPolicyToState(updated, &plan, isMSP, false)
 
 	diags = resp.State.Set(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -585,7 +641,9 @@ func (r *AlertCorrelationPolicyResource) ImportState(
 
 	var state AlertCorrelationPolicyModel
 	state.Client = parsed.Client
-	mapAlertCorrelationPolicyToState(existing, &state)
+	mapAlertCorrelationPolicyToState(
+		existing, &state, r.apiClient.Scope == "MSP" && (parsed.Client.IsNull() || parsed.Client.ValueString() == ""), true,
+	)
 
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)

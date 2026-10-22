@@ -40,6 +40,8 @@ resource "hpe_opsramp_first_response_policy" "seasonality_first_response_policy"
 - `client` (String) The client (tenant) UUID where this policy should be created. If not specified, uses the provider's tenant.
 - `enabled_mode` (String) The enabled mode of the policy. Valid values: `ON`, `OFF`, `OBSERVED`.
 - `filter_query` (String) OpsQL filter query to scope which alerts are evaluated by this policy.
+- `included_clients` (List of String) List of client names or UUIDs to include when `organization_matching_type` is `INCLUDE`. Required and must be non-empty in that case; must not be set at the client level.
+- `organization_matching_type` (String) The organization matching type for the policy. Applies only when the operation is performed at the MSP level; must not be set at the client level. Defaults to `ALL` when omitted at the MSP level. Valid values: `ALL`, `INCLUDE`.
 - `pattern_actions` (Attributes) Pattern-based actions for the policy. (see [below for nested schema](#nestedatt--pattern_actions))
 
 ### Read-Only

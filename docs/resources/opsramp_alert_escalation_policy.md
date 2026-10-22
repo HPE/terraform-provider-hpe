@@ -82,7 +82,8 @@ resource "hpe_opsramp_alert_escalation_policy" "default_alert_escalation_policy"
 - `client` (String) The client (tenant) UUID where this policy should be created. If not specified, uses the provider's tenant.
 - `description` (String) The description of the alert escalation policy.
 - `enabled_mode` (String) The enabled mode. Valid values: `ON`, `OFF`, `RECOMMEND`, `OBSERVED`.
-- `included_clients` (Set of String) List of included client UUIDs. Only applicable when the provider is in MSP scope. If empty (or omitted), the policy applies to all clients.
+- `included_clients` (Set of String) List of client names or UUIDs to include when `organization_matching_type` is `INCLUDE`. Required and must be non-empty in that case; must not be set at the client level.
+- `organization_matching_type` (String) The organization matching type for the policy. Applies only when the operation is performed at the MSP level; must not be set at the client level. Defaults to `ALL` when omitted at the MSP level. Valid values: `ALL`, `INCLUDE`.
 - `policy_type` (String) The policy type. Value: `ESCALATION_POLICY`.
 - `precedence` (Number) The execution order of the policy.
 - `resource_search_query` (String) Filter query to scope which resources are evaluated by this policy.

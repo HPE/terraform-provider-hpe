@@ -34,13 +34,15 @@ type FirstResponsePolicyResource struct {
 
 // FirstResponsePolicyModel maps Terraform schema attributes to the provider model.
 type FirstResponsePolicyModel struct {
-	Client           types.String `tfsdk:"client"`
-	Id               types.String `tfsdk:"id"`
-	Name             types.String `tfsdk:"name"`
-	EnabledMode      types.String `tfsdk:"enabled_mode"`
-	FilterQuery      types.String `tfsdk:"filter_query"`
-	AttributeActions types.Object `tfsdk:"attribute_actions"`
-	PatternActions   types.Object `tfsdk:"pattern_actions"`
+	Client                   types.String `tfsdk:"client"`
+	Id                       types.String `tfsdk:"id"`
+	Name                     types.String `tfsdk:"name"`
+	OrganizationMatchingType types.String `tfsdk:"organization_matching_type"`
+	IncludedClients          types.List   `tfsdk:"included_clients"`
+	EnabledMode              types.String `tfsdk:"enabled_mode"`
+	FilterQuery              types.String `tfsdk:"filter_query"`
+	AttributeActions         types.Object `tfsdk:"attribute_actions"`
+	PatternActions           types.Object `tfsdk:"pattern_actions"`
 }
 
 // FirstResponseAttrActionsModel represents attribute-based actions
@@ -136,6 +138,26 @@ func (r *FirstResponsePolicyResource) Schema(_ context.Context, _ resource.Schem
 				Optional:            true,
 				Computed:            true,
 				MarkdownDescription: "OpsQL filter query to scope which alerts are evaluated by this policy.",
+			},
+			"organization_matching_type": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "The organization matching type for the policy. Applies only when the operation is performed at the MSP level; must not be set at the client level. Defaults to `ALL` when omitted at the MSP level. Valid values: `ALL`, `INCLUDE`.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("ALL", "INCLUDE"),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"included_clients": schema.ListAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "List of client names or UUIDs to include when `organization_matching_type` is `INCLUDE`. Required and must be non-empty in that case; must not be set at the client level.",
+				ElementType:         types.StringType,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"attribute_actions": schema.SingleNestedAttribute{
 				Optional:            true,
@@ -258,11 +280,26 @@ func (r *FirstResponsePolicyResource) Schema(_ context.Context, _ resource.Schem
 	}
 }
 
-func buildFirstResponsePolicyRequest(plan FirstResponsePolicyModel) client.FirstResponsePolicy {
+func buildFirstResponsePolicyRequest(plan FirstResponsePolicyModel, apiClient *client.OpsRampClient) client.FirstResponsePolicy {
 	policy := client.FirstResponsePolicy{
 		Name:        plan.Name.ValueString(),
 		EnabledMode: plan.EnabledMode.ValueString(),
 		FilterQuery: plan.FilterQuery.ValueString(),
+	}
+
+	isMSP := apiClient.Scope == "MSP" && (plan.Client.IsNull() || plan.Client.ValueString() == "")
+	if isMSP {
+		if !plan.OrganizationMatchingType.IsNull() && !plan.OrganizationMatchingType.IsUnknown() {
+			policy.OrganizationMatchingType = plan.OrganizationMatchingType.ValueString()
+		}
+
+		if !plan.IncludedClients.IsNull() && !plan.IncludedClients.IsUnknown() {
+			var includedClients []types.String
+			_ = plan.IncludedClients.ElementsAs(context.Background(), &includedClients, false)
+			for _, c := range includedClients {
+				policy.IncludedClients = append(policy.IncludedClients, c.ValueString())
+			}
+		}
 	}
 
 	if !plan.AttributeActions.IsNull() && !plan.AttributeActions.IsUnknown() {
@@ -460,13 +497,21 @@ func hasRunProcessEnabled(object types.Object) bool {
 	return len(processIDs.Elements()) > 0
 }
 
-func mapFirstResponsePolicyToState(resp *client.FirstResponsePolicy, state *FirstResponsePolicyModel) {
+func mapFirstResponsePolicyToState(
+	resp *client.FirstResponsePolicy, state *FirstResponsePolicyModel, isMSP bool, fromRead bool,
+) {
 	state.Id = types.StringValue(resp.Id)
 	state.Name = types.StringValue(resp.Name)
 	state.EnabledMode = types.StringValue(resp.EnabledMode)
 	state.FilterQuery = types.StringValue(resp.FilterQuery)
 	state.AttributeActions = types.ObjectNull(attributeActionsAttrTypes)
 	state.PatternActions = types.ObjectNull(patternActionsAttrTypes)
+
+	// The API reports MSP scope via either a populated "includedClients" list (INCLUDE) or
+	// "clientsIncluded":"ALL" (ALL); it never echoes back "organizationMatchingType".
+	applyIncludedClientsTargeting(
+		resp.IncludedClients, resp.ClientsIncluded, isMSP, fromRead, &state.OrganizationMatchingType, &state.IncludedClients,
+	)
 
 	if resp.AttributeActions != nil {
 		// Suppress - always present
@@ -551,7 +596,7 @@ func (r *FirstResponsePolicyResource) Create(ctx context.Context, req resource.C
 		tenantId = plan.Client.ValueString()
 	}
 
-	policy := buildFirstResponsePolicyRequest(plan)
+	policy := buildFirstResponsePolicyRequest(plan, r.apiClient)
 
 	created, err := r.apiClient.CreateFirstResponsePolicy(tenantId, policy)
 	if err != nil {
@@ -560,7 +605,8 @@ func (r *FirstResponsePolicyResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	mapFirstResponsePolicyToState(created, &plan)
+	isMSP := r.apiClient.Scope == "MSP" && (plan.Client.IsNull() || plan.Client.ValueString() == "")
+	mapFirstResponsePolicyToState(created, &plan, isMSP, false)
 
 	diags = resp.State.Set(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -592,7 +638,9 @@ func (r *FirstResponsePolicyResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
-	mapFirstResponsePolicyToState(existing, &state)
+	mapFirstResponsePolicyToState(
+		existing, &state, r.apiClient.Scope == "MSP" && (state.Client.IsNull() || state.Client.ValueString() == ""), true,
+	)
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -614,7 +662,7 @@ func (r *FirstResponsePolicyResource) Update(ctx context.Context, req resource.U
 		tenantId = state.Client.ValueString()
 	}
 
-	policy := buildFirstResponsePolicyRequest(plan)
+	policy := buildFirstResponsePolicyRequest(plan, r.apiClient)
 
 	updated, err := r.apiClient.UpdateFirstResponsePolicy(tenantId, state.Id.ValueString(), policy)
 	if err != nil {
@@ -624,7 +672,8 @@ func (r *FirstResponsePolicyResource) Update(ctx context.Context, req resource.U
 	}
 
 	plan.Client = state.Client
-	mapFirstResponsePolicyToState(updated, &plan)
+	isMSP := r.apiClient.Scope == "MSP" && (plan.Client.IsNull() || plan.Client.ValueString() == "")
+	mapFirstResponsePolicyToState(updated, &plan, isMSP, false)
 
 	diags = resp.State.Set(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -659,6 +708,9 @@ func (r *FirstResponsePolicyResource) ModifyPlan(
 	req resource.ModifyPlanRequest,
 	resp *resource.ModifyPlanResponse,
 ) {
+	r.BaseResource.ModifyPlan(ctx, req, resp)
+	r.ValidateOrganizationMatching(ctx, req, resp)
+
 	if req.Plan.Raw.IsNull() {
 		return
 	}

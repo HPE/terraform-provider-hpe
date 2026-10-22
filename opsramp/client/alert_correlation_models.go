@@ -10,6 +10,7 @@ type AlertCorrelationPolicy struct {
 	EnabledMode              string                `json:"enabledMode,omitempty"`
 	OrganizationMatchingType string                `json:"organizationMatchingType,omitempty"`
 	IncludedClients          []string              `json:"includedClients,omitempty"`
+	ClientsIncluded          string                `json:"clientsIncluded,omitempty"`
 	Precedence               int                   `json:"precedence,omitempty"`
 	Type                     string                `json:"type,omitempty"`
 	FilterQuery              string                `json:"filterQuery"`
@@ -23,7 +24,7 @@ type AlertCorrelationPolicy struct {
 // AlgorithmCorrelation defines algorithm-based correlation settings
 type AlgorithmCorrelation struct {
 	MatchingConditions []MatchingCondition `json:"matchingConditions"`
-	AlertsTimeWindow   string              `json:"alertsTimeWindow,omitempty"`
+	AlertsTimeWindow   int                 `json:"alertsTimeWindow,omitempty"`
 	AlertTrigger       *AlertTrigger       `json:"alertTrigger,omitempty"`
 }
 

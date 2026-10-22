@@ -24,10 +24,11 @@ Manages an OpsRamp Alert Correlation Policy. Correlates related alerts to reduce
 - `client` (String) The client (tenant) UUID where this policy should be created. If not specified, uses the provider's tenant.
 - `enabled_mode` (String) The enabled mode of the policy. Valid values: `ON`, `OFF`, `OBSERVED`.
 - `filter_query` (String) Filter query to scope which alerts are evaluated by this policy.
+- `included_clients` (List of String) List of client names or UUIDs to include when `organization_matching_type` is `INCLUDE`. Required and must be non-empty in that case; must not be set at the client level.
 - `inference_query` (String) Inference query to scope which alerts are used for inference.
 - `inference_subject` (String) Template for the inference alert subject. Use `$subject` as a placeholder.
 - `machine_learning` (Attributes) Machine learning settings for alert correlation. (see [below for nested schema](#nestedatt--machine_learning))
-- `organization_matching_type` (String) The organization matching type for partner policies. Required when creating a policy at MSP level with a client override. Valid values: `ALL`, `INCLUDE`, `EXCLUDE`.
+- `organization_matching_type` (String) The organization matching type for the policy. Applies only when the operation is performed at the MSP level; must not be set at the client level. Defaults to `ALL` when omitted at the MSP level. Valid values: `ALL`, `INCLUDE`.
 - `precedence` (Number) The execution order of the policy. Lower values execute first.
 - `review` (Boolean) Whether the policy is in review mode.
 - `type` (String) The alert correlation policy type. Valid values: `DEPENDENCY`, `ALGORITHM`, `CO_OCCURRENCE`.
@@ -42,7 +43,7 @@ Manages an OpsRamp Alert Correlation Policy. Correlates related alerts to reduce
 Optional:
 
 - `alert_trigger` (Attributes) Alert trigger conditions for algorithm correlation. (see [below for nested schema](#nestedatt--algorithm_correlation--alert_trigger))
-- `alerts_time_window` (String) Time window in minutes for correlating alerts.
+- `alerts_time_window` (Number) Time window in minutes for correlating alerts.
 - `matching_conditions` (Attributes List) Conditions for matching correlated alerts. (see [below for nested schema](#nestedatt--algorithm_correlation--matching_conditions))
 
 <a id="nestedatt--algorithm_correlation--alert_trigger"></a>

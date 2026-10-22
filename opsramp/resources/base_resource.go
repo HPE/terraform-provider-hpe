@@ -10,6 +10,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/HPE/terraform-provider-hpe/opsramp/utils/clientfactory"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -171,4 +172,264 @@ func importIDError(expectedParts int, isMSP bool) error {
 	}
 
 	return fmt.Errorf("expected format: %s", base)
+}
+
+// ValidateOrganizationMatching enforces the shared organization_matching_type / included_clients
+// rules for policies that support MSP-only organization matching (alert correlation, alert
+// prediction, and first response policies):
+//   - At MSP level (no client override), organization_matching_type is required.
+//   - When organization_matching_type is "INCLUDE", included_clients is required and non-empty.
+//   - When organization_matching_type is "ALL", included_clients must not be configured.
+//   - At CLIENT level, neither attribute may be configured; they are never sent to the API.
+//
+// included_clients entries (names or UUIDs) are passed through unchanged: the API accepts and
+// echoes back whatever identifier form the user configures, so the plan must not rewrite them.
+func (r *BaseResource) ValidateOrganizationMatching(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.apiClient == nil || req.Plan.Raw.IsNull() {
+		return
+	}
+
+	orgPath := path.Root("organization_matching_type")
+	clientsPath := path.Root("included_clients")
+
+	var clientVal types.String
+	if diags := req.Plan.GetAttribute(ctx, path.Root("client"), &clientVal); diags.HasError() {
+		return
+	}
+
+	// An unknown "client" (e.g. referencing a resource created in the same apply) can't yet be
+	// classified as MSP or CLIENT scope; defer validation until it resolves to a known value.
+	if clientVal.IsUnknown() {
+		return
+	}
+
+	var orgConfig types.String
+	req.Config.GetAttribute(ctx, orgPath, &orgConfig)
+
+	var clientsConfig types.List
+	req.Config.GetAttribute(ctx, clientsPath, &clientsConfig)
+
+	isMSP := r.apiClient.Scope == "MSP" && (clientVal.IsNull() || clientVal.ValueString() == "")
+
+	if !isMSP {
+		if !orgConfig.IsNull() && orgConfig.ValueString() != "" {
+			resp.Diagnostics.AddAttributeError(orgPath, "Not Applicable at Client Level",
+				"'organization_matching_type' only applies when the operation is performed at the MSP level "+
+					"and must not be set when operating on a specific client.")
+		}
+
+		if !clientsConfig.IsNull() {
+			resp.Diagnostics.AddAttributeError(clientsPath, "Not Applicable at Client Level",
+				"'included_clients' only applies when the operation is performed at the MSP level "+
+					"and must not be set when operating on a specific client.")
+		}
+
+		if !resp.Diagnostics.HasError() {
+			resp.Plan.SetAttribute(ctx, clientsPath, types.ListNull(types.StringType))
+		}
+
+		return
+	}
+
+	var orgPlan types.String
+	req.Plan.GetAttribute(ctx, orgPath, &orgPlan)
+
+	// An unknown "organization_matching_type" can't yet be checked for presence; defer
+	// validation until it resolves to a known value.
+	if orgPlan.IsUnknown() {
+		return
+	}
+
+	if orgPlan.IsNull() || orgPlan.ValueString() == "" {
+		resp.Diagnostics.AddAttributeError(orgPath, "Missing Required Attribute",
+			"'organization_matching_type' is required when the operation is performed at the MSP level.")
+
+		return
+	}
+
+	if orgPlan.ValueString() != "INCLUDE" {
+		if !clientsConfig.IsNull() {
+			resp.Diagnostics.AddAttributeError(clientsPath, "Not Applicable",
+				"'included_clients' only applies when 'organization_matching_type' is 'INCLUDE'.")
+
+			return
+		}
+
+		resp.Plan.SetAttribute(ctx, clientsPath, types.ListNull(types.StringType))
+
+		return
+	}
+
+	var clientsPlan types.List
+	req.Plan.GetAttribute(ctx, clientsPath, &clientsPlan)
+
+	// A wholly unknown "included_clients" (e.g. built from a resource created in the same
+	// apply) can't yet be checked for emptiness; defer validation until it resolves.
+	if clientsPlan.IsUnknown() {
+		return
+	}
+
+	if clientsPlan.IsNull() || len(clientsPlan.Elements()) == 0 {
+		resp.Diagnostics.AddAttributeError(clientsPath, "Missing Required Attribute",
+			"'included_clients' is required and must include at least one client when "+
+				"'organization_matching_type' is 'INCLUDE'.")
+
+		return
+	}
+}
+
+// ValidateOrganizationMatchingSet is the Set-based counterpart of ValidateOrganizationMatching,
+// used by policies (such as alert escalation) whose included_clients attribute is a Set rather
+// than a List.
+func (r *BaseResource) ValidateOrganizationMatchingSet(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.apiClient == nil || req.Plan.Raw.IsNull() {
+		return
+	}
+
+	orgPath := path.Root("organization_matching_type")
+	clientsPath := path.Root("included_clients")
+
+	var clientVal types.String
+	if diags := req.Plan.GetAttribute(ctx, path.Root("client"), &clientVal); diags.HasError() {
+		return
+	}
+
+	// An unknown "client" (e.g. referencing a resource created in the same apply) can't yet be
+	// classified as MSP or CLIENT scope; defer validation until it resolves to a known value.
+	if clientVal.IsUnknown() {
+		return
+	}
+
+	var orgConfig types.String
+	req.Config.GetAttribute(ctx, orgPath, &orgConfig)
+
+	var clientsConfig types.Set
+	req.Config.GetAttribute(ctx, clientsPath, &clientsConfig)
+
+	isMSP := r.apiClient.Scope == "MSP" && (clientVal.IsNull() || clientVal.ValueString() == "")
+
+	if !isMSP {
+		if !orgConfig.IsNull() && orgConfig.ValueString() != "" {
+			resp.Diagnostics.AddAttributeError(orgPath, "Not Applicable at Client Level",
+				"'organization_matching_type' only applies when the operation is performed at the MSP level "+
+					"and must not be set when operating on a specific client.")
+		}
+
+		if !clientsConfig.IsNull() {
+			resp.Diagnostics.AddAttributeError(clientsPath, "Not Applicable at Client Level",
+				"'included_clients' only applies when the operation is performed at the MSP level "+
+					"and must not be set when operating on a specific client.")
+		}
+
+		if !resp.Diagnostics.HasError() {
+			resp.Plan.SetAttribute(ctx, clientsPath, types.SetNull(types.StringType))
+		}
+
+		return
+	}
+
+	var orgPlan types.String
+	req.Plan.GetAttribute(ctx, orgPath, &orgPlan)
+
+	// An unknown "organization_matching_type" can't yet be checked for presence; defer
+	// validation until it resolves to a known value.
+	if orgPlan.IsUnknown() {
+		return
+	}
+
+	if orgPlan.IsNull() || orgPlan.ValueString() == "" {
+		resp.Diagnostics.AddAttributeError(orgPath, "Missing Required Attribute",
+			"'organization_matching_type' is required when the operation is performed at the MSP level.")
+
+		return
+	}
+
+	if orgPlan.ValueString() != "INCLUDE" {
+		if !clientsConfig.IsNull() {
+			resp.Diagnostics.AddAttributeError(clientsPath, "Not Applicable",
+				"'included_clients' only applies when 'organization_matching_type' is 'INCLUDE'.")
+
+			return
+		}
+
+		resp.Plan.SetAttribute(ctx, clientsPath, types.SetNull(types.StringType))
+
+		return
+	}
+
+	var clientsPlan types.Set
+	req.Plan.GetAttribute(ctx, clientsPath, &clientsPlan)
+
+	// A wholly unknown "included_clients" (e.g. built from a resource created in the same
+	// apply) can't yet be checked for emptiness; defer validation until it resolves.
+	if clientsPlan.IsUnknown() {
+		return
+	}
+
+	if clientsPlan.IsNull() || len(clientsPlan.Elements()) == 0 {
+		resp.Diagnostics.AddAttributeError(clientsPath, "Missing Required Attribute",
+			"'included_clients' is required and must include at least one client when "+
+				"'organization_matching_type' is 'INCLUDE'.")
+
+		return
+	}
+}
+
+// applyIncludedClientsTargeting resolves organization_matching_type/included_clients (a List of
+// plain client identifiers) from an alert policy response, shared by the alert correlation,
+// prediction, and first-response policies. organization_matching_type is Computed, so it must
+// always end up with a known value: at CLIENT scope (isMSP false) it's always null (the
+// attribute doesn't apply there); at MSP scope it resolves to "INCLUDE" when the response has
+// included clients, otherwise to "clientsIncluded" if the API supplied it, or "ALL" as the
+// default when neither is present (some API responses omit "clientsIncluded" entirely for
+// ALL-scoped policies). On Read/Import (fromRead), the fields are always refreshed from the
+// response so remote targeting changes (e.g. a different client, or a switch to ALL) are
+// reflected. On Create/Update (write responses), a field is only resolved when Terraform
+// doesn't already have a known (user-configured) value, so the plan's representation is
+// preserved untouched. Either way, an empty response list must map to a null list, not an empty
+// one, or Terraform reports a "produced an unexpected new value" plan inconsistency for
+// ALL-scoped policies.
+func applyIncludedClientsTargeting(
+	includedClients []string,
+	clientsIncluded string,
+	isMSP bool,
+	fromRead bool,
+	matchingType *types.String,
+	stateIncludedClients *types.List,
+) {
+	if !isMSP {
+		*matchingType = types.StringNull()
+		*stateIncludedClients = types.ListNull(types.StringType)
+
+		return
+	}
+
+	if len(includedClients) > 0 {
+		if fromRead || matchingType.IsNull() || matchingType.IsUnknown() {
+			*matchingType = types.StringValue("INCLUDE")
+		}
+		if fromRead || stateIncludedClients.IsNull() || stateIncludedClients.IsUnknown() {
+			elems := make([]attr.Value, len(includedClients))
+			for i, c := range includedClients {
+				elems[i] = types.StringValue(c)
+			}
+			list, _ := types.ListValue(types.StringType, elems)
+			*stateIncludedClients = list
+		}
+
+		return
+	}
+
+	resolvedMatchingType := "ALL"
+	if clientsIncluded != "" {
+		resolvedMatchingType = clientsIncluded
+	}
+	if fromRead || matchingType.IsNull() || matchingType.IsUnknown() {
+		*matchingType = types.StringValue(resolvedMatchingType)
+	}
+	if fromRead || stateIncludedClients.IsNull() || stateIncludedClients.IsUnknown() {
+		// Also covers the Go zero-value of types.List (e.g. a freshly declared model during
+		// import), which reports IsNull() true but carries no element type until set here.
+		*stateIncludedClients = types.ListNull(types.StringType)
+	}
 }
