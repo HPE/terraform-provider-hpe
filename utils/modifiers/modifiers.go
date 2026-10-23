@@ -56,7 +56,6 @@ func (m stringUnknownIfEmptyModifier) PlanModifyString(
 	resp.PlanValue = types.StringUnknown()
 }
 
-
 // RequireOnCreateModifier can be used for corner cases where
 // an attribute is optional for import, but required for create
 type RequireOnCreateModifier struct{}

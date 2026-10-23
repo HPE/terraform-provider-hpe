@@ -184,7 +184,11 @@ func importIDError(expectedParts int, isMSP bool) error {
 //
 // included_clients entries (names or UUIDs) are passed through unchanged: the API accepts and
 // echoes back whatever identifier form the user configures, so the plan must not rewrite them.
-func (r *BaseResource) ValidateOrganizationMatching(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *BaseResource) ValidateOrganizationMatching(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
 	if r.apiClient == nil || req.Plan.Raw.IsNull() {
 		return
 	}
@@ -281,7 +285,11 @@ func (r *BaseResource) ValidateOrganizationMatching(ctx context.Context, req res
 // ValidateOrganizationMatchingSet is the Set-based counterpart of ValidateOrganizationMatching,
 // used by policies (such as alert escalation) whose included_clients attribute is a Set rather
 // than a List.
-func (r *BaseResource) ValidateOrganizationMatchingSet(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *BaseResource) ValidateOrganizationMatchingSet(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
 	if r.apiClient == nil || req.Plan.Raw.IsNull() {
 		return
 	}

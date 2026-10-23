@@ -80,12 +80,17 @@ func TestAccAlertEscalationPolicyResourceWithInclude(t *testing.T) {
 	})
 }
 
-func testAccAlertEscalationPolicyConfig(policyName string, groupName string, clientOverride string, mspLevel bool, targetClient string) string {
+func testAccAlertEscalationPolicyConfig(
+	policyName string, groupName string, clientOverride string, mspLevel bool, targetClient string,
+) string {
 	clientAttr := acctest.ClientAttrHCL(clientOverride)
 	organizationMatchingTypeAttribute := ""
 	if mspLevel {
 		if targetClient != "" {
-			organizationMatchingTypeAttribute = fmt.Sprintf("organization_matching_type = \"INCLUDE\"\n\tincluded_clients = [\"%s\"]", targetClient)
+			organizationMatchingTypeAttribute = fmt.Sprintf(
+				"organization_matching_type = \"INCLUDE\"\n\tincluded_clients = [\"%s\"]",
+				targetClient,
+			)
 		} else {
 			organizationMatchingTypeAttribute = "organization_matching_type = \"ALL\""
 		}

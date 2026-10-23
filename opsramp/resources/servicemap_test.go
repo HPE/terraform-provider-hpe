@@ -11,11 +11,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 )
 
 func servicemapCriteria(t *testing.T, metrics []string, operator string, components types.Set) types.Set {
@@ -30,6 +31,7 @@ func servicemapCriteria(t *testing.T, metrics []string, operator string, compone
 	if diags.HasError() {
 		t.Fatal(diags)
 	}
+
 	return value
 }
 
@@ -217,77 +219,107 @@ func TestUnitServicemapMonitorLifecycle(t *testing.T) {
 			if diags := current.Get(ctx, &state); diags.HasError() {
 				t.Fatal(diags)
 			}
-			if !reflect.DeepEqual(state.Metrics, model.Metrics) || !state.AlertType.Equal(model.AlertType) || !state.MetricCriteria.Equal(model.MetricCriteria) {
+			if !reflect.DeepEqual(state.Metrics, model.Metrics) ||
+				!state.AlertType.Equal(model.AlertType) ||
+				!state.MetricCriteria.Equal(model.MetricCriteria) {
 				t.Fatalf("monitor state does not match plan: %#v", state)
 			}
-
 		})
 	}
 }
 
 func TestUnitServicemapMonitorValidation(t *testing.T) {
-				t.Parallel()
-				ctx := context.Background()
-				nullComponents := types.SetNull(types.StringType)
-				components := types.SetValueMust(types.StringType, []attr.Value{types.StringValue("ads")})
-				metrics := types.SetValueMust(types.StringType, []attr.Value{types.StringValue("metric-a")})
-				nullCriteria := types.SetNull(servicemapMetricCriterionType)
-				for _, tc := range []struct {
-					name string
-					alertType types.String
-					metrics types.Set
-					criteria types.Set
-					wantError bool
-				}{
-					{"dash", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, []string{"metric-a"}, "-", nullComponents), false},
-					{"equals", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, []string{"metric-a"}, "=", components), false},
-					{"missing criteria", types.StringValue("critical-alert"), metrics, nullCriteria, true},
-					{"empty criteria", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, nil, "-", nullComponents), true},
-					{"missing metrics", types.StringValue("critical-alert"), types.SetNull(types.StringType), servicemapCriteria(t, []string{"metric-a"}, "-", nullComponents), true},
-					{"mismatched names", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, []string{"metric-b"}, "-", nullComponents), true},
-					{"equals missing components", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, []string{"metric-a"}, "=", nullComponents), true},
-					{"equals empty components", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, []string{"metric-a"}, "=", types.SetValueMust(types.StringType, nil)), true},
-					{"dash components", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, []string{"metric-a"}, "-", components), true},
-					{"bad operator", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, []string{"metric-a"}, ">", nullComponents), true},
-					{"any critical nonempty metrics", types.StringValue("any-critical-alert"), metrics, nullCriteria, true},
-					{"any critical omitted metrics", types.StringValue("any-critical-alert"), types.SetNull(types.StringType), nullCriteria, false},
-					{"any critical empty metrics", types.StringValue("any-critical-alert"), types.SetValueMust(types.StringType, nil), nullCriteria, false},
-					{"availability criteria", types.StringValue("availability"), metrics, servicemapCriteria(t, []string{"metric-a"}, "-", nullComponents), true},
-					{"unknown alert", types.StringUnknown(), metrics, types.SetUnknown(servicemapMetricCriterionType), false},
-					{"unknown criteria", types.StringValue("critical-alert"), metrics, types.SetUnknown(servicemapMetricCriterionType), false},
-					{"unknown names", types.StringValue("critical-alert"), types.SetUnknown(types.StringType), servicemapCriteria(t, []string{"metric-a"}, "-", nullComponents), false},
-					{"unknown components", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, []string{"metric-a"}, "=", types.SetUnknown(types.StringType)), false},
-				} {
-					t.Run(tc.name, func(t *testing.T) {
-						diags := validateServicemapMonitor(ctx, tc.alertType, tc.metrics, tc.criteria)
-						if diags.HasError() != tc.wantError {
-							t.Fatalf("validation errors = %v; want error %t", diags, tc.wantError)
-						}
-
-								})
-				}
-				model := ServicemapModel{
-					AlertType: types.StringValue("critical-alert"),
-					Metrics: []types.String{types.StringValue("metric-a")},
-					MetricCriteria: servicemapCriteria(t, []string{"metric-a"}, "=", components),
-				}
-				request, diags := translatePlanToModel(ctx, model)
-				if diags.HasError() {
-					t.Fatal(diags)
-				}
-				payload, err := json.Marshal(request)
-				if err != nil {
-					t.Fatal(err)
-				}
-				var decoded client.CreateServicemap
-				if err := json.Unmarshal(payload, &decoded); err != nil {
-					t.Fatal(err)
-				}
-				criterion := decoded.ServiceAvailabilityMonitor.MetricCriteria[0]
-				if criterion.Operator != "=" || !reflect.DeepEqual(criterion.Components, []string{"ads"}) {
-					t.Fatalf("equals components not serialized: %s", payload)
-				}
+	t.Parallel()
+	ctx := context.Background()
+	nullComponents := types.SetNull(types.StringType)
+	components := types.SetValueMust(types.StringType, []attr.Value{types.StringValue("ads")})
+	metrics := types.SetValueMust(types.StringType, []attr.Value{types.StringValue("metric-a")})
+	nullCriteria := types.SetNull(servicemapMetricCriterionType)
+	for _, tc := range []struct {
+		name      string
+		alertType types.String
+		metrics   types.Set
+		criteria  types.Set
+		wantError bool
+	}{
+		{"dash", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, []string{"metric-a"}, "-", nullComponents), false},
+		{"equals", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, []string{"metric-a"}, "=", components), false},
+		{"missing criteria", types.StringValue("critical-alert"), metrics, nullCriteria, true},
+		{"empty criteria", types.StringValue("critical-alert"), metrics, servicemapCriteria(t, nil, "-", nullComponents), true},
+		{
+			"missing metrics", types.StringValue("critical-alert"), types.SetNull(types.StringType),
+			servicemapCriteria(t, []string{"metric-a"}, "-", nullComponents), true,
+		},
+		{
+			"mismatched names", types.StringValue("critical-alert"), metrics,
+			servicemapCriteria(t, []string{"metric-b"}, "-", nullComponents), true,
+		},
+		{
+			"equals missing components", types.StringValue("critical-alert"), metrics,
+			servicemapCriteria(t, []string{"metric-a"}, "=", nullComponents), true,
+		},
+		{
+			"equals empty components", types.StringValue("critical-alert"), metrics,
+			servicemapCriteria(t, []string{"metric-a"}, "=", types.SetValueMust(types.StringType, nil)), true,
+		},
+		{
+			"dash components", types.StringValue("critical-alert"), metrics,
+			servicemapCriteria(t, []string{"metric-a"}, "-", components), true,
+		},
+		{
+			"bad operator", types.StringValue("critical-alert"), metrics,
+			servicemapCriteria(t, []string{"metric-a"}, ">", nullComponents), true,
+		},
+		{"any critical nonempty metrics", types.StringValue("any-critical-alert"), metrics, nullCriteria, true},
+		{"any critical omitted metrics", types.StringValue("any-critical-alert"), types.SetNull(types.StringType), nullCriteria, false},
+		{
+			"any critical empty metrics", types.StringValue("any-critical-alert"),
+			types.SetValueMust(types.StringType, nil), nullCriteria, false,
+		},
+		{
+			"availability criteria", types.StringValue("availability"), metrics,
+			servicemapCriteria(t, []string{"metric-a"}, "-", nullComponents), true,
+		},
+		{"unknown alert", types.StringUnknown(), metrics, types.SetUnknown(servicemapMetricCriterionType), false},
+		{"unknown criteria", types.StringValue("critical-alert"), metrics, types.SetUnknown(servicemapMetricCriterionType), false},
+		{
+			"unknown names", types.StringValue("critical-alert"), types.SetUnknown(types.StringType),
+			servicemapCriteria(t, []string{"metric-a"}, "-", nullComponents), false,
+		},
+		{
+			"unknown components", types.StringValue("critical-alert"), metrics,
+			servicemapCriteria(t, []string{"metric-a"}, "=", types.SetUnknown(types.StringType)), false,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			diags := validateServicemapMonitor(ctx, tc.alertType, tc.metrics, tc.criteria)
+			if diags.HasError() != tc.wantError {
+				t.Fatalf("validation errors = %v; want error %t", diags, tc.wantError)
 			}
+		})
+	}
+	model := ServicemapModel{
+		AlertType:      types.StringValue("critical-alert"),
+		Metrics:        []types.String{types.StringValue("metric-a")},
+		MetricCriteria: servicemapCriteria(t, []string{"metric-a"}, "=", components),
+	}
+	request, diags := translatePlanToModel(ctx, model)
+	if diags.HasError() {
+		t.Fatal(diags)
+	}
+	payload, err := json.Marshal(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var decoded client.CreateServicemap
+	if err := json.Unmarshal(payload, &decoded); err != nil {
+		t.Fatal(err)
+	}
+	criterion := decoded.ServiceAvailabilityMonitor.MetricCriteria[0]
+	if criterion.Operator != "=" || !reflect.DeepEqual(criterion.Components, []string{"ads"}) {
+		t.Fatalf("equals components not serialized: %s", payload)
+	}
+}
 
 func TestUnitServicemapImportState(t *testing.T) {
 	t.Parallel()
@@ -295,10 +327,12 @@ func TestUnitServicemapImportState(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet || req.URL.Path != "/api/v3/tenants/client-test/service-maps/service-test" {
 			http.Error(w, "unexpected request", http.StatusBadRequest)
+
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"id":"service-test","name":"test-service","nodeType":"SERVICE","availabilityThreshold":{"thresholdType":"count","thresholdLimit":1}}`)
+		fmt.Fprint(w, `{"id":"service-test","name":"test-service","nodeType":"SERVICE",`+
+			`"availabilityThreshold":{"thresholdType":"count","thresholdLimit":1}}`)
 	}))
 	defer server.Close()
 
@@ -319,7 +353,8 @@ func TestUnitServicemapImportState(t *testing.T) {
 	if diags := resp.State.Get(ctx, &state); diags.HasError() {
 		t.Fatal(diags)
 	}
-	if state.Id.ValueString() != "service-test" || !state.MetricCriteria.IsNull() || !state.MetricCriteria.ElementType(ctx).Equal(servicemapMetricCriterionType) {
+	if state.Id.ValueString() != "service-test" || !state.MetricCriteria.IsNull() ||
+		!state.MetricCriteria.ElementType(ctx).Equal(servicemapMetricCriterionType) {
 		t.Fatalf("unexpected imported state: %#v", state)
 	}
 }

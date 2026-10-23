@@ -327,7 +327,10 @@ func alertCorrelationPolicySchema(version int64, alertsTimeWindow schema.Attribu
 	}
 }
 
-func buildAlertCorrelationPolicyRequest(plan AlertCorrelationPolicyModel, apiClient *client.OpsRampClient) client.AlertCorrelationPolicy {
+func buildAlertCorrelationPolicyRequest(
+	plan AlertCorrelationPolicyModel,
+	apiClient *client.OpsRampClient,
+) client.AlertCorrelationPolicy {
 	policy := client.AlertCorrelationPolicy{
 		Name:             plan.Name.ValueString(),
 		EnabledMode:      plan.EnabledMode.ValueString(),

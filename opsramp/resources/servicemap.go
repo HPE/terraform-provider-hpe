@@ -29,9 +29,9 @@ import (
 
 // Ensure implementation satisfies the expected interfaces
 var (
-	_ resource.Resource                = &ServicemapResource{}
-	_ resource.ResourceWithImportState = &ServicemapResource{}
-	_ resource.ResourceWithModifyPlan  = &ServicemapResource{}
+	_ resource.Resource                   = &ServicemapResource{}
+	_ resource.ResourceWithImportState    = &ServicemapResource{}
+	_ resource.ResourceWithModifyPlan     = &ServicemapResource{}
 	_ resource.ResourceWithValidateConfig = &ServicemapResource{}
 )
 
@@ -107,26 +107,26 @@ func (r *ServicemapResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:            true,
 				ElementType:         types.StringType,
 				MarkdownDescription: "Required and non-empty for critical-alert; must match the metric_name values in metric_criteria. Must be empty or omitted for any-critical-alert.",
-				Validators: []validator.Set{setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1))},
+				Validators:          []validator.Set{setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1))},
 			},
 			"metric_criteria": schema.SetNestedAttribute{
-				Optional: true,
+				Optional:            true,
 				MarkdownDescription: "Required and non-empty for critical-alert; must be omitted for other alert types. Each metric must have exactly one criterion.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"metric_name": schema.StringAttribute{
-							Required: true,
+							Required:   true,
 							Validators: []validator.String{stringvalidator.LengthAtLeast(1)},
 						},
 						"operator": schema.StringAttribute{
-							Required: true,
+							Required:   true,
 							Validators: []validator.String{stringvalidator.OneOf("-", "=")},
 						},
 						"components": schema.SetAttribute{
-							Optional: true,
-							ElementType: types.StringType,
+							Optional:            true,
+							ElementType:         types.StringType,
 							MarkdownDescription: "Required and non-empty when operator is \"=\". Must be omitted when operator is \"-\".",
-							Validators: []validator.Set{setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1))},
+							Validators:          []validator.Set{setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1))},
 						},
 					},
 				},
@@ -173,6 +173,7 @@ func translatePlanToModel(ctx context.Context, plan ServicemapModel) (client.Cre
 	}
 
 	monitor, diags := buildServicemapAvailabilityMonitor(ctx, plan)
+
 	return client.CreateServicemap{
 		Name:                       plan.Name.ValueString(),
 		Type:                       plan.Type.ValueString(),
@@ -185,7 +186,10 @@ func translatePlanToModel(ctx context.Context, plan ServicemapModel) (client.Cre
 	}, diags
 }
 
-func buildServicemapAvailabilityMonitor(ctx context.Context, plan ServicemapModel) (*client.ServiceAvailabilityMonitor, diag.Diagnostics) {
+func buildServicemapAvailabilityMonitor(
+	ctx context.Context,
+	plan ServicemapModel,
+) (*client.ServiceAvailabilityMonitor, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	if plan.AlertType.IsNull() || plan.AlertType.ValueString() == "" {
 		return nil, diags
@@ -207,7 +211,7 @@ func buildServicemapAvailabilityMonitor(ctx context.Context, plan ServicemapMode
 		for _, criterion := range criteria {
 			entry := client.ServicemapMetricCriterion{
 				MetricName: criterion.MetricName.ValueString(),
-				Operator: criterion.Operator.ValueString(),
+				Operator:   criterion.Operator.ValueString(),
 			}
 			if entry.Operator == "=" {
 				diags.Append(criterion.Components.ElementsAs(ctx, &entry.Components, false)...)
@@ -344,7 +348,9 @@ func (r *ServicemapResource) Read(ctx context.Context, req resource.ReadRequest,
 	// response even though it was accepted on create/update, so treating that omission as "the
 	// monitor was removed remotely" would wipe out a still-valid configuration on every refresh.
 	if backendServicemap.ServiceAvailabilityMonitor != nil {
-		alertType, metrics, metricCriteria, monitorDiags := mapServiceAvailabilityMonitorToModel(backendServicemap.ServiceAvailabilityMonitor)
+		alertType, metrics, metricCriteria, monitorDiags := mapServiceAvailabilityMonitorToModel(
+			backendServicemap.ServiceAvailabilityMonitor,
+		)
 		resp.Diagnostics.Append(monitorDiags...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -518,7 +524,7 @@ func (r *ServicemapResource) ImportState(ctx context.Context, req resource.Impor
 var servicemapMetricCriterionType = types.ObjectType{AttrTypes: map[string]attr.Type{
 	"metric_name": types.StringType,
 	"operator":    types.StringType,
-	"components": types.SetType{ElemType: types.StringType},
+	"components":  types.SetType{ElemType: types.StringType},
 }}
 
 type ServicemapModel struct {
@@ -532,15 +538,15 @@ type ServicemapModel struct {
 	SearchQuery    types.String   `tfsdk:"search_query"`
 	AlertType      types.String   `tfsdk:"alert_type"`
 	Metrics        []types.String `tfsdk:"metrics"`
-	MetricCriteria types.Set `tfsdk:"metric_criteria"`
+	MetricCriteria types.Set      `tfsdk:"metric_criteria"`
 	ThresholdType  types.String   `tfsdk:"threshold_type"`
 	ThresholdLimit types.Int64    `tfsdk:"threshold_limit"`
 }
 
 type ServicemapMetricCriterionModel struct {
 	MetricName types.String `tfsdk:"metric_name"`
-	Operator types.String `tfsdk:"operator"`
-	Components types.Set `tfsdk:"components"`
+	Operator   types.String `tfsdk:"operator"`
+	Components types.Set    `tfsdk:"components"`
 }
 
 func servicemapMetricsSet(metrics []types.String) types.Set {
@@ -548,10 +554,15 @@ func servicemapMetricsSet(metrics []types.String) types.Set {
 	for i, metric := range metrics {
 		values[i] = metric
 	}
+
 	return types.SetValueMust(types.StringType, values)
 }
 
-func (r *ServicemapResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+func (r *ServicemapResource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
 	var alertType types.String
 	var metrics, criteria types.Set
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("alert_type"), &alertType)...)
@@ -569,11 +580,20 @@ func validateServicemapMonitor(ctx context.Context, alertType types.String, metr
 	}
 	if alertType.ValueString() != "critical-alert" {
 		if !criteria.IsNull() && !criteria.IsUnknown() {
-			diags.AddAttributeError(path.Root("metric_criteria"), "Unexpected Metric Criteria", "metric_criteria must be omitted unless alert_type is critical-alert.")
+			diags.AddAttributeError(
+				path.Root("metric_criteria"),
+				"Unexpected Metric Criteria",
+				"metric_criteria must be omitted unless alert_type is critical-alert.",
+			)
 		}
 		if alertType.ValueString() == "any-critical-alert" && !metrics.IsUnknown() && len(metrics.Elements()) > 0 {
-			diags.AddAttributeError(path.Root("metrics"), "Unexpected Metrics", "metrics must be empty or omitted when alert_type is any-critical-alert.")
+			diags.AddAttributeError(
+				path.Root("metrics"),
+				"Unexpected Metrics",
+				"metrics must be empty or omitted when alert_type is any-critical-alert.",
+			)
 		}
+
 		return diags
 	}
 	if !metrics.IsUnknown() && len(metrics.Elements()) == 0 {
@@ -583,7 +603,12 @@ func validateServicemapMonitor(ctx context.Context, alertType types.String, metr
 		return diags
 	}
 	if len(criteria.Elements()) == 0 {
-		diags.AddAttributeError(path.Root("metric_criteria"), "Missing Metric Criteria", "critical-alert requires a non-empty metric_criteria set.")
+		diags.AddAttributeError(
+			path.Root("metric_criteria"),
+			"Missing Metric Criteria",
+			"critical-alert requires a non-empty metric_criteria set.",
+		)
+
 		return diags
 	}
 	names := make(map[string]bool)
@@ -591,12 +616,18 @@ func validateServicemapMonitor(ctx context.Context, alertType types.String, metr
 	for _, element := range criteria.Elements() {
 		if element.IsUnknown() {
 			allNamesKnown = false
+
 			continue
 		}
 		var criterion ServicemapMetricCriterionModel
 		object, ok := element.(types.Object)
 		if !ok || object.IsNull() {
-			diags.AddAttributeError(path.Root("metric_criteria"), "Invalid Metric Criterion", "Each criterion must be an object with metric_name and operator.")
+			diags.AddAttributeError(
+				path.Root("metric_criteria"),
+				"Invalid Metric Criterion",
+				"Each criterion must be an object with metric_name and operator.",
+			)
+
 			continue
 		}
 		diags.Append(object.As(ctx, &criterion, basetypes.ObjectAsOptions{})...)
@@ -605,7 +636,11 @@ func validateServicemapMonitor(ctx context.Context, alertType types.String, metr
 		} else {
 			name := criterion.MetricName.ValueString()
 			if strings.TrimSpace(name) == "" || names[name] {
-				diags.AddAttributeError(path.Root("metric_criteria"), "Invalid Metric Name", "Each criterion must have a non-empty, unique metric_name.")
+				diags.AddAttributeError(
+					path.Root("metric_criteria"),
+					"Invalid Metric Name",
+					"Each criterion must have a non-empty, unique metric_name.",
+				)
 			}
 			names[name] = true
 		}
@@ -630,6 +665,7 @@ func validateServicemapMonitor(ctx context.Context, alertType types.String, metr
 		for _, element := range metrics.Elements() {
 			if element.IsUnknown() {
 				metricsKnown = false
+
 				continue
 			}
 			value, ok := element.(types.String)
@@ -638,9 +674,14 @@ func validateServicemapMonitor(ctx context.Context, alertType types.String, metr
 			}
 		}
 		if metricsKnown && !reflect.DeepEqual(names, metricNames) {
-			diags.AddAttributeError(path.Root("metric_criteria"), "Mismatched Metric Names", "metrics and metric_criteria must contain exactly the same metric names.")
+			diags.AddAttributeError(
+				path.Root("metric_criteria"),
+				"Mismatched Metric Names",
+				"metrics and metric_criteria must contain exactly the same metric names.",
+			)
 		}
 	}
+
 	return diags
 }
 

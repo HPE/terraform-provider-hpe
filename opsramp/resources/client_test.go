@@ -10,11 +10,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 )
 
 func TestUnitClientMonitoringAddons(t *testing.T) {
@@ -148,7 +149,12 @@ func TestUnitClientMonitoringLifecycle(t *testing.T) {
 		log     bool
 		trace   bool
 	}{
-		{"create both", []string{"Application Management", "Log Management", "Trace Management"}, []string{"Application Management"}, true, true},
+		{
+			"create both",
+			[]string{"Application Management", "Log Management", "Trace Management"},
+			[]string{"Application Management"},
+			true, true,
+		},
 		{"disable trace", []string{"Stream Exports", "Log Management"}, []string{"Stream Exports"}, true, false},
 		{"enable trace only", []string{"Trace Management"}, []string{}, false, true},
 		{"disable all", []string{}, []string{}, false, false},

@@ -279,12 +279,19 @@ resource "hpe_opsramp_alert_correlation_policy" "test_policy" {
 `, acctest.ProviderConfigHCL(), clientAttr, orgMatchingType, policyName)
 }
 
-func testAccAlertCorrelationPolicyAlgorithmConfig(policyName, clientOverride string, isMSPCreds bool, alertsTimeWindow string) string {
+func testAccAlertCorrelationPolicyAlgorithmConfig(
+	policyName, clientOverride string,
+	isMSPCreds bool,
+	alertsTimeWindow string,
+) string {
 	clientAttr := acctest.ClientAttrHCL(clientOverride)
 	orgMatchingType := ""
 	if isMSPCreds {
 		orgMatchingType = `  organization_matching_type = "ALL"`
 	}
+
+	filterQuery := `"metric STARTS WITH \"demo\" OR metric CONTAINS \"trace\" ` +
+		`OR metric CONTAINS \"Rate\" OR problemArea CONTAINS \"Log_Alert\""`
 
 	return fmt.Sprintf(`
 %s
@@ -304,11 +311,11 @@ resource "hpe_opsramp_alert_correlation_policy" "test_policy" {
       }
     ]
   }
-  filter_query      = "metric STARTS WITH \"demo\" OR metric CONTAINS \"trace\" OR metric CONTAINS \"Rate\" OR problemArea CONTAINS \"Log_Alert\""
+  filter_query      = %s
   inference_query   = ""
   inference_subject = "Multiple business alerts on $resource.name"
 }
-`, acctest.ProviderConfigHCL(), clientAttr, orgMatchingType, policyName, alertsTimeWindow)
+`, acctest.ProviderConfigHCL(), clientAttr, orgMatchingType, policyName, alertsTimeWindow, filterQuery)
 }
 
 func testAccEnsureAlertCorrelationPolicyExists(t *testing.T, resourceName string) resource.TestCheckFunc {

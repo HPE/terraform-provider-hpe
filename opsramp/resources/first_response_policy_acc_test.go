@@ -126,7 +126,10 @@ func testAccFirstResponsePolicySuppressConfig(name string, clientOverride string
 	organizationMatchingTypeAttribute := ""
 	if mspLevel {
 		if targetClient != "" {
-			organizationMatchingTypeAttribute = fmt.Sprintf("organization_matching_type = \"INCLUDE\"\n  included_clients = [\"%s\"]", targetClient)
+			organizationMatchingTypeAttribute = fmt.Sprintf(
+				"organization_matching_type = \"INCLUDE\"\n  included_clients = [\"%s\"]",
+				targetClient,
+			)
 		} else {
 			organizationMatchingTypeAttribute = "organization_matching_type = \"ALL\""
 		}

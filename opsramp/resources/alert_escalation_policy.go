@@ -121,7 +121,11 @@ func (r *AlertEscalationPolicyResource) Metadata(_ context.Context, req resource
 
 // ModifyPlan enforces the shared "client" attribute check plus organization_matching_type /
 // included_clients scope rules.
-func (r *AlertEscalationPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *AlertEscalationPolicyResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
 	r.BaseResource.ModifyPlan(ctx, req, resp)
 	r.ValidateOrganizationMatchingSet(ctx, req, resp)
 }

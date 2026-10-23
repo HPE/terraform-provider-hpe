@@ -54,7 +54,11 @@ func (r *AlertPredictionPolicyResource) Metadata(_ context.Context, req resource
 
 // ModifyPlan enforces the shared "client" attribute check plus organization_matching_type /
 // included_clients scope rules.
-func (r *AlertPredictionPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *AlertPredictionPolicyResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
 	r.BaseResource.ModifyPlan(ctx, req, resp)
 	r.ValidateOrganizationMatching(ctx, req, resp)
 }
@@ -141,7 +145,10 @@ func (r *AlertPredictionPolicyResource) Schema(_ context.Context, _ resource.Sch
 	}
 }
 
-func buildAlertPredictionPolicyRequest(plan AlertPredictionPolicyModel, apiClient *client.OpsRampClient) client.AlertPredictionPolicy {
+func buildAlertPredictionPolicyRequest(
+	plan AlertPredictionPolicyModel,
+	apiClient *client.OpsRampClient,
+) client.AlertPredictionPolicy {
 	policy := client.AlertPredictionPolicy{
 		Name:                 plan.Name.ValueString(),
 		EnabledMode:          plan.EnabledMode.ValueString(),
