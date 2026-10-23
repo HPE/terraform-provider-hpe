@@ -1,6 +1,6 @@
 module github.com/HPE/terraform-provider-hpe
 
-go 1.26.0
+go 1.26.10
 
 require (
 	github.com/cenkalti/backoff/v5 v5.0.3
