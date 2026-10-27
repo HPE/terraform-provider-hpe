@@ -11,6 +11,8 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	hpeErrors "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/provisionhint"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -269,10 +271,23 @@ func datastoreCreateDatastore(ctx context.Context,
 
 	response, hresp, err := client.DatastoresAPI.SaveDatastore(ctx).SaveDatastoreRequest(*datastoreRequest).Execute()
 	if response == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"create datastore resource",
-			"datastore "+name+" POST failed: "+hpeErrors.ErrMsg(err, hresp),
-		)
+		// When the storage plugin rejects the create because resource_pool.id
+		// or storage_server.id named a record that does not exist, Morpheus
+		// reports it as "zonePool.id: Required fields are missing" — which
+		// reads as the attribute being unset. Say which ids would have been
+		// accepted; any failure to explain leaves the API's error as it is.
+		body := provisionhint.ErrorBody(err, hresp)
+		msg := "datastore " + name + " POST failed: " + hpeErrors.ErrMsg(err, hresp)
+
+		if hint := provisionhint.DatastoreRejection(ctx, client, body, provisionhint.DatastoreRequest{
+			CloudID:         associatedResourceId,
+			PoolID:          getsafe.Get(getsafe.Get(datastoreCreate.ZonePool).Id),
+			StorageServerID: getsafe.Get(getsafe.Get(datastoreCreate.StorageServer).Id),
+		}); hint != "" {
+			msg += "\n\n" + hint
+		}
+
+		resp.Diagnostics.AddError("create datastore resource", msg)
 
 		return 0
 	}

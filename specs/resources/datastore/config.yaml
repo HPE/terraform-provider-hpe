@@ -80,9 +80,16 @@ datastore:
       description: The Cloud this datastore is associated with
       computed_optional_required: computed
     resource_pool:
-      description: The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores.
+      description: The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores, which are created in a resource pool of the associated cloud.
       computed_optional_required: computed_optional
     resource_pool.id:
+      description: The ID of a resource pool of the associated cloud. GET /api/clouds/{associated_resource_id}/resource-pools lists them, and the hpe_morpheus_option_source_value data source (source zonePools) resolves one by name; an id that names no resource pool is rejected by Morpheus as 'zonePool.id - Required fields are missing'.
+      computed_optional_required: computed_optional
+    storage_server:
+      description: The storage server the datastore is backed by. Required for Cluster datastores and for HPE Alletra MP Bare Metal (BMaaS) datastores.
+      computed_optional_required: computed_optional
+    storage_server.id:
+      description: The ID of the storage server. The hpe_morpheus_storage_server data source resolves one by name.
       computed_optional_required: computed_optional
     resource_permissions:
       computed_optional_required: optional

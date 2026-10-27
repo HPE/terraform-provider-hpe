@@ -28,6 +28,13 @@ func TestUnitValidateBmaasConfig(t *testing.T) {
 	storageServerNoID := StorageServerValue{Id: types.Int64Null(), state: attr.ValueStateKnown}
 	resourcePoolNoID := ResourcePoolValue{Id: types.Int64Null(), state: attr.ValueStateKnown}
 
+	// Ids resolved by data sources are unknown during `terraform validate` (and
+	// in a plan that depends on another change). Unknown is not missing: the
+	// check must let these through, or no configuration that resolves its
+	// storage server or pool by name could ever validate.
+	storageServerUnknownID := StorageServerValue{Id: types.Int64Unknown(), state: attr.ValueStateKnown}
+	resourcePoolUnknownID := ResourcePoolValue{Id: types.Int64Unknown(), state: attr.ValueStateKnown}
+
 	tests := []struct {
 		name         string
 		model        DatastoreModel
@@ -87,6 +94,26 @@ func TestUnitValidateBmaasConfig(t *testing.T) {
 				AssociatedResourceType: types.StringValue(associatedResourceTypeCloud),
 			},
 			wantErrCount: 1,
+		},
+		{
+			name: "unknown ids (resolved by data sources) are not missing",
+			model: DatastoreModel{
+				ConfigAlletrampBmaas:   bmaasSet,
+				StorageServer:          storageServerUnknownID,
+				ResourcePool:           resourcePoolUnknownID,
+				AssociatedResourceType: types.StringValue(associatedResourceTypeCloud),
+			},
+			wantErrCount: 0,
+		},
+		{
+			name: "unknown blocks are not missing",
+			model: DatastoreModel{
+				ConfigAlletrampBmaas:   bmaasSet,
+				StorageServer:          NewStorageServerValueUnknown(),
+				ResourcePool:           NewResourcePoolValueUnknown(),
+				AssociatedResourceType: types.StringValue(associatedResourceTypeCloud),
+			},
+			wantErrCount: 0,
 		},
 		{
 			name: "cluster scope is rejected",

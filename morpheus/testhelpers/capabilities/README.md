@@ -112,6 +112,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | Capability | Env Value | Description |
 |------------|-----------|-------------|
 | `Alletra` | `alletra` | HPE Alletra storage |
+| `Metal` | `metal` | HPE Bare Metal cloud (iLO/Redfish servers). Gates the bare-metal instance-node tests and, paired with `alletra`, the HPE Alletra MP Bare Metal (BMaaS) datastore test, which reads its cloud, storage server, resource pool, group and tenant from the `TF_VAR_testacc_morpheus_metal_*` fixture below and skips when one is unset |
 | `VDI` | `vdi` | VDI pools/apps/gateways |
 
 ### Identity / Platform
@@ -274,6 +275,11 @@ Exit codes:
 | `TF_VAR_testacc_morpheus_hvm_no_agent` | `true` to provision the test VMs without the Morpheus agent (default: with it). Without the agent Morpheus SSHes from the appliance into the guest to report its address and apply environment variables, so set this only where the appliance can reach the test VMs |
 | `TF_VAR_testacc_morpheus_hvm_other_cluster_name` | A second HVM cluster in the same cloud, for the wrong-pool test (an instance targeting one cluster's pool with a network of the other's) |
 | `TF_VAR_testacc_morpheus_hvm_poolless_network_name` | A network of the HVM cloud that belongs to no resource pool (a docker bridge, say), for the test that lists the networks Morpheus would accept instead |
+| `TF_VAR_testacc_morpheus_metal_cloud_name` | Name of an HPE Bare Metal cloud. The bare-metal fixture (`testhelpers/metal_fixture.go`) for the `metal` + `alletra` BMaaS datastore test: like the HVM fixture, everything is resolved **by name** by data sources inside the test configuration -- never by id. The test skips when a variable it needs is unset |
+| `TF_VAR_testacc_morpheus_metal_storage_server_name` | Name of an HPE Alletra MP storage server (type `alletra-mp`) reachable from that cloud. The storage plugin refuses a second *online* BMaaS datastore for the same cloud, storage server and protocol, so the cloud must not already have an iSCSI BMaaS datastore on this server |
+| `TF_VAR_testacc_morpheus_metal_pool_name` | Name of a resource pool of that cloud, as listed by `GET /api/clouds/<cloud>/resource-pools` -- `Default`, the pool an HPE Bare Metal cloud creates on initialisation, unless another was added. Resolved through the `zonePools` option source (`hpe_morpheus_option_source_value`), since there is no resource-pool data source. BMaaS datastores are created in a pool of their cloud; an id that names no pool is rejected by Morpheus as `zonePool.id: Required fields are missing` |
+| `TF_VAR_testacc_morpheus_metal_group_name` | Name of a group to grant access to the test datastore |
+| `TF_VAR_testacc_morpheus_metal_tenant_name` | Name of a tenant to share the test datastore with |
 | `TF_VAR_testacc_pce_identity_client_id` | GreenLake API client ID. Required by the `pce` test |
 | `TF_VAR_testacc_pce_identity_client_secret` | GreenLake API client secret. Required by the `pce` test |
 | `TF_VAR_testacc_pce_identity_issuer_url` | GreenLake IAM issuer URL used to mint access tokens. Required by the `pce` test |

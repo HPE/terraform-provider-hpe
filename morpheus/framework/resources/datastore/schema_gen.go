@@ -391,8 +391,10 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 			"resource_pool": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
-						Optional: true,
-						Computed: true,
+						Optional:            true,
+						Computed:            true,
+						Description:         "The ID of a resource pool of the associated cloud. GET /api/clouds/{associated_resource_id}/resource-pools lists them, and the hpe_morpheus_option_source_value data source (source zonePools) resolves one by name; an id that names no resource pool is rejected by Morpheus as 'zonePool.id - Required fields are missing'.",
+						MarkdownDescription: "The ID of a resource pool of the associated cloud. GET /api/clouds/{associated_resource_id}/resource-pools lists them, and the hpe_morpheus_option_source_value data source (source zonePools) resolves one by name; an id that names no resource pool is rejected by Morpheus as 'zonePool.id - Required fields are missing'.",
 					},
 				},
 				CustomType: ResourcePoolType{
@@ -402,8 +404,8 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Optional:            true,
 				Computed:            true,
-				Description:         "The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores.",
-				MarkdownDescription: "The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores.",
+				Description:         "The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores, which are created in a resource pool of the associated cloud.",
+				MarkdownDescription: "The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores, which are created in a resource pool of the associated cloud.",
 			},
 			"status": schema.StringAttribute{
 				Computed:            true,
@@ -418,8 +420,10 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 			"storage_server": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
-						Optional: true,
-						Computed: true,
+						Optional:            true,
+						Computed:            true,
+						Description:         "The ID of the storage server. The hpe_morpheus_storage_server data source resolves one by name.",
+						MarkdownDescription: "The ID of the storage server. The hpe_morpheus_storage_server data source resolves one by name.",
 					},
 				},
 				CustomType: StorageServerType{
@@ -427,8 +431,10 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 						AttrTypes: StorageServerValue{}.AttributeTypes(ctx),
 					},
 				},
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				Description:         "The storage server the datastore is backed by. Required for Cluster datastores and for HPE Alletra MP Bare Metal (BMaaS) datastores.",
+				MarkdownDescription: "The storage server the datastore is backed by. Required for Cluster datastores and for HPE Alletra MP Bare Metal (BMaaS) datastores.",
 			},
 			"storage_size": schema.Int64Attribute{
 				Computed: true,
