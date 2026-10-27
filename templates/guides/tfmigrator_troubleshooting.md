@@ -173,3 +173,11 @@ tags = [
 ```
 
 If the original configuration used title-cased or additional tag names, do not assume those values will remain valid after migration. Reconcile the final tag set against what Morpheus accepts for that environment.
+
+---
+
+## General Issues
+
+### Suppressing the version-availability notice
+
+In air-gapped or egress-restricted environments `tfmigrator` cannot reach GitHub to check for a newer release, and prints an advisory notice at the end of its output. The notice is harmless and never affects the migration, but to suppress it set `HPE_IGNORE_VERSION_CHECK` in your environment before running `tfmigrator`.
