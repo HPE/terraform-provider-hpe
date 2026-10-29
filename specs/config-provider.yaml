@@ -1277,6 +1277,18 @@ resources:
     delete:
       path: /api/vdi-pools/{id}
       method: DELETE
+  # The appliance's settings: one object that always exists. The API has no
+  # DELETE for it, and create and update are the same PUT.
+  setting_appliance:
+    create:
+      path: /api/appliance-settings
+      method: PUT
+    read:
+      path: /api/appliance-settings
+      method: GET
+    update:
+      path: /api/appliance-settings
+      method: PUT
   setting_whitelabel:
     create:
       path: /api/whitelabel-settings
