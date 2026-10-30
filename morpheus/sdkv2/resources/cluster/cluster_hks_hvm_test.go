@@ -13,13 +13,27 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/skip"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
+// TestAccMorpheusClusterHKSHVMExampleOk provisions a whole HKS cluster -- one master
+// and three workers on 8 GB plans -- from the example's QA-appliance ids (cloud 1,
+// layout 132, plan 23, pool 1, network 1, datastores 2 and 9). That is more than an
+// appliance that merely has a usable Kubernetes cluster (the kubernetes_cluster
+// capability, which the namespace tests need) can be assumed to afford, and the ids
+// exist nowhere else, so the test is opt-in like the other cluster-building tests:
+// set RUN_SKIPPED_BY_DEFAULT to run it.
 func TestAccMorpheusClusterHKSHVMExampleOk(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-
 	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.KubernetesCluster)
+
+	if skip.SkipByDefault(t) {
+		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
+
+		return
+	}
+
+	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
