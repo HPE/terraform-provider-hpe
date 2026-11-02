@@ -63,7 +63,7 @@ func TestAccMorpheusResourcePoolGroupExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_resource_pool_group.example",
 			"mode",
-			"roundRobin",
+			"roundrobin",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_resource_pool_group.example",
@@ -127,6 +127,97 @@ func TestAccMorpheusResourcePoolGroupExampleOk(t *testing.T) {
 				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+// resourcePoolGroupTenantConfig renders a minimal resource pool group with
+// tenant_ids rendered verbatim from tenantIDs, or omitted when it is empty.
+func resourcePoolGroupTenantConfig(name, tenantIDs string) string {
+	tenantLine := ""
+	if tenantIDs != "" {
+		tenantLine = "\n  tenant_ids        = " + tenantIDs
+	}
+
+	return `
+resource "hpe_morpheus_resource_pool_group" "test" {
+  name              = "` + name + `"
+  mode              = "roundrobin"
+  resource_pool_ids = [1]` + tenantLine + `
+}
+`
+}
+
+// TestAccMorpheusResourcePoolGroupTenantIdsOk reproduces MORPH-8207: the API
+// always reports the owning tenant in tenants, so a config that does not set
+// tenant_ids used to plan "- <owner>" forever after apply. The owner must be
+// absent from state unless listed explicitly, in which case it is kept, and
+// import must agree with the applied state.
+func TestAccMorpheusResourcePoolGroupTenantIdsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.ResourcePool)
+
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	const addr = "hpe_morpheus_resource_pool_group.test"
+
+	unsetConfig := providerConfig + dependenciesConfig + resourcePoolGroupTenantConfig(name, "")
+	ownerConfig := providerConfig + dependenciesConfig +
+		resourcePoolGroupTenantConfig(name, "["+testhelpers.WhoamiTenantIDRef+"]")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			// tenant_ids unset: the injected owner must not reach state.
+			{
+				Config: unsetConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "name", name),
+					resource.TestCheckResourceAttr(addr, "mode", "roundrobin"),
+					resource.TestCheckResourceAttr(addr, "tenant_ids.#", "0"),
+				),
+			},
+			{
+				Config:   unsetConfig,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      addr,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Listing the owning tenant explicitly keeps it in state.
+			{
+				Config: ownerConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "tenant_ids.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						addr, "tenant_ids.0",
+						"data.hpe_morpheus_whoami.current", "tenant_id",
+					),
+				),
+			},
+			{
+				Config:   ownerConfig,
+				PlanOnly: true,
+			},
+			// Unsetting it again clears the state without re-planning the owner.
+			{
+				Config: unsetConfig,
+				Check:  resource.TestCheckResourceAttr(addr, "tenant_ids.#", "0"),
+			},
+			{
+				Config:   unsetConfig,
+				PlanOnly: true,
 			},
 		},
 	})
