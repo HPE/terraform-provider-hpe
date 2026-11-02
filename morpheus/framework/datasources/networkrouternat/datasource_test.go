@@ -215,9 +215,11 @@ func natChecks() []resource.TestCheckFunc {
 		resource.TestCheckResourceAttrSet(ds, "id"),
 		resource.TestCheckResourceAttrSet(ds, "router_id"),
 		resource.TestCheckResourceAttrSet(ds, "name"),
-		// action is a create-only input that the NAT read API does not return,
-		// so the data source cannot populate it. Follow-up: revisit whether
-		// action/firewall should remain in the data source schema.
 		resource.TestCheckResourceAttrSet(ds, "enabled"),
+		// action and firewall are deprecated (MORPH-14596): the NAT read API
+		// does not return them, so the data source leaves them null until
+		// their removal in 2.6.
+		resource.TestCheckNoResourceAttr(ds, "action"),
+		resource.TestCheckNoResourceAttr(ds, "firewall"),
 	}
 }

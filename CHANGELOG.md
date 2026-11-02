@@ -18,6 +18,13 @@ surgery is needed.
 that set `organization_matching_type = "EXCLUDE"` must be changed to scope the policy with `ALL` or
 with `INCLUDE` and an explicit `included_clients` list.
 
+## Deprecations
+
+- `hpe_morpheus_network_router_nat` data source: `action` and `firewall` are deprecated and scheduled
+  for removal in **2.6** (MORPH-14596). The Morpheus NAT read API does not return either value, so
+  they have always been null; a configuration that references them now gets a deprecation warning.
+  The `hpe_morpheus_network_router_nat` resource is unaffected — it already treats both as write-only.
+
 # v2.2.0 Release Notes
 
 ## Support

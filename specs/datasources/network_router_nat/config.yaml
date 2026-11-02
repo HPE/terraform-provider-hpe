@@ -15,7 +15,10 @@ network_router_nat:
       computed_optional_required: required
       description: The ID of the parent network router.
     action:
-      description: The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
+      description: |-
+        Deprecated. Always null: the Morpheus API does not return a NAT rule's action (SNAT, DNAT, REFLEXIVE)
+        when it is read, so this attribute is never populated. It will be removed in the 2.6 release.
+      deprecation_message: "Always null: the Morpheus API does not return a NAT rule's action when it is read. This attribute will be removed in the 2.6 release."
     date_created:
       description: The date the NAT rule was created.
     description:
@@ -28,6 +31,11 @@ network_router_nat:
       description: Whether the NAT rule is enabled.
     external_id:
       description: The external ID of the NAT rule.
+    firewall:
+      description: |-
+        Deprecated. Always null: the Morpheus API does not return the firewall match applied to a NAT rule
+        when it is read, so this attribute is never populated. It will be removed in the 2.6 release.
+      deprecation_message: "Always null: the Morpheus API does not return the firewall match applied to a NAT rule when it is read. This attribute will be removed in the 2.6 release."
     internal_id:
       description: The internal ID of the NAT rule.
     last_updated:
