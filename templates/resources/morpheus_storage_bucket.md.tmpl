@@ -12,6 +12,22 @@ description: |-
 
 {{ tffile "examples/resources/morpheus_storage_bucket/example.tf" }}
 
+### Local storage
+
+A `local` bucket is a directory on the appliance itself, named by `base_path`; it is the
+one storage type a fresh appliance can have without any external service, and the one
+virtual images fetched by URL need (`default_virtual_image_target`). Local storage is
+available to the master tenant only. Morpheus names the bucket `.` itself, so
+`bucket_name` is left out; a change to `base_path` is applied in place and does not move
+the files already stored under the previous path.
+
+`default_virtual_image_target` is only sent when it is configured. Left out, a bucket keeps
+whatever it has, so a bucket that was made the default image store outside Terraform -- or
+before this attribute existed -- is not changed by an apply; set it to `false` to take the
+default away explicitly.
+
+{{ tffile "examples/resources/morpheus_storage_bucket/example_local.tf" }}
+
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import

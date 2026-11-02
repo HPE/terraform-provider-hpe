@@ -43,6 +43,14 @@ storage_bucket:
       string:
         computed_optional_required: optional
         description: The endpoint URL.
+    base_path:
+      string:
+        computed_optional_required: optional
+        description: |-
+          The directory on the appliance a `local` bucket stores into (Morpheus `config.basePath`).
+          Required when `provider_type` is `local` and not accepted for any other type. Local storage
+          is available to the master tenant only. A change is applied in place: Morpheus updates the
+          record and does not move the files already stored under the previous path.
     retention_days:
       int64:
         computed_optional_required: optional
@@ -66,6 +74,7 @@ storage_bucket:
     - template-secret_key_version: secret_key_version
     - template-write_only_revision: write_only_revision
     - template-endpoint: endpoint
+    - template-base_path: base_path
     - template-retention_days: retention_days
   removes:
     - account_id
@@ -74,7 +83,6 @@ storage_bucket:
     - copy_to_store
     - create_bucket
     - default_deployment_target
-    - default_virtual_image_target
     - read_only
     - retention_policy_days
     - retention_policy_type
@@ -91,12 +99,30 @@ storage_bucket:
       computed_optional_required: optional
       description: Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
     bucket_name:
-      computed_optional_required: optional
-      description: The name of the bucket.
+      computed_optional_required: computed_optional
+      description: |-
+        The name of the bucket. Applies to Amazon, Azure, CIFS, NFSv3, Openstack Swift and Rackspace CDN;
+        Morpheus sets it for `local` (`.`) and, when unset, `nfs` (`/`), so it can be left out for those
+        and takes the appliance's value.
+      state_for_unknown: true
     default_backup_target:
       computed_optional_required: computed_optional
       description: Whether this is the default backup target.
       default: false
+    default_virtual_image_target:
+      computed_optional_required: computed_optional
+      description: |-
+        Whether this is the default store for virtual images Morpheus fetches by URL (the first bucket
+        an appliance needs: it ships with none). Setting it on one bucket clears it on every other
+        bucket of the account. Left unset, the bucket keeps whatever it has: a bucket made the default
+        outside Terraform stays the default. Set it to `false` to take the default away explicitly.
+      # The spec's request body carries default: false. A schema default would plan
+      # false for a bucket that is the default and is managed without the attribute
+      # -- one made the default elsewhere, or managed from before the attribute
+      # existed -- and the update would then take the appliance's default image
+      # store away. Unset means "leave it": the state value carries over.
+      remove_default: true
+      state_for_unknown: true
     endpoint:
       computed_optional_required: optional
       description: The endpoint URL for the storage bucket.

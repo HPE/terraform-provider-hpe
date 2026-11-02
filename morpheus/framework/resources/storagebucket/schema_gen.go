@@ -8,8 +8,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -35,10 +37,19 @@ func StorageBucketResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
 				DeprecationMessage:  "No longer needed: changes to access_key are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
+			"base_path": schema.StringAttribute{
+				Optional:            true,
+				Description:         "The directory on the appliance a `local` bucket stores into (Morpheus `config.basePath`).\nRequired when `provider_type` is `local` and not accepted for any other type. Local storage\nis available to the master tenant only. A change is applied in place: Morpheus updates the\nrecord and does not move the files already stored under the previous path.",
+				MarkdownDescription: "The directory on the appliance a `local` bucket stores into (Morpheus `config.basePath`).\nRequired when `provider_type` is `local` and not accepted for any other type. Local storage\nis available to the master tenant only. A change is applied in place: Morpheus updates the\nrecord and does not move the files already stored under the previous path.",
+			},
 			"bucket_name": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The name of the bucket.",
-				MarkdownDescription: "The name of the bucket.",
+				Computed:            true,
+				Description:         "The name of the bucket. Applies to Amazon, Azure, CIFS, NFSv3, Openstack Swift and Rackspace CDN;\nMorpheus sets it for `local` (`.`) and, when unset, `nfs` (`/`), so it can be left out for those\nand takes the appliance's value.",
+				MarkdownDescription: "The name of the bucket. Applies to Amazon, Azure, CIFS, NFSv3, Openstack Swift and Rackspace CDN;\nMorpheus sets it for `local` (`.`) and, when unset, `nfs` (`/`), so it can be left out for those\nand takes the appliance's value.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"default_backup_target": schema.BoolAttribute{
 				Optional:            true,
@@ -46,6 +57,15 @@ func StorageBucketResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Whether this is the default backup target.",
 				MarkdownDescription: "Whether this is the default backup target.",
 				Default:             booldefault.StaticBool(false),
+			},
+			"default_virtual_image_target": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Whether this is the default store for virtual images Morpheus fetches by URL (the first bucket\nan appliance needs: it ships with none). Setting it on one bucket clears it on every other\nbucket of the account. Left unset, the bucket keeps whatever it has: a bucket made the default\noutside Terraform stays the default. Set it to `false` to take the default away explicitly.",
+				MarkdownDescription: "Whether this is the default store for virtual images Morpheus fetches by URL (the first bucket\nan appliance needs: it ships with none). Setting it on one bucket clears it on every other\nbucket of the account. Left unset, the bucket keeps whatever it has: a bucket made the default\noutside Terraform stays the default. Set it to `false` to take the default away explicitly.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"endpoint": schema.StringAttribute{
 				Optional:            true,
@@ -117,16 +137,18 @@ func StorageBucketResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type StorageBucketModel struct {
-	AccessKey           types.String `tfsdk:"access_key"`
-	AccessKeyVersion    types.Int64  `tfsdk:"access_key_version"`
-	BucketName          types.String `tfsdk:"bucket_name"`
-	DefaultBackupTarget types.Bool   `tfsdk:"default_backup_target"`
-	Endpoint            types.String `tfsdk:"endpoint"`
-	Id                  types.Int64  `tfsdk:"id"`
-	Name                types.String `tfsdk:"name"`
-	ProviderType        types.String `tfsdk:"provider_type"`
-	RetentionDays       types.Int64  `tfsdk:"retention_days"`
-	SecretKey           types.String `tfsdk:"secret_key"`
-	SecretKeyVersion    types.Int64  `tfsdk:"secret_key_version"`
-	WriteOnlyRevision   types.Int64  `tfsdk:"write_only_revision"`
+	AccessKey                 types.String `tfsdk:"access_key"`
+	AccessKeyVersion          types.Int64  `tfsdk:"access_key_version"`
+	BasePath                  types.String `tfsdk:"base_path"`
+	BucketName                types.String `tfsdk:"bucket_name"`
+	DefaultBackupTarget       types.Bool   `tfsdk:"default_backup_target"`
+	DefaultVirtualImageTarget types.Bool   `tfsdk:"default_virtual_image_target"`
+	Endpoint                  types.String `tfsdk:"endpoint"`
+	Id                        types.Int64  `tfsdk:"id"`
+	Name                      types.String `tfsdk:"name"`
+	ProviderType              types.String `tfsdk:"provider_type"`
+	RetentionDays             types.Int64  `tfsdk:"retention_days"`
+	SecretKey                 types.String `tfsdk:"secret_key"`
+	SecretKeyVersion          types.Int64  `tfsdk:"secret_key_version"`
+	WriteOnlyRevision         types.Int64  `tfsdk:"write_only_revision"`
 }

@@ -69,13 +69,45 @@ func bucketConfigFields(endpoint, accessKey, secretKey types.String) (ak, sk, ep
 	return ak, sk, ep
 }
 
-// addBucketConfig builds the create request's config object.
+// providerTypeLocal is the provider type of a bucket on the appliance's own
+// disk. Its config is a directory (basePath) rather than credentials, and
+// Morpheus sets its bucketName to "." itself.
+const providerTypeLocal = "local"
+
+// isLocal reports whether the configured provider type is the local one. The
+// value is required, so it is known at plan time.
+func isLocal(providerType types.String) bool {
+	return !providerType.IsNull() && !providerType.IsUnknown() && providerType.ValueString() == providerTypeLocal
+}
+
+// knownBasePath returns the configured base_path, or nil when it is unset.
+func knownBasePath(basePath types.String) *string {
+	if basePath.IsNull() || basePath.IsUnknown() {
+		return nil
+	}
+
+	return basePath.ValueStringPointer()
+}
+
+// addBucketConfig builds the create request's config object for the provider
+// type: the local variant carries basePath, every other type the S3-shaped
+// credentials and endpoint.
 //
 // The oneOf wrapper's generated MarshalJSON returns (nil, nil) when no variant
 // is set -- which encoding/json rejects with "unexpected end of JSON input". A
 // variant must therefore always be selected, even when every field inside it is
 // empty, so that config is always sent as an object.
-func addBucketConfig(endpoint, accessKey, secretKey types.String) *sdk.AddStorageBucketsRequestStorageBucketConfig {
+func addBucketConfig(
+	providerType, basePath, endpoint, accessKey, secretKey types.String,
+) *sdk.AddStorageBucketsRequestStorageBucketConfig {
+	if isLocal(providerType) {
+		return &sdk.AddStorageBucketsRequestStorageBucketConfig{
+			AddStorageBucketsRequestStorageBucketConfigOneOf3: &sdk.AddStorageBucketsRequestStorageBucketConfigOneOf3{
+				BasePath: knownBasePath(basePath),
+			},
+		}
+	}
+
 	ak, sk, ep := bucketConfigFields(endpoint, accessKey, secretKey)
 
 	return &sdk.AddStorageBucketsRequestStorageBucketConfig{
@@ -83,6 +115,30 @@ func addBucketConfig(endpoint, accessKey, secretKey types.String) *sdk.AddStorag
 			AccessKey: ak,
 			SecretKey: sk,
 			Endpoint:  ep,
+		},
+	}
+}
+
+// updateBucketConfig builds the update request's config object, by provider
+// type as addBucketConfig does. The credentials are passed in already resolved
+// (nil when they are not being re-sent).
+func updateBucketConfig(
+	providerType, basePath types.String,
+	accessKey, secretKey, endpoint *string,
+) *sdk.UpdateStorageBucketsRequestStorageBucketConfig {
+	if isLocal(providerType) {
+		return &sdk.UpdateStorageBucketsRequestStorageBucketConfig{
+			UpdateStorageBucketsRequestStorageBucketConfigOneOf3: &sdk.UpdateStorageBucketsRequestStorageBucketConfigOneOf3{
+				BasePath: knownBasePath(basePath),
+			},
+		}
+	}
+
+	return &sdk.UpdateStorageBucketsRequestStorageBucketConfig{
+		UpdateStorageBucketsRequestStorageBucketConfigOneOf: &sdk.UpdateStorageBucketsRequestStorageBucketConfigOneOf{
+			AccessKey: accessKey,
+			SecretKey: secretKey,
+			Endpoint:  endpoint,
 		},
 	}
 }
@@ -112,13 +168,22 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 	body := sdk.AddStorageBucketsRequestStorageBucket{
 		Name:         plan.Name.ValueString(),
 		ProviderType: plan.ProviderType.ValueString(),
-		Config:       addBucketConfig(plan.Endpoint, config.AccessKey, config.SecretKey),
+		Config:       addBucketConfig(plan.ProviderType, plan.BasePath, plan.Endpoint, config.AccessKey, config.SecretKey),
 	}
-	if !plan.BucketName.IsNull() {
+	// bucket_name is computed when unset: Morpheus names a local bucket "." and
+	// an nfs one "/" itself.
+	if !plan.BucketName.IsNull() && !plan.BucketName.IsUnknown() {
 		body.BucketName = plan.BucketName.ValueStringPointer()
 	}
 	if !plan.DefaultBackupTarget.IsNull() {
 		body.DefaultBackupTarget = plan.DefaultBackupTarget.ValueBoolPointer()
+	}
+	// default_virtual_image_target has no default: unset, it is unknown on
+	// create and carries the state value on update, so a bucket that is the
+	// default stays so. Unknown is skipped explicitly -- an unknown bool's
+	// pointer is to false, which would take the default away.
+	if !plan.DefaultVirtualImageTarget.IsNull() && !plan.DefaultVirtualImageTarget.IsUnknown() {
+		body.DefaultVirtualImageTarget = plan.DefaultVirtualImageTarget.ValueBoolPointer()
 	}
 	if !plan.RetentionDays.IsNull() {
 		body.RetentionPolicyDays = plan.RetentionDays.ValueInt64Pointer()
@@ -260,19 +325,20 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 	body := sdk.UpdateStorageBucketsRequestStorageBucket{
 		Name:         plan.Name.ValueStringPointer(),
 		ProviderType: plan.ProviderType.ValueStringPointer(),
-		Config: &sdk.UpdateStorageBucketsRequestStorageBucketConfig{
-			UpdateStorageBucketsRequestStorageBucketConfigOneOf: &sdk.UpdateStorageBucketsRequestStorageBucketConfigOneOf{
-				AccessKey: accessKey,
-				SecretKey: secretKey,
-				Endpoint:  endpoint,
-			},
-		},
+		Config:       updateBucketConfig(plan.ProviderType, plan.BasePath, accessKey, secretKey, endpoint),
 	}
-	if !plan.BucketName.IsNull() {
+	if !plan.BucketName.IsNull() && !plan.BucketName.IsUnknown() {
 		body.BucketName = plan.BucketName.ValueStringPointer()
 	}
 	if !plan.DefaultBackupTarget.IsNull() {
 		body.DefaultBackupTarget = plan.DefaultBackupTarget.ValueBoolPointer()
+	}
+	// default_virtual_image_target has no default: unset, it is unknown on
+	// create and carries the state value on update, so a bucket that is the
+	// default stays so. Unknown is skipped explicitly -- an unknown bool's
+	// pointer is to false, which would take the default away.
+	if !plan.DefaultVirtualImageTarget.IsNull() && !plan.DefaultVirtualImageTarget.IsUnknown() {
+		body.DefaultVirtualImageTarget = plan.DefaultVirtualImageTarget.ValueBoolPointer()
 	}
 	sent := clearable.NullableInt64(pending, "retention_days", plan.RetentionDays, &body.RetentionPolicyDays)
 	if sent && !plan.RetentionDays.IsNull() {
@@ -378,4 +444,24 @@ func mapGetResponseToModel(model *StorageBucketModel, sb *sdk.GetStorageBuckets2
 	if sb.DefaultBackupTarget != nil {
 		model.DefaultBackupTarget = types.BoolValue(*sb.DefaultBackupTarget)
 	}
+	if sb.DefaultVirtualImageTarget != nil {
+		model.DefaultVirtualImageTarget = types.BoolValue(*sb.DefaultVirtualImageTarget)
+	}
+	model.BasePath = basePathFromResponse(sb)
+}
+
+// basePathFromResponse reads a local bucket's directory back from the
+// response's config. The response's config model is typed for the S3 shape,
+// so basePath arrives among its additional properties; any other provider type
+// has none, and the attribute is null.
+func basePathFromResponse(sb *sdk.GetStorageBuckets200ResponseStorageBucket) types.String {
+	if sb.ProviderType == nil || *sb.ProviderType != providerTypeLocal || sb.Config == nil {
+		return types.StringNull()
+	}
+
+	if v, ok := sb.Config.AdditionalProperties["basePath"].(string); ok && v != "" {
+		return types.StringValue(v)
+	}
+
+	return types.StringNull()
 }
