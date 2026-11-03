@@ -25,6 +25,15 @@ with `INCLUDE` and an explicit `included_clients` list.
   they have always been null; a configuration that references them now gets a deprecation warning.
   The `hpe_morpheus_network_router_nat` resource is unaffected — it already treats both as write-only.
 
+## Improvements
+
+### `hpe_morpheus_license`: the `key` description says what the attribute is
+
+The `key` attribute's description says what the attribute is — the licence key, sent to the
+appliance and never read back — and leaves how the provider tracks a change (write-only, the
+digest in private state, the in-place update) to the resource description, so that documentation
+generated from the provider specification for other tools does not inherit Terraform's state and
+plan vocabulary for an argument. No behaviour changes.
 # v2.2.0 Release Notes
 
 ## Breaking changes
