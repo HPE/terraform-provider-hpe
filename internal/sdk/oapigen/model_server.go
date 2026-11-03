@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -72,6 +72,7 @@ type Server struct {
 	AgentInstalled           *bool                                                     `json:"agentInstalled,omitempty"`
 	LastAgentUpdate          NullableString                                            `json:"lastAgentUpdate,omitempty"`
 	AgentVersion             NullableString                                            `json:"agentVersion,omitempty"`
+	GuestAgentStatus         NullableString                                            `json:"guestAgentStatus,omitempty"`
 	MaxCores                 *int64                                                    `json:"maxCores,omitempty"`
 	CoresPerSocket           NullableInt64                                             `json:"coresPerSocket,omitempty"`
 	MaxMemory                *int64                                                    `json:"maxMemory,omitempty"`
@@ -269,6 +270,9 @@ func (o Server) ToMap() (map[string]interface{}, error) {
 	if o.AgentVersion.IsSet() {
 		toSerialize["agentVersion"] = o.AgentVersion.Get()
 	}
+	if o.GuestAgentStatus.IsSet() {
+		toSerialize["guestAgentStatus"] = o.GuestAgentStatus.Get()
+	}
 	if !IsNil(o.MaxCores) {
 		toSerialize["maxCores"] = o.MaxCores
 	}
@@ -362,51 +366,6 @@ func (o Server) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableServer struct {
-	value *Server
-	isSet bool
-}
-
-func (v NullableServer) Get() *Server {
-	return v.value
-}
-
-func (v *NullableServer) Set(val *Server) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableServer(val *Server) *NullableServer {
-	return &NullableServer{value: val, isSet: true}
-}
-
-func (v NullableServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *Server) UnmarshalJSON(data []byte) (err error) {

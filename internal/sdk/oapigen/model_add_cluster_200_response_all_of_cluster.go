@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -310,51 +310,6 @@ func (o AddCluster200ResponseAllOfCluster) ToMap() (map[string]interface{}, erro
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddCluster200ResponseAllOfCluster struct {
-	value *AddCluster200ResponseAllOfCluster
-	isSet bool
-}
-
-func (v NullableAddCluster200ResponseAllOfCluster) Get() *AddCluster200ResponseAllOfCluster {
-	return v.value
-}
-
-func (v *NullableAddCluster200ResponseAllOfCluster) Set(val *AddCluster200ResponseAllOfCluster) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddCluster200ResponseAllOfCluster) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddCluster200ResponseAllOfCluster) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddCluster200ResponseAllOfCluster(val *AddCluster200ResponseAllOfCluster) *NullableAddCluster200ResponseAllOfCluster {
-	return &NullableAddCluster200ResponseAllOfCluster{value: val, isSet: true}
-}
-
-func (v NullableAddCluster200ResponseAllOfCluster) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddCluster200ResponseAllOfCluster) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddCluster200ResponseAllOfCluster) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddCluster200ResponseAllOfCluster) UnmarshalJSON(data []byte) (err error) {

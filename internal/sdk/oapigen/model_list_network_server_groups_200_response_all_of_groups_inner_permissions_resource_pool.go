@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePoo
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool struct {
-	value *ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool
-	isSet bool
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool) Get() *ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool {
-	return v.value
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool) Set(val *ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool(val *ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool) *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool {
-	return &NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool{value: val, isSet: true}
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsResourcePool) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -58,51 +58,6 @@ func (o AddClusterRequestClusterServerNetworkInterfacesInner) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddClusterRequestClusterServerNetworkInterfacesInner struct {
-	value *AddClusterRequestClusterServerNetworkInterfacesInner
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterServerNetworkInterfacesInner) Get() *AddClusterRequestClusterServerNetworkInterfacesInner {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterServerNetworkInterfacesInner) Set(val *AddClusterRequestClusterServerNetworkInterfacesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterServerNetworkInterfacesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterServerNetworkInterfacesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterServerNetworkInterfacesInner(val *AddClusterRequestClusterServerNetworkInterfacesInner) *NullableAddClusterRequestClusterServerNetworkInterfacesInner {
-	return &NullableAddClusterRequestClusterServerNetworkInterfacesInner{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterServerNetworkInterfacesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterServerNetworkInterfacesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterServerNetworkInterfacesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddClusterRequestClusterServerNetworkInterfacesInner) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,17 +20,19 @@ var _ MappedNullable = &UpdateRoleRequestRole{}
 
 // UpdateRoleRequestRole Payload for updating an existing role
 type UpdateRoleRequestRole struct {
-	// Authority (Name)
+	// Authority (Name). Alias of `name`.
 	Authority *string `json:"authority,omitempty"`
+	// Alias for `authority`
+	Name *string `json:"name,omitempty"`
 	// Description
 	Description NullableString `json:"description,omitempty"`
 	// An optional override for the default landing page after login for a user.
 	LandingUrl NullableString `json:"landingUrl,omitempty"`
-	// Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant, only applies to user roles*
+	// Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant, only applies to user roles*.
 	Multitenant *bool `json:"multitenant,omitempty"`
-	// Multitenant Locked, prevents sub-tenant users from modifying their copy of multitenant roles. *Only available to master tenant, only applies to user roles*
-	MultitenantLocked *bool          `json:"multitenantLocked,omitempty"`
-	DefaultPersona    NullableString `json:"defaultPersona,omitempty"`
+	// Multitenant Locked, prevents sub-tenant users from modifying their copy of multitenant roles. *Only available to master tenant, only applies to user roles*.
+	MultitenantLocked *bool                                       `json:"multitenantLocked,omitempty"`
+	DefaultPersona    NullableUpdateRoleRequestRoleDefaultPersona `json:"defaultPersona,omitempty"`
 	// Resets access levels for all feature permissions to their default values.
 	ResetPermissions *bool `json:"resetPermissions,omitempty"`
 	// Resets access levels for all permissions (including feature, non-feature, and default access levels) to their default values.
@@ -98,6 +100,9 @@ func (o UpdateRoleRequestRole) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Authority) {
 		toSerialize["authority"] = o.Authority
+	}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
 	}
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
@@ -195,51 +200,6 @@ func (o UpdateRoleRequestRole) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateRoleRequestRole struct {
-	value *UpdateRoleRequestRole
-	isSet bool
-}
-
-func (v NullableUpdateRoleRequestRole) Get() *UpdateRoleRequestRole {
-	return v.value
-}
-
-func (v *NullableUpdateRoleRequestRole) Set(val *UpdateRoleRequestRole) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateRoleRequestRole) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateRoleRequestRole) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateRoleRequestRole(val *UpdateRoleRequestRole) *NullableUpdateRoleRequestRole {
-	return &NullableUpdateRoleRequestRole{value: val, isSet: true}
-}
-
-func (v NullableUpdateRoleRequestRole) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateRoleRequestRole) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateRoleRequestRole) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateRoleRequestRole) UnmarshalJSON(data []byte) (err error) {

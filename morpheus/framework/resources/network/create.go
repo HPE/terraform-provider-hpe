@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/networkconfig"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
@@ -22,9 +24,11 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var plan NetworkModel
+	var plan, config NetworkModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	// The write-only configuration is only present in the configuration.
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -40,6 +44,36 @@ func (r *Resource) Create(
 	}
 
 	name := plan.Name.ValueString()
+
+	// The type, from type_code or type_id: the request needs its id, and the
+	// catalogue entry for its code decides how the configuration is routed.
+	networkType, err := resolveType(ctx, client, config)
+	if err != nil {
+		resp.Diagnostics.AddError("create network resource", "network "+name+": "+err.Error())
+
+		return
+	}
+
+	typ := liveOrTableSpec(networkType)
+
+	inputs, idiags := resolveConfigInputs(ctx, config, typ)
+	resp.Diagnostics.Append(idiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// ModifyPlan checks these when it knows the type; with type_id, or with the
+	// appliance unreachable at plan time, it may not have.
+	if d := checkBlockMatchesType(inputs.block, typ); d != nil {
+		resp.Diagnostics.Append(d)
+
+		return
+	}
+
+	resp.Diagnostics.Append(checkDeclared(ctx, client, inputs)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	groupId := plan.GroupId.ValueInt64()
 	site := sdk.CreateNetworksRequestNetworkSite{
@@ -178,10 +212,8 @@ func (r *Resource) Create(
 		createNetwork.SwitchId = plan.SwitchId.ValueStringPointer()
 	}
 
-	if !plan.TypeId.IsNull() && !plan.TypeId.IsUnknown() {
-		createNetwork.Type = &sdk.CreateNetworksRequestNetworkType{
-			Id: plan.TypeId.ValueInt64(),
-		}
+	createNetwork.Type = &sdk.CreateNetworksRequestNetworkType{
+		Id: networkType.id,
 	}
 
 	if !plan.NetworkDomainId.IsNull() &&
@@ -190,6 +222,29 @@ func (r *Resource) Create(
 		createNetwork.NetworkDomain = &sdk.CreateNetworksRequestNetworkNetworkDomain{
 			Id: &networkDomainId,
 		}
+	}
+
+	// The network server a plugin-managed type requires (an HVM cluster's
+	// hidden "HVM Network Server" for the port group types), and the
+	// type-specific fields Morpheus accepts on create and never returns.
+	if v := knownInt64(plan.NetworkServerId); v != 0 {
+		createNetwork.NetworkServer = &sdk.CreateNetworksRequestNetworkNetworkServer{Id: &v}
+	}
+
+	if v := knownInt64(plan.ParentNetworkId); v != 0 {
+		createNetwork.ParentNetwork = &sdk.CreateNetworksRequestNetworkParentNetwork{Id: &v}
+	}
+
+	if !plan.ScopeId.IsNull() && !plan.ScopeId.IsUnknown() {
+		createNetwork.ScopeId = plan.ScopeId.ValueStringPointer()
+	}
+
+	if !plan.VxlanId.IsNull() && !plan.VxlanId.IsUnknown() {
+		createNetwork.VxlanId = plan.VxlanId.ValueInt64Pointer()
+	}
+
+	if !plan.AvailabilityZone.IsNull() && !plan.AvailabilityZone.IsUnknown() {
+		createNetwork.AvailabilityZone = plan.AvailabilityZone.ValueStringPointer()
 	}
 
 	if !plan.NetworkProxyId.IsNull() &&
@@ -214,43 +269,11 @@ func (r *Resource) Create(
 		createNetwork.Labels = labels
 	}
 
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		configValue := plan.Config.UnderlyingValue()
-		configMap, err := convert.ValueToAny(ctx, configValue)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"create network resource",
-				"network "+name+": failed to convert config: "+
-					err.Error(),
-			)
-
-			return
-		}
-
-		configDataMap, ok := configMap.(map[string]any)
-		if ok {
-			if !plan.ConnectedGateway.IsNull() && !plan.ConnectedGateway.IsUnknown() {
-				configDataMap["connectedGateway"] = plan.ConnectedGateway.ValueString()
-			}
-			networkConfig := sdk.CreateNetworksRequestNetworkConfig{}
-			networkConfig.MapmapOfStringAny = &configDataMap
-			createNetwork.Config = &networkConfig
-		} else {
-			resp.Diagnostics.AddError(
-				"create network resource",
-				"network "+name+": config must be a valid object/map",
-			)
-
-			return
-		}
-	}
-
-	// connectedGateway is sent inside the config map even when no explicit config
-	// block is configured (NSX-T segments require it at the top-level config).
-	if !plan.ConnectedGateway.IsNull() && !plan.ConnectedGateway.IsUnknown() && createNetwork.Config == nil {
-		configDataMap := map[string]any{
-			"connectedGateway": plan.ConnectedGateway.ValueString(),
-		}
+	// Type-specific configuration: the typed block, the free-form config and
+	// connected_gateway, resolved into the map Morpheus reads. Write-only, so
+	// it is never echoed into state; its digests go to private state below.
+	if inputs.all != nil {
+		configDataMap := inputs.all
 		networkConfig := sdk.CreateNetworksRequestNetworkConfig{}
 		networkConfig.MapmapOfStringAny = &configDataMap
 		createNetwork.Config = &networkConfig
@@ -324,7 +347,22 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, pdiags := getNetworkAsState(ctx, id, client, plan)
+	// Let the network's provider finish before reading it back: the record
+	// exists as soon as the API answers, with status "provisioning" while a
+	// cloud or plugin does the work; a failed provisioning is an error here
+	// rather than drift later.
+	sdiags := waitForNetworkSettled(ctx, client, id)
+	resp.Diagnostics.Append(sdiags...)
+	if sdiags.HasError() {
+		taintResourceState(id)
+
+		return
+	}
+
+	state, found, pdiags := getNetworkAsState(ctx, id, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError("failed to read network state", fmt.Sprintf("Network %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -336,9 +374,10 @@ func (r *Resource) Create(
 		return
 	}
 
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		state.Config = plan.Config
-	}
+	// Record what was sent, so the next plan can tell whether the write-only
+	// configuration changed.
+	resp.Diagnostics.Append(networkconfig.Store(ctx, resp.Private, inputs.digests)...)
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {

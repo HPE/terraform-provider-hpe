@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -81,51 +81,6 @@ func (o ListVirtualImages200ResponseAllOfVirtualImagesInnerOsType) ToMap() (map[
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListVirtualImages200ResponseAllOfVirtualImagesInnerOsType struct {
-	value *ListVirtualImages200ResponseAllOfVirtualImagesInnerOsType
-	isSet bool
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerOsType) Get() *ListVirtualImages200ResponseAllOfVirtualImagesInnerOsType {
-	return v.value
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerOsType) Set(val *ListVirtualImages200ResponseAllOfVirtualImagesInnerOsType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerOsType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerOsType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListVirtualImages200ResponseAllOfVirtualImagesInnerOsType(val *ListVirtualImages200ResponseAllOfVirtualImagesInnerOsType) *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerOsType {
-	return &NullableListVirtualImages200ResponseAllOfVirtualImagesInnerOsType{value: val, isSet: true}
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerOsType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerOsType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerOsType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListVirtualImages200ResponseAllOfVirtualImagesInnerOsType) UnmarshalJSON(data []byte) (err error) {

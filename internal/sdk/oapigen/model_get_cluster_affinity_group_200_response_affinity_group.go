@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,10 +23,12 @@ type GetClusterAffinityGroup200ResponseAffinityGroup struct {
 	Id *int64 `json:"id,omitempty"`
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Affinity Type
+	// Affinity Type. KEEP_TOGETHER / KEEP_SEPARATE express a preferred (SHOULD) placement, while the KEEP_TOGETHER_MUST / KEEP_SEPARATE_MUST variants express a mandatory (MUST) placement constraint.
 	AffinityType *string `json:"affinityType,omitempty"`
 	// Source
 	Source *string `json:"source,omitempty"`
+	// Identifier of the corresponding rule on the underlying platform
+	ExternalId *string `json:"externalId,omitempty"`
 	// Reference Type for the Affinity Group. Can be ComputeZone or ComputeServerGroup for cloud or cluster respectively
 	RefType *string `json:"refType,omitempty"`
 	// Reference ID for the Affinity Group. The ID of the Cloud or Clusterfor cloud or cluster respectively
@@ -34,8 +36,11 @@ type GetClusterAffinityGroup200ResponseAffinityGroup struct {
 	// Active
 	Active *bool                                                `json:"active,omitempty"`
 	Pool   *GetClusterAffinityGroup200ResponseAffinityGroupPool `json:"pool,omitempty"`
-	// List of Servers in the Affinity Group
+	// List of Servers in the Affinity Group. Populated only for a legacy VM-to-VM rule; always empty for a combined VM-to-Host rule.
 	Servers    []GetClusterAffinityGroup200ResponseAffinityGroupServersInner `json:"servers,omitempty"`
+	Owner      *GetClusterAffinityGroup200ResponseAffinityGroupOwner         `json:"owner,omitempty"`
+	VmGroup    *GetClusterAffinityGroup200ResponseAffinityGroupVmGroup       `json:"vmGroup,omitempty"`
+	HostGroup  *GetClusterAffinityGroup200ResponseAffinityGroupHostGroup     `json:"hostGroup,omitempty"`
 	Visibility *string                                                       `json:"visibility,omitempty"`
 	// Array of tenant account ids that are allowed access
 	Tenants              []GetClusterAffinityGroup200ResponseAffinityGroupTenantsInner       `json:"tenants,omitempty"`
@@ -67,6 +72,9 @@ func (o GetClusterAffinityGroup200ResponseAffinityGroup) ToMap() (map[string]int
 	if !IsNil(o.Source) {
 		toSerialize["source"] = o.Source
 	}
+	if !IsNil(o.ExternalId) {
+		toSerialize["externalId"] = o.ExternalId
+	}
 	if !IsNil(o.RefType) {
 		toSerialize["refType"] = o.RefType
 	}
@@ -81,6 +89,15 @@ func (o GetClusterAffinityGroup200ResponseAffinityGroup) ToMap() (map[string]int
 	}
 	if !IsNil(o.Servers) {
 		toSerialize["servers"] = o.Servers
+	}
+	if !IsNil(o.Owner) {
+		toSerialize["owner"] = o.Owner
+	}
+	if !IsNil(o.VmGroup) {
+		toSerialize["vmGroup"] = o.VmGroup
+	}
+	if !IsNil(o.HostGroup) {
+		toSerialize["hostGroup"] = o.HostGroup
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
@@ -97,51 +114,6 @@ func (o GetClusterAffinityGroup200ResponseAffinityGroup) ToMap() (map[string]int
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClusterAffinityGroup200ResponseAffinityGroup struct {
-	value *GetClusterAffinityGroup200ResponseAffinityGroup
-	isSet bool
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroup) Get() *GetClusterAffinityGroup200ResponseAffinityGroup {
-	return v.value
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroup) Set(val *GetClusterAffinityGroup200ResponseAffinityGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterAffinityGroup200ResponseAffinityGroup(val *GetClusterAffinityGroup200ResponseAffinityGroup) *NullableGetClusterAffinityGroup200ResponseAffinityGroup {
-	return &NullableGetClusterAffinityGroup200ResponseAffinityGroup{value: val, isSet: true}
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClusterAffinityGroup200ResponseAffinityGroup) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,8 +20,20 @@ var _ MappedNullable = &UpdateProvisioningLicense200ResponseAllOfLicense{}
 
 // UpdateProvisioningLicense200ResponseAllOfLicense struct for UpdateProvisioningLicense200ResponseAllOfLicense
 type UpdateProvisioningLicense200ResponseAllOfLicense struct {
-	Id                   *int64                 `json:"id,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	Id                   *int64                                                               `json:"id,omitempty"`
+	Name                 *string                                                              `json:"name,omitempty"`
+	Description          *string                                                              `json:"description,omitempty"`
+	LicenseType          *UpdateProvisioningLicense200ResponseAllOfLicenseLicenseType         `json:"licenseType,omitempty"`
+	LicenseKey           *string                                                              `json:"licenseKey,omitempty"`
+	OrgName              *string                                                              `json:"orgName,omitempty"`
+	FullName             *string                                                              `json:"fullName,omitempty"`
+	LicenseVersion       *string                                                              `json:"licenseVersion,omitempty"`
+	Copies               *int64                                                               `json:"copies,omitempty"`
+	ReservationCount     *int64                                                               `json:"reservationCount,omitempty"`
+	Tenants              []UpdateProvisioningLicense200ResponseAllOfLicenseTenantsInner       `json:"tenants,omitempty"`
+	VirtualImages        []UpdateProvisioningLicense200ResponseAllOfLicenseVirtualImagesInner `json:"virtualImages,omitempty"`
+	Account              *UpdateProvisioningLicense200ResponseAllOfLicenseAccount             `json:"account,omitempty"`
+	AdditionalProperties map[string]interface{}                                               `json:",remain"`
 }
 
 type _UpdateProvisioningLicense200ResponseAllOfLicense UpdateProvisioningLicense200ResponseAllOfLicense
@@ -39,57 +51,48 @@ func (o UpdateProvisioningLicense200ResponseAllOfLicense) ToMap() (map[string]in
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.Description) {
+		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.LicenseType) {
+		toSerialize["licenseType"] = o.LicenseType
+	}
+	if !IsNil(o.LicenseKey) {
+		toSerialize["licenseKey"] = o.LicenseKey
+	}
+	if !IsNil(o.OrgName) {
+		toSerialize["orgName"] = o.OrgName
+	}
+	if !IsNil(o.FullName) {
+		toSerialize["fullName"] = o.FullName
+	}
+	if !IsNil(o.LicenseVersion) {
+		toSerialize["licenseVersion"] = o.LicenseVersion
+	}
+	if !IsNil(o.Copies) {
+		toSerialize["copies"] = o.Copies
+	}
+	if !IsNil(o.ReservationCount) {
+		toSerialize["reservationCount"] = o.ReservationCount
+	}
+	if !IsNil(o.Tenants) {
+		toSerialize["tenants"] = o.Tenants
+	}
+	if !IsNil(o.VirtualImages) {
+		toSerialize["virtualImages"] = o.VirtualImages
+	}
+	if !IsNil(o.Account) {
+		toSerialize["account"] = o.Account
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateProvisioningLicense200ResponseAllOfLicense struct {
-	value *UpdateProvisioningLicense200ResponseAllOfLicense
-	isSet bool
-}
-
-func (v NullableUpdateProvisioningLicense200ResponseAllOfLicense) Get() *UpdateProvisioningLicense200ResponseAllOfLicense {
-	return v.value
-}
-
-func (v *NullableUpdateProvisioningLicense200ResponseAllOfLicense) Set(val *UpdateProvisioningLicense200ResponseAllOfLicense) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateProvisioningLicense200ResponseAllOfLicense) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateProvisioningLicense200ResponseAllOfLicense) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateProvisioningLicense200ResponseAllOfLicense(val *UpdateProvisioningLicense200ResponseAllOfLicense) *NullableUpdateProvisioningLicense200ResponseAllOfLicense {
-	return &NullableUpdateProvisioningLicense200ResponseAllOfLicense{value: val, isSet: true}
-}
-
-func (v NullableUpdateProvisioningLicense200ResponseAllOfLicense) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateProvisioningLicense200ResponseAllOfLicense) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateProvisioningLicense200ResponseAllOfLicense) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateProvisioningLicense200ResponseAllOfLicense) UnmarshalJSON(data []byte) (err error) {

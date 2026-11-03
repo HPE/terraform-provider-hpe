@@ -4,6 +4,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -26,8 +27,9 @@ import (
 
 // Ensure implementation satisfies the expected interfaces
 var (
-	_ resource.Resource               = &AlertEscalationPolicyResource{}
-	_ resource.ResourceWithModifyPlan = &AlertEscalationPolicyResource{}
+	_ resource.Resource                = &AlertEscalationPolicyResource{}
+	_ resource.ResourceWithModifyPlan  = &AlertEscalationPolicyResource{}
+	_ resource.ResourceWithImportState = &AlertEscalationPolicyResource{}
 )
 
 // AlertEscalationPolicyResource defines the resource implementation.
@@ -950,4 +952,43 @@ func (r *AlertEscalationPolicyResource) Delete(ctx context.Context, req resource
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+// ImportState handles importing an existing alert escalation policy.
+// Import ID format: <escalation_policy_uuid> or <client_id>:<escalation_policy_uuid> (MSP only)
+func (r *AlertEscalationPolicyResource) ImportState(
+	ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse,
+) {
+	parsed, err := r.ParseImportID(req.ID, 1)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
+		return
+	}
+
+	tenantId := r.TenantForImport(parsed)
+	uuid := parsed.Parts[0]
+
+	existing, err := r.apiClient.GetAlertEscalationPolicy(tenantId, uuid)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Importing Alert Escalation Policy",
+			fmt.Sprintf("Could not import alert escalation policy: %s", err),
+		)
+
+		return
+	}
+
+	state := AlertEscalationPolicyModel{
+		Client: parsed.Client,
+		Id:     types.StringValue(existing.Id),
+		Name:   types.StringValue(existing.Name),
+	}
+
+	mapAlertEscalationPolicyToState(
+		existing, &state, r.apiClient.Scope == "MSP" && (parsed.Client.IsNull() || parsed.Client.ValueString() == ""),
+	)
+
+	diags := resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
 }

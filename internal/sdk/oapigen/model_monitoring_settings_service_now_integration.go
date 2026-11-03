@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -18,10 +18,9 @@ import (
 // checks if the MonitoringSettingsServiceNowIntegration type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &MonitoringSettingsServiceNowIntegration{}
 
-// MonitoringSettingsServiceNowIntegration Service Now Integration Object
+// MonitoringSettingsServiceNowIntegration struct for MonitoringSettingsServiceNowIntegration
 type MonitoringSettingsServiceNowIntegration struct {
-	// Service Now Integration ID
-	Id *int64 `json:"id,omitempty"`
+	Id *MonitoringSettingsServiceNowIntegrationId `json:"id,omitempty"`
 	// Service Now Integration Name
 	Name                 *string                `json:"name,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,134 +24,6 @@ import (
 
 // ChecksAPIService ChecksAPI service
 type ChecksAPIService service
-
-type ApiAddCheckAppsRequest struct {
-	ctx                 context.Context
-	ApiService          *ChecksAPIService
-	addCheckAppsRequest *AddCheckAppsRequest
-}
-
-func (r ApiAddCheckAppsRequest) AddCheckAppsRequest(addCheckAppsRequest AddCheckAppsRequest) ApiAddCheckAppsRequest {
-	r.addCheckAppsRequest = &addCheckAppsRequest
-	return r
-}
-
-func (r ApiAddCheckAppsRequest) Execute() (*AddCheckApps200Response, *http.Response, error) {
-	return r.ApiService.AddCheckAppsExecute(r)
-}
-
-/*
-AddCheckApps Create a New Check App
-
-Create a new check app.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiAddCheckAppsRequest
-*/
-func (a *ChecksAPIService) AddCheckApps(ctx context.Context) ApiAddCheckAppsRequest {
-	return ApiAddCheckAppsRequest{
-		ApiService: a,
-		ctx:        ctx,
-	}
-}
-
-// Execute executes the request
-//
-//	@return AddCheckApps200Response
-func (a *ChecksAPIService) AddCheckAppsExecute(r ApiAddCheckAppsRequest) (*AddCheckApps200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *AddCheckApps200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ChecksAPIService.AddCheckApps")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/monitoring/apps"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.addCheckAppsRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
 
 type ApiAddCheckGroupsRequest struct {
 	ctx                   context.Context
@@ -246,7 +118,7 @@ func (a *ChecksAPIService) AddCheckGroupsExecute(r ApiAddCheckGroupsRequest) (*A
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -257,7 +129,7 @@ func (a *ChecksAPIService) AddCheckGroupsExecute(r ApiAddCheckGroupsRequest) (*A
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -378,7 +250,7 @@ func (a *ChecksAPIService) AddChecksExecute(r ApiAddChecksRequest) (*AddChecks20
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -389,131 +261,7 @@ func (a *ChecksAPIService) AddChecksExecute(r ApiAddChecksRequest) (*AddChecks20
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiDeleteCheckAppsRequest struct {
-	ctx        context.Context
-	ApiService *ChecksAPIService
-	id         int64
-}
-
-func (r ApiDeleteCheckAppsRequest) Execute() (*DeleteCheckApps200Response, *http.Response, error) {
-	return r.ApiService.DeleteCheckAppsExecute(r)
-}
-
-/*
-DeleteCheckApps Delete a Specific Check App
-
-Delete an existing monitoring check app.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiDeleteCheckAppsRequest
-*/
-func (a *ChecksAPIService) DeleteCheckApps(ctx context.Context, id int64) ApiDeleteCheckAppsRequest {
-	return ApiDeleteCheckAppsRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return DeleteCheckApps200Response
-func (a *ChecksAPIService) DeleteCheckAppsExecute(r ApiDeleteCheckAppsRequest) (*DeleteCheckApps200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodDelete
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *DeleteCheckApps200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ChecksAPIService.DeleteCheckApps")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/monitoring/apps/{id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -626,7 +374,7 @@ func (a *ChecksAPIService) DeleteCheckGroupsExecute(r ApiDeleteCheckGroupsReques
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -637,7 +385,7 @@ func (a *ChecksAPIService) DeleteCheckGroupsExecute(r ApiDeleteCheckGroupsReques
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -750,7 +498,7 @@ func (a *ChecksAPIService) DeleteChecksExecute(r ApiDeleteChecksRequest) (*Delet
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -761,131 +509,7 @@ func (a *ChecksAPIService) DeleteChecksExecute(r ApiDeleteChecksRequest) (*Delet
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiGetCheckAppsRequest struct {
-	ctx        context.Context
-	ApiService *ChecksAPIService
-	id         int64
-}
-
-func (r ApiGetCheckAppsRequest) Execute() (*GetCheckApps200Response, *http.Response, error) {
-	return r.ApiService.GetCheckAppsExecute(r)
-}
-
-/*
-GetCheckApps Get a Specific Check App
-
-Get details about a specific monitoring check app.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiGetCheckAppsRequest
-*/
-func (a *ChecksAPIService) GetCheckApps(ctx context.Context, id int64) ApiGetCheckAppsRequest {
-	return ApiGetCheckAppsRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return GetCheckApps200Response
-func (a *ChecksAPIService) GetCheckAppsExecute(r ApiGetCheckAppsRequest) (*GetCheckApps200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *GetCheckApps200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ChecksAPIService.GetCheckApps")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/monitoring/apps/{id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -998,7 +622,7 @@ func (a *ChecksAPIService) GetCheckGroupsExecute(r ApiGetCheckGroupsRequest) (*G
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1009,7 +633,7 @@ func (a *ChecksAPIService) GetCheckGroupsExecute(r ApiGetCheckGroupsRequest) (*G
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1122,7 +746,7 @@ func (a *ChecksAPIService) GetCheckTypesExecute(r ApiGetCheckTypesRequest) (*Get
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1133,7 +757,7 @@ func (a *ChecksAPIService) GetCheckTypesExecute(r ApiGetCheckTypesRequest) (*Get
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1246,7 +870,7 @@ func (a *ChecksAPIService) GetChecksExecute(r ApiGetChecksRequest) (*GetChecks20
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1257,216 +881,7 @@ func (a *ChecksAPIService) GetChecksExecute(r ApiGetChecksRequest) (*GetChecks20
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiListCheckAppsRequest struct {
-	ctx         context.Context
-	ApiService  *ChecksAPIService
-	max         *int64
-	offset      *int64
-	sort        *string
-	name        *string
-	phrase      *string
-	status      *string
-	lastUpdated *time.Time
-	deleted     *bool
-}
-
-// Maximum number of records to return
-func (r ApiListCheckAppsRequest) Max(max int64) ApiListCheckAppsRequest {
-	r.max = &max
-	return r
-}
-
-// Offset records, the number of records to skip, for paginating requests
-func (r ApiListCheckAppsRequest) Offset(offset int64) ApiListCheckAppsRequest {
-	r.offset = &offset
-	return r
-}
-
-// Sort order, the name of the property to sort by
-func (r ApiListCheckAppsRequest) Sort(sort string) ApiListCheckAppsRequest {
-	r.sort = &sort
-	return r
-}
-
-// Filter by name
-func (r ApiListCheckAppsRequest) Name(name string) ApiListCheckAppsRequest {
-	r.name = &name
-	return r
-}
-
-// Search phrase for partial matches on name or description
-func (r ApiListCheckAppsRequest) Phrase(phrase string) ApiListCheckAppsRequest {
-	r.phrase = &phrase
-	return r
-}
-
-// The instance status for filtering.
-func (r ApiListCheckAppsRequest) Status(status string) ApiListCheckAppsRequest {
-	r.status = &status
-	return r
-}
-
-// Date filter, restricts query to only load resources updated more recently than the date specified (ISO 8601)
-func (r ApiListCheckAppsRequest) LastUpdated(lastUpdated time.Time) ApiListCheckAppsRequest {
-	r.lastUpdated = &lastUpdated
-	return r
-}
-
-// If true, only deleted resources or instances in pending removal status are returned.
-func (r ApiListCheckAppsRequest) Deleted(deleted bool) ApiListCheckAppsRequest {
-	r.deleted = &deleted
-	return r
-}
-
-func (r ApiListCheckAppsRequest) Execute() (*ListCheckApps200Response, *http.Response, error) {
-	return r.ApiService.ListCheckAppsExecute(r)
-}
-
-/*
-ListCheckApps List All Check Apps
-
-Get a list of check apps.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListCheckAppsRequest
-*/
-func (a *ChecksAPIService) ListCheckApps(ctx context.Context) ApiListCheckAppsRequest {
-	return ApiListCheckAppsRequest{
-		ApiService: a,
-		ctx:        ctx,
-	}
-}
-
-// Execute executes the request
-//
-//	@return ListCheckApps200Response
-func (a *ChecksAPIService) ListCheckAppsExecute(r ApiListCheckAppsRequest) (*ListCheckApps200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *ListCheckApps200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ChecksAPIService.ListCheckApps")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/monitoring/apps"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	if r.max != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "max", r.max, "form", "")
-	} else {
-		var defaultValue int64 = 25
-		r.max = &defaultValue
-	}
-	if r.offset != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "offset", r.offset, "form", "")
-	} else {
-		var defaultValue int64 = 0
-		r.offset = &defaultValue
-	}
-	if r.sort != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", r.sort, "form", "")
-	} else {
-		var defaultValue string = "name"
-		r.sort = &defaultValue
-	}
-	if r.name != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
-	}
-	if r.phrase != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
-	}
-	if r.status != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "status", r.status, "form", "")
-	}
-	if r.lastUpdated != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "lastUpdated", r.lastUpdated, "form", "")
-	}
-	if r.deleted != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "deleted", r.deleted, "form", "")
-	}
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1664,7 +1079,7 @@ func (a *ChecksAPIService) ListCheckGroupsExecute(r ApiListCheckGroupsRequest) (
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1675,7 +1090,7 @@ func (a *ChecksAPIService) ListCheckGroupsExecute(r ApiListCheckGroupsRequest) (
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1843,7 +1258,7 @@ func (a *ChecksAPIService) ListCheckTypesExecute(r ApiListCheckTypesRequest) (*L
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1854,7 +1269,7 @@ func (a *ChecksAPIService) ListCheckTypesExecute(r ApiListCheckTypesRequest) (*L
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2052,7 +1467,7 @@ func (a *ChecksAPIService) ListChecksExecute(r ApiListChecksRequest) (*ListCheck
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2063,139 +1478,7 @@ func (a *ChecksAPIService) ListChecksExecute(r ApiListChecksRequest) (*ListCheck
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiUpdateCheckAppsRequest struct {
-	ctx                    context.Context
-	ApiService             *ChecksAPIService
-	id                     int64
-	updateCheckAppsRequest *UpdateCheckAppsRequest
-}
-
-func (r ApiUpdateCheckAppsRequest) UpdateCheckAppsRequest(updateCheckAppsRequest UpdateCheckAppsRequest) ApiUpdateCheckAppsRequest {
-	r.updateCheckAppsRequest = &updateCheckAppsRequest
-	return r
-}
-
-func (r ApiUpdateCheckAppsRequest) Execute() (*UpdateCheckApps200Response, *http.Response, error) {
-	return r.ApiService.UpdateCheckAppsExecute(r)
-}
-
-/*
-UpdateCheckApps Update Check App
-
-Update an existing monitoring check app.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiUpdateCheckAppsRequest
-*/
-func (a *ChecksAPIService) UpdateCheckApps(ctx context.Context, id int64) ApiUpdateCheckAppsRequest {
-	return ApiUpdateCheckAppsRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return UpdateCheckApps200Response
-func (a *ChecksAPIService) UpdateCheckAppsExecute(r ApiUpdateCheckAppsRequest) (*UpdateCheckApps200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *UpdateCheckApps200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ChecksAPIService.UpdateCheckApps")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/monitoring/apps/{id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.updateCheckAppsRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2316,7 +1599,7 @@ func (a *ChecksAPIService) UpdateCheckGroupsExecute(r ApiUpdateCheckGroupsReques
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2327,7 +1610,7 @@ func (a *ChecksAPIService) UpdateCheckGroupsExecute(r ApiUpdateCheckGroupsReques
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2448,7 +1731,7 @@ func (a *ChecksAPIService) UpdateChecksExecute(r ApiUpdateChecksRequest) (*Updat
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2459,787 +1742,7 @@ func (a *ChecksAPIService) UpdateChecksExecute(r ApiUpdateChecksRequest) (*Updat
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiUpdateMuteAllCheckAppsRequest struct {
-	ctx                           context.Context
-	ApiService                    *ChecksAPIService
-	updateMuteAllCheckAppsRequest *UpdateMuteAllCheckAppsRequest
-}
-
-func (r ApiUpdateMuteAllCheckAppsRequest) UpdateMuteAllCheckAppsRequest(updateMuteAllCheckAppsRequest UpdateMuteAllCheckAppsRequest) ApiUpdateMuteAllCheckAppsRequest {
-	r.updateMuteAllCheckAppsRequest = &updateMuteAllCheckAppsRequest
-	return r
-}
-
-func (r ApiUpdateMuteAllCheckAppsRequest) Execute() (*UpdateMuteAllCheckApps200Response, *http.Response, error) {
-	return r.ApiService.UpdateMuteAllCheckAppsExecute(r)
-}
-
-/*
-UpdateMuteAllCheckApps Mute All Check Apps
-
-Mute all existing check apps.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiUpdateMuteAllCheckAppsRequest
-*/
-func (a *ChecksAPIService) UpdateMuteAllCheckApps(ctx context.Context) ApiUpdateMuteAllCheckAppsRequest {
-	return ApiUpdateMuteAllCheckAppsRequest{
-		ApiService: a,
-		ctx:        ctx,
-	}
-}
-
-// Execute executes the request
-//
-//	@return UpdateMuteAllCheckApps200Response
-func (a *ChecksAPIService) UpdateMuteAllCheckAppsExecute(r ApiUpdateMuteAllCheckAppsRequest) (*UpdateMuteAllCheckApps200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *UpdateMuteAllCheckApps200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ChecksAPIService.UpdateMuteAllCheckApps")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/monitoring/apps/mute-all"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.updateMuteAllCheckAppsRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiUpdateMuteAllCheckGroupsRequest struct {
-	ctx                        context.Context
-	ApiService                 *ChecksAPIService
-	updateMuteCheckAppsRequest *UpdateMuteCheckAppsRequest
-}
-
-func (r ApiUpdateMuteAllCheckGroupsRequest) UpdateMuteCheckAppsRequest(updateMuteCheckAppsRequest UpdateMuteCheckAppsRequest) ApiUpdateMuteAllCheckGroupsRequest {
-	r.updateMuteCheckAppsRequest = &updateMuteCheckAppsRequest
-	return r
-}
-
-func (r ApiUpdateMuteAllCheckGroupsRequest) Execute() (*UpdateMuteAllCheckGroups200Response, *http.Response, error) {
-	return r.ApiService.UpdateMuteAllCheckGroupsExecute(r)
-}
-
-/*
-UpdateMuteAllCheckGroups Mute All Check Groups
-
-Mute all existing check groups.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiUpdateMuteAllCheckGroupsRequest
-*/
-func (a *ChecksAPIService) UpdateMuteAllCheckGroups(ctx context.Context) ApiUpdateMuteAllCheckGroupsRequest {
-	return ApiUpdateMuteAllCheckGroupsRequest{
-		ApiService: a,
-		ctx:        ctx,
-	}
-}
-
-// Execute executes the request
-//
-//	@return UpdateMuteAllCheckGroups200Response
-func (a *ChecksAPIService) UpdateMuteAllCheckGroupsExecute(r ApiUpdateMuteAllCheckGroupsRequest) (*UpdateMuteAllCheckGroups200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *UpdateMuteAllCheckGroups200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ChecksAPIService.UpdateMuteAllCheckGroups")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/monitoring/groups/mute-all"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.updateMuteCheckAppsRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiUpdateMuteAllChecksRequest struct {
-	ctx                        context.Context
-	ApiService                 *ChecksAPIService
-	updateMuteCheckAppsRequest *UpdateMuteCheckAppsRequest
-}
-
-func (r ApiUpdateMuteAllChecksRequest) UpdateMuteCheckAppsRequest(updateMuteCheckAppsRequest UpdateMuteCheckAppsRequest) ApiUpdateMuteAllChecksRequest {
-	r.updateMuteCheckAppsRequest = &updateMuteCheckAppsRequest
-	return r
-}
-
-func (r ApiUpdateMuteAllChecksRequest) Execute() (*UpdateMuteAllChecks200Response, *http.Response, error) {
-	return r.ApiService.UpdateMuteAllChecksExecute(r)
-}
-
-/*
-UpdateMuteAllChecks Mute All Checks
-
-Mute all existing checks.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiUpdateMuteAllChecksRequest
-*/
-func (a *ChecksAPIService) UpdateMuteAllChecks(ctx context.Context) ApiUpdateMuteAllChecksRequest {
-	return ApiUpdateMuteAllChecksRequest{
-		ApiService: a,
-		ctx:        ctx,
-	}
-}
-
-// Execute executes the request
-//
-//	@return UpdateMuteAllChecks200Response
-func (a *ChecksAPIService) UpdateMuteAllChecksExecute(r ApiUpdateMuteAllChecksRequest) (*UpdateMuteAllChecks200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *UpdateMuteAllChecks200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ChecksAPIService.UpdateMuteAllChecks")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/monitoring/checks/mute-all"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.updateMuteCheckAppsRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiUpdateMuteCheckAppsRequest struct {
-	ctx                        context.Context
-	ApiService                 *ChecksAPIService
-	id                         int64
-	updateMuteCheckAppsRequest *UpdateMuteCheckAppsRequest
-}
-
-func (r ApiUpdateMuteCheckAppsRequest) UpdateMuteCheckAppsRequest(updateMuteCheckAppsRequest UpdateMuteCheckAppsRequest) ApiUpdateMuteCheckAppsRequest {
-	r.updateMuteCheckAppsRequest = &updateMuteCheckAppsRequest
-	return r
-}
-
-func (r ApiUpdateMuteCheckAppsRequest) Execute() (*UpdateMuteCheckApps200Response, *http.Response, error) {
-	return r.ApiService.UpdateMuteCheckAppsExecute(r)
-}
-
-/*
-UpdateMuteCheckApps Mute Check App
-
-Mute an existing check app.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiUpdateMuteCheckAppsRequest
-*/
-func (a *ChecksAPIService) UpdateMuteCheckApps(ctx context.Context, id int64) ApiUpdateMuteCheckAppsRequest {
-	return ApiUpdateMuteCheckAppsRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return UpdateMuteCheckApps200Response
-func (a *ChecksAPIService) UpdateMuteCheckAppsExecute(r ApiUpdateMuteCheckAppsRequest) (*UpdateMuteCheckApps200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *UpdateMuteCheckApps200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ChecksAPIService.UpdateMuteCheckApps")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/monitoring/apps/{id}/mute"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.updateMuteCheckAppsRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiUpdateMuteCheckGroupsRequest struct {
-	ctx                        context.Context
-	ApiService                 *ChecksAPIService
-	id                         int64
-	updateMuteCheckAppsRequest *UpdateMuteCheckAppsRequest
-}
-
-func (r ApiUpdateMuteCheckGroupsRequest) UpdateMuteCheckAppsRequest(updateMuteCheckAppsRequest UpdateMuteCheckAppsRequest) ApiUpdateMuteCheckGroupsRequest {
-	r.updateMuteCheckAppsRequest = &updateMuteCheckAppsRequest
-	return r
-}
-
-func (r ApiUpdateMuteCheckGroupsRequest) Execute() (*UpdateMuteCheckGroups200Response, *http.Response, error) {
-	return r.ApiService.UpdateMuteCheckGroupsExecute(r)
-}
-
-/*
-UpdateMuteCheckGroups Mute Check Group
-
-Mute an existing check group.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiUpdateMuteCheckGroupsRequest
-*/
-func (a *ChecksAPIService) UpdateMuteCheckGroups(ctx context.Context, id int64) ApiUpdateMuteCheckGroupsRequest {
-	return ApiUpdateMuteCheckGroupsRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return UpdateMuteCheckGroups200Response
-func (a *ChecksAPIService) UpdateMuteCheckGroupsExecute(r ApiUpdateMuteCheckGroupsRequest) (*UpdateMuteCheckGroups200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *UpdateMuteCheckGroups200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ChecksAPIService.UpdateMuteCheckGroups")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/monitoring/groups/{id}/mute"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.updateMuteCheckAppsRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiUpdateMuteChecksRequest struct {
-	ctx                        context.Context
-	ApiService                 *ChecksAPIService
-	id                         int64
-	updateMuteCheckAppsRequest *UpdateMuteCheckAppsRequest
-}
-
-func (r ApiUpdateMuteChecksRequest) UpdateMuteCheckAppsRequest(updateMuteCheckAppsRequest UpdateMuteCheckAppsRequest) ApiUpdateMuteChecksRequest {
-	r.updateMuteCheckAppsRequest = &updateMuteCheckAppsRequest
-	return r
-}
-
-func (r ApiUpdateMuteChecksRequest) Execute() (*UpdateMuteChecks200Response, *http.Response, error) {
-	return r.ApiService.UpdateMuteChecksExecute(r)
-}
-
-/*
-UpdateMuteChecks Mute Check
-
-Mute an existing check.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiUpdateMuteChecksRequest
-*/
-func (a *ChecksAPIService) UpdateMuteChecks(ctx context.Context, id int64) ApiUpdateMuteChecksRequest {
-	return ApiUpdateMuteChecksRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return UpdateMuteChecks200Response
-func (a *ChecksAPIService) UpdateMuteChecksExecute(r ApiUpdateMuteChecksRequest) (*UpdateMuteChecks200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *UpdateMuteChecks200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ChecksAPIService.UpdateMuteChecks")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/monitoring/checks/{id}/mute"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.updateMuteCheckAppsRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

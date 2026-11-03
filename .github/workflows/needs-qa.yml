@@ -1,0 +1,26 @@
+# A merge lock for changes awaiting QA. The `dev` ruleset (refs/heads/dev-*)
+# lists this job as a required status check, so while a pull request carries
+# the "Needs QA" label the merge button is blocked; when QA sign off and the
+# label is removed the job re-runs and clears it. A required check must report
+# on every pull request, which is why the job always runs and passes when the
+# label is absent.
+name: needs-qa
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions: {}
+
+jobs:
+  needs-qa:
+    name: needs-qa
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail while the pull request is labelled Needs QA
+        if: contains(github.event.pull_request.labels.*.name, 'Needs QA')
+        run: |
+          echo "::error::This pull request is labelled 'Needs QA'. It cannot be merged until QA have tested it and removed the label."
+          exit 1
+      - name: Not awaiting QA
+        run: echo "No Needs QA label; merging is allowed."

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup) ToMap() (map[
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup struct {
-	value *AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup
-	isSet bool
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup) Get() *AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup {
-	return v.value
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup) Set(val *AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup(val *AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup) *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup {
-	return &NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup{value: val, isSet: true}
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceUserGroup) UnmarshalJSON(data []byte) (err error) {

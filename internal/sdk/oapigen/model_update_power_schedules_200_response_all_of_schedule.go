@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -194,51 +194,6 @@ func (o UpdatePowerSchedules200ResponseAllOfSchedule) ToMap() (map[string]interf
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdatePowerSchedules200ResponseAllOfSchedule struct {
-	value *UpdatePowerSchedules200ResponseAllOfSchedule
-	isSet bool
-}
-
-func (v NullableUpdatePowerSchedules200ResponseAllOfSchedule) Get() *UpdatePowerSchedules200ResponseAllOfSchedule {
-	return v.value
-}
-
-func (v *NullableUpdatePowerSchedules200ResponseAllOfSchedule) Set(val *UpdatePowerSchedules200ResponseAllOfSchedule) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdatePowerSchedules200ResponseAllOfSchedule) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdatePowerSchedules200ResponseAllOfSchedule) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdatePowerSchedules200ResponseAllOfSchedule(val *UpdatePowerSchedules200ResponseAllOfSchedule) *NullableUpdatePowerSchedules200ResponseAllOfSchedule {
-	return &NullableUpdatePowerSchedules200ResponseAllOfSchedule{value: val, isSet: true}
-}
-
-func (v NullableUpdatePowerSchedules200ResponseAllOfSchedule) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdatePowerSchedules200ResponseAllOfSchedule) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdatePowerSchedules200ResponseAllOfSchedule) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdatePowerSchedules200ResponseAllOfSchedule) UnmarshalJSON(data []byte) (err error) {

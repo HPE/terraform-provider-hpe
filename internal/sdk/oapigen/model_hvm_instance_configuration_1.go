@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -28,6 +28,8 @@ type HVMInstanceConfiguration1 struct {
 	ResourcePoolId *string `json:"resourcePoolId,omitempty"`
 	// Enable Nested Virtualization
 	NestedVirtualization *string `json:"nestedVirtualization,omitempty"`
+	// Exclude the virtio-serial channel for the QEMU Guest Agent from the VM. Intended for VMs that do not use a guest agent or need the slot for another device. Takes effect on existing VMs only after a full power-off.
+	DisableQgaChannel NullableBool `json:"disableQgaChannel,omitempty"`
 	// Create user
 	CreateUser NullableBool `json:"createUser,omitempty"`
 	// The type of pool provider to use for this instance, must be \"mvm\"
@@ -39,7 +41,13 @@ type HVMInstanceConfiguration1 struct {
 	// ID of an affinity group to consider during host selection. For a KEEP_TOGETHER group the instance is placed on the same host as the group's existing members. Has no effect for a KEEP_SEPARATE group, or when the group has no members yet. Normally set to the same value as affinityGroup, which records the membership itself. Applies at provision time only.
 	AffinityGroupId *int64 `json:"affinityGroupId,omitempty"`
 	// Whether to provision the instance in a powered off state
-	ProvisionPoweredOff  *bool                  `json:"provisionPoweredOff,omitempty"`
+	ProvisionPoweredOff *bool `json:"provisionPoweredOff,omitempty"`
+	// Enable or disable the QEMU boot menu at VM startup. When enabled, the VM displays a boot selection menu. Defaults to true for new HVM VMs.
+	BootToBios NullableBool `json:"bootToBios,omitempty"`
+	// Boot menu display duration in seconds (0-30). Only applicable when bootToBios is true. A value of 0 means no delay.
+	BootToBiosMenuTimeout NullableInt32 `json:"bootToBiosMenuTimeout,omitempty"`
+	// Cloud-init user data for the virtual machine, as cloud-config YAML or a plain script. Applied once, when the virtual machine is first provisioned (or cloned); changing it on an existing instance has no effect until the instance is reprovisioned or cloned. The `bootcmd` and `runcmd` lists run before the entries Morpheus generates; other keys are merged over the user data from the cloud, OS type, image, layout and type set, with list values replaced rather than appended.
+	UserData             NullableString         `json:"userData,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -67,6 +75,9 @@ func (o HVMInstanceConfiguration1) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.NestedVirtualization) {
 		toSerialize["nestedVirtualization"] = o.NestedVirtualization
 	}
+	if o.DisableQgaChannel.IsSet() {
+		toSerialize["disableQgaChannel"] = o.DisableQgaChannel.Get()
+	}
 	if o.CreateUser.IsSet() {
 		toSerialize["createUser"] = o.CreateUser.Get()
 	}
@@ -85,57 +96,21 @@ func (o HVMInstanceConfiguration1) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.ProvisionPoweredOff) {
 		toSerialize["provisionPoweredOff"] = o.ProvisionPoweredOff
 	}
+	if o.BootToBios.IsSet() {
+		toSerialize["bootToBios"] = o.BootToBios.Get()
+	}
+	if o.BootToBiosMenuTimeout.IsSet() {
+		toSerialize["bootToBiosMenuTimeout"] = o.BootToBiosMenuTimeout.Get()
+	}
+	if o.UserData.IsSet() {
+		toSerialize["userData"] = o.UserData.Get()
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
 	}
 
 	return toSerialize, nil
-}
-
-type NullableHVMInstanceConfiguration1 struct {
-	value *HVMInstanceConfiguration1
-	isSet bool
-}
-
-func (v NullableHVMInstanceConfiguration1) Get() *HVMInstanceConfiguration1 {
-	return v.value
-}
-
-func (v *NullableHVMInstanceConfiguration1) Set(val *HVMInstanceConfiguration1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableHVMInstanceConfiguration1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableHVMInstanceConfiguration1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableHVMInstanceConfiguration1(val *HVMInstanceConfiguration1) *NullableHVMInstanceConfiguration1 {
-	return &NullableHVMInstanceConfiguration1{value: val, isSet: true}
-}
-
-func (v NullableHVMInstanceConfiguration1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableHVMInstanceConfiguration1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableHVMInstanceConfiguration1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *HVMInstanceConfiguration1) UnmarshalJSON(data []byte) (err error) {

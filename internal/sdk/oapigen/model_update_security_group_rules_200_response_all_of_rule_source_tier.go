@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o UpdateSecurityGroupRules200ResponseAllOfRuleSourceTier) ToMap() (map[str
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateSecurityGroupRules200ResponseAllOfRuleSourceTier struct {
-	value *UpdateSecurityGroupRules200ResponseAllOfRuleSourceTier
-	isSet bool
-}
-
-func (v NullableUpdateSecurityGroupRules200ResponseAllOfRuleSourceTier) Get() *UpdateSecurityGroupRules200ResponseAllOfRuleSourceTier {
-	return v.value
-}
-
-func (v *NullableUpdateSecurityGroupRules200ResponseAllOfRuleSourceTier) Set(val *UpdateSecurityGroupRules200ResponseAllOfRuleSourceTier) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateSecurityGroupRules200ResponseAllOfRuleSourceTier) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateSecurityGroupRules200ResponseAllOfRuleSourceTier) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateSecurityGroupRules200ResponseAllOfRuleSourceTier(val *UpdateSecurityGroupRules200ResponseAllOfRuleSourceTier) *NullableUpdateSecurityGroupRules200ResponseAllOfRuleSourceTier {
-	return &NullableUpdateSecurityGroupRules200ResponseAllOfRuleSourceTier{value: val, isSet: true}
-}
-
-func (v NullableUpdateSecurityGroupRules200ResponseAllOfRuleSourceTier) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateSecurityGroupRules200ResponseAllOfRuleSourceTier) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateSecurityGroupRules200ResponseAllOfRuleSourceTier) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateSecurityGroupRules200ResponseAllOfRuleSourceTier) UnmarshalJSON(data []byte) (err error) {

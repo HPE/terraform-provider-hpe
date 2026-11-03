@@ -34,6 +34,7 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan, Label",
 				MarkdownDescription: "The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan, Label",
 				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 					int64planmodifier.RequiresReplace(),
 				},
 			},
@@ -1146,6 +1147,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"id": schema.Int64Attribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
@@ -1219,7 +1223,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"id": schema.Int64Attribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Policy type ID",
+						MarkdownDescription: "Policy type ID",
 					},
 					"name": schema.StringAttribute{
 						Computed: true,
@@ -1230,7 +1236,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						AttrTypes: PolicyTypeValue{}.AttributeTypes(ctx),
 					},
 				},
-				Required: true,
+				Required:            true,
+				Description:         "Policy type. Accepts `{ id }` or `{ code }`.",
+				MarkdownDescription: "Policy type. Accepts `{ id }` or `{ code }`.",
 			},
 			"role": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{

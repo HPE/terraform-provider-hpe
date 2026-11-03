@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,12 +22,12 @@ var _ MappedNullable = &UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNei
 type UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor struct {
 	// IP address of the BGP neighbor
 	IpAddress *string `json:"ipAddress,omitempty"`
-	// Description of the BGP neighbor
-	Description *string `json:"description,omitempty"`
-	// Forwarding address (NSX-V distributed router)
-	ForwardingAddress *string `json:"forwardingAddress,omitempty"`
-	// Protocol address (NSX-V distributed router)
-	ProtocolAddress *string `json:"protocolAddress,omitempty"`
+	// Description of the BGP neighbor; null clears it
+	Description NullableString `json:"description,omitempty"`
+	// Forwarding address (NSX-V distributed router); null clears it
+	ForwardingAddress NullableString `json:"forwardingAddress,omitempty"`
+	// Protocol address (NSX-V distributed router); null clears it
+	ProtocolAddress NullableString `json:"protocolAddress,omitempty"`
 	// Remote AS number
 	RemoteAs *string `json:"remoteAs,omitempty"`
 	// Route weight
@@ -40,10 +40,10 @@ type UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor struct {
 	Password *string `json:"password,omitempty"`
 	// Address family for route filtering (e.g. IPV4, IPV6)
 	RouteFilteringType *string `json:"routeFilteringType,omitempty"`
-	// Inbound route filter name
-	RouteFilteringIn *string `json:"routeFilteringIn,omitempty"`
-	// Outbound route filter name
-	RouteFilteringOut *string                                                                  `json:"routeFilteringOut,omitempty"`
+	// Inbound route filter name; null clears it
+	RouteFilteringIn NullableString `json:"routeFilteringIn,omitempty"`
+	// Outbound route filter name; null clears it
+	RouteFilteringOut NullableString                                                           `json:"routeFilteringOut,omitempty"`
 	BfdEnabled        *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighborBfdEnabled `json:"bfdEnabled,omitempty"`
 	// BFD interval in milliseconds
 	BfdInterval *int64 `json:"bfdInterval,omitempty"`
@@ -73,14 +73,14 @@ func (o UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) ToMap() (
 	if !IsNil(o.IpAddress) {
 		toSerialize["ipAddress"] = o.IpAddress
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.ForwardingAddress) {
-		toSerialize["forwardingAddress"] = o.ForwardingAddress
+	if o.ForwardingAddress.IsSet() {
+		toSerialize["forwardingAddress"] = o.ForwardingAddress.Get()
 	}
-	if !IsNil(o.ProtocolAddress) {
-		toSerialize["protocolAddress"] = o.ProtocolAddress
+	if o.ProtocolAddress.IsSet() {
+		toSerialize["protocolAddress"] = o.ProtocolAddress.Get()
 	}
 	if !IsNil(o.RemoteAs) {
 		toSerialize["remoteAs"] = o.RemoteAs
@@ -100,11 +100,11 @@ func (o UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) ToMap() (
 	if !IsNil(o.RouteFilteringType) {
 		toSerialize["routeFilteringType"] = o.RouteFilteringType
 	}
-	if !IsNil(o.RouteFilteringIn) {
-		toSerialize["routeFilteringIn"] = o.RouteFilteringIn
+	if o.RouteFilteringIn.IsSet() {
+		toSerialize["routeFilteringIn"] = o.RouteFilteringIn.Get()
 	}
-	if !IsNil(o.RouteFilteringOut) {
-		toSerialize["routeFilteringOut"] = o.RouteFilteringOut
+	if o.RouteFilteringOut.IsSet() {
+		toSerialize["routeFilteringOut"] = o.RouteFilteringOut.Get()
 	}
 	if !IsNil(o.BfdEnabled) {
 		toSerialize["bfdEnabled"] = o.BfdEnabled
@@ -133,51 +133,6 @@ func (o UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) ToMap() (
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor struct {
-	value *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor
-	isSet bool
-}
-
-func (v NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) Get() *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor {
-	return v.value
-}
-
-func (v *NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) Set(val *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor(val *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) *NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor {
-	return &NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -117,7 +117,7 @@ func (a *LoadBalancersAPIService) CreateLoadBalancerExecute(r ApiCreateLoadBalan
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -128,7 +128,7 @@ func (a *LoadBalancersAPIService) CreateLoadBalancerExecute(r ApiCreateLoadBalan
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -251,7 +251,7 @@ func (a *LoadBalancersAPIService) CreateLoadBalancerMonitorExecute(r ApiCreateLo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -262,7 +262,7 @@ func (a *LoadBalancersAPIService) CreateLoadBalancerMonitorExecute(r ApiCreateLo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -385,7 +385,7 @@ func (a *LoadBalancersAPIService) CreateLoadBalancerPoolExecute(r ApiCreateLoadB
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -396,141 +396,7 @@ func (a *LoadBalancersAPIService) CreateLoadBalancerPoolExecute(r ApiCreateLoadB
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiCreateLoadBalancerPoolNodeRequest struct {
-	ctx                               context.Context
-	ApiService                        *LoadBalancersAPIService
-	loadBalancerPoolId                int64
-	createLoadBalancerPoolNodeRequest *CreateLoadBalancerPoolNodeRequest
-}
-
-func (r ApiCreateLoadBalancerPoolNodeRequest) CreateLoadBalancerPoolNodeRequest(createLoadBalancerPoolNodeRequest CreateLoadBalancerPoolNodeRequest) ApiCreateLoadBalancerPoolNodeRequest {
-	r.createLoadBalancerPoolNodeRequest = &createLoadBalancerPoolNodeRequest
-	return r
-}
-
-func (r ApiCreateLoadBalancerPoolNodeRequest) Execute() (*CreateLoadBalancerPoolNode200Response, *http.Response, error) {
-	return r.ApiService.CreateLoadBalancerPoolNodeExecute(r)
-}
-
-/*
-CreateLoadBalancerPoolNode Create a Load Balancer Pool Node
-
-Use this command to create a load balancer pool node.
-
-This endpoint allows creating a Load Balancer Pool Node. Configuration options vary by Load Balancer Type.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param loadBalancerPoolId Load Balancer Pool ID
-	@return ApiCreateLoadBalancerPoolNodeRequest
-*/
-func (a *LoadBalancersAPIService) CreateLoadBalancerPoolNode(ctx context.Context, loadBalancerPoolId int64) ApiCreateLoadBalancerPoolNodeRequest {
-	return ApiCreateLoadBalancerPoolNodeRequest{
-		ApiService:         a,
-		ctx:                ctx,
-		loadBalancerPoolId: loadBalancerPoolId,
-	}
-}
-
-// Execute executes the request
-//
-//	@return CreateLoadBalancerPoolNode200Response
-func (a *LoadBalancersAPIService) CreateLoadBalancerPoolNodeExecute(r ApiCreateLoadBalancerPoolNodeRequest) (*CreateLoadBalancerPoolNode200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *CreateLoadBalancerPoolNode200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "LoadBalancersAPIService.CreateLoadBalancerPoolNode")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/load-balancer-pools/{loadBalancerPoolId}/nodes"
-	localVarPath = strings.Replace(localVarPath, "{"+"loadBalancerPoolId"+"}", url.PathEscape(parameterValueToString(r.loadBalancerPoolId, "loadBalancerPoolId")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.createLoadBalancerPoolNodeRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -653,7 +519,7 @@ func (a *LoadBalancersAPIService) CreateLoadBalancerProfileExecute(r ApiCreateLo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -664,7 +530,7 @@ func (a *LoadBalancersAPIService) CreateLoadBalancerProfileExecute(r ApiCreateLo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -787,7 +653,7 @@ func (a *LoadBalancersAPIService) CreateLoadBalancerVirtualServerExecute(r ApiCr
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -798,7 +664,7 @@ func (a *LoadBalancersAPIService) CreateLoadBalancerVirtualServerExecute(r ApiCr
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -911,7 +777,7 @@ func (a *LoadBalancersAPIService) DeleteLoadBalancerExecute(r ApiDeleteLoadBalan
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -922,7 +788,7 @@ func (a *LoadBalancersAPIService) DeleteLoadBalancerExecute(r ApiDeleteLoadBalan
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1039,7 +905,7 @@ func (a *LoadBalancersAPIService) DeleteLoadBalancerMonitorExecute(r ApiDeleteLo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1050,7 +916,7 @@ func (a *LoadBalancersAPIService) DeleteLoadBalancerMonitorExecute(r ApiDeleteLo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1167,7 +1033,7 @@ func (a *LoadBalancersAPIService) DeleteLoadBalancerPoolExecute(r ApiDeleteLoadB
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1178,135 +1044,7 @@ func (a *LoadBalancersAPIService) DeleteLoadBalancerPoolExecute(r ApiDeleteLoadB
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiDeleteLoadBalancerPoolNodeRequest struct {
-	ctx                context.Context
-	ApiService         *LoadBalancersAPIService
-	loadBalancerPoolId int64
-	id                 int64
-}
-
-func (r ApiDeleteLoadBalancerPoolNodeRequest) Execute() (*DeleteLoadBalancerPoolNode200Response, *http.Response, error) {
-	return r.ApiService.DeleteLoadBalancerPoolNodeExecute(r)
-}
-
-/*
-DeleteLoadBalancerPoolNode Delete a Load Balancer Pool Node
-
-Will delete a Load Balancer Pool Node from the system and make it no longer usable.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param loadBalancerPoolId Load Balancer Pool ID
-	@param id Morpheus ID of the Object being referenced
-	@return ApiDeleteLoadBalancerPoolNodeRequest
-*/
-func (a *LoadBalancersAPIService) DeleteLoadBalancerPoolNode(ctx context.Context, loadBalancerPoolId int64, id int64) ApiDeleteLoadBalancerPoolNodeRequest {
-	return ApiDeleteLoadBalancerPoolNodeRequest{
-		ApiService:         a,
-		ctx:                ctx,
-		loadBalancerPoolId: loadBalancerPoolId,
-		id:                 id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return DeleteLoadBalancerPoolNode200Response
-func (a *LoadBalancersAPIService) DeleteLoadBalancerPoolNodeExecute(r ApiDeleteLoadBalancerPoolNodeRequest) (*DeleteLoadBalancerPoolNode200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodDelete
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *DeleteLoadBalancerPoolNode200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "LoadBalancersAPIService.DeleteLoadBalancerPoolNode")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/load-balancer-pools/{loadBalancerPoolId}/nodes/{id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"loadBalancerPoolId"+"}", url.PathEscape(parameterValueToString(r.loadBalancerPoolId, "loadBalancerPoolId")), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1423,7 +1161,7 @@ func (a *LoadBalancersAPIService) DeleteLoadBalancerProfileExecute(r ApiDeleteLo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1434,7 +1172,7 @@ func (a *LoadBalancersAPIService) DeleteLoadBalancerProfileExecute(r ApiDeleteLo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1551,7 +1289,7 @@ func (a *LoadBalancersAPIService) DeleteLoadBalancerVirtualServerExecute(r ApiDe
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1562,7 +1300,7 @@ func (a *LoadBalancersAPIService) DeleteLoadBalancerVirtualServerExecute(r ApiDe
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1675,7 +1413,7 @@ func (a *LoadBalancersAPIService) GetLoadBalancerExecute(r ApiGetLoadBalancerReq
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1686,7 +1424,7 @@ func (a *LoadBalancersAPIService) GetLoadBalancerExecute(r ApiGetLoadBalancerReq
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1803,7 +1541,7 @@ func (a *LoadBalancersAPIService) GetLoadBalancerMonitorExecute(r ApiGetLoadBala
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1814,7 +1552,7 @@ func (a *LoadBalancersAPIService) GetLoadBalancerMonitorExecute(r ApiGetLoadBala
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1931,7 +1669,7 @@ func (a *LoadBalancersAPIService) GetLoadBalancerPoolExecute(r ApiGetLoadBalance
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1942,135 +1680,7 @@ func (a *LoadBalancersAPIService) GetLoadBalancerPoolExecute(r ApiGetLoadBalance
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiGetLoadBalancerPoolNodeRequest struct {
-	ctx                context.Context
-	ApiService         *LoadBalancersAPIService
-	loadBalancerPoolId int64
-	id                 int64
-}
-
-func (r ApiGetLoadBalancerPoolNodeRequest) Execute() (*GetLoadBalancerPoolNode200Response, *http.Response, error) {
-	return r.ApiService.GetLoadBalancerPoolNodeExecute(r)
-}
-
-/*
-GetLoadBalancerPoolNode Get a Specific Load Balancer Pool Node
-
-This endpoint retrieves a specific Load Balancer Pool Node.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param loadBalancerPoolId Load Balancer Pool ID
-	@param id Morpheus ID of the Object being referenced
-	@return ApiGetLoadBalancerPoolNodeRequest
-*/
-func (a *LoadBalancersAPIService) GetLoadBalancerPoolNode(ctx context.Context, loadBalancerPoolId int64, id int64) ApiGetLoadBalancerPoolNodeRequest {
-	return ApiGetLoadBalancerPoolNodeRequest{
-		ApiService:         a,
-		ctx:                ctx,
-		loadBalancerPoolId: loadBalancerPoolId,
-		id:                 id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return GetLoadBalancerPoolNode200Response
-func (a *LoadBalancersAPIService) GetLoadBalancerPoolNodeExecute(r ApiGetLoadBalancerPoolNodeRequest) (*GetLoadBalancerPoolNode200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *GetLoadBalancerPoolNode200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "LoadBalancersAPIService.GetLoadBalancerPoolNode")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/load-balancer-pools/{loadBalancerPoolId}/nodes/{id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"loadBalancerPoolId"+"}", url.PathEscape(parameterValueToString(r.loadBalancerPoolId, "loadBalancerPoolId")), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2187,7 +1797,7 @@ func (a *LoadBalancersAPIService) GetLoadBalancerProfileExecute(r ApiGetLoadBala
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2198,131 +1808,7 @@ func (a *LoadBalancersAPIService) GetLoadBalancerProfileExecute(r ApiGetLoadBala
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiGetLoadBalancerTypeRequest struct {
-	ctx        context.Context
-	ApiService *LoadBalancersAPIService
-	id         int64
-}
-
-func (r ApiGetLoadBalancerTypeRequest) Execute() (*GetLoadBalancerType200Response, *http.Response, error) {
-	return r.ApiService.GetLoadBalancerTypeExecute(r)
-}
-
-/*
-GetLoadBalancerType Get a Specific Load Balancer Type
-
-This endpoint will retrieve a specific load balancer type by id.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiGetLoadBalancerTypeRequest
-*/
-func (a *LoadBalancersAPIService) GetLoadBalancerType(ctx context.Context, id int64) ApiGetLoadBalancerTypeRequest {
-	return ApiGetLoadBalancerTypeRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return GetLoadBalancerType200Response
-func (a *LoadBalancersAPIService) GetLoadBalancerTypeExecute(r ApiGetLoadBalancerTypeRequest) (*GetLoadBalancerType200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *GetLoadBalancerType200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "LoadBalancersAPIService.GetLoadBalancerType")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/load-balancer-types/{id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2439,7 +1925,7 @@ func (a *LoadBalancersAPIService) GetLoadBalancerVirtualServerExecute(r ApiGetLo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2450,7 +1936,7 @@ func (a *LoadBalancersAPIService) GetLoadBalancerVirtualServerExecute(r ApiGetLo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2635,7 +2121,7 @@ func (a *LoadBalancersAPIService) ListLoadBalancerMonitorsExecute(r ApiListLoadB
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2646,193 +2132,7 @@ func (a *LoadBalancersAPIService) ListLoadBalancerMonitorsExecute(r ApiListLoadB
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiListLoadBalancerPoolNodesRequest struct {
-	ctx                context.Context
-	ApiService         *LoadBalancersAPIService
-	loadBalancerPoolId int64
-	max                *int64
-	offset             *int64
-	sort               *string
-	direction          *string
-	phrase             *string
-}
-
-// Maximum number of records to return
-func (r ApiListLoadBalancerPoolNodesRequest) Max(max int64) ApiListLoadBalancerPoolNodesRequest {
-	r.max = &max
-	return r
-}
-
-// Offset records, the number of records to skip, for paginating requests
-func (r ApiListLoadBalancerPoolNodesRequest) Offset(offset int64) ApiListLoadBalancerPoolNodesRequest {
-	r.offset = &offset
-	return r
-}
-
-// Sort order, the name of the property to sort by
-func (r ApiListLoadBalancerPoolNodesRequest) Sort(sort string) ApiListLoadBalancerPoolNodesRequest {
-	r.sort = &sort
-	return r
-}
-
-// Sort direction, use &#39;desc&#39; to reverse sort
-func (r ApiListLoadBalancerPoolNodesRequest) Direction(direction string) ApiListLoadBalancerPoolNodesRequest {
-	r.direction = &direction
-	return r
-}
-
-// Search phrase for partial matches on name or description
-func (r ApiListLoadBalancerPoolNodesRequest) Phrase(phrase string) ApiListLoadBalancerPoolNodesRequest {
-	r.phrase = &phrase
-	return r
-}
-
-func (r ApiListLoadBalancerPoolNodesRequest) Execute() (*ListLoadBalancerPoolNodes200Response, *http.Response, error) {
-	return r.ApiService.ListLoadBalancerPoolNodesExecute(r)
-}
-
-/*
-ListLoadBalancerPoolNodes Get All Load Balancer Pool Nodes For Load Balancer Pool
-
-This endpoint retrieves all load balancer pool nodes associated with a specified load balancer pool.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param loadBalancerPoolId Load Balancer Pool ID
-	@return ApiListLoadBalancerPoolNodesRequest
-*/
-func (a *LoadBalancersAPIService) ListLoadBalancerPoolNodes(ctx context.Context, loadBalancerPoolId int64) ApiListLoadBalancerPoolNodesRequest {
-	return ApiListLoadBalancerPoolNodesRequest{
-		ApiService:         a,
-		ctx:                ctx,
-		loadBalancerPoolId: loadBalancerPoolId,
-	}
-}
-
-// Execute executes the request
-//
-//	@return ListLoadBalancerPoolNodes200Response
-func (a *LoadBalancersAPIService) ListLoadBalancerPoolNodesExecute(r ApiListLoadBalancerPoolNodesRequest) (*ListLoadBalancerPoolNodes200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *ListLoadBalancerPoolNodes200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "LoadBalancersAPIService.ListLoadBalancerPoolNodes")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/load-balancer-pools/{loadBalancerPoolId}/nodes"
-	localVarPath = strings.Replace(localVarPath, "{"+"loadBalancerPoolId"+"}", url.PathEscape(parameterValueToString(r.loadBalancerPoolId, "loadBalancerPoolId")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	if r.max != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "max", r.max, "form", "")
-	} else {
-		var defaultValue int64 = 25
-		r.max = &defaultValue
-	}
-	if r.offset != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "offset", r.offset, "form", "")
-	} else {
-		var defaultValue int64 = 0
-		r.offset = &defaultValue
-	}
-	if r.sort != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", r.sort, "form", "")
-	} else {
-		var defaultValue string = "name"
-		r.sort = &defaultValue
-	}
-	if r.direction != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "direction", r.direction, "form", "")
-	} else {
-		var defaultValue string = "asc"
-		r.direction = &defaultValue
-	}
-	if r.phrase != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
-	}
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -3017,7 +2317,7 @@ func (a *LoadBalancersAPIService) ListLoadBalancerPoolsExecute(r ApiListLoadBala
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -3028,7 +2328,7 @@ func (a *LoadBalancersAPIService) ListLoadBalancerPoolsExecute(r ApiListLoadBala
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -3213,7 +2513,7 @@ func (a *LoadBalancersAPIService) ListLoadBalancerProfilesExecute(r ApiListLoadB
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -3224,222 +2524,7 @@ func (a *LoadBalancersAPIService) ListLoadBalancerProfilesExecute(r ApiListLoadB
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiListLoadBalancerTypesRequest struct {
-	ctx         context.Context
-	ApiService  *LoadBalancersAPIService
-	max         *int64
-	offset      *int64
-	sort        *string
-	direction   *string
-	optionTypes *bool
-	phrase      *string
-	name        *string
-	code        *string
-}
-
-// Maximum number of records to return
-func (r ApiListLoadBalancerTypesRequest) Max(max int64) ApiListLoadBalancerTypesRequest {
-	r.max = &max
-	return r
-}
-
-// Offset records, the number of records to skip, for paginating requests
-func (r ApiListLoadBalancerTypesRequest) Offset(offset int64) ApiListLoadBalancerTypesRequest {
-	r.offset = &offset
-	return r
-}
-
-// Sort order, the name of the property to sort by
-func (r ApiListLoadBalancerTypesRequest) Sort(sort string) ApiListLoadBalancerTypesRequest {
-	r.sort = &sort
-	return r
-}
-
-// Sort direction, use &#39;desc&#39; to reverse sort
-func (r ApiListLoadBalancerTypesRequest) Direction(direction string) ApiListLoadBalancerTypesRequest {
-	r.direction = &direction
-	return r
-}
-
-// Pass true to include optionTypes in the response for each entry.
-func (r ApiListLoadBalancerTypesRequest) OptionTypes(optionTypes bool) ApiListLoadBalancerTypesRequest {
-	r.optionTypes = &optionTypes
-	return r
-}
-
-// Search phrase for partial matches on name or description
-func (r ApiListLoadBalancerTypesRequest) Phrase(phrase string) ApiListLoadBalancerTypesRequest {
-	r.phrase = &phrase
-	return r
-}
-
-// Filter by name
-func (r ApiListLoadBalancerTypesRequest) Name(name string) ApiListLoadBalancerTypesRequest {
-	r.name = &name
-	return r
-}
-
-// If specified will return an exact match on code
-func (r ApiListLoadBalancerTypesRequest) Code(code string) ApiListLoadBalancerTypesRequest {
-	r.code = &code
-	return r
-}
-
-func (r ApiListLoadBalancerTypesRequest) Execute() (*ListLoadBalancerTypes200Response, *http.Response, error) {
-	return r.ApiService.ListLoadBalancerTypesExecute(r)
-}
-
-/*
-ListLoadBalancerTypes Get All Load Balancer Types
-
-This endpoint retrieves all Load Balancer Types.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListLoadBalancerTypesRequest
-*/
-func (a *LoadBalancersAPIService) ListLoadBalancerTypes(ctx context.Context) ApiListLoadBalancerTypesRequest {
-	return ApiListLoadBalancerTypesRequest{
-		ApiService: a,
-		ctx:        ctx,
-	}
-}
-
-// Execute executes the request
-//
-//	@return ListLoadBalancerTypes200Response
-func (a *LoadBalancersAPIService) ListLoadBalancerTypesExecute(r ApiListLoadBalancerTypesRequest) (*ListLoadBalancerTypes200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *ListLoadBalancerTypes200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "LoadBalancersAPIService.ListLoadBalancerTypes")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/load-balancer-types"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	if r.max != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "max", r.max, "form", "")
-	} else {
-		var defaultValue int64 = 25
-		r.max = &defaultValue
-	}
-	if r.offset != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "offset", r.offset, "form", "")
-	} else {
-		var defaultValue int64 = 0
-		r.offset = &defaultValue
-	}
-	if r.sort != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", r.sort, "form", "")
-	} else {
-		var defaultValue string = "name"
-		r.sort = &defaultValue
-	}
-	if r.direction != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "direction", r.direction, "form", "")
-	} else {
-		var defaultValue string = "asc"
-		r.direction = &defaultValue
-	}
-	if r.optionTypes != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "optionTypes", r.optionTypes, "form", "")
-	} else {
-		var defaultValue bool = false
-		r.optionTypes = &defaultValue
-	}
-	if r.phrase != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
-	}
-	if r.name != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
-	}
-	if r.code != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "code", r.code, "form", "")
-	}
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -3644,7 +2729,7 @@ func (a *LoadBalancersAPIService) ListLoadBalancerVirtualServersExecute(r ApiLis
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -3655,7 +2740,7 @@ func (a *LoadBalancersAPIService) ListLoadBalancerVirtualServersExecute(r ApiLis
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -3836,7 +2921,7 @@ func (a *LoadBalancersAPIService) ListLoadBalancersExecute(r ApiListLoadBalancer
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -3847,131 +2932,7 @@ func (a *LoadBalancersAPIService) ListLoadBalancersExecute(r ApiListLoadBalancer
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiRefreshLoadBalancerRequest struct {
-	ctx            context.Context
-	ApiService     *LoadBalancersAPIService
-	loadBalancerId int64
-}
-
-func (r ApiRefreshLoadBalancerRequest) Execute() (*RefreshLoadBalancer200Response, *http.Response, error) {
-	return r.ApiService.RefreshLoadBalancerExecute(r)
-}
-
-/*
-RefreshLoadBalancer Refresh a Load Balancer
-
-Will refresh a Load Balancer.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param loadBalancerId Load Balancer ID
-	@return ApiRefreshLoadBalancerRequest
-*/
-func (a *LoadBalancersAPIService) RefreshLoadBalancer(ctx context.Context, loadBalancerId int64) ApiRefreshLoadBalancerRequest {
-	return ApiRefreshLoadBalancerRequest{
-		ApiService:     a,
-		ctx:            ctx,
-		loadBalancerId: loadBalancerId,
-	}
-}
-
-// Execute executes the request
-//
-//	@return RefreshLoadBalancer200Response
-func (a *LoadBalancersAPIService) RefreshLoadBalancerExecute(r ApiRefreshLoadBalancerRequest) (*RefreshLoadBalancer200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *RefreshLoadBalancer200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "LoadBalancersAPIService.RefreshLoadBalancer")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/load-balancers/{loadBalancerId}/refresh"
-	localVarPath = strings.Replace(localVarPath, "{"+"loadBalancerId"+"}", url.PathEscape(parameterValueToString(r.loadBalancerId, "loadBalancerId")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -4092,7 +3053,7 @@ func (a *LoadBalancersAPIService) UpdateLoadBalancerExecute(r ApiUpdateLoadBalan
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -4103,7 +3064,7 @@ func (a *LoadBalancersAPIService) UpdateLoadBalancerExecute(r ApiUpdateLoadBalan
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -4230,7 +3191,7 @@ func (a *LoadBalancersAPIService) UpdateLoadBalancerMonitorExecute(r ApiUpdateLo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -4241,7 +3202,7 @@ func (a *LoadBalancersAPIService) UpdateLoadBalancerMonitorExecute(r ApiUpdateLo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -4366,7 +3327,7 @@ func (a *LoadBalancersAPIService) UpdateLoadBalancerPoolExecute(r ApiUpdateLoadB
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -4377,143 +3338,7 @@ func (a *LoadBalancersAPIService) UpdateLoadBalancerPoolExecute(r ApiUpdateLoadB
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiUpdateLoadBalancerPoolNodeRequest struct {
-	ctx                               context.Context
-	ApiService                        *LoadBalancersAPIService
-	loadBalancerPoolId                int64
-	id                                int64
-	updateLoadBalancerPoolNodeRequest *UpdateLoadBalancerPoolNodeRequest
-}
-
-func (r ApiUpdateLoadBalancerPoolNodeRequest) UpdateLoadBalancerPoolNodeRequest(updateLoadBalancerPoolNodeRequest UpdateLoadBalancerPoolNodeRequest) ApiUpdateLoadBalancerPoolNodeRequest {
-	r.updateLoadBalancerPoolNodeRequest = &updateLoadBalancerPoolNodeRequest
-	return r
-}
-
-func (r ApiUpdateLoadBalancerPoolNodeRequest) Execute() (*UpdateLoadBalancerPoolNode200Response, *http.Response, error) {
-	return r.ApiService.UpdateLoadBalancerPoolNodeExecute(r)
-}
-
-/*
-UpdateLoadBalancerPoolNode Update a Load Balancer Pool Node
-
-Use this command to update an existing load balancer pool node.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param loadBalancerPoolId Load Balancer Pool ID
-	@param id Morpheus ID of the Object being referenced
-	@return ApiUpdateLoadBalancerPoolNodeRequest
-*/
-func (a *LoadBalancersAPIService) UpdateLoadBalancerPoolNode(ctx context.Context, loadBalancerPoolId int64, id int64) ApiUpdateLoadBalancerPoolNodeRequest {
-	return ApiUpdateLoadBalancerPoolNodeRequest{
-		ApiService:         a,
-		ctx:                ctx,
-		loadBalancerPoolId: loadBalancerPoolId,
-		id:                 id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return UpdateLoadBalancerPoolNode200Response
-func (a *LoadBalancersAPIService) UpdateLoadBalancerPoolNodeExecute(r ApiUpdateLoadBalancerPoolNodeRequest) (*UpdateLoadBalancerPoolNode200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *UpdateLoadBalancerPoolNode200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "LoadBalancersAPIService.UpdateLoadBalancerPoolNode")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/load-balancer-pools/{loadBalancerPoolId}/nodes/{id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"loadBalancerPoolId"+"}", url.PathEscape(parameterValueToString(r.loadBalancerPoolId, "loadBalancerPoolId")), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.updateLoadBalancerPoolNodeRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -4638,7 +3463,7 @@ func (a *LoadBalancersAPIService) UpdateLoadBalancerProfileExecute(r ApiUpdateLo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -4649,7 +3474,7 @@ func (a *LoadBalancersAPIService) UpdateLoadBalancerProfileExecute(r ApiUpdateLo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -4774,7 +3599,7 @@ func (a *LoadBalancersAPIService) UpdateLoadBalancerVirtualServerExecute(r ApiUp
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -4785,7 +3610,7 @@ func (a *LoadBalancersAPIService) UpdateLoadBalancerVirtualServerExecute(r ApiUp
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

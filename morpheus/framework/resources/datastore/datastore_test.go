@@ -14,6 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
@@ -284,6 +287,15 @@ func TestAccMorpheusDatastoreResourceUpdateOk(t *testing.T) {
 					}`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
+				// The rename is an in-place update that must keep id known: planned
+				// as unknown it forces the replacement of anything that references
+				// the datastore through a create-only attribute (MORPH-18309).
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("hpe_morpheus_datastore.example", plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue("hpe_morpheus_datastore.example", tfjsonpath.New("id"), knownvalue.NotNull()),
+					},
+				},
 			},
 			{
 				// Checks that plan detects visibility change

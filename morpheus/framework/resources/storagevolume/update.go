@@ -10,6 +10,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 )
 
 func (r *storageVolumeResource) Update(
@@ -30,30 +31,37 @@ func (r *storageVolumeResource) Update(
 		return
 	}
 
-	id := plan.Id.ValueInt64()
-	idParam := sdk.UpdateStorageVolumesIdParameter{Int64: &id}
-
-	body := sdk.UpdateStorageVolumesRequestStorageVolume{
-		Name: plan.Name.ValueStringPointer(),
-	}
-
-	// max_storage is expressed in GiB; convert to bytes (the API unit), matching
-	// the create path.
-	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
-		body.MaxStorage = sdk.PtrInt64(plan.MaxStorage.ValueInt64() * oneGibibyte)
-	}
-
-	_, httpResp, err := client.StorageAPI.UpdateStorageVolumes(ctx, idParam).
-		UpdateStorageVolumesRequest(sdk.UpdateStorageVolumesRequest{
-			StorageVolume: body,
-		}).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(
-			&resp.Diagnostics, errfmt.OpUpdate, "storage_volume",
-			plan.Name.ValueString(), err, httpResp,
-		)
-
+	var state StorageVolumeModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	id := plan.Id.ValueInt64()
+
+	// The only in-place change the API offers is a resize; the volume's name
+	// cannot be edited after create (the schema replaces the volume when it
+	// changes). Morpheus 9.1.0 repurposed PUT /api/storage-volumes/{id} for
+	// tenant transfer, so the resize has its own endpoint. max_storage is
+	// expressed in GiB; convert to bytes (the API unit), matching create.
+	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() && !plan.MaxStorage.Equal(state.MaxStorage) {
+		idParam := sdk.TransferStorageVolumeOwnershipIdParameter{Int64: &id}
+		body := sdk.ResizeStorageVolumeRequest{
+			StorageVolume: sdk.ResizeStorageVolumeRequestStorageVolume{
+				MaxStorage: plan.MaxStorage.ValueInt64() * oneGibibyte,
+			},
+		}
+
+		_, httpResp, err := client.StorageAPI.ResizeStorageVolume(ctx, idParam).
+			ResizeStorageVolumeRequest(body).Execute()
+		if err := errfmt.CheckResponse(err, httpResp); err != nil {
+			errfmt.DiagError(
+				&resp.Diagnostics, errfmt.OpUpdate, "storage_volume",
+				plan.Name.ValueString(), err, httpResp,
+			)
+
+			return
+		}
 	}
 
 	readIdParam := sdk.GetStorageVolumesIdParameter{Int64: &id}
@@ -75,6 +83,15 @@ func (r *storageVolumeResource) Update(
 	}
 
 	mapGetResponseToModel(&plan, readResult.StorageVolume)
+
+	// The write-only configuration is create-only (a change replaces the
+	// volume); an update planned through write_only_revision only records the
+	// digests of the configured values.
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

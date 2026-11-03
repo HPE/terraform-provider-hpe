@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -63,51 +63,6 @@ func (o AddClusterRequestClusterServerConfigAnyOfOneOf4) ToMap() (map[string]int
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddClusterRequestClusterServerConfigAnyOfOneOf4 struct {
-	value *AddClusterRequestClusterServerConfigAnyOfOneOf4
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf4) Get() *AddClusterRequestClusterServerConfigAnyOfOneOf4 {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf4) Set(val *AddClusterRequestClusterServerConfigAnyOfOneOf4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterServerConfigAnyOfOneOf4(val *AddClusterRequestClusterServerConfigAnyOfOneOf4) *NullableAddClusterRequestClusterServerConfigAnyOfOneOf4 {
-	return &NullableAddClusterRequestClusterServerConfigAnyOfOneOf4{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddClusterRequestClusterServerConfigAnyOfOneOf4) UnmarshalJSON(data []byte) (err error) {

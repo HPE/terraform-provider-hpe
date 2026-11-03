@@ -11,7 +11,12 @@
 // instance's cloud, group and resource pool — most often because the network
 // belongs to the resource pool of the HVM cluster it was discovered on and the
 // request named a different pool — but the response says none of that. The
-// facts needed to say it are one GET per network away.
+// facts needed to say it are one GET per network away, and the networks that
+// would have been accepted are one option-source call away: zoneNetworkOptions
+// runs the same selectability query the validation did, for the same cloud,
+// group, layout and pool, so its answer is authoritative. When that answer is
+// empty — a pool with nothing selectable, which is what the motivating
+// incident turned out to be — the explanation says so outright.
 package provisionhint
 
 import (
@@ -26,7 +31,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/optionsource"
 )
 
 // invalidNetworkText is the value Morpheus puts in errors.networkInterfaces
@@ -36,8 +44,17 @@ const invalidNetworkText = "Invalid network"
 // Request is what the caller sent, as far as the explanation needs it.
 type Request struct {
 	// CloudID is the target cloud (zoneId), or 0 when the request does not
-	// carry one — a clone inherits its source's cloud.
+	// carry one — a clone inherits its source's cloud unless it names one.
 	CloudID int64
+	// GroupID and LayoutID are the request's group (siteId) and layout, or 0.
+	// With the cloud and the resource pool they are the context in which
+	// Morpheus decided which networks were selectable, so with them the
+	// explanation can also say which networks would have been accepted.
+	GroupID  int64
+	LayoutID int64
+	// SourceInstanceID is set for a clone: the instance whose cloud, group and
+	// layout apply wherever the clone request does not set its own.
+	SourceInstanceID int64
 	// Config is the request's config object. It is marshalled to JSON and the
 	// resource pool read from it, so any of the generated oneOf wrappers, a
 	// pointer to one, or nil is accepted.
@@ -48,10 +65,83 @@ type Request struct {
 	Interfaces any
 }
 
-// networkGetter is the one SDK call the explanation needs. It is an interface
-// so the message can be tested without an appliance.
+// lookups are the appliance calls the explanation may make. Each is an
+// interface so the message can be tested without an appliance; selectable and
+// instances may be nil, in which case the explanation does without them.
+type lookups struct {
+	networks   networkGetter
+	selectable selectableLister
+	instances  instanceGetter
+}
+
+func sdkLookups(client *sdk.APIClient) lookups {
+	return lookups{
+		networks:   sdkNetworkGetter{client: client},
+		selectable: sdkSelectableLister{client: client},
+		instances:  sdkInstanceGetter{client: client},
+	}
+}
+
+// networkGetter reads one network's facts.
 type networkGetter interface {
 	get(ctx context.Context, id int64) networkFacts
+}
+
+// selectableLister asks Morpheus which networks it would accept for a scope.
+type selectableLister interface {
+	selectable(ctx context.Context, s scope) ([]selectableNetwork, error)
+}
+
+// instanceGetter reads the cloud, group and layout of an existing instance —
+// the context a clone inherits. Zero for anything it could not read.
+type instanceGetter interface {
+	context(ctx context.Context, id int64) (cloudID, groupID, layoutID int64)
+}
+
+// scope is the context Morpheus evaluated selectability in: the instance's
+// cloud, group, layout and resource pool, as far as they are known (0 = not).
+type scope struct {
+	CloudID  int64
+	GroupID  int64
+	LayoutID int64
+	PoolID   int64
+}
+
+// describe renders the known parts of the scope: "cloud 1, group 265, layout
+// 1193, resource pool 1702".
+func (s scope) describe() string {
+	var parts []string
+
+	if s.CloudID != 0 {
+		parts = append(parts, fmt.Sprintf("cloud %d", s.CloudID))
+	}
+
+	if s.GroupID != 0 {
+		parts = append(parts, fmt.Sprintf("group %d", s.GroupID))
+	}
+
+	if s.LayoutID != 0 {
+		parts = append(parts, fmt.Sprintf("layout %d", s.LayoutID))
+	}
+
+	if s.PoolID != 0 {
+		parts = append(parts, fmt.Sprintf("resource pool %d", s.PoolID))
+	}
+
+	return strings.Join(parts, ", ")
+}
+
+// selectableNetwork is one network Morpheus would accept.
+type selectableNetwork struct {
+	ID   int64
+	Name string
+}
+
+// selectable is the answer to "which networks would have been accepted":
+// unknown when it could not be obtained, otherwise a list that may be empty.
+type selectable struct {
+	known bool
+	list  []selectableNetwork
 }
 
 // networkFacts is what GET /api/networks/{id} tells us about one network.
@@ -81,7 +171,7 @@ func InvalidNetwork(ctx context.Context, client *sdk.APIClient, body []byte, req
 		return ""
 	}
 
-	return invalidNetwork(ctx, sdkNetworkGetter{client: client}, req)
+	return invalidNetwork(ctx, sdkLookups(client), req)
 }
 
 // InvalidNetworkReason is InvalidNetwork for a failure reported as text rather
@@ -93,7 +183,7 @@ func InvalidNetworkReason(ctx context.Context, client *sdk.APIClient, reason str
 		return ""
 	}
 
-	return invalidNetwork(ctx, sdkNetworkGetter{client: client}, req)
+	return invalidNetwork(ctx, sdkLookups(client), req)
 }
 
 // ErrorBody returns the body of a failed SDK call. The generated client keeps
@@ -125,20 +215,62 @@ func ErrorBody(err error, resp *http.Response) []byte {
 	return b
 }
 
-func invalidNetwork(ctx context.Context, networks networkGetter, req Request) string {
+func invalidNetwork(ctx context.Context, l lookups, req Request) string {
 	ids := networkIDs(req.Interfaces)
 	if len(ids) == 0 {
 		return ""
 	}
 
-	poolID := resourcePoolID(req.Config)
+	s := scope{CloudID: req.CloudID, GroupID: req.GroupID, LayoutID: req.LayoutID, PoolID: resourcePoolID(req.Config)}
+
+	// A clone inherits whatever it did not set from its source.
+	if req.SourceInstanceID != 0 && l.instances != nil && (s.CloudID == 0 || s.GroupID == 0 || s.LayoutID == 0) {
+		cloudID, groupID, layoutID := l.instances.context(ctx, req.SourceInstanceID)
+
+		if s.CloudID == 0 {
+			s.CloudID = cloudID
+		}
+
+		if s.GroupID == 0 {
+			s.GroupID = groupID
+		}
+
+		if s.LayoutID == 0 {
+			s.LayoutID = layoutID
+		}
+	}
 
 	facts := make([]networkFacts, 0, len(ids))
 	for _, id := range ids {
-		facts = append(facts, networks.get(ctx, id))
+		facts = append(facts, l.networks.get(ctx, id))
 	}
 
-	return message(req.CloudID, poolID, facts)
+	return message(s, facts, selectableNetworks(ctx, l.selectable, s))
+}
+
+// selectableNetworks asks Morpheus which networks it would have accepted. It
+// answers unknown rather than guess when the question cannot be put reliably:
+// without the cloud the source answers for every cloud, and without the layout
+// (its provisioning context) it returns nothing, and either would mislead. A
+// failed call is logged and likewise leaves the answer unknown; the API's own
+// error is still shown.
+func selectableNetworks(ctx context.Context, lister selectableLister, s scope) selectable {
+	if lister == nil || s.CloudID == 0 || s.LayoutID == 0 {
+		tflog.Debug(ctx, "provisionhint: selectable networks not listed: cloud or layout unknown", map[string]any{
+			"cloud_id": s.CloudID, "layout_id": s.LayoutID,
+		})
+
+		return selectable{}
+	}
+
+	list, err := lister.selectable(ctx, s)
+	if err != nil {
+		tflog.Debug(ctx, "provisionhint: selectable networks not listed", map[string]any{"error": err.Error()})
+
+		return selectable{}
+	}
+
+	return selectable{known: true, list: list}
 }
 
 // isInvalidNetwork reports whether body is Morpheus's "Invalid network"
@@ -245,9 +377,13 @@ func networkIDs(ifaces any) []int64 {
 	return ids
 }
 
+// maxListed caps the selectable list in the message; an appliance with
+// hundreds of networks does not need them all in an error.
+const maxListed = 15
+
 // message builds the explanation from the facts. It is pure so the text can be
 // pinned by tests.
-func message(cloudID, poolID int64, facts []networkFacts) string {
+func message(s scope, facts []networkFacts, sel selectable) string {
 	var b strings.Builder
 
 	b.WriteString("Morpheus rejected a network interface because its network is not selectable for this ")
@@ -257,23 +393,77 @@ func message(cloudID, poolID int64, facts []networkFacts) string {
 
 	for _, f := range facts {
 		b.WriteString("\n  - ")
-		b.WriteString(networkLine(cloudID, poolID, f, &poolMismatch))
+		b.WriteString(networkLine(s.CloudID, s.PoolID, f, &poolMismatch))
 	}
 
 	if poolMismatch {
 		b.WriteString("\n\nNetworks discovered on an HVM cluster are bound to that cluster's resource pool. ")
 		b.WriteString("Provision into the cluster's pool (hpe_morpheus_cluster: permissions.resource_pool.id)")
-		fmt.Fprintf(&b, ", or choose a network that belongs to resource pool %d.", poolID)
+
+		switch {
+		case !sel.known:
+			fmt.Fprintf(&b, ", or choose a network that belongs to resource pool %d.", s.PoolID)
+		case len(sel.list) == 0:
+			b.WriteString(".")
+		default:
+			b.WriteString(", or choose one of the networks listed below.")
+		}
+	}
+
+	if sel.known {
+		b.WriteString("\n\n")
+		b.WriteString(selectableParagraph(s, sel.list))
 	}
 
 	return b.String()
 }
 
-func networkLine(cloudID, poolID int64, f networkFacts, poolMismatch *bool) string {
-	label := fmt.Sprintf("network %d", f.ID)
-	if f.Name != "" {
-		label = fmt.Sprintf("network %d %q", f.ID, f.Name)
+// selectableParagraph says which networks Morpheus would accept for the scope,
+// or that there are none. The list comes from the same query the validation
+// ran, so an empty list is a fact about the pool, group and layout, not a
+// lookup failure — and it is the whole explanation for a pool with nothing
+// selectable, so it is stated as such rather than left to be inferred.
+func selectableParagraph(s scope, list []selectableNetwork) string {
+	where := s.describe()
+
+	if len(list) == 0 {
+		return fmt.Sprintf("No network at all is selectable for this instance (%s), so no network interface can be "+
+			"provisioned with this combination; change the resource pool, group or layout. Data source "+
+			"hpe_morpheus_option_source_values, source \"zoneNetworkOptions\", collection \"networks\", lists what "+
+			"is selectable for a given cloud_id, group_id, layout_id and pool_id.", where)
 	}
+
+	parts := make([]string, 0, len(list)+1)
+
+	for i, n := range list {
+		if i == maxListed {
+			parts = append(parts, fmt.Sprintf("and %d more", len(list)-maxListed))
+
+			break
+		}
+
+		parts = append(parts, networkLabel(n.ID, n.Name))
+	}
+
+	return fmt.Sprintf("Networks Morpheus would accept for this instance (%s): %s. Data source "+
+		"hpe_morpheus_option_source_values, source \"zoneNetworkOptions\", collection \"networks\", returns this "+
+		"list for a given cloud_id, group_id, layout_id and pool_id.", where, strings.Join(parts, ", "))
+}
+
+func networkLabel(id int64, name string) string {
+	if name == "" {
+		return fmt.Sprintf("network %d", id)
+	}
+
+	return fmt.Sprintf("network %d %q", id, name)
+}
+
+// networkLine explains one network. The pool cases mirror the server's
+// selectability query: a network is selectable for a pool when it belongs to
+// that pool, is assigned to it — or belongs to no pool at all, so a pool-less
+// network is never excluded by the pool and the line must not say it was.
+func networkLine(cloudID, poolID int64, f networkFacts, poolMismatch *bool) string {
+	label := networkLabel(f.ID, f.Name)
 
 	switch {
 	case f.LookupFailed && f.LookupStatus == http.StatusNotFound:
@@ -287,17 +477,18 @@ func networkLine(cloudID, poolID int64, f networkFacts, poolMismatch *bool) stri
 	case f.Active != nil && !*f.Active:
 		return label + " is inactive."
 	case poolID != 0 && len(f.Pools) == 0:
-		*poolMismatch = true
-
-		return fmt.Sprintf("%s belongs to no resource pool; this instance targets resource pool %d.", label, poolID)
+		return fmt.Sprintf("%s belongs to no resource pool, which does not exclude it from resource pool %d; "+
+			"it is not of a type this layout's provision type can use, or it is not visible to the instance's "+
+			"group or tenant (check the network's type, group access and tenant permissions).", label, poolID)
 	case poolID != 0 && !inPools(f.Pools, poolID):
 		*poolMismatch = true
 
 		return fmt.Sprintf("%s belongs to %s; this instance targets resource pool %d.",
 			label, describePools(f.Pools), poolID)
 	default:
-		return label + " is in this cloud and active; it is not visible to the instance's group or tenant " +
-			"(check the network's group access and tenant permissions)."
+		return label + " is in this cloud and active; it is not of a type this layout's provision type can use, " +
+			"or it is not visible to the instance's group or tenant (check the network's type, group access and " +
+			"tenant permissions)."
 	}
 }
 
@@ -405,4 +596,78 @@ func factsFromNetwork(id int64, n *sdk.GetNetwork200ResponseNetwork) networkFact
 	f.Pools = append(f.Pools, extra...)
 
 	return f
+}
+
+// sdkSelectableLister asks zoneNetworkOptions, which runs the same
+// selectability query as instance validation for the same cloud, group, layout
+// and pool. The server supplies the tenant itself. Items come back as
+// {id: "network-<id>", name: ...} under "networks".
+type sdkSelectableLister struct {
+	client *sdk.APIClient
+}
+
+func (l sdkSelectableLister) selectable(ctx context.Context, s scope) ([]selectableNetwork, error) {
+	params := map[string]string{
+		"zoneId":   strconv.FormatInt(s.CloudID, 10),
+		"layoutId": strconv.FormatInt(s.LayoutID, 10),
+	}
+
+	if s.GroupID != 0 {
+		params["siteId"] = strconv.FormatInt(s.GroupID, 10)
+	}
+
+	if s.PoolID != 0 {
+		params["poolId"] = strconv.FormatInt(s.PoolID, 10)
+	}
+
+	res, err := optionsource.Fetch(ctx, l.client, optionsource.Request{
+		Source:     "zoneNetworkOptions",
+		Parameters: params,
+		Collection: "networks",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]selectableNetwork, 0, len(res.Values))
+
+	for _, v := range res.Values {
+		id, err := strconv.ParseInt(strings.TrimPrefix(v.Value, "network-"), 10, 64)
+		if err != nil || id <= 0 {
+			continue
+		}
+
+		out = append(out, selectableNetwork{ID: id, Name: v.Name})
+	}
+
+	return out, nil
+}
+
+// sdkInstanceGetter reads a clone's source instance for the context the clone
+// inherits.
+type sdkInstanceGetter struct {
+	client *sdk.APIClient
+}
+
+func (g sdkInstanceGetter) context(ctx context.Context, id int64) (cloudID, groupID, layoutID int64) {
+	resp, _, err := g.client.InstancesAPI.GetInstance(ctx, id).Execute()
+	if err != nil || resp == nil || resp.Instance == nil {
+		return 0, 0, 0
+	}
+
+	inst := resp.Instance
+
+	if inst.Cloud != nil && inst.Cloud.Id != nil {
+		cloudID = *inst.Cloud.Id
+	}
+
+	if group := inst.Group.Get(); group != nil && group.Id != nil {
+		groupID = *group.Id
+	}
+
+	if inst.Layout != nil && inst.Layout.Id != nil {
+		layoutID = *inst.Layout.Id
+	}
+
+	return cloudID, groupID, layoutID
 }

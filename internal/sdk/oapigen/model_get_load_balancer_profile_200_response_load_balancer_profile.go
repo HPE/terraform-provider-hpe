@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -146,51 +146,6 @@ func (o GetLoadBalancerProfile200ResponseLoadBalancerProfile) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetLoadBalancerProfile200ResponseLoadBalancerProfile struct {
-	value *GetLoadBalancerProfile200ResponseLoadBalancerProfile
-	isSet bool
-}
-
-func (v NullableGetLoadBalancerProfile200ResponseLoadBalancerProfile) Get() *GetLoadBalancerProfile200ResponseLoadBalancerProfile {
-	return v.value
-}
-
-func (v *NullableGetLoadBalancerProfile200ResponseLoadBalancerProfile) Set(val *GetLoadBalancerProfile200ResponseLoadBalancerProfile) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLoadBalancerProfile200ResponseLoadBalancerProfile) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLoadBalancerProfile200ResponseLoadBalancerProfile) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLoadBalancerProfile200ResponseLoadBalancerProfile(val *GetLoadBalancerProfile200ResponseLoadBalancerProfile) *NullableGetLoadBalancerProfile200ResponseLoadBalancerProfile {
-	return &NullableGetLoadBalancerProfile200ResponseLoadBalancerProfile{value: val, isSet: true}
-}
-
-func (v NullableGetLoadBalancerProfile200ResponseLoadBalancerProfile) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLoadBalancerProfile200ResponseLoadBalancerProfile) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLoadBalancerProfile200ResponseLoadBalancerProfile) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetLoadBalancerProfile200ResponseLoadBalancerProfile) UnmarshalJSON(data []byte) (err error) {

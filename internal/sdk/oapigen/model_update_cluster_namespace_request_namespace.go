@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,8 @@ var _ MappedNullable = &UpdateClusterNamespaceRequestNamespace{}
 type UpdateClusterNamespaceRequestNamespace struct {
 	// Namespace name
 	Name *string `json:"name,omitempty"`
-	// Namespace description
-	Description *string `json:"description,omitempty"`
+	// Namespace description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Namespace active
 	Active *bool `json:"active,omitempty"`
 	// Visibility level (public or private)
@@ -47,8 +47,8 @@ func (o UpdateClusterNamespaceRequestNamespace) ToMap() (map[string]interface{},
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active
@@ -65,51 +65,6 @@ func (o UpdateClusterNamespaceRequestNamespace) ToMap() (map[string]interface{},
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateClusterNamespaceRequestNamespace struct {
-	value *UpdateClusterNamespaceRequestNamespace
-	isSet bool
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespace) Get() *UpdateClusterNamespaceRequestNamespace {
-	return v.value
-}
-
-func (v *NullableUpdateClusterNamespaceRequestNamespace) Set(val *UpdateClusterNamespaceRequestNamespace) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespace) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateClusterNamespaceRequestNamespace) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateClusterNamespaceRequestNamespace(val *UpdateClusterNamespaceRequestNamespace) *NullableUpdateClusterNamespaceRequestNamespace {
-	return &NullableUpdateClusterNamespaceRequestNamespace{value: val, isSet: true}
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespace) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateClusterNamespaceRequestNamespace) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespace) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateClusterNamespaceRequestNamespace) UnmarshalJSON(data []byte) (err error) {

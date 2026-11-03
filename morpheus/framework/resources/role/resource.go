@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package role
 
@@ -14,11 +14,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -265,6 +269,121 @@ func populateGetRoleAsStatePermissions(
 		"vdi_pool_permissions":             vdiPoolsSet,
 		"workflow_permissions":             workflowsSet,
 	})
+}
+
+// repairEchoGappedCloudPermissions re-inserts cloud_permissions entries that a
+// sub-tenant caller configured (in source: the plan on Create/Update, or the
+// prior state on Read) but that the role GET response omitted.
+//
+// MORPH-17517: zone permissions ARE persisted for sub-tenant writes, but the
+// role GET response filters the echoed zones list by the CALLER's cloud
+// visibility — for sub-tenant callers only public master-owned clouds appear,
+// so permissions on the sub-tenant's own clouds are persisted but never echoed.
+// Without this repair the provider stores null for those entries and Terraform
+// reports "inconsistent result after apply" (was cty.SetVal(...), but now null).
+//
+// The repair only runs for non-master callers, so master-tenant behaviour is
+// bit-identical to before (master callers see a faithful echo; a genuinely
+// deleted entry is absent from both echo and source, and is not re-inserted
+// since we only re-insert entries present in source). For each source entry
+// missing from the echo (matched on cloud id), we append it carrying the API's
+// name if echoed, else the source's name (name is Computed; null on a fresh
+// create where neither the echo nor a prior state supplies it).
+//
+// Known limitation: a fresh sub-tenant import cannot recover hidden entries,
+// because on import there is no prior state or plan to use as source — the API
+// simply does not return them (MORPH-17517).
+func repairEchoGappedCloudPermissions(
+	ctx context.Context,
+	client *sdk.APIClient,
+	apiClouds basetypes.SetValue,
+	sourceClouds basetypes.SetValue,
+	nameFallbackClouds basetypes.SetValue,
+) (basetypes.SetValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Nothing to repair if the caller did not configure cloud_permissions.
+	if sourceClouds.IsNull() || sourceClouds.IsUnknown() {
+		return apiClouds, diags
+	}
+
+	// Only repair for non-master callers; master callers get a faithful echo,
+	// and repairing there could mask a genuine deletion. Fail open (no repair)
+	// if tenancy cannot be determined — the guard elsewhere warns; here we
+	// simply leave the echo untouched.
+	isMaster, err := tenancy.CallerIsMaster(ctx, client)
+	if err != nil || isMaster {
+		return apiClouds, diags
+	}
+
+	var apiEntries []CloudPermissionsValue
+	if !apiClouds.IsNull() && !apiClouds.IsUnknown() {
+		diags.Append(apiClouds.ElementsAs(ctx, &apiEntries, false)...)
+		if diags.HasError() {
+			return apiClouds, diags
+		}
+	}
+
+	var sourceEntries []CloudPermissionsValue
+	diags.Append(sourceClouds.ElementsAs(ctx, &sourceEntries, false)...)
+	if diags.HasError() {
+		return apiClouds, diags
+	}
+
+	// Prior-state entries used to resolve a Computed name the source (plan) does
+	// not yet know (Update). May be null (Create/Read) — then no fallback.
+	var fallbackEntries []CloudPermissionsValue
+	if !nameFallbackClouds.IsNull() && !nameFallbackClouds.IsUnknown() {
+		diags.Append(nameFallbackClouds.ElementsAs(ctx, &fallbackEntries, false)...)
+		if diags.HasError() {
+			return apiClouds, diags
+		}
+	}
+
+	merged := make([]CloudPermissionsValue, len(apiEntries))
+	copy(merged, apiEntries)
+
+	for _, s := range sourceEntries {
+		if s.Id.IsNull() || s.Id.IsUnknown() {
+			continue
+		}
+		// Present in the echo already? Leave the echoed entry as-is.
+		if slices.IndexFunc(apiEntries, func(a CloudPermissionsValue) bool {
+			return a.Id.Equal(s.Id)
+		}) > -1 {
+			continue
+		}
+
+		// Echo-gapped: re-insert the source entry. Resolve a Computed name the
+		// source does not know (unknown/null) from the prior state, else leave
+		// it null (a first create where no echo or prior state supplies it).
+		name := s.Name
+		if name.IsUnknown() || name.IsNull() {
+			if n := slices.IndexFunc(fallbackEntries, func(f CloudPermissionsValue) bool {
+				return f.Id.Equal(s.Id)
+			}); n > -1 {
+				name = fallbackEntries[n].Name
+			}
+		}
+		if name.IsUnknown() {
+			name = types.StringNull()
+		}
+
+		merged = append(merged, CloudPermissionsValue{
+			Id:     s.Id,
+			Access: s.Access,
+			Name:   name,
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	repaired, d := types.SetValueFrom(ctx, CloudPermissionsValue{}.Type(ctx), merged)
+	diags.Append(d...)
+	if diags.HasError() {
+		return apiClouds, diags
+	}
+
+	return repaired, diags
 }
 
 // Helper function to break out the logic of setting permissions in update.
@@ -1321,23 +1440,26 @@ func getRoleAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
-) (RoleModel, diag.Diagnostics) {
+) (RoleModel, bool, diag.Diagnostics) {
 	var state RoleModel
 	var diags diag.Diagnostics
 
 	r, hresp, err := client.RolesAPI.GetRole(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate role resource",
 			fmt.Sprintf("role %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	permissions, diags := populateGetRoleAsStatePermissions(ctx, r)
 	if diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = convert.Int64ToType(r.Role.Id)
@@ -1374,11 +1496,11 @@ func getRoleAsState(
 	tenantCopiesSet, tcDiags := types.SetValueFrom(ctx, TenantCopiesValue{}.Type(ctx), tenantCopies)
 	diags.Append(tcDiags...)
 	if diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 	state.TenantCopies = tenantCopiesSet
 
-	return state, diags
+	return state, true, diags
 }
 
 func (r *Resource) Create(
@@ -1401,7 +1523,7 @@ func (r *Resource) Create(
 
 	// optional
 	if !plan.DefaultPersonaCode.IsUnknown() && !plan.DefaultPersonaCode.IsNull() {
-		addRole.DefaultPersona.Set(plan.DefaultPersonaCode.ValueStringPointer())
+		addRole.DefaultPersona.Set(&sdk.AddRolesRequestRoleDefaultPersona{String: plan.DefaultPersonaCode.ValueStringPointer()})
 	}
 
 	if !plan.Description.IsUnknown() {
@@ -1489,7 +1611,10 @@ func (r *Resource) Create(
 		})
 	}
 
-	apiState, diags := getRoleAsState(ctx, id, client)
+	apiState, found, diags := getRoleAsState(ctx, id, client)
+	if !found && !diags.HasError() {
+		diags.AddError("create role resource", fmt.Sprintf("role %d was created but could not be read", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
@@ -1626,6 +1751,25 @@ func (r *Resource) Create(
 		}
 	}
 
+	// MORPH-17517: re-insert cloud_permissions the sub-tenant caller configured
+	// but the role GET omitted (echo filters zones by caller visibility). Uses
+	// the plan as the source of truth for a create.
+	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
+		repaired, diags := repairEchoGappedCloudPermissions(
+			ctx, client,
+			apiState.Permissions.CloudPermissions,
+			plan.Permissions.CloudPermissions,
+			basetypes.NewSetNull(CloudPermissionsValue{}.Type(ctx)),
+		)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			taintResourceState(id)
+
+			return
+		}
+		apiState.Permissions.CloudPermissions = repaired
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(
@@ -1661,13 +1805,22 @@ func (r *Resource) Read(
 	}
 
 	id := state.Id.ValueInt64()
-	apiState, diags := getRoleAsState(ctx, id, client)
+	apiState, found, diags := getRoleAsState(ctx, id, client)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
 			"read role resource",
 			fmt.Sprintf("role %d: failed to read from api", id),
 		)
+
+		return
+	}
+
+	// The role was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("role %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
 
 		return
 	}
@@ -1856,6 +2009,25 @@ func (r *Resource) Read(
 		}
 	}
 
+	// MORPH-17517: preserve cloud_permissions present in prior state but absent
+	// from the role GET echo (echo filters zones by caller visibility for
+	// sub-tenant callers). A fresh import has no prior state to repair from and
+	// cannot recover hidden entries (documented API limitation).
+	if !state.Permissions.IsNull() && !state.Permissions.IsUnknown() {
+		repaired, diags := repairEchoGappedCloudPermissions(
+			ctx, client,
+			apiState.Permissions.CloudPermissions,
+			state.Permissions.CloudPermissions,
+			basetypes.NewSetNull(CloudPermissionsValue{}.Type(ctx)),
+		)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+
+			return
+		}
+		apiState.Permissions.CloudPermissions = repaired
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -1891,24 +2063,24 @@ func (r *Resource) Update(
 	// required - authority (name)
 	updateRole.Authority = plan.Name.ValueStringPointer()
 
-	// optional fields
-	if plan.DefaultPersonaCode.IsNull() {
+	// Attributes removed from the configuration, to be cleared: sent when
+	// known, null when being cleared, not sent otherwise.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// default_persona_code: the API takes the persona as a code, an id or an
+	// object; the provider sends the code, and null to clear it.
+	switch {
+	case pending.Clears("default_persona_code"):
 		updateRole.DefaultPersona.Set(nil)
-	} else {
-		updateRole.DefaultPersona.Set(plan.DefaultPersonaCode.ValueStringPointer())
+	case !plan.DefaultPersonaCode.IsNull() && !plan.DefaultPersonaCode.IsUnknown():
+		updateRole.DefaultPersona.Set(&sdk.UpdateRoleRequestRoleDefaultPersona{String: plan.DefaultPersonaCode.ValueStringPointer()})
 	}
-
-	if plan.Description.IsNull() {
-		updateRole.Description.Set(nil)
-	} else {
-		updateRole.Description.Set(plan.Description.ValueStringPointer())
-	}
-
-	if plan.LandingUrl.IsNull() {
-		updateRole.LandingUrl.Set(nil)
-	} else {
-		updateRole.LandingUrl.Set(plan.LandingUrl.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "description", plan.Description, &updateRole.Description)
+	clearable.NullableString(pending, "landing_url", plan.LandingUrl, &updateRole.LandingUrl)
 
 	if !plan.Multitenant.IsNull() {
 		updateRole.Multitenant = plan.Multitenant.ValueBoolPointer()
@@ -1937,7 +2109,10 @@ func (r *Resource) Update(
 	// will act as an override for defaults.
 
 	// 1. Perform a GET so we know which non-feature permissions to reset
-	getRole, diags := getRoleAsState(ctx, id, client)
+	getRole, found, diags := getRoleAsState(ctx, id, client)
+	if !found && !diags.HasError() {
+		diags.AddError("update role resource", fmt.Sprintf("role %d not found", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
@@ -1992,7 +2167,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	apiState, diags := getRoleAsState(ctx, newID, client)
+	apiState, found, diags := getRoleAsState(ctx, newID, client)
+	if !found && !diags.HasError() {
+		diags.AddError("update role resource", fmt.Sprintf("role %d not found after update", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
@@ -2127,6 +2305,25 @@ func (r *Resource) Update(
 		}
 	}
 
+	// MORPH-17517: re-insert cloud_permissions the sub-tenant caller configured
+	// but the role GET omitted (echo filters zones by caller visibility). Uses
+	// the plan as source; a Computed name the plan does not know is resolved
+	// from the prior state.
+	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
+		repaired, diags := repairEchoGappedCloudPermissions(
+			ctx, client,
+			apiState.Permissions.CloudPermissions,
+			plan.Permissions.CloudPermissions,
+			state.Permissions.CloudPermissions,
+		)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+
+			return
+		}
+		apiState.Permissions.CloudPermissions = repaired
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
 }
 
@@ -2145,11 +2342,11 @@ func (r *Resource) Delete(
 
 	id := data.Id.ValueInt64()
 	client, _ := r.NewClient(ctx)
-	_, hresp, err := client.RolesAPI.DeleteRole(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.RolesAPI.DeleteRole(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete role resource",
-			fmt.Sprintf("role %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("role %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

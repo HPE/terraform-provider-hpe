@@ -16,11 +16,18 @@ func (r *storageVolumeResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.ParseInt(req.ID, 10, 64)
+	// "<id>" or "<id>#config=<sha256 hex>&config_alletramp_bmaas=<sha256 hex>"
+	// (each the sha256 of jsonencode(value)): see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.ParseInt(rawID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Invalid ID",
-			fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err),
+			fmt.Sprintf("Could not parse ID %q as integer: %s", rawID, err),
 		)
 
 		return

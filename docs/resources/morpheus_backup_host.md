@@ -41,13 +41,16 @@ resource "hpe_morpheus_backup_host" "example" {
 - `enabled` (Boolean) Whether the backup is enabled.
 - `path` (String) The file or directory path on the target host to back up.
 - `ssh_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only). Required if the Host was provisioned without providing SSH username/password at creation via Morpheus. Also requires ssh_username to be set.
-- `ssh_password_wo_version` (Number) SSH password version. Used to determine if ssh_password_wo has been updated.
+- `ssh_password_wo_version` (Number, Deprecated) Deprecated. Changes to ssh_password_wo are detected automatically; this attribute is no longer
+needed and will be removed in the 2.6 release. Changing it still re-sends ssh_password_wo.
 - `ssh_username` (String) SSH username. Required if the Host was provisioned without providing SSH username/password at creation via Morpheus.
 - `storage_provider_id` (Number) The ID of the storage provider (Bucket or File Share) to save backups to. If omitted, uses the system default.
 
 ### Read-Only
 
 - `id` (Number) The ID of the backup.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (ssh_password_wo) was last
+sent to Morpheus. Changes whenever that value changes; not configurable.
 
 ## Import
 
@@ -56,3 +59,17 @@ Import is supported using the resource ID.
 ```bash
 terraform import hpe_morpheus_backup_host.example 123
 ```
+
+The write-only value `ssh_password_wo` is not stored in state, so the import
+cannot tell whether the value in your configuration matches the appliance: it is taken as already
+applied, the plan after import is empty, and a later change to it is only detected once the
+resource is next updated for another reason (Terraform warns about this on every plan until then).
+To have changes detected from the start, append the sha256 digest of each configured write-only
+value to the import ID:
+
+```shell
+terraform import hpe_morpheus_backup_host.example "123#ssh_password_wo=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
+`id = "123#ssh_password_wo=${sha256(var.ssh_password_wo)}"`.

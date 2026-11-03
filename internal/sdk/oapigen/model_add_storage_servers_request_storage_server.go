@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -99,51 +99,6 @@ func (o AddStorageServersRequestStorageServer) ToMap() (map[string]interface{}, 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddStorageServersRequestStorageServer struct {
-	value *AddStorageServersRequestStorageServer
-	isSet bool
-}
-
-func (v NullableAddStorageServersRequestStorageServer) Get() *AddStorageServersRequestStorageServer {
-	return v.value
-}
-
-func (v *NullableAddStorageServersRequestStorageServer) Set(val *AddStorageServersRequestStorageServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddStorageServersRequestStorageServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddStorageServersRequestStorageServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddStorageServersRequestStorageServer(val *AddStorageServersRequestStorageServer) *NullableAddStorageServersRequestStorageServer {
-	return &NullableAddStorageServersRequestStorageServer{value: val, isSet: true}
-}
-
-func (v NullableAddStorageServersRequestStorageServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddStorageServersRequestStorageServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddStorageServersRequestStorageServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddStorageServersRequestStorageServer) UnmarshalJSON(data []byte) (err error) {

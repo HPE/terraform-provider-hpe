@@ -265,3 +265,63 @@ func TestUnitChildNetworkInterfaceMapperNetworkID(t *testing.T) {
 		})
 	}
 }
+
+// TestUnitVolumeMapperControllerMountPoint verifies that a volume's
+// controller_mount_point reaches both the create and the resize request. It
+// was silently dropped before MORPH-18424, so a disk asked for on a new PVSCSI
+// controller landed on the existing LSI one and the apply failed with an
+// inconsistent result.
+func TestUnitVolumeMapperControllerMountPoint(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		mountPoint types.String
+		want       *string
+	}{
+		{"set", types.StringValue("-1:1:6:0"), ptr("-1:1:6:0")},
+		{"null", types.StringNull(), nil},
+		{"unknown", types.StringUnknown(), nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			in := VolumesValue{
+				Id:                     types.Int64Null(),
+				Name:                   types.StringNull(),
+				RootVolume:             types.BoolNull(),
+				Size:                   types.Int64Null(),
+				StorageTypeId:          types.Int64Null(),
+				DatastoreId:            types.Int64Null(),
+				DatastoreAutoSelection: types.StringNull(),
+				StorageProfile:         types.StringNull(),
+				ControllerMountPoint:   tt.mountPoint,
+			}
+
+			if got := createVolumeMapper(in).ControllerMountPoint; !equalStringPtr(got, tt.want) {
+				t.Errorf("create mapper ControllerMountPoint = %v, want %v", deref(got), deref(tt.want))
+			}
+			if got := updateVolumeMapper(in).ControllerMountPoint; !equalStringPtr(got, tt.want) {
+				t.Errorf("update mapper ControllerMountPoint = %v, want %v", deref(got), deref(tt.want))
+			}
+		})
+	}
+}
+
+func equalStringPtr(a, b *string) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+
+	return *a == *b
+}
+
+func deref(s *string) string {
+	if s == nil {
+		return "<nil>"
+	}
+
+	return *s
+}

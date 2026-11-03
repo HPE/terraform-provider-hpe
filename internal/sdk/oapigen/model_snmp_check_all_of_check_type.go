@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o SNMPCheckAllOfCheckType) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableSNMPCheckAllOfCheckType struct {
-	value *SNMPCheckAllOfCheckType
-	isSet bool
-}
-
-func (v NullableSNMPCheckAllOfCheckType) Get() *SNMPCheckAllOfCheckType {
-	return v.value
-}
-
-func (v *NullableSNMPCheckAllOfCheckType) Set(val *SNMPCheckAllOfCheckType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSNMPCheckAllOfCheckType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSNMPCheckAllOfCheckType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSNMPCheckAllOfCheckType(val *SNMPCheckAllOfCheckType) *NullableSNMPCheckAllOfCheckType {
-	return &NullableSNMPCheckAllOfCheckType{value: val, isSet: true}
-}
-
-func (v NullableSNMPCheckAllOfCheckType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSNMPCheckAllOfCheckType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSNMPCheckAllOfCheckType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *SNMPCheckAllOfCheckType) UnmarshalJSON(data []byte) (err error) {

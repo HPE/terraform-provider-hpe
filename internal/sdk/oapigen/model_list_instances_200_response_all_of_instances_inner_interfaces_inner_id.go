@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj ListInstances200ResponseAllOfInstancesInnerInterfacesInnerId) GetActua
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableListInstances200ResponseAllOfInstancesInnerInterfacesInnerId struct {
-	value *ListInstances200ResponseAllOfInstancesInnerInterfacesInnerId
-	isSet bool
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerInterfacesInnerId) Get() *ListInstances200ResponseAllOfInstancesInnerInterfacesInnerId {
-	return v.value
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerInterfacesInnerId) Set(val *ListInstances200ResponseAllOfInstancesInnerInterfacesInnerId) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerInterfacesInnerId) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerInterfacesInnerId) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListInstances200ResponseAllOfInstancesInnerInterfacesInnerId(val *ListInstances200ResponseAllOfInstancesInnerInterfacesInnerId) *NullableListInstances200ResponseAllOfInstancesInnerInterfacesInnerId {
-	return &NullableListInstances200ResponseAllOfInstancesInnerInterfacesInnerId{value: val, isSet: true}
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerInterfacesInnerId) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerInterfacesInnerId) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerInterfacesInnerId) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

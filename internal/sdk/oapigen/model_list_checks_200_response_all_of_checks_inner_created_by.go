@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ListChecks200ResponseAllOfChecksInnerCreatedBy) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListChecks200ResponseAllOfChecksInnerCreatedBy struct {
-	value *ListChecks200ResponseAllOfChecksInnerCreatedBy
-	isSet bool
-}
-
-func (v NullableListChecks200ResponseAllOfChecksInnerCreatedBy) Get() *ListChecks200ResponseAllOfChecksInnerCreatedBy {
-	return v.value
-}
-
-func (v *NullableListChecks200ResponseAllOfChecksInnerCreatedBy) Set(val *ListChecks200ResponseAllOfChecksInnerCreatedBy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListChecks200ResponseAllOfChecksInnerCreatedBy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListChecks200ResponseAllOfChecksInnerCreatedBy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListChecks200ResponseAllOfChecksInnerCreatedBy(val *ListChecks200ResponseAllOfChecksInnerCreatedBy) *NullableListChecks200ResponseAllOfChecksInnerCreatedBy {
-	return &NullableListChecks200ResponseAllOfChecksInnerCreatedBy{value: val, isSet: true}
-}
-
-func (v NullableListChecks200ResponseAllOfChecksInnerCreatedBy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListChecks200ResponseAllOfChecksInnerCreatedBy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListChecks200ResponseAllOfChecksInnerCreatedBy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListChecks200ResponseAllOfChecksInnerCreatedBy) UnmarshalJSON(data []byte) (err error) {

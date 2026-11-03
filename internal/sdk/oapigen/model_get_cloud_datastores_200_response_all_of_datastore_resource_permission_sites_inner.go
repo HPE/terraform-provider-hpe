@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o GetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner)
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner struct {
-	value *GetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner
-	isSet bool
-}
-
-func (v NullableGetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner) Get() *GetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner {
-	return v.value
-}
-
-func (v *NullableGetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner) Set(val *GetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner(val *GetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner) *NullableGetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner {
-	return &NullableGetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner{value: val, isSet: true}
-}
-
-func (v NullableGetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -36,12 +36,12 @@ type CreateNetworkRouterFirewallRuleRequestRule struct {
 	DestinationType *string `json:"destinationType,omitempty"`
 	// Network protocol the rule matches (for example tcp, udp, icmp, any).
 	Protocol *string `json:"protocol,omitempty"`
-	// Port or port range the rule matches (for example 443 or 8080-8090).
-	PortRange *string `json:"portRange,omitempty"`
-	// Application the rule matches, when supported by the network router type.
-	Application *string `json:"application,omitempty"`
-	// Description of the firewall rule.
-	Description          *string                                           `json:"description,omitempty"`
+	// Port or port range the rule matches (for example 443 or 8080-8090). Null clears it.
+	PortRange NullableString `json:"portRange,omitempty"`
+	// Application the rule matches, when supported by the network router type. Null clears it.
+	Application NullableString `json:"application,omitempty"`
+	// Description of the firewall rule. Null clears it.
+	Description          NullableString                                    `json:"description,omitempty"`
 	Config               *CreateNetworkRouterFirewallRuleRequestRuleConfig `json:"config,omitempty"`
 	AdditionalProperties map[string]interface{}                            `json:",remain"`
 }
@@ -80,14 +80,14 @@ func (o CreateNetworkRouterFirewallRuleRequestRule) ToMap() (map[string]interfac
 	if !IsNil(o.Protocol) {
 		toSerialize["protocol"] = o.Protocol
 	}
-	if !IsNil(o.PortRange) {
-		toSerialize["portRange"] = o.PortRange
+	if o.PortRange.IsSet() {
+		toSerialize["portRange"] = o.PortRange.Get()
 	}
-	if !IsNil(o.Application) {
-		toSerialize["application"] = o.Application
+	if o.Application.IsSet() {
+		toSerialize["application"] = o.Application.Get()
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Config) {
 		toSerialize["config"] = o.Config
@@ -98,51 +98,6 @@ func (o CreateNetworkRouterFirewallRuleRequestRule) ToMap() (map[string]interfac
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateNetworkRouterFirewallRuleRequestRule struct {
-	value *CreateNetworkRouterFirewallRuleRequestRule
-	isSet bool
-}
-
-func (v NullableCreateNetworkRouterFirewallRuleRequestRule) Get() *CreateNetworkRouterFirewallRuleRequestRule {
-	return v.value
-}
-
-func (v *NullableCreateNetworkRouterFirewallRuleRequestRule) Set(val *CreateNetworkRouterFirewallRuleRequestRule) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkRouterFirewallRuleRequestRule) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkRouterFirewallRuleRequestRule) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkRouterFirewallRuleRequestRule(val *CreateNetworkRouterFirewallRuleRequestRule) *NullableCreateNetworkRouterFirewallRuleRequestRule {
-	return &NullableCreateNetworkRouterFirewallRuleRequestRule{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkRouterFirewallRuleRequestRule) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkRouterFirewallRuleRequestRule) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkRouterFirewallRuleRequestRule) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateNetworkRouterFirewallRuleRequestRule) UnmarshalJSON(data []byte) (err error) {

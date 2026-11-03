@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -77,51 +77,6 @@ func (o UpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig struct {
-	value *UpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig
-	isSet bool
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig) Get() *UpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig {
-	return v.value
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig) Set(val *UpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig(val *UpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig) *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig {
-	return &NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig{value: val, isSet: true}
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateVDIPools200ResponseAnyOfVdiPoolConfigConfig) UnmarshalJSON(data []byte) (err error) {

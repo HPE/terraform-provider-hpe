@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 )
 
@@ -27,6 +28,21 @@ func (r *Resource) ModifyPlan(
 ) {
 	if req.Plan.Raw.IsNull() {
 		return
+	}
+
+	// A changed write-only value (or deprecated marker) plans an in-place
+	// update; see write_only.go. It runs first, as on every resource that
+	// has both.
+	wo.ModifyPlan(ctx, req, resp)
+
+	// Attributes removed from the configuration since they were last applied
+	// are planned as clears; see clearableAttributes.
+	if !req.State.Raw.IsNull() {
+		_, cdiags := clearable.Plan(ctx, req, resp, clearableAttributes)
+		resp.Diagnostics.Append(cdiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	// Surface a client construction failure immediately as a diagnostic. The

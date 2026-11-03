@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -38,17 +38,17 @@ type ListClusterLayouts200ResponseAllOfLayoutsInner struct {
 	Creatable               *bool                                                               `json:"creatable,omitempty"`
 	Enabled                 *bool                                                               `json:"enabled,omitempty"`
 	Description             *string                                                             `json:"description,omitempty"`
-	GroupType               *ListClusterLayouts200ResponseAllOfLayoutsInnerGroupType            `json:"groupType,omitempty"`
+	GroupType               NullableListClusterLayouts200ResponseAllOfLayoutsInnerGroupType     `json:"groupType,omitempty"`
 	Labels                  []string                                                            `json:"labels,omitempty"`
 	EnvironmentVariables    []map[string]interface{}                                            `json:"environmentVariables,omitempty"`
 	OptionTypes             []ListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner    `json:"optionTypes,omitempty"`
 	Actions                 []map[string]interface{}                                            `json:"actions,omitempty"`
 	ComputeServers          []ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInner `json:"computeServers,omitempty"`
 	InstallContainerRuntime *bool                                                               `json:"installContainerRuntime,omitempty"`
-	ProvisionType           *ListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType        `json:"provisionType,omitempty"`
+	ProvisionType           NullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType `json:"provisionType,omitempty"`
 	SpecTemplates           []ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner  `json:"specTemplates,omitempty"`
 	TaskSets                []map[string]interface{}                                            `json:"taskSets,omitempty"`
-	Type                    *ListClusterLayouts200ResponseAllOfLayoutsInnerType                 `json:"type,omitempty"`
+	Type                    NullableListClusterLayouts200ResponseAllOfLayoutsInnerType          `json:"type,omitempty"`
 	AdditionalProperties    map[string]interface{}                                              `json:",remain"`
 }
 
@@ -115,8 +115,8 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInner) ToMap() (map[string]inte
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
-	if !IsNil(o.GroupType) {
-		toSerialize["groupType"] = o.GroupType
+	if o.GroupType.IsSet() {
+		toSerialize["groupType"] = o.GroupType.Get()
 	}
 	if !IsNil(o.Labels) {
 		toSerialize["labels"] = o.Labels
@@ -136,8 +136,8 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInner) ToMap() (map[string]inte
 	if !IsNil(o.InstallContainerRuntime) {
 		toSerialize["installContainerRuntime"] = o.InstallContainerRuntime
 	}
-	if !IsNil(o.ProvisionType) {
-		toSerialize["provisionType"] = o.ProvisionType
+	if o.ProvisionType.IsSet() {
+		toSerialize["provisionType"] = o.ProvisionType.Get()
 	}
 	if !IsNil(o.SpecTemplates) {
 		toSerialize["specTemplates"] = o.SpecTemplates
@@ -145,8 +145,8 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInner) ToMap() (map[string]inte
 	if !IsNil(o.TaskSets) {
 		toSerialize["taskSets"] = o.TaskSets
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -154,51 +154,6 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInner) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListClusterLayouts200ResponseAllOfLayoutsInner struct {
-	value *ListClusterLayouts200ResponseAllOfLayoutsInner
-	isSet bool
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInner) Get() *ListClusterLayouts200ResponseAllOfLayoutsInner {
-	return v.value
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInner) Set(val *ListClusterLayouts200ResponseAllOfLayoutsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterLayouts200ResponseAllOfLayoutsInner(val *ListClusterLayouts200ResponseAllOfLayoutsInner) *NullableListClusterLayouts200ResponseAllOfLayoutsInner {
-	return &NullableListClusterLayouts200ResponseAllOfLayoutsInner{value: val, isSet: true}
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListClusterLayouts200ResponseAllOfLayoutsInner) UnmarshalJSON(data []byte) (err error) {

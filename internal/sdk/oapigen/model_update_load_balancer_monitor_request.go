@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o UpdateLoadBalancerMonitorRequest) ToMap() (map[string]interface{}, error
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateLoadBalancerMonitorRequest struct {
-	value *UpdateLoadBalancerMonitorRequest
-	isSet bool
-}
-
-func (v NullableUpdateLoadBalancerMonitorRequest) Get() *UpdateLoadBalancerMonitorRequest {
-	return v.value
-}
-
-func (v *NullableUpdateLoadBalancerMonitorRequest) Set(val *UpdateLoadBalancerMonitorRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateLoadBalancerMonitorRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateLoadBalancerMonitorRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateLoadBalancerMonitorRequest(val *UpdateLoadBalancerMonitorRequest) *NullableUpdateLoadBalancerMonitorRequest {
-	return &NullableUpdateLoadBalancerMonitorRequest{value: val, isSet: true}
-}
-
-func (v NullableUpdateLoadBalancerMonitorRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateLoadBalancerMonitorRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateLoadBalancerMonitorRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateLoadBalancerMonitorRequest) UnmarshalJSON(data []byte) (err error) {

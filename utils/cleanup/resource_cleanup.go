@@ -6,7 +6,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -29,9 +31,21 @@ type State interface {
 }
 
 // TaintResourceState sets just the ID in state to mark the resource as tainted.
+//
+// A Create that has already written the plan to state (to record the id before
+// a long poll, say) leaves every computed attribute unknown. Terraform rejects
+// unknown values in post-apply state even when the provider returns an error,
+// and would add a "Provider returned invalid result object after apply …
+// attribute X is unknown" diagnostic per attribute on top of the real failure.
+// So, when the writer is the framework's state, every unknown is replaced with
+// null first (MORPH-18935).
 func TaintResourceState(ctx context.Context, config TaintResourceStateConfig) {
 	tflog.Warn(ctx, fmt.Sprintf("%s %d created but encountered error - setting partial state with ID only",
 		config.ResourceType, config.ResourceID))
+
+	if st, ok := config.StateWriter.(*tfsdk.State); ok {
+		nullUnknowns(st)
+	}
 
 	// Set ONLY the ID using SetAttribute - this works even when returning errors
 	setDiags := config.StateWriter.SetAttribute(ctx, path.Root("id"), types.Int64Value(config.ResourceID))
@@ -54,4 +68,27 @@ func TaintResourceState(ctx context.Context, config TaintResourceStateConfig) {
 			config.ResourceType,
 			config.ResourceType, config.ResourceID),
 	)
+}
+
+// nullUnknowns replaces every unknown value in the state with null, in place.
+// A null or already-known state is left untouched.
+func nullUnknowns(st *tfsdk.State) {
+	if st == nil || st.Raw.IsNull() || st.Raw.IsFullyKnown() {
+		return
+	}
+
+	transformed, err := tftypes.Transform(st.Raw, func(_ *tftypes.AttributePath, v tftypes.Value) (tftypes.Value, error) {
+		if !v.IsKnown() {
+			return tftypes.NewValue(v.Type(), nil), nil
+		}
+
+		return v, nil
+	})
+	if err != nil {
+		// Transform only fails on an internal inconsistency; leave the state as
+		// it was rather than lose the id write that follows.
+		return
+	}
+
+	st.Raw = transformed
 }

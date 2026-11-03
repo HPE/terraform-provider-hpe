@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,8 +20,9 @@ var _ MappedNullable = &CreateNetworkGroupRequestNetworkGroup{}
 
 // CreateNetworkGroupRequestNetworkGroup struct for CreateNetworkGroupRequestNetworkGroup
 type CreateNetworkGroupRequestNetworkGroup struct {
-	Name        *string `json:"name,omitempty"`
-	Description *string `json:"description,omitempty"`
+	Name *string `json:"name,omitempty"`
+	// null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Visibility level (public or private)
 	Visibility *string `json:"visibility,omitempty"`
 	// Network group active flag
@@ -46,8 +47,8 @@ func (o CreateNetworkGroupRequestNetworkGroup) ToMap() (map[string]interface{}, 
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
@@ -67,51 +68,6 @@ func (o CreateNetworkGroupRequestNetworkGroup) ToMap() (map[string]interface{}, 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateNetworkGroupRequestNetworkGroup struct {
-	value *CreateNetworkGroupRequestNetworkGroup
-	isSet bool
-}
-
-func (v NullableCreateNetworkGroupRequestNetworkGroup) Get() *CreateNetworkGroupRequestNetworkGroup {
-	return v.value
-}
-
-func (v *NullableCreateNetworkGroupRequestNetworkGroup) Set(val *CreateNetworkGroupRequestNetworkGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkGroupRequestNetworkGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkGroupRequestNetworkGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkGroupRequestNetworkGroup(val *CreateNetworkGroupRequestNetworkGroup) *NullableCreateNetworkGroupRequestNetworkGroup {
-	return &NullableCreateNetworkGroupRequestNetworkGroup{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkGroupRequestNetworkGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkGroupRequestNetworkGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkGroupRequestNetworkGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateNetworkGroupRequestNetworkGroup) UnmarshalJSON(data []byte) (err error) {

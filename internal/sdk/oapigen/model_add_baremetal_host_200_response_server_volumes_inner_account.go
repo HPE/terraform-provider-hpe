@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddBaremetalHost200ResponseServerVolumesInnerAccount) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddBaremetalHost200ResponseServerVolumesInnerAccount struct {
-	value *AddBaremetalHost200ResponseServerVolumesInnerAccount
-	isSet bool
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerAccount) Get() *AddBaremetalHost200ResponseServerVolumesInnerAccount {
-	return v.value
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerVolumesInnerAccount) Set(val *AddBaremetalHost200ResponseServerVolumesInnerAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerVolumesInnerAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddBaremetalHost200ResponseServerVolumesInnerAccount(val *AddBaremetalHost200ResponseServerVolumesInnerAccount) *NullableAddBaremetalHost200ResponseServerVolumesInnerAccount {
-	return &NullableAddBaremetalHost200ResponseServerVolumesInnerAccount{value: val, isSet: true}
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerVolumesInnerAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddBaremetalHost200ResponseServerVolumesInnerAccount) UnmarshalJSON(data []byte) (err error) {

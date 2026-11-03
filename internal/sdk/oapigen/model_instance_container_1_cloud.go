@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o InstanceContainer1Cloud) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableInstanceContainer1Cloud struct {
-	value *InstanceContainer1Cloud
-	isSet bool
-}
-
-func (v NullableInstanceContainer1Cloud) Get() *InstanceContainer1Cloud {
-	return v.value
-}
-
-func (v *NullableInstanceContainer1Cloud) Set(val *InstanceContainer1Cloud) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceContainer1Cloud) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceContainer1Cloud) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceContainer1Cloud(val *InstanceContainer1Cloud) *NullableInstanceContainer1Cloud {
-	return &NullableInstanceContainer1Cloud{value: val, isSet: true}
-}
-
-func (v NullableInstanceContainer1Cloud) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceContainer1Cloud) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceContainer1Cloud) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *InstanceContainer1Cloud) UnmarshalJSON(data []byte) (err error) {

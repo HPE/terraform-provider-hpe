@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -108,49 +108,4 @@ func (src CreateNetworkRouterRequestNetworkRouterConfig) MarshalJSON() ([]byte, 
 	}
 
 	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
-}
-
-type NullableCreateNetworkRouterRequestNetworkRouterConfig struct {
-	value *CreateNetworkRouterRequestNetworkRouterConfig
-	isSet bool
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfig) Get() *CreateNetworkRouterRequestNetworkRouterConfig {
-	return v.value
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfig) Set(val *CreateNetworkRouterRequestNetworkRouterConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkRouterRequestNetworkRouterConfig(val *CreateNetworkRouterRequestNetworkRouterConfig) *NullableCreateNetworkRouterRequestNetworkRouterConfig {
-	return &NullableCreateNetworkRouterRequestNetworkRouterConfig{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

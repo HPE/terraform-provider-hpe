@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,9 +22,13 @@ var _ MappedNullable = &GetLicense200Response{}
 type GetLicense200Response struct {
 	License *GetLicense200ResponseLicense `json:"license,omitempty"`
 	// List of all the installed licenses
-	InstalledLicenses    []GetLicense200ResponseInstalledLicensesInner `json:"installedLicenses,omitempty"`
-	CurrentUsage         *GetLicense200ResponseCurrentUsage            `json:"currentUsage,omitempty"`
-	AdditionalProperties map[string]interface{}                        `json:",remain"`
+	InstalledLicenses []GetLicense200ResponseInstalledLicensesInner `json:"installedLicenses,omitempty"`
+	CurrentUsage      *GetLicense200ResponseCurrentUsage            `json:"currentUsage,omitempty"`
+	// Per-metric limits with current usage
+	LicenseLimits []GetLicense200ResponseLicenseLimitsInner `json:"licenseLimits,omitempty"`
+	// True when any license limit has been reached
+	LimitReached         *bool                  `json:"limitReached,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _GetLicense200Response GetLicense200Response
@@ -48,57 +52,18 @@ func (o GetLicense200Response) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.CurrentUsage) {
 		toSerialize["currentUsage"] = o.CurrentUsage
 	}
+	if !IsNil(o.LicenseLimits) {
+		toSerialize["licenseLimits"] = o.LicenseLimits
+	}
+	if !IsNil(o.LimitReached) {
+		toSerialize["limitReached"] = o.LimitReached
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetLicense200Response struct {
-	value *GetLicense200Response
-	isSet bool
-}
-
-func (v NullableGetLicense200Response) Get() *GetLicense200Response {
-	return v.value
-}
-
-func (v *NullableGetLicense200Response) Set(val *GetLicense200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLicense200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLicense200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLicense200Response(val *GetLicense200Response) *NullableGetLicense200Response {
-	return &NullableGetLicense200Response{value: val, isSet: true}
-}
-
-func (v NullableGetLicense200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLicense200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLicense200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetLicense200Response) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,8 +20,8 @@ var _ MappedNullable = &AddTenantRequestAccountRole{}
 
 // AddTenantRequestAccountRole Tenant Base Role. This restricts the access available to this tenant's roles and users. The Options API `/api/options/roles?roleType=account&tenantId=1` can be used to see which options are available.
 type AddTenantRequestAccountRole struct {
-	Id                   *int64                 `json:"id,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	Id                   *AddTenantRequestAccountRoleId `json:"id,omitempty"`
+	AdditionalProperties map[string]interface{}         `json:",remain"`
 }
 
 type _AddTenantRequestAccountRole AddTenantRequestAccountRole
@@ -45,51 +45,6 @@ func (o AddTenantRequestAccountRole) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddTenantRequestAccountRole struct {
-	value *AddTenantRequestAccountRole
-	isSet bool
-}
-
-func (v NullableAddTenantRequestAccountRole) Get() *AddTenantRequestAccountRole {
-	return v.value
-}
-
-func (v *NullableAddTenantRequestAccountRole) Set(val *AddTenantRequestAccountRole) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddTenantRequestAccountRole) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddTenantRequestAccountRole) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddTenantRequestAccountRole(val *AddTenantRequestAccountRole) *NullableAddTenantRequestAccountRole {
-	return &NullableAddTenantRequestAccountRole{value: val, isSet: true}
-}
-
-func (v NullableAddTenantRequestAccountRole) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddTenantRequestAccountRole) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddTenantRequestAccountRole) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddTenantRequestAccountRole) UnmarshalJSON(data []byte) (err error) {

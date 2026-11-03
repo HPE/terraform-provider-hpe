@@ -95,20 +95,19 @@ func TestAccMorpheusInstanceResourceVolumeActualSizeVMware(t *testing.T) {
 // 10GB request is accepted and then rounded up to 11GB. This combination was
 // confirmed against a live appliance while diagnosing MORPH-16949.
 //
-// This test is not currently runnable. The growth band contains no vmdk image,
-// so it cannot be expressed on the VMware path, and the HVM example this renders
-// from targets an appliance whose images have no backing files and therefore
-// cannot provision anything. It is written so the behaviour is covered the
-// moment an HVM appliance with usable images is available.
+// The growth band contains no vmdk image, so it cannot be expressed on the
+// VMware path; on HVM it needs an image whose raw size sits just over its
+// minimum disk (minDisk 10GB, rawSize 10.002GB -- accepted, then rounded up
+// to 11GB), which TF_VAR_testacc_morpheus_hvm_growing_image_name names. The
+// test skips on an appliance without one.
 func TestAccMorpheusInstanceResourceVolumeActualSizeHVM(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.HVM)
 
 	name := acctest.RandomWithPrefix("tfacc-volsize-hvm")
 
 	cfg, err := instance.RenderInstanceHVMConfig(t, map[string]string{
-		"Name": name,
-		// minDisk 10GB, rawSize 10.002GB — accepted, then rounded up to 11GB.
-		"ImageName": "dand-ubuntu-20.04-from-iso",
+		"Name":      name,
+		"ImageName": testhelpers.HVMGrowingImageName(t),
 	})
 	if err != nil {
 		t.Fatal(err)

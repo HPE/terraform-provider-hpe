@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -38,10 +39,19 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, diags := getLoadBalancerProfileAsState(
+	state, found, diags := getLoadBalancerProfileAsState(
 		ctx, data.LoadBalancerId.ValueInt64(), data.Id.ValueInt64(), client, data,
 	)
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The profile was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("load balancer profile %d not found, removing from state", data.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -60,12 +70,15 @@ func getLoadBalancerProfileAsState(
 	id int64,
 	client *sdk.APIClient,
 	prior LoadBalancerProfileModel,
-) (LoadBalancerProfileModel, diag.Diagnostics) {
+) (LoadBalancerProfileModel, bool, diag.Diagnostics) {
 	var state LoadBalancerProfileModel
 	var diags diag.Diagnostics
 
 	profileResp, httpResp, err := client.LoadBalancersAPI.
 		GetLoadBalancerProfile(ctx, loadBalancerID, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return state, false, diags
+	}
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"error reading load balancer profile",
@@ -73,7 +86,7 @@ func getLoadBalancerProfileAsState(
 				errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	p := profileResp.LoadBalancerProfile
@@ -83,7 +96,7 @@ func getLoadBalancerProfileAsState(
 			fmt.Sprintf("load balancer profile %d GET returned no profile", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// Core fields
@@ -172,7 +185,7 @@ func getLoadBalancerProfileAsState(
 	// Nested LoadBalancer object
 	lb, lbDiags := buildProfileLoadBalancerValue(ctx, p.LoadBalancer)
 	if diags.Append(lbDiags...); diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 
 	state.LoadBalancer = lb
@@ -206,7 +219,7 @@ func getLoadBalancerProfileAsState(
 		reconstructConfigBlockFromResponse(ctx, &state, serviceType, p.Config)
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 func buildProfileLoadBalancerValue(

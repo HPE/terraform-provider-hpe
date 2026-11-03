@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj UpdateTasksRequestTaskCredential) GetActualInstanceValue() interface{}
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableUpdateTasksRequestTaskCredential struct {
-	value *UpdateTasksRequestTaskCredential
-	isSet bool
-}
-
-func (v NullableUpdateTasksRequestTaskCredential) Get() *UpdateTasksRequestTaskCredential {
-	return v.value
-}
-
-func (v *NullableUpdateTasksRequestTaskCredential) Set(val *UpdateTasksRequestTaskCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateTasksRequestTaskCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateTasksRequestTaskCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateTasksRequestTaskCredential(val *UpdateTasksRequestTaskCredential) *NullableUpdateTasksRequestTaskCredential {
-	return &NullableUpdateTasksRequestTaskCredential{value: val, isSet: true}
-}
-
-func (v NullableUpdateTasksRequestTaskCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateTasksRequestTaskCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateTasksRequestTaskCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

@@ -2,12 +2,14 @@ package task
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -181,7 +183,10 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	plan.Id = convert.Int64ToType(taskResp.Task.Id)
 
-	state, diag := getTaskAsState(ctx, plan.Id.ValueInt64(), client, plan)
+	state, found, diag := getTaskAsState(ctx, plan.Id.ValueInt64(), client, plan)
+	if !found && !diag.HasError() {
+		diag.AddError("read task", fmt.Sprintf("task %d not found immediately after create", plan.Id.ValueInt64()))
+	}
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
 			ResourceType: "task",
@@ -193,6 +198,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return

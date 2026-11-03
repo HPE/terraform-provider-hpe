@@ -16,6 +16,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
@@ -65,9 +66,7 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 	body := sdk.CreateNetworkGroupRequestNetworkGroup{
 		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	body.Description.Set(plan.Description.ValueStringPointer())
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
@@ -262,12 +261,18 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdateNetworkGroupRequestNetworkGroup{
 		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "description", plan.Description, &body.Description)
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
@@ -276,9 +281,9 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	updateReq := sdk.UpdateNetworkGroupRequest{NetworkGroup: &body}
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var ids []int64
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+	// tenant_ids: the planned list, or an empty list when being cleared
+	if ids, ok, ldiags := pending.Int64s(ctx, "tenant_ids", plan.TenantIds); ok {
+		resp.Diagnostics.Append(ldiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -370,8 +375,8 @@ func (r *networkGroupResource) Delete(ctx context.Context, req resource.DeleteRe
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.NetworksAPI.DeleteNetworkGroup(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.NetworksAPI.DeleteNetworkGroup(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "network_group", "", err, httpResp)
 
 		return

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,8 +21,8 @@ var _ MappedNullable = &ListHosts200ResponseAllOfServersInnerInterfacesInnerType
 // ListHosts200ResponseAllOfServersInnerInterfacesInnerType struct for ListHosts200ResponseAllOfServersInnerInterfacesInnerType
 type ListHosts200ResponseAllOfServersInnerInterfacesInnerType struct {
 	Id                   *int64                 `json:"id,omitempty"`
-	Code                 *string                `json:"code,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
+	Code                 *string                `json:"code,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -41,11 +41,11 @@ func (o ListHosts200ResponseAllOfServersInnerInterfacesInnerType) ToMap() (map[s
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
-	if !IsNil(o.Code) {
-		toSerialize["code"] = o.Code
-	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.Code) {
+		toSerialize["code"] = o.Code
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -53,51 +53,6 @@ func (o ListHosts200ResponseAllOfServersInnerInterfacesInnerType) ToMap() (map[s
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListHosts200ResponseAllOfServersInnerInterfacesInnerType struct {
-	value *ListHosts200ResponseAllOfServersInnerInterfacesInnerType
-	isSet bool
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerInterfacesInnerType) Get() *ListHosts200ResponseAllOfServersInnerInterfacesInnerType {
-	return v.value
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerInterfacesInnerType) Set(val *ListHosts200ResponseAllOfServersInnerInterfacesInnerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerInterfacesInnerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerInterfacesInnerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListHosts200ResponseAllOfServersInnerInterfacesInnerType(val *ListHosts200ResponseAllOfServersInnerInterfacesInnerType) *NullableListHosts200ResponseAllOfServersInnerInterfacesInnerType {
-	return &NullableListHosts200ResponseAllOfServersInnerInterfacesInnerType{value: val, isSet: true}
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerInterfacesInnerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerInterfacesInnerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerInterfacesInnerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListHosts200ResponseAllOfServersInnerInterfacesInnerType) UnmarshalJSON(data []byte) (err error) {

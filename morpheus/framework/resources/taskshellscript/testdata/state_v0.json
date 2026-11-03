@@ -1,0 +1,32 @@
+{
+  "attributes": {
+    "allow_custom_config": true,
+    "code": "morph18860-v0cap-shell",
+    "execute_target": "remote",
+    "id": "19777",
+    "labels": [
+      "v0cap"
+    ],
+    "local_repository_id": "",
+    "local_repository_ref": "",
+    "name": "morph18860-v0cap-shell",
+    "remote_target_host": "10.0.0.1",
+    "remote_target_password": "example",
+    "remote_target_password_wo": null,
+    "remote_target_password_wo_version": 2,
+    "remote_target_port": "22",
+    "remote_target_username": "root",
+    "repository_id": 0,
+    "result_type": "",
+    "retry_count": 1,
+    "retry_delay_seconds": 10,
+    "retryable": true,
+    "script_content": "echo \"v0 capture\"\n",
+    "script_path": "",
+    "source_type": "local",
+    "sudo": true,
+    "version_ref": "",
+    "visibility": "private"
+  },
+  "schema_version": 0
+}

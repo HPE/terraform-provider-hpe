@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o ListInstances200ResponseAllOfInstancesInnerLayout) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListInstances200ResponseAllOfInstancesInnerLayout struct {
-	value *ListInstances200ResponseAllOfInstancesInnerLayout
-	isSet bool
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerLayout) Get() *ListInstances200ResponseAllOfInstancesInnerLayout {
-	return v.value
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerLayout) Set(val *ListInstances200ResponseAllOfInstancesInnerLayout) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerLayout) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerLayout) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListInstances200ResponseAllOfInstancesInnerLayout(val *ListInstances200ResponseAllOfInstancesInnerLayout) *NullableListInstances200ResponseAllOfInstancesInnerLayout {
-	return &NullableListInstances200ResponseAllOfInstancesInnerLayout{value: val, isSet: true}
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerLayout) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerLayout) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerLayout) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListInstances200ResponseAllOfInstancesInnerLayout) UnmarshalJSON(data []byte) (err error) {

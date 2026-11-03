@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -66,51 +66,6 @@ func (o FastTCPLoadBalancerProfileConfig5) ToMap() (map[string]interface{}, erro
 	}
 
 	return toSerialize, nil
-}
-
-type NullableFastTCPLoadBalancerProfileConfig5 struct {
-	value *FastTCPLoadBalancerProfileConfig5
-	isSet bool
-}
-
-func (v NullableFastTCPLoadBalancerProfileConfig5) Get() *FastTCPLoadBalancerProfileConfig5 {
-	return v.value
-}
-
-func (v *NullableFastTCPLoadBalancerProfileConfig5) Set(val *FastTCPLoadBalancerProfileConfig5) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableFastTCPLoadBalancerProfileConfig5) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableFastTCPLoadBalancerProfileConfig5) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableFastTCPLoadBalancerProfileConfig5(val *FastTCPLoadBalancerProfileConfig5) *NullableFastTCPLoadBalancerProfileConfig5 {
-	return &NullableFastTCPLoadBalancerProfileConfig5{value: val, isSet: true}
-}
-
-func (v NullableFastTCPLoadBalancerProfileConfig5) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableFastTCPLoadBalancerProfileConfig5) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableFastTCPLoadBalancerProfileConfig5) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *FastTCPLoadBalancerProfileConfig5) UnmarshalJSON(data []byte) (err error) {

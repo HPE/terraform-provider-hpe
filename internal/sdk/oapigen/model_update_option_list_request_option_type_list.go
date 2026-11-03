@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -28,8 +28,8 @@ type UpdateOptionListRequestOptionTypeList struct {
 	Labels []string `json:"labels,omitempty"`
 	// Option List Type eg. `rest`, `api`, `ldap` or `manual`.
 	Type *string `json:"type,omitempty"`
-	// Source URL, the http(s) URL to request data from. Required when type is rest.
-	SourceUrl *string `json:"sourceUrl,omitempty"`
+	// Source URL, the http(s) URL to request data from. Required when type is rest; null clears it
+	SourceUrl NullableString `json:"sourceUrl,omitempty"`
 	// Visibility
 	Visibility *string `json:"visibility,omitempty"`
 	// Source Method, the HTTP method.
@@ -79,8 +79,8 @@ func (o UpdateOptionListRequestOptionTypeList) ToMap() (map[string]interface{}, 
 	if !IsNil(o.Type) {
 		toSerialize["type"] = o.Type
 	}
-	if !IsNil(o.SourceUrl) {
-		toSerialize["sourceUrl"] = o.SourceUrl
+	if o.SourceUrl.IsSet() {
+		toSerialize["sourceUrl"] = o.SourceUrl.Get()
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
@@ -124,51 +124,6 @@ func (o UpdateOptionListRequestOptionTypeList) ToMap() (map[string]interface{}, 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateOptionListRequestOptionTypeList struct {
-	value *UpdateOptionListRequestOptionTypeList
-	isSet bool
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeList) Get() *UpdateOptionListRequestOptionTypeList {
-	return v.value
-}
-
-func (v *NullableUpdateOptionListRequestOptionTypeList) Set(val *UpdateOptionListRequestOptionTypeList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateOptionListRequestOptionTypeList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateOptionListRequestOptionTypeList(val *UpdateOptionListRequestOptionTypeList) *NullableUpdateOptionListRequestOptionTypeList {
-	return &NullableUpdateOptionListRequestOptionTypeList{value: val, isSet: true}
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateOptionListRequestOptionTypeList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateOptionListRequestOptionTypeList) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -85,51 +85,6 @@ func (o EmailTaskConfig2) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableEmailTaskConfig2 struct {
-	value *EmailTaskConfig2
-	isSet bool
-}
-
-func (v NullableEmailTaskConfig2) Get() *EmailTaskConfig2 {
-	return v.value
-}
-
-func (v *NullableEmailTaskConfig2) Set(val *EmailTaskConfig2) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableEmailTaskConfig2) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableEmailTaskConfig2) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableEmailTaskConfig2(val *EmailTaskConfig2) *NullableEmailTaskConfig2 {
-	return &NullableEmailTaskConfig2{value: val, isSet: true}
-}
-
-func (v NullableEmailTaskConfig2) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableEmailTaskConfig2) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableEmailTaskConfig2) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *EmailTaskConfig2) UnmarshalJSON(data []byte) (err error) {

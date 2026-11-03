@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o AddUserTenant200ResponseAllOfUserAccessVdiPoolsInner) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddUserTenant200ResponseAllOfUserAccessVdiPoolsInner struct {
-	value *AddUserTenant200ResponseAllOfUserAccessVdiPoolsInner
-	isSet bool
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserAccessVdiPoolsInner) Get() *AddUserTenant200ResponseAllOfUserAccessVdiPoolsInner {
-	return v.value
-}
-
-func (v *NullableAddUserTenant200ResponseAllOfUserAccessVdiPoolsInner) Set(val *AddUserTenant200ResponseAllOfUserAccessVdiPoolsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserAccessVdiPoolsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddUserTenant200ResponseAllOfUserAccessVdiPoolsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddUserTenant200ResponseAllOfUserAccessVdiPoolsInner(val *AddUserTenant200ResponseAllOfUserAccessVdiPoolsInner) *NullableAddUserTenant200ResponseAllOfUserAccessVdiPoolsInner {
-	return &NullableAddUserTenant200ResponseAllOfUserAccessVdiPoolsInner{value: val, isSet: true}
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserAccessVdiPoolsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddUserTenant200ResponseAllOfUserAccessVdiPoolsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserAccessVdiPoolsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddUserTenant200ResponseAllOfUserAccessVdiPoolsInner) UnmarshalJSON(data []byte) (err error) {

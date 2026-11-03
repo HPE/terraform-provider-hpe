@@ -140,6 +140,38 @@ func (f fakeNetworks) get(_ context.Context, id int64) networkFacts {
 
 func active(b bool) *bool { return &b }
 
+// only wraps a network table as lookups with no selectable-network or
+// instance lookups — the pre-option-source behaviour.
+func only(networks fakeNetworks) lookups { return lookups{networks: networks} }
+
+// fakeSelectable answers selectable() with a fixed list, or an error, and
+// records the scope it was asked about.
+type fakeSelectable struct {
+	list  []selectableNetwork
+	err   error
+	asked *scope
+}
+
+func (f *fakeSelectable) selectable(_ context.Context, s scope) ([]selectableNetwork, error) {
+	f.asked = &s
+
+	return f.list, f.err
+}
+
+// fakeInstance answers context() for one instance id.
+type fakeInstance struct {
+	id                         int64
+	cloudID, groupID, layoutID int64
+}
+
+func (f fakeInstance) context(_ context.Context, id int64) (int64, int64, int64) {
+	if id != f.id {
+		return 0, 0, 0
+	}
+
+	return f.cloudID, f.groupID, f.layoutID
+}
+
 func TestUnitInvalidNetworkMessage(t *testing.T) {
 	t.Parallel()
 
@@ -155,7 +187,7 @@ func TestUnitInvalidNetworkMessage(t *testing.T) {
 			Interfaces: []sdk.InstancesNetworkInterfaces2{{Network: sdk.InstancesNetworkInterfaces1Network{Id: "1"}}},
 		}
 
-		got := invalidNetwork(context.Background(), networks, req)
+		got := invalidNetwork(context.Background(), only(networks), req)
 
 		want := "Morpheus rejected a network interface because its network is not selectable for this " +
 			"instance's cloud, group and resource pool:\n" +
@@ -179,9 +211,10 @@ func TestUnitInvalidNetworkMessage(t *testing.T) {
 			Interfaces: []map[string]any{{"network": map[string]any{"id": "1"}}},
 		}
 
-		got := invalidNetwork(context.Background(), networks, req)
+		got := invalidNetwork(context.Background(), only(networks), req)
 
-		wantLine := `network 1 "Management" is in this cloud and active; it is not visible to the instance's group or tenant`
+		wantLine := `network 1 "Management" is in this cloud and active; it is not of a type this layout's provision type ` +
+			`can use, or it is not visible to the instance's group or tenant`
 		if !strings.Contains(got, wantLine) {
 			t.Errorf("expected the visibility line\n--- got ---\n%s", got)
 		}
@@ -197,7 +230,7 @@ func TestUnitInvalidNetworkMessage(t *testing.T) {
 		networks := fakeNetworks{1: {ID: 1, Name: "Management", CloudID: 1, Active: active(true), Pools: []poolRef{duck}}}
 		req := Request{CloudID: 1, Interfaces: []map[string]any{{"network": map[string]any{"id": "1"}}}}
 
-		got := invalidNetwork(context.Background(), networks, req)
+		got := invalidNetwork(context.Background(), only(networks), req)
 
 		if strings.Contains(got, "targets resource pool") || strings.Contains(got, "HVM cluster") {
 			t.Errorf("no pool in the request, so the pool must not be mentioned\n--- got ---\n%s", got)
@@ -214,7 +247,7 @@ func TestUnitInvalidNetworkMessage(t *testing.T) {
 			Interfaces: []map[string]any{{"network": map[string]any{"id": "5"}}},
 		}
 
-		got := invalidNetwork(context.Background(), networks, req)
+		got := invalidNetwork(context.Background(), only(networks), req)
 
 		if !strings.Contains(got, `network 5 "other" is in cloud 3; this instance targets cloud 1.`) {
 			t.Errorf("expected the cloud line\n--- got ---\n%s", got)
@@ -228,7 +261,7 @@ func TestUnitInvalidNetworkMessage(t *testing.T) {
 		req := Request{Config: &sdk.CloneInstanceRequestConfig{}, Interfaces: []map[string]any{{"network": map[string]any{"id": "5"}}}}
 		// Config marshals with no resourcePoolId, so no pool either: the only
 		// remaining explanation is visibility.
-		got := invalidNetwork(context.Background(), networks, req)
+		got := invalidNetwork(context.Background(), only(networks), req)
 
 		if strings.Contains(got, "targets cloud") {
 			t.Errorf("cloud must not be compared when the request has none\n--- got ---\n%s", got)
@@ -260,11 +293,11 @@ func TestUnitInvalidNetworkMessage(t *testing.T) {
 			},
 		}
 
-		got := invalidNetwork(context.Background(), networks, req)
+		got := invalidNetwork(context.Background(), only(networks), req)
 
 		for _, want := range []string{
 			`network 2 "off" is inactive.`,
-			`network 3 "loose" belongs to no resource pool; this instance targets resource pool 1702.`,
+			`network 3 "loose" belongs to no resource pool, which does not exclude it from resource pool 1702; it is not of a type`,
 			`network 4 "shared" belongs to resource pools 1 "Duck", 8 "eight"; this instance targets resource pool 1702.`,
 			`network 6 could not be read (HTTP 403).`,
 			`network 7 does not exist, or is not visible to this user.`,
@@ -285,7 +318,7 @@ func TestUnitInvalidNetworkMessage(t *testing.T) {
 			Interfaces: []map[string]any{{"network": map[string]any{"id": "networkGroup-3"}}},
 		}
 
-		if got := invalidNetwork(context.Background(), fakeNetworks{}, req); got != "" {
+		if got := invalidNetwork(context.Background(), only(fakeNetworks{}), req); got != "" {
 			t.Errorf("expected no explanation for a group-only request, got\n%s", got)
 		}
 	})
@@ -384,5 +417,269 @@ func TestUnitInvalidNetworkReasonMatchesText(t *testing.T) {
 	// Nil client: never explain, never panic.
 	if got := InvalidNetworkReason(context.Background(), nil, "Invalid network", req); got != "" {
 		t.Errorf("expected \"\" with a nil client, got %q", got)
+	}
+}
+
+// The selectable-network paragraph: what Morpheus would have accepted, from
+// the same query the validation ran.
+func TestUnitInvalidNetworkSelectableParagraph(t *testing.T) {
+	t.Parallel()
+
+	duck := poolRef{ID: 1, Name: "Duck"}
+	management := fakeNetworks{1: {ID: 1, Name: "Management", CloudID: 1, Active: active(true), Pools: []poolRef{duck}}}
+	wrongPool := Request{
+		CloudID:    1,
+		GroupID:    265,
+		LayoutID:   1193,
+		Config:     map[string]any{"resourcePoolId": "pool-1702"},
+		Interfaces: []map[string]any{{"network": map[string]any{"id": "1"}}},
+	}
+
+	t.Run("the incident: a pool with nothing selectable is said outright", func(t *testing.T) {
+		t.Parallel()
+
+		lister := &fakeSelectable{list: []selectableNetwork{}}
+		got := invalidNetwork(context.Background(), lookups{networks: management, selectable: lister}, wrongPool)
+
+		want := "Morpheus rejected a network interface because its network is not selectable for this " +
+			"instance's cloud, group and resource pool:\n" +
+			"\n  - network 1 \"Management\" belongs to resource pool 1 \"Duck\"; this instance targets resource pool 1702." +
+			"\n\nNetworks discovered on an HVM cluster are bound to that cluster's resource pool. " +
+			"Provision into the cluster's pool (hpe_morpheus_cluster: permissions.resource_pool.id)." +
+			"\n\nNo network at all is selectable for this instance (cloud 1, group 265, layout 1193, resource pool 1702), " +
+			"so no network interface can be provisioned with this combination; change the resource pool, group or " +
+			"layout. Data source hpe_morpheus_option_source_values, source \"zoneNetworkOptions\", collection " +
+			"\"networks\", lists what is selectable for a given cloud_id, group_id, layout_id and pool_id."
+
+		if got != want {
+			t.Errorf("message\n--- want ---\n%s\n--- got ---\n%s", want, got)
+		}
+
+		if lister.asked == nil || *lister.asked != (scope{CloudID: 1, GroupID: 265, LayoutID: 1193, PoolID: 1702}) {
+			t.Errorf("the lister must be asked about the request's exact scope; asked %+v", lister.asked)
+		}
+	})
+
+	t.Run("networks that would be accepted are listed", func(t *testing.T) {
+		t.Parallel()
+
+		lister := &fakeSelectable{list: []selectableNetwork{{ID: 5, Name: "five"}, {ID: 9}}}
+		got := invalidNetwork(context.Background(), lookups{networks: management, selectable: lister}, wrongPool)
+
+		for _, want := range []string{
+			"Provision into the cluster's pool (hpe_morpheus_cluster: permissions.resource_pool.id), " +
+				"or choose one of the networks listed below.",
+			"Networks Morpheus would accept for this instance (cloud 1, group 265, layout 1193, resource pool 1702): " +
+				"network 5 \"five\", network 9. Data source hpe_morpheus_option_source_values",
+		} {
+			if !strings.Contains(got, want) {
+				t.Errorf("missing %q\n--- got ---\n%s", want, got)
+			}
+		}
+
+		if strings.Contains(got, "or choose a network that belongs to resource pool 1702") {
+			t.Errorf("the unknown-list tail must not appear when the list is known\n--- got ---\n%s", got)
+		}
+	})
+
+	t.Run("a long list is capped", func(t *testing.T) {
+		t.Parallel()
+
+		list := make([]selectableNetwork, 0, 40)
+		for i := int64(1); i <= 40; i++ {
+			list = append(list, selectableNetwork{ID: i})
+		}
+
+		got := invalidNetwork(context.Background(), lookups{networks: management, selectable: &fakeSelectable{list: list}}, wrongPool)
+
+		if !strings.Contains(got, "network 15, and 25 more.") || strings.Contains(got, "network 16,") {
+			t.Errorf("expected 15 listed then \"and 25 more\"\n--- got ---\n%s", got)
+		}
+	})
+
+	t.Run("lookup failure: paragraph omitted, the rest stands", func(t *testing.T) {
+		t.Parallel()
+
+		lister := &fakeSelectable{err: errors.New("option source: HTTP 500")}
+		got := invalidNetwork(context.Background(), lookups{networks: management, selectable: lister}, wrongPool)
+
+		if strings.Contains(got, "Networks Morpheus would accept") || strings.Contains(got, "No network at all") {
+			t.Errorf("a failed lookup must not produce a selectable paragraph\n--- got ---\n%s", got)
+		}
+
+		if !strings.Contains(got, "or choose a network that belongs to resource pool 1702.") {
+			t.Errorf("with the list unknown the original tail stands\n--- got ---\n%s", got)
+		}
+	})
+
+	t.Run("no layout: not asked, since the source would answer nothing", func(t *testing.T) {
+		t.Parallel()
+
+		lister := &fakeSelectable{list: []selectableNetwork{}}
+		req := wrongPool
+		req.LayoutID = 0
+
+		got := invalidNetwork(context.Background(), lookups{networks: management, selectable: lister}, req)
+
+		if lister.asked != nil {
+			t.Errorf("must not ask without a layout; asked %+v", *lister.asked)
+		}
+
+		if strings.Contains(got, "No network at all") {
+			t.Errorf("an unasked question must not be reported as an empty answer\n--- got ---\n%s", got)
+		}
+	})
+
+	t.Run("no cloud: not asked, since the source would answer for every cloud", func(t *testing.T) {
+		t.Parallel()
+
+		lister := &fakeSelectable{list: []selectableNetwork{{ID: 5}}}
+		req := wrongPool
+		req.CloudID = 0
+
+		invalidNetwork(context.Background(), lookups{networks: management, selectable: lister}, req)
+
+		if lister.asked != nil {
+			t.Errorf("must not ask without a cloud; asked %+v", *lister.asked)
+		}
+	})
+
+	t.Run("pool matches, list known: no HVM paragraph, list still given", func(t *testing.T) {
+		t.Parallel()
+
+		lister := &fakeSelectable{list: []selectableNetwork{{ID: 91, Name: "other"}}}
+		req := wrongPool
+		req.Config = map[string]any{"resourcePoolId": "pool-1"}
+
+		got := invalidNetwork(context.Background(), lookups{networks: management, selectable: lister}, req)
+
+		if strings.Contains(got, "HVM cluster") {
+			t.Errorf("no pool mismatch, so no HVM paragraph\n--- got ---\n%s", got)
+		}
+
+		if !strings.Contains(got, "(cloud 1, group 265, layout 1193, resource pool 1): network 91 \"other\".") {
+			t.Errorf("expected the list for the matching pool\n--- got ---\n%s", got)
+		}
+	})
+}
+
+// A pool-less network passes the server's pool filter, so the line must not
+// claim the pool excluded it — and must not trigger the HVM paragraph.
+func TestUnitPoollessNetworkIsNotAPoolMismatch(t *testing.T) {
+	t.Parallel()
+
+	networks := fakeNetworks{139: {ID: 139, Name: "docker bridge", CloudID: 1, Active: active(true)}}
+	req := Request{
+		CloudID:    1,
+		Config:     map[string]any{"resourcePoolId": "pool-1"},
+		Interfaces: []map[string]any{{"network": map[string]any{"id": "139"}}},
+	}
+
+	got := invalidNetwork(context.Background(), only(networks), req)
+
+	want := `network 139 "docker bridge" belongs to no resource pool, which does not exclude it from resource pool 1; ` +
+		`it is not of a type this layout's provision type can use, or it is not visible to the instance's group or ` +
+		`tenant (check the network's type, group access and tenant permissions).`
+	if !strings.Contains(got, want) {
+		t.Errorf("missing the corrected line\n--- got ---\n%s", got)
+	}
+
+	if strings.Contains(got, "HVM cluster") || strings.Contains(got, "targets resource pool") {
+		t.Errorf("a pool-less network is not a pool mismatch\n--- got ---\n%s", got)
+	}
+}
+
+// A clone inherits the cloud, group and layout it did not set from its source.
+func TestUnitCloneInheritsScopeFromSource(t *testing.T) {
+	t.Parallel()
+
+	duck := poolRef{ID: 1, Name: "Duck"}
+	networks := fakeNetworks{1: {ID: 1, Name: "Management", CloudID: 1, Active: active(true), Pools: []poolRef{duck}}}
+	source := fakeInstance{id: 42, cloudID: 1, groupID: 265, layoutID: 1193}
+
+	t.Run("nothing set on the clone: all three inherited", func(t *testing.T) {
+		t.Parallel()
+
+		lister := &fakeSelectable{list: []selectableNetwork{}}
+		req := Request{
+			SourceInstanceID: 42,
+			Config:           map[string]any{"resourcePoolId": "pool-1702"},
+			Interfaces:       []map[string]any{{"network": map[string]any{"id": "1"}}},
+		}
+
+		got := invalidNetwork(context.Background(), lookups{networks: networks, selectable: lister, instances: source}, req)
+
+		if lister.asked == nil || *lister.asked != (scope{CloudID: 1, GroupID: 265, LayoutID: 1193, PoolID: 1702}) {
+			t.Fatalf("expected the source's scope; asked %+v", lister.asked)
+		}
+
+		if !strings.Contains(got, "(cloud 1, group 265, layout 1193, resource pool 1702)") {
+			t.Errorf("expected the inherited scope in the message\n--- got ---\n%s", got)
+		}
+	})
+
+	t.Run("clone names its own cloud and group: those win, layout inherited", func(t *testing.T) {
+		t.Parallel()
+
+		lister := &fakeSelectable{list: []selectableNetwork{}}
+		req := Request{
+			SourceInstanceID: 42,
+			CloudID:          7,
+			GroupID:          8,
+			Config:           map[string]any{"resourcePoolId": "pool-1702"},
+			Interfaces:       []map[string]any{{"network": map[string]any{"id": "1"}}},
+		}
+
+		invalidNetwork(context.Background(), lookups{networks: networks, selectable: lister, instances: source}, req)
+
+		if lister.asked == nil || *lister.asked != (scope{CloudID: 7, GroupID: 8, LayoutID: 1193, PoolID: 1702}) {
+			t.Errorf("expected cloud 7, group 8 from the clone and layout 1193 from the source; asked %+v", lister.asked)
+		}
+	})
+
+	t.Run("source unreadable: no scope, so not asked", func(t *testing.T) {
+		t.Parallel()
+
+		lister := &fakeSelectable{list: []selectableNetwork{}}
+		req := Request{
+			SourceInstanceID: 99, // not the fake's instance
+			Config:           map[string]any{"resourcePoolId": "pool-1702"},
+			Interfaces:       []map[string]any{{"network": map[string]any{"id": "1"}}},
+		}
+
+		got := invalidNetwork(context.Background(), lookups{networks: networks, selectable: lister, instances: source}, req)
+
+		if lister.asked != nil {
+			t.Errorf("must not ask with no cloud or layout; asked %+v", *lister.asked)
+		}
+
+		if !strings.Contains(got, "or choose a network that belongs to resource pool 1702.") {
+			t.Errorf("the unknown-list tail must stand\n--- got ---\n%s", got)
+		}
+	})
+}
+
+func TestUnitScopeDescribe(t *testing.T) {
+	t.Parallel()
+
+	for name, tc := range map[string]struct {
+		s    scope
+		want string
+	}{
+		"all": {
+			scope{CloudID: 1, GroupID: 265, LayoutID: 1193, PoolID: 1702},
+			"cloud 1, group 265, layout 1193, resource pool 1702",
+		},
+		"no group":    {scope{CloudID: 1, LayoutID: 1193, PoolID: 1}, "cloud 1, layout 1193, resource pool 1"},
+		"cloud alone": {scope{CloudID: 3}, "cloud 3"},
+		"nothing":     {scope{}, ""},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tc.s.describe(); got != tc.want {
+				t.Errorf("describe() = %q, want %q", got, tc.want)
+			}
+		})
 	}
 }

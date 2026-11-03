@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,18 +20,18 @@ var _ MappedNullable = &GetNetworkRouters200ResponseNetworkRoutersInnerInterface
 
 // GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner struct for GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner
 type GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner struct {
-	Id                   *int64                                                                 `json:"id,omitempty"`
-	Name                 *string                                                                `json:"name,omitempty"`
-	Code                 NullableString                                                         `json:"code,omitempty"`
-	InterfaceType        NullableString                                                         `json:"interfaceType,omitempty"`
-	NetworkPosition      NullableString                                                         `json:"networkPosition,omitempty"`
-	IpAddress            *string                                                                `json:"ipAddress,omitempty"`
-	Cidr                 *string                                                                `json:"cidr,omitempty"`
-	ExternalLink         NullableString                                                         `json:"externalLink,omitempty"`
-	Enabled              *bool                                                                  `json:"enabled,omitempty"`
-	Network              *GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInnerNetwork `json:"network,omitempty"`
-	Config               map[string]interface{}                                                 `json:"config,omitempty"`
-	AdditionalProperties map[string]interface{}                                                 `json:",remain"`
+	Id                   *int64                                                                        `json:"id,omitempty"`
+	Name                 *string                                                                       `json:"name,omitempty"`
+	Code                 NullableString                                                                `json:"code,omitempty"`
+	InterfaceType        NullableString                                                                `json:"interfaceType,omitempty"`
+	NetworkPosition      NullableString                                                                `json:"networkPosition,omitempty"`
+	IpAddress            *string                                                                       `json:"ipAddress,omitempty"`
+	Cidr                 *string                                                                       `json:"cidr,omitempty"`
+	ExternalLink         NullableString                                                                `json:"externalLink,omitempty"`
+	Enabled              *bool                                                                         `json:"enabled,omitempty"`
+	Network              NullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInnerNetwork `json:"network,omitempty"`
+	Config               map[string]interface{}                                                        `json:"config,omitempty"`
+	AdditionalProperties map[string]interface{}                                                        `json:",remain"`
 }
 
 type _GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner
@@ -73,8 +73,8 @@ func (o GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) ToMap() 
 	if !IsNil(o.Enabled) {
 		toSerialize["enabled"] = o.Enabled
 	}
-	if !IsNil(o.Network) {
-		toSerialize["network"] = o.Network
+	if o.Network.IsSet() {
+		toSerialize["network"] = o.Network.Get()
 	}
 	if o.Config != nil {
 		toSerialize["config"] = o.Config
@@ -85,51 +85,6 @@ func (o GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) ToMap() 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner struct {
-	value *GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner
-	isSet bool
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) Get() *GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) Set(val *GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner(val *GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) *NullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner {
-	return &NullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner) UnmarshalJSON(data []byte) (err error) {

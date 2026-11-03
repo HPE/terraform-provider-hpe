@@ -19,7 +19,7 @@ import (
 
 //go:generate ../../../../bin/render -out examples/resources/morpheus_network/example_host.tf example_host.tf.tmpl Name "example-terraform-host" Description "A host network" CloudName "Standard Cloud" PoolId "1" GroupName "Example Group" TypeId "1" Active "true" DHCPServer "false" ApplianceURLProxyBypass "true" TenantName "Master Tenant" Visibility "private" CIDR "10.0.0.0/8" Labels "terraform, example"
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_network/example_ovs_port_group.tf example_ovs_port_group.tf.tmpl Name "Terraform OVS Port Group" Description "OVS Port Group network" CloudName "Morpheus Standard Cloud" PoolId "3251" GroupName "ExampleGroup" TypeId "63" SwitchId "Compute" Active "true" DHCPServer "false" ApplianceURLProxyBypass "true" TenantName "Master Tenant" Visibility "public" CIDR "10.32.148.0/22" ZonePoolId "62299" VLANId "43" Labels "\"terraform\", \"example\""
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network/example_ovs_port_group.tf example_ovs_port_group.tf.tmpl Name "Terraform OVS Port Group" Description "OVS Port Group network" CloudName "HVM Cloud" PoolId "3251" GroupName "ExampleGroup" SwitchId "Compute" NetworkServerId "7834" VlanTrunks "100,200" Active "true" DHCPServer "false" ApplianceURLProxyBypass "true" TenantName "Master Tenant" Visibility "public" CIDR "10.32.148.0/22" ZonePoolId "62299" VLANId "43" Labels "\"terraform\", \"example\""
 
 func RenderNetworkHostConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
@@ -207,14 +207,15 @@ func RenderNetworkOVSPortGroupConfig(t *testing.T, overrides map[string]string) 
 	t.Helper()
 
 	defaults := map[string]string{
-		"CloudName":               "Morpheus Standard Cloud",
+		"CloudName":               "HVM Cloud",
 		"GroupName":               "ExampleGroup",
 		"TenantName":              "Master Tenant",
 		"Name":                    "Terraform OVS Port Group",
 		"Description":             "OVS Port Group network",
 		"PoolId":                  "3251",
-		"TypeId":                  "63",
 		"SwitchId":                "Compute",
+		"NetworkServerId":         "7834",
+		"VlanTrunks":              "100,200",
 		"Active":                  "true",
 		"DHCPServer":              "false",
 		"ApplianceURLProxyBypass": "true",

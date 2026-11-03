@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -61,51 +61,6 @@ func (o AddInstance200ResponseAllOfOneOfInstanceInstanceType) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddInstance200ResponseAllOfOneOfInstanceInstanceType struct {
-	value *AddInstance200ResponseAllOfOneOfInstanceInstanceType
-	isSet bool
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceInstanceType) Get() *AddInstance200ResponseAllOfOneOfInstanceInstanceType {
-	return v.value
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceInstanceType) Set(val *AddInstance200ResponseAllOfOneOfInstanceInstanceType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceInstanceType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceInstanceType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstance200ResponseAllOfOneOfInstanceInstanceType(val *AddInstance200ResponseAllOfOneOfInstanceInstanceType) *NullableAddInstance200ResponseAllOfOneOfInstanceInstanceType {
-	return &NullableAddInstance200ResponseAllOfOneOfInstanceInstanceType{value: val, isSet: true}
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceInstanceType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceInstanceType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceInstanceType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddInstance200ResponseAllOfOneOfInstanceInstanceType) UnmarshalJSON(data []byte) (err error) {

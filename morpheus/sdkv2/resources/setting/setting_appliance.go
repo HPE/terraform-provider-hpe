@@ -245,6 +245,13 @@ func ResourceSettingAppliance() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"no_proxy": {
+				Type: schema.TypeString,
+				Description: "Comma-separated hosts, domains or CIDR ranges the appliance reaches directly rather " +
+					"than through the proxy (for example `10.0.0.0/8,localhost,127.0.0.1`)",
+				Optional: true,
+				Computed: true,
+			},
 			"currency_provider": {
 				Type:         schema.TypeString,
 				Description:  "The currency provider (openexchange, fixer)",
@@ -309,17 +316,13 @@ func resourceSettingApplianceCreate(ctx context.Context, d *schema.ResourceData,
 	}
 	applianceSettings["registrationEnabled"] = registrationEnabled
 
-	if registrationEnabled {
-		defaultRoleID, defaultRoleIDOk := d.GetOk("default_role_id")
-		if defaultRoleIDOk {
-			applianceSettings["defaultRoleId"] = defaultRoleID
-		}
-
-		defaultUserRoleID, defaultUserRoleIDOk := d.GetOk("default_user_role_id")
-		if defaultUserRoleIDOk {
-			applianceSettings["defaultUserRoleId"] = defaultUserRoleID
-		}
-	}
+	// The two default role ids are sent whenever they are set, whether or not
+	// registration is enabled: the schema requires them alongside
+	// registration_enabled (true or false), and the appliance stores them
+	// either way, validating them only when registration is being enabled.
+	// Dropping them while registration is off left the appliance's own values
+	// in state and the configuration in a perpetual diff.
+	setDefaultRoleIDs(d, applianceSettings)
 
 	var dockerPrivilegedMode bool
 	if v, ok := d.Get("docker_privileged_mode").(bool); ok {
@@ -394,6 +397,11 @@ func resourceSettingApplianceCreate(ctx context.Context, d *schema.ResourceData,
 		applianceSettings["proxyWorkstation"] = proxyWorkstation
 	}
 
+	noProxy, noProxyOk := d.GetOk("no_proxy")
+	if noProxyOk {
+		applianceSettings["noProxy"] = noProxy
+	}
+
 	currencyProvider, currencyProviderOk := d.GetOk("currency_provider")
 	if currencyProviderOk {
 		applianceSettings["currencyProvider"] = currencyProvider
@@ -425,17 +433,12 @@ func resourceSettingApplianceCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
 	}
 
-	var result *morpheus.UpdateApplianceSettingsResult
-	if v, ok := resp.Result.(*morpheus.UpdateApplianceSettingsResult); ok {
-		result = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
-	}
-
 	// The appliance-settings PUT returns only a success envelope (no
 	// applianceSettings object), so do not require it here. State is populated
 	// by the read below, which fetches the settings via GET.
-	_ = result
+	if _, ok := resp.Result.(*morpheus.UpdateApplianceSettingsResult); !ok {
+		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
+	}
 
 	d.SetId(convert.Int64ToString(1))
 
@@ -510,6 +513,7 @@ func resourceSettingApplianceRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("proxy_password", applianceSetting.ProxyPasswordHash)
 	d.Set("proxy_domain", applianceSetting.ProxyDomain)
 	d.Set("proxy_workstation", applianceSetting.ProxyWorkstation)
+	d.Set("no_proxy", applianceSetting.NoProxy)
 	d.Set("currency_provider", applianceSetting.CurrencyProvider)
 	d.Set("currency_provider_api_key", applianceSetting.CurrencyKey)
 
@@ -532,6 +536,23 @@ func resourceSettingApplianceUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("internal_appliance_url") {
 		applianceSettings["internalApplianceUrl"] = d.Get("internal_appliance_url")
+	}
+
+	if d.HasChange("api_allowed_origins") {
+		applianceSettings["corsAllowed"] = d.Get("api_allowed_origins")
+	}
+
+	// registration_enabled is ForceNew, so only the two role ids can change
+	// here. They travel with the current registration flag, as on create, and
+	// are sent whenever they are set (see setDefaultRoleIDs).
+	if d.HasChange("default_role_id") || d.HasChange("default_user_role_id") {
+		registrationEnabled, ok := d.Get("registration_enabled").(bool)
+		if !ok {
+			return diag.FromErr(helpers.TypeAssertFailError("registration_enabled", d.Get("registration_enabled")))
+		}
+		applianceSettings["registrationEnabled"] = registrationEnabled
+
+		setDefaultRoleIDs(d, applianceSettings)
 	}
 
 	if d.HasChange("docker_privileged_mode") {
@@ -590,6 +611,10 @@ func resourceSettingApplianceUpdate(ctx context.Context, d *schema.ResourceData,
 		applianceSettings["proxyWorkstation"] = d.Get("proxy_workstation")
 	}
 
+	if d.HasChange("no_proxy") {
+		applianceSettings["noProxy"] = d.Get("no_proxy")
+	}
+
 	if d.HasChange("currency_provider") {
 		applianceSettings["currencyProvider"] = d.Get("currency_provider")
 	}
@@ -616,20 +641,33 @@ func resourceSettingApplianceUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
 	}
 
-	var result *morpheus.UpdateApplianceSettingsResult
-	if v, ok := resp.Result.(*morpheus.UpdateApplianceSettingsResult); ok {
-		result = v
-	} else {
+	// The appliance-settings PUT returns only a success envelope (no
+	// applianceSettings object), exactly as on create, so do not require it
+	// here either: doing so failed every update after the change had already
+	// been applied. State is populated by the read below, which fetches the
+	// settings via GET.
+	if _, ok := resp.Result.(*morpheus.UpdateApplianceSettingsResult); !ok {
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
-	}
-
-	if result.ApplianceSettings == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("ApplianceSettings"))
 	}
 
 	d.SetId(convert.Int64ToString(1))
 
 	return resourceSettingApplianceRead(ctx, d, meta)
+}
+
+// setDefaultRoleIDs copies the two default role ids into the request when they
+// are set. An empty string never reaches here: for a computed attribute the SDK
+// reads "" as "unset" and plans no change, so the appliance's value stands; the
+// ids can only be dropped by disabling registration, which replaces the
+// resource.
+func setDefaultRoleIDs(d *schema.ResourceData, applianceSettings map[string]any) {
+	if defaultRoleID, ok := d.GetOk("default_role_id"); ok {
+		applianceSettings["defaultRoleId"] = defaultRoleID
+	}
+
+	if defaultUserRoleID, ok := d.GetOk("default_user_role_id"); ok {
+		applianceSettings["defaultUserRoleId"] = defaultUserRoleID
+	}
 }
 
 func resourceSettingApplianceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

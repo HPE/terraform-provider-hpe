@@ -332,6 +332,17 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "The resource pool to provision the instance into, as `pool-<id>`. For an HVM cluster this is the\npool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source\nas `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the\ncloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`\ncannot find it by name. A network belongs to the pool of the cluster it was discovered on; a\npool that does not contain the requested network fails with `Invalid network`.",
 						MarkdownDescription: "The resource pool to provision the instance into, as `pool-<id>`. For an HVM cluster this is the\npool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source\nas `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the\ncloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`\ncannot find it by name. A network belongs to the pool of the cluster it was discovered on; a\npool that does not contain the requested network fails with `Invalid network`.",
 					},
+					"user_data": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Cloud-init user data for the virtual machine: cloud-config YAML (starting `#cloud-config`)\nor a plain script. Applied once, when the virtual machine is first provisioned, so changing\nit replaces the instance; use `lifecycle { ignore_changes }` to update the stored value for\nlater clones without replacing the VM. Your `bootcmd` and `runcmd` entries run *before* the\nones Morpheus generates (which install the agent), so `bootcmd` is the place for guest\nnetwork fix-ups that must precede the agent install. Other keys are merged over the user\ndata of the cloud, OS type, image, layout and type set; list values (for example\n`write_files`, `packages`) *replace* Morpheus's rather than append to them. All `runcmd`\nentries run as one shell script, so a failing command of yours stops Morpheus's: guard\nwith `|| true` where a failure is acceptable. Morpheus trims the value, so wrap it in\n`trimspace()` to avoid a perpetual diff. Honoured by HVM; the generic `config` block carries\n`userData` for other clouds, where support depends on the appliance's cloud plugin.",
+						MarkdownDescription: "Cloud-init user data for the virtual machine: cloud-config YAML (starting `#cloud-config`)\nor a plain script. Applied once, when the virtual machine is first provisioned, so changing\nit replaces the instance; use `lifecycle { ignore_changes }` to update the stored value for\nlater clones without replacing the VM. Your `bootcmd` and `runcmd` entries run *before* the\nones Morpheus generates (which install the agent), so `bootcmd` is the place for guest\nnetwork fix-ups that must precede the agent install. Other keys are merged over the user\ndata of the cloud, OS type, image, layout and type set; list values (for example\n`write_files`, `packages`) *replace* Morpheus's rather than append to them. All `runcmd`\nentries run as one shell script, so a failing command of yours stops Morpheus's: guard\nwith `|| true` where a failure is acceptable. Morpheus trims the value, so wrap it in\n`trimspace()` to avoid a perpetual diff. Honoured by HVM; the generic `config` block carries\n`userData` for other clouds, where support depends on the appliance's cloud plugin.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
+					},
 				},
 				CustomType: ConfigHvmType{
 					ObjectType: types.ObjectType{
@@ -426,6 +437,16 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 			"evars": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"export": schema.BoolAttribute{
+							Optional:            true,
+							Description:         "Whether the variable is exported to the instance environment. Defaults to true when omitted.",
+							MarkdownDescription: "Whether the variable is exported to the instance environment. Defaults to true when omitted.",
+						},
+						"masked": schema.BoolAttribute{
+							Optional:            true,
+							Description:         "Whether the value is masked in the Morpheus UI and API. Defaults to false when omitted.",
+							MarkdownDescription: "Whether the value is masked in the Morpheus UI and API. Defaults to false when omitted.",
+						},
 						"name": schema.StringAttribute{
 							Required: true,
 						},
@@ -440,12 +461,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Computed:            true,
-				Description:         "Environment Variables, an array of objects that have name and value.",
-				MarkdownDescription: "Environment Variables, an array of objects that have name and value.",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
+				Description:         "Environment variables for the instance. Each has a name and value, plus optional export\n(default true) and masked (default false). Variables can be added, changed and removed in\nplace.",
+				MarkdownDescription: "Environment variables for the instance. Each has a name and value, plus optional export\n(default true) and masked (default false). Variables can be added, changed and removed in\nplace.",
 			},
 			"group_id": schema.Int64Attribute{
 				Required:            true,
@@ -745,8 +762,11 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Description:         "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
-				MarkdownDescription: "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
+				Description:         "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n\nPorts can only be set when the instance is created. Changing or removing them forces a new instance to be created.\n",
+				MarkdownDescription: "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n\nPorts can only be set when the instance is created. Changing or removing them forces a new instance to be created.\n",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplace(),
+				},
 			},
 			"server_uuid": schema.StringAttribute{
 				Optional:            true,
@@ -3767,6 +3787,24 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
 	}
 
+	userDataAttribute, ok := attributes["user_data"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`user_data is missing from object`)
+
+		return nil, diags
+	}
+
+	userDataVal, ok := userDataAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`user_data expected to be basetypes.StringValue, was: %T`, userDataAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -3779,6 +3817,7 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
 		ResourcePoolId:       resourcePoolIdVal,
+		UserData:             userDataVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -3972,6 +4011,24 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
 	}
 
+	userDataAttribute, ok := attributes["user_data"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`user_data is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	userDataVal, ok := userDataAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`user_data expected to be basetypes.StringValue, was: %T`, userDataAttribute))
+	}
+
 	if diags.HasError() {
 		return NewConfigHvmValueUnknown(), diags
 	}
@@ -3984,6 +4041,7 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
 		ResourcePoolId:       resourcePoolIdVal,
+		UserData:             userDataVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -4061,11 +4119,12 @@ type ConfigHvmValue struct {
 	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
 	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
 	ResourcePoolId       basetypes.StringValue `tfsdk:"resource_pool_id"`
+	UserData             basetypes.StringValue `tfsdk:"user_data"`
 	state                attr.ValueState
 }
 
 func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 7)
+	attrTypes := make(map[string]tftypes.Type, 8)
 
 	var val tftypes.Value
 	var err error
@@ -4077,12 +4136,13 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["user_data"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 7)
+		vals := make(map[string]tftypes.Value, 8)
 
 		val, err = v.AffinityGroupId.ToTerraformValue(ctx)
 		if err != nil {
@@ -4133,6 +4193,13 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 
 		vals["resource_pool_id"] = val
 
+		val, err = v.UserData.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["user_data"] = val
+
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4170,6 +4237,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
+		"user_data":             basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -4190,6 +4258,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 			"nested_virtualization": v.NestedVirtualization,
 			"no_agent":              v.NoAgent,
 			"resource_pool_id":      v.ResourcePoolId,
+			"user_data":             v.UserData,
 		})
 
 	return objVal, diags
@@ -4238,6 +4307,10 @@ func (v ConfigHvmValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.UserData.Equal(other.UserData) {
+		return false
+	}
+
 	return true
 }
 
@@ -4258,6 +4331,7 @@ func (v ConfigHvmValue) AttributeTypes(ctx context.Context) map[string]attr.Type
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
+		"user_data":             basetypes.StringType{},
 	}
 }
 
@@ -4947,6 +5021,42 @@ func (t EvarsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue
 
 	attributes := in.Attributes()
 
+	exportAttribute, ok := attributes["export"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`export is missing from object`)
+
+		return nil, diags
+	}
+
+	exportVal, ok := exportAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`export expected to be basetypes.BoolValue, was: %T`, exportAttribute))
+	}
+
+	maskedAttribute, ok := attributes["masked"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`masked is missing from object`)
+
+		return nil, diags
+	}
+
+	maskedVal, ok := maskedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`masked expected to be basetypes.BoolValue, was: %T`, maskedAttribute))
+	}
+
 	nameAttribute, ok := attributes["name"]
 
 	if !ok {
@@ -4988,9 +5098,11 @@ func (t EvarsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue
 	}
 
 	return EvarsValue{
-		Name:  nameVal,
-		Value: valueVal,
-		state: attr.ValueStateKnown,
+		Export: exportVal,
+		Masked: maskedVal,
+		Name:   nameVal,
+		Value:  valueVal,
+		state:  attr.ValueStateKnown,
 	}, diags
 }
 
@@ -5057,6 +5169,42 @@ func NewEvarsValue(attributeTypes map[string]attr.Type, attributes map[string]at
 		return NewEvarsValueUnknown(), diags
 	}
 
+	exportAttribute, ok := attributes["export"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`export is missing from object`)
+
+		return NewEvarsValueUnknown(), diags
+	}
+
+	exportVal, ok := exportAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`export expected to be basetypes.BoolValue, was: %T`, exportAttribute))
+	}
+
+	maskedAttribute, ok := attributes["masked"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`masked is missing from object`)
+
+		return NewEvarsValueUnknown(), diags
+	}
+
+	maskedVal, ok := maskedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`masked expected to be basetypes.BoolValue, was: %T`, maskedAttribute))
+	}
+
 	nameAttribute, ok := attributes["name"]
 
 	if !ok {
@@ -5098,9 +5246,11 @@ func NewEvarsValue(attributeTypes map[string]attr.Type, attributes map[string]at
 	}
 
 	return EvarsValue{
-		Name:  nameVal,
-		Value: valueVal,
-		state: attr.ValueStateKnown,
+		Export: exportVal,
+		Masked: maskedVal,
+		Name:   nameVal,
+		Value:  valueVal,
+		state:  attr.ValueStateKnown,
 	}, diags
 }
 
@@ -5170,17 +5320,21 @@ func (t EvarsType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = EvarsValue{}
 
 type EvarsValue struct {
-	Name  basetypes.StringValue `tfsdk:"name"`
-	Value basetypes.StringValue `tfsdk:"value"`
-	state attr.ValueState
+	Export basetypes.BoolValue   `tfsdk:"export"`
+	Masked basetypes.BoolValue   `tfsdk:"masked"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	Value  basetypes.StringValue `tfsdk:"value"`
+	state  attr.ValueState
 }
 
 func (v EvarsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 2)
+	attrTypes := make(map[string]tftypes.Type, 4)
 
 	var val tftypes.Value
 	var err error
 
+	attrTypes["export"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["masked"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["value"] = basetypes.StringType{}.TerraformType(ctx)
 
@@ -5188,7 +5342,21 @@ func (v EvarsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 2)
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.Export.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["export"] = val
+
+		val, err = v.Masked.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["masked"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
 		if err != nil {
@@ -5234,8 +5402,10 @@ func (v EvarsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, d
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"name":  basetypes.StringType{},
-		"value": basetypes.StringType{},
+		"export": basetypes.BoolType{},
+		"masked": basetypes.BoolType{},
+		"name":   basetypes.StringType{},
+		"value":  basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -5249,8 +5419,10 @@ func (v EvarsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, d
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"name":  v.Name,
-			"value": v.Value,
+			"export": v.Export,
+			"masked": v.Masked,
+			"name":   v.Name,
+			"value":  v.Value,
 		})
 
 	return objVal, diags
@@ -5269,6 +5441,14 @@ func (v EvarsValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
+	}
+
+	if !v.Export.Equal(other.Export) {
+		return false
+	}
+
+	if !v.Masked.Equal(other.Masked) {
+		return false
 	}
 
 	if !v.Name.Equal(other.Name) {
@@ -5292,8 +5472,10 @@ func (v EvarsValue) Type(ctx context.Context) attr.Type {
 
 func (v EvarsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"name":  basetypes.StringType{},
-		"value": basetypes.StringType{},
+		"export": basetypes.BoolType{},
+		"masked": basetypes.BoolType{},
+		"name":   basetypes.StringType{},
+		"value":  basetypes.StringType{},
 	}
 }
 

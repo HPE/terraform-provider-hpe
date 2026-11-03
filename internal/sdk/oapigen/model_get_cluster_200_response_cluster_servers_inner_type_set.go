@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o GetCluster200ResponseClusterServersInnerTypeSet) ToMap() (map[string]int
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetCluster200ResponseClusterServersInnerTypeSet struct {
-	value *GetCluster200ResponseClusterServersInnerTypeSet
-	isSet bool
-}
-
-func (v NullableGetCluster200ResponseClusterServersInnerTypeSet) Get() *GetCluster200ResponseClusterServersInnerTypeSet {
-	return v.value
-}
-
-func (v *NullableGetCluster200ResponseClusterServersInnerTypeSet) Set(val *GetCluster200ResponseClusterServersInnerTypeSet) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCluster200ResponseClusterServersInnerTypeSet) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCluster200ResponseClusterServersInnerTypeSet) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCluster200ResponseClusterServersInnerTypeSet(val *GetCluster200ResponseClusterServersInnerTypeSet) *NullableGetCluster200ResponseClusterServersInnerTypeSet {
-	return &NullableGetCluster200ResponseClusterServersInnerTypeSet{value: val, isSet: true}
-}
-
-func (v NullableGetCluster200ResponseClusterServersInnerTypeSet) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCluster200ResponseClusterServersInnerTypeSet) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCluster200ResponseClusterServersInnerTypeSet) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetCluster200ResponseClusterServersInnerTypeSet) UnmarshalJSON(data []byte) (err error) {

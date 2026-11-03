@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o UserCreationPolicyTypeConfiguration1) ToMap() (map[string]interface{}, e
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUserCreationPolicyTypeConfiguration1 struct {
-	value *UserCreationPolicyTypeConfiguration1
-	isSet bool
-}
-
-func (v NullableUserCreationPolicyTypeConfiguration1) Get() *UserCreationPolicyTypeConfiguration1 {
-	return v.value
-}
-
-func (v *NullableUserCreationPolicyTypeConfiguration1) Set(val *UserCreationPolicyTypeConfiguration1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUserCreationPolicyTypeConfiguration1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUserCreationPolicyTypeConfiguration1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUserCreationPolicyTypeConfiguration1(val *UserCreationPolicyTypeConfiguration1) *NullableUserCreationPolicyTypeConfiguration1 {
-	return &NullableUserCreationPolicyTypeConfiguration1{value: val, isSet: true}
-}
-
-func (v NullableUserCreationPolicyTypeConfiguration1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUserCreationPolicyTypeConfiguration1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUserCreationPolicyTypeConfiguration1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UserCreationPolicyTypeConfiguration1) UnmarshalJSON(data []byte) (err error) {

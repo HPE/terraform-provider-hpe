@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner) ToMap() (map[s
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner struct {
-	value *ListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner
-	isSet bool
-}
-
-func (v NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner) Get() *ListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner {
-	return v.value
-}
-
-func (v *NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner) Set(val *ListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner(val *ListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner) *NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner {
-	return &NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner{value: val, isSet: true}
-}
-
-func (v NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListLoadBalancers200ResponseAllOfLoadBalancersInnerOwner) UnmarshalJSON(data []byte) (err error) {

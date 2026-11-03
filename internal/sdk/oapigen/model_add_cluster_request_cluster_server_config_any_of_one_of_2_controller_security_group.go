@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o AddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup) 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup struct {
-	value *AddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup) Get() *AddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup) Set(val *AddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup(val *AddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup) *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup {
-	return &NullableAddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddClusterRequestClusterServerConfigAnyOfOneOf2ControllerSecurityGroup) UnmarshalJSON(data []byte) (err error) {

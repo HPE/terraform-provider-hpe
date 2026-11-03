@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -125,51 +125,6 @@ func (o ListDatastoreTypes200ResponseDatastoreTypesInner) ToMap() (map[string]in
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListDatastoreTypes200ResponseDatastoreTypesInner struct {
-	value *ListDatastoreTypes200ResponseDatastoreTypesInner
-	isSet bool
-}
-
-func (v NullableListDatastoreTypes200ResponseDatastoreTypesInner) Get() *ListDatastoreTypes200ResponseDatastoreTypesInner {
-	return v.value
-}
-
-func (v *NullableListDatastoreTypes200ResponseDatastoreTypesInner) Set(val *ListDatastoreTypes200ResponseDatastoreTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListDatastoreTypes200ResponseDatastoreTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListDatastoreTypes200ResponseDatastoreTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListDatastoreTypes200ResponseDatastoreTypesInner(val *ListDatastoreTypes200ResponseDatastoreTypesInner) *NullableListDatastoreTypes200ResponseDatastoreTypesInner {
-	return &NullableListDatastoreTypes200ResponseDatastoreTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListDatastoreTypes200ResponseDatastoreTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListDatastoreTypes200ResponseDatastoreTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListDatastoreTypes200ResponseDatastoreTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListDatastoreTypes200ResponseDatastoreTypesInner) UnmarshalJSON(data []byte) (err error) {

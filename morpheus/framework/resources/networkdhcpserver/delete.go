@@ -5,7 +5,6 @@ package networkdhcpserver
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -40,13 +39,13 @@ func (r *Resource) Delete(
 
 	tflog.Debug(ctx, fmt.Sprintf("Deleting network dhcp server %d", id))
 
-	_, hresp, err := client.NetworksAPI.
+	result, hresp, err := client.NetworksAPI.
 		DeleteNetworkDhcpServer(ctx, id, serverID).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete network dhcp server resource",
 			fmt.Sprintf("network dhcp server %d DELETE failed: %s",
-				id, errfmt.ErrMsg(err, hresp)),
+				id, err.Error()),
 		)
 	}
 }

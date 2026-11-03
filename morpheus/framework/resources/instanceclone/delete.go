@@ -10,7 +10,6 @@ import (
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -50,18 +49,12 @@ func (r *Resource) Delete(
 
 	instanceID := state.Id.ValueInt64()
 
-	_, hresp, err := client.InstancesAPI.DeleteInstance(ctx, instanceID).Execute()
-	if err != nil {
-		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-			tflog.Warn(ctx, fmt.Sprintf("Instance clone %d already gone", instanceID))
-
-			return
-		}
-
+	result, hresp, err := client.InstancesAPI.DeleteInstance(ctx, instanceID).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete instance clone",
 			fmt.Sprintf("instance %d DELETE failed: %s",
-				instanceID, errfmt.ErrMsg(err, hresp)),
+				instanceID, err.Error()),
 		)
 
 		return

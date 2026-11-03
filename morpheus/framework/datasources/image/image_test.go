@@ -74,7 +74,7 @@ data "hpe_morpheus_os_type" "test" {
 }
 
 data "hpe_morpheus_storage_bucket" "test" {
-	name = "Local Storage"
+	name = "` + testhelpers.ImageStorageBucket("Local Storage") + `"
 }
 ` + imageConfig
 

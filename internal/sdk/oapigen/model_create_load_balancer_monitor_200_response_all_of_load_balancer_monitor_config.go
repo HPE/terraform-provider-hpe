@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -50,51 +50,6 @@ func (o CreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig) ToMa
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig struct {
-	value *CreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig
-	isSet bool
-}
-
-func (v NullableCreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig) Get() *CreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig {
-	return v.value
-}
-
-func (v *NullableCreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig) Set(val *CreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig(val *CreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig) *NullableCreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig {
-	return &NullableCreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig{value: val, isSet: true}
-}
-
-func (v NullableCreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfig) UnmarshalJSON(data []byte) (err error) {

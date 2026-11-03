@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork struct {
-	value *UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork
-	isSet bool
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) Get() *UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork {
-	return v.value
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) Set(val *UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork(val *UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork {
-	return &NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork{value: val, isSet: true}
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) UnmarshalJSON(data []byte) (err error) {

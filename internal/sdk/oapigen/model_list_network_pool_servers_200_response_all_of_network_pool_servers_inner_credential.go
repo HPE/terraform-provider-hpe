@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o ListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential)
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential struct {
-	value *ListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential
-	isSet bool
-}
-
-func (v NullableListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential) Get() *ListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential {
-	return v.value
-}
-
-func (v *NullableListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential) Set(val *ListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential(val *ListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential) *NullableListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential {
-	return &NullableListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential{value: val, isSet: true}
-}
-
-func (v NullableListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListNetworkPoolServers200ResponseAllOfNetworkPoolServersInnerCredential) UnmarshalJSON(data []byte) (err error) {

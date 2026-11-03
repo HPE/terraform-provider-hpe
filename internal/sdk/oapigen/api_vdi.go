@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -117,7 +117,7 @@ func (a *VDIAPIService) AddVDIAppsExecute(r ApiAddVDIAppsRequest) (*AddVDIApps20
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -128,7 +128,7 @@ func (a *VDIAPIService) AddVDIAppsExecute(r ApiAddVDIAppsRequest) (*AddVDIApps20
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -245,7 +245,7 @@ func (a *VDIAPIService) AddVDIGatewaysExecute(r ApiAddVDIGatewaysRequest) (*AddV
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -256,7 +256,7 @@ func (a *VDIAPIService) AddVDIGatewaysExecute(r ApiAddVDIGatewaysRequest) (*AddV
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -373,7 +373,7 @@ func (a *VDIAPIService) AddVDIPoolsExecute(r ApiAddVDIPoolsRequest) (*AddVDIPool
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -384,255 +384,7 @@ func (a *VDIAPIService) AddVDIPoolsExecute(r ApiAddVDIPoolsRequest) (*AddVDIPool
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiAddVdiAllocationRequest struct {
-	ctx        context.Context
-	ApiService *VDIAPIService
-	id         int64
-}
-
-func (r ApiAddVdiAllocationRequest) Execute() (*AddVdiAllocation200Response, *http.Response, error) {
-	return r.ApiService.AddVdiAllocationExecute(r)
-}
-
-/*
-AddVdiAllocation Allocate Virtual Desktop
-
-This endpoint allocates a specific virtual desktop for use by your user. It will return the desktop and its allocation for your user, or an error if allocation fails, which will occur if the desktop is fully allocated already. If your user already has an allocation, the desktop and allocation will still be returned succesfully and the server does not make any changes.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiAddVdiAllocationRequest
-*/
-func (a *VDIAPIService) AddVdiAllocation(ctx context.Context, id int64) ApiAddVdiAllocationRequest {
-	return ApiAddVdiAllocationRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return AddVdiAllocation200Response
-func (a *VDIAPIService) AddVdiAllocationExecute(r ApiAddVdiAllocationRequest) (*AddVdiAllocation200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *AddVdiAllocation200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "VDIAPIService.AddVdiAllocation")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/vdi/{id}/allocate"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiGetVDIAllocationsRequest struct {
-	ctx        context.Context
-	ApiService *VDIAPIService
-	id         int64
-}
-
-func (r ApiGetVDIAllocationsRequest) Execute() (*GetVDIAllocations200Response, *http.Response, error) {
-	return r.ApiService.GetVDIAllocationsExecute(r)
-}
-
-/*
-GetVDIAllocations Retrieves a Specific VDI Allocation
-
-Retrieves a specific VDI allocation.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiGetVDIAllocationsRequest
-*/
-func (a *VDIAPIService) GetVDIAllocations(ctx context.Context, id int64) ApiGetVDIAllocationsRequest {
-	return ApiGetVDIAllocationsRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return GetVDIAllocations200Response
-func (a *VDIAPIService) GetVDIAllocationsExecute(r ApiGetVDIAllocationsRequest) (*GetVDIAllocations200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *GetVDIAllocations200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "VDIAPIService.GetVDIAllocations")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/vdi-allocations/{id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -745,7 +497,7 @@ func (a *VDIAPIService) GetVDIAppsExecute(r ApiGetVDIAppsRequest) (*GetVDIApps20
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -756,7 +508,7 @@ func (a *VDIAPIService) GetVDIAppsExecute(r ApiGetVDIAppsRequest) (*GetVDIApps20
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -869,7 +621,7 @@ func (a *VDIAPIService) GetVDIGatewaysExecute(r ApiGetVDIGatewaysRequest) (*GetV
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -880,7 +632,7 @@ func (a *VDIAPIService) GetVDIGatewaysExecute(r ApiGetVDIGatewaysRequest) (*GetV
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -993,7 +745,7 @@ func (a *VDIAPIService) GetVDIPoolsExecute(r ApiGetVDIPoolsRequest) (*GetVDIPool
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1004,363 +756,7 @@ func (a *VDIAPIService) GetVDIPoolsExecute(r ApiGetVDIPoolsRequest) (*GetVDIPool
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiGetVdiRequest struct {
-	ctx        context.Context
-	ApiService *VDIAPIService
-	id         int64
-}
-
-func (r ApiGetVdiRequest) Execute() (*GetVdi200Response, *http.Response, error) {
-	return r.ApiService.GetVdiExecute(r)
-}
-
-/*
-GetVdi Get a Specific Virtual Desktop
-
-This endpoint retrieves a specific virtual desktop along with the allocation for your user if one exists.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiGetVdiRequest
-*/
-func (a *VDIAPIService) GetVdi(ctx context.Context, id int64) ApiGetVdiRequest {
-	return ApiGetVdiRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return GetVdi200Response
-func (a *VDIAPIService) GetVdiExecute(r ApiGetVdiRequest) (*GetVdi200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *GetVdi200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "VDIAPIService.GetVdi")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/vdi/{id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiListVDIAllocationsRequest struct {
-	ctx        context.Context
-	ApiService *VDIAPIService
-	max        *int64
-	offset     *int64
-	sort       *string
-	direction  *string
-	phrase     *string
-	name       *string
-	id         *string
-	status     *string
-	poolId     *int64
-	userId     *int64
-}
-
-// Maximum number of records to return
-func (r ApiListVDIAllocationsRequest) Max(max int64) ApiListVDIAllocationsRequest {
-	r.max = &max
-	return r
-}
-
-// Offset records, the number of records to skip, for paginating requests
-func (r ApiListVDIAllocationsRequest) Offset(offset int64) ApiListVDIAllocationsRequest {
-	r.offset = &offset
-	return r
-}
-
-// Sort order, the name of the property to sort by
-func (r ApiListVDIAllocationsRequest) Sort(sort string) ApiListVDIAllocationsRequest {
-	r.sort = &sort
-	return r
-}
-
-// Sort direction, use &#39;desc&#39; to reverse sort
-func (r ApiListVDIAllocationsRequest) Direction(direction string) ApiListVDIAllocationsRequest {
-	r.direction = &direction
-	return r
-}
-
-// Search phrase for partial matches on name or description
-func (r ApiListVDIAllocationsRequest) Phrase(phrase string) ApiListVDIAllocationsRequest {
-	r.phrase = &phrase
-	return r
-}
-
-// Filter by name
-func (r ApiListVDIAllocationsRequest) Name(name string) ApiListVDIAllocationsRequest {
-	r.name = &name
-	return r
-}
-
-// Filter by allocation ID
-func (r ApiListVDIAllocationsRequest) Id(id string) ApiListVDIAllocationsRequest {
-	r.id = &id
-	return r
-}
-
-// Filter by allocation status
-func (r ApiListVDIAllocationsRequest) Status(status string) ApiListVDIAllocationsRequest {
-	r.status = &status
-	return r
-}
-
-// Filter by &#x60;VDI Pool&#x60; ID
-func (r ApiListVDIAllocationsRequest) PoolId(poolId int64) ApiListVDIAllocationsRequest {
-	r.poolId = &poolId
-	return r
-}
-
-// Filter by User ID
-func (r ApiListVDIAllocationsRequest) UserId(userId int64) ApiListVDIAllocationsRequest {
-	r.userId = &userId
-	return r
-}
-
-func (r ApiListVDIAllocationsRequest) Execute() (*ListVDIAllocations200Response, *http.Response, error) {
-	return r.ApiService.ListVDIAllocationsExecute(r)
-}
-
-/*
-ListVDIAllocations Retrieves all VDI Allocations
-
-Retrieves all VDI allocations.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListVDIAllocationsRequest
-*/
-func (a *VDIAPIService) ListVDIAllocations(ctx context.Context) ApiListVDIAllocationsRequest {
-	return ApiListVDIAllocationsRequest{
-		ApiService: a,
-		ctx:        ctx,
-	}
-}
-
-// Execute executes the request
-//
-//	@return ListVDIAllocations200Response
-func (a *VDIAPIService) ListVDIAllocationsExecute(r ApiListVDIAllocationsRequest) (*ListVDIAllocations200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *ListVDIAllocations200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "VDIAPIService.ListVDIAllocations")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/vdi-allocations"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	if r.max != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "max", r.max, "form", "")
-	} else {
-		var defaultValue int64 = 25
-		r.max = &defaultValue
-	}
-	if r.offset != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "offset", r.offset, "form", "")
-	} else {
-		var defaultValue int64 = 0
-		r.offset = &defaultValue
-	}
-	if r.sort != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", r.sort, "form", "")
-	} else {
-		var defaultValue string = "name"
-		r.sort = &defaultValue
-	}
-	if r.direction != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "direction", r.direction, "form", "")
-	} else {
-		var defaultValue string = "asc"
-		r.direction = &defaultValue
-	}
-	if r.phrase != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
-	}
-	if r.name != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
-	}
-	if r.id != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "id", r.id, "form", "")
-	}
-	if r.status != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "status", r.status, "form", "")
-	}
-	if r.poolId != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "poolId", r.poolId, "form", "")
-	}
-	if r.userId != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "userId", r.userId, "form", "")
-	}
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1551,7 +947,7 @@ func (a *VDIAPIService) ListVDIAppsExecute(r ApiListVDIAppsRequest) (*ListVDIApp
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1562,7 +958,7 @@ func (a *VDIAPIService) ListVDIAppsExecute(r ApiListVDIAppsRequest) (*ListVDIApp
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1753,7 +1149,7 @@ func (a *VDIAPIService) ListVDIGatewaysExecute(r ApiListVDIGatewaysRequest) (*Li
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1764,7 +1160,7 @@ func (a *VDIAPIService) ListVDIGatewaysExecute(r ApiListVDIGatewaysRequest) (*Li
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1965,7 +1361,7 @@ func (a *VDIAPIService) ListVDIPoolsExecute(r ApiListVDIPoolsRequest) (*ListVDIP
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1976,209 +1372,7 @@ func (a *VDIAPIService) ListVDIPoolsExecute(r ApiListVDIPoolsRequest) (*ListVDIP
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiListVdiRequest struct {
-	ctx         context.Context
-	ApiService  *VDIAPIService
-	phrase      *string
-	max         *int64
-	offset      *int64
-	sort        *string
-	direction   *string
-	name        *string
-	description *string
-}
-
-// Search phrase for partial matches on name or description
-func (r ApiListVdiRequest) Phrase(phrase string) ApiListVdiRequest {
-	r.phrase = &phrase
-	return r
-}
-
-// Maximum number of records to return
-func (r ApiListVdiRequest) Max(max int64) ApiListVdiRequest {
-	r.max = &max
-	return r
-}
-
-// Offset records, the number of records to skip, for paginating requests
-func (r ApiListVdiRequest) Offset(offset int64) ApiListVdiRequest {
-	r.offset = &offset
-	return r
-}
-
-// Sort order, the name of the property to sort by
-func (r ApiListVdiRequest) Sort(sort string) ApiListVdiRequest {
-	r.sort = &sort
-	return r
-}
-
-// Sort direction, use &#39;desc&#39; to reverse sort
-func (r ApiListVdiRequest) Direction(direction string) ApiListVdiRequest {
-	r.direction = &direction
-	return r
-}
-
-// Filter by name
-func (r ApiListVdiRequest) Name(name string) ApiListVdiRequest {
-	r.name = &name
-	return r
-}
-
-// Filter by description, wildcard may be specified as %. eg. &#x60;example-%&#x60;
-func (r ApiListVdiRequest) Description(description string) ApiListVdiRequest {
-	r.description = &description
-	return r
-}
-
-func (r ApiListVdiRequest) Execute() (*ListVdi200Response, *http.Response, error) {
-	return r.ApiService.ListVdiExecute(r)
-}
-
-/*
-ListVdi List Virtual Desktops
-
-This endpoint retrieves all virtual desktops along with the allocation for your user if one exists.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListVdiRequest
-*/
-func (a *VDIAPIService) ListVdi(ctx context.Context) ApiListVdiRequest {
-	return ApiListVdiRequest{
-		ApiService: a,
-		ctx:        ctx,
-	}
-}
-
-// Execute executes the request
-//
-//	@return ListVdi200Response
-func (a *VDIAPIService) ListVdiExecute(r ApiListVdiRequest) (*ListVdi200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *ListVdi200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "VDIAPIService.ListVdi")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/vdi"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	if r.phrase != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
-	}
-	if r.max != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "max", r.max, "form", "")
-	} else {
-		var defaultValue int64 = 25
-		r.max = &defaultValue
-	}
-	if r.offset != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "offset", r.offset, "form", "")
-	} else {
-		var defaultValue int64 = 0
-		r.offset = &defaultValue
-	}
-	if r.sort != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", r.sort, "form", "")
-	} else {
-		var defaultValue string = "name"
-		r.sort = &defaultValue
-	}
-	if r.direction != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "direction", r.direction, "form", "")
-	} else {
-		var defaultValue string = "asc"
-		r.direction = &defaultValue
-	}
-	if r.name != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
-	}
-	if r.description != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "description", r.description, "form", "")
-	}
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2291,7 +1485,7 @@ func (a *VDIAPIService) RemoveVDIAppsExecute(r ApiRemoveVDIAppsRequest) (*Remove
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2302,7 +1496,7 @@ func (a *VDIAPIService) RemoveVDIAppsExecute(r ApiRemoveVDIAppsRequest) (*Remove
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2415,7 +1609,7 @@ func (a *VDIAPIService) RemoveVDIGatewaysExecute(r ApiRemoveVDIGatewaysRequest) 
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2426,7 +1620,7 @@ func (a *VDIAPIService) RemoveVDIGatewaysExecute(r ApiRemoveVDIGatewaysRequest) 
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2539,7 +1733,7 @@ func (a *VDIAPIService) RemoveVDIPoolsExecute(r ApiRemoveVDIPoolsRequest) (*Remo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2550,7 +1744,7 @@ func (a *VDIAPIService) RemoveVDIPoolsExecute(r ApiRemoveVDIPoolsRequest) (*Remo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2671,7 +1865,7 @@ func (a *VDIAPIService) UpdateVDIAppsExecute(r ApiUpdateVDIAppsRequest) (*Update
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2682,7 +1876,7 @@ func (a *VDIAPIService) UpdateVDIAppsExecute(r ApiUpdateVDIAppsRequest) (*Update
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2803,7 +1997,7 @@ func (a *VDIAPIService) UpdateVDIGatewaysExecute(r ApiUpdateVDIGatewaysRequest) 
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2814,7 +2008,7 @@ func (a *VDIAPIService) UpdateVDIGatewaysExecute(r ApiUpdateVDIGatewaysRequest) 
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2935,7 +2129,7 @@ func (a *VDIAPIService) UpdateVDIPoolsExecute(r ApiUpdateVDIPoolsRequest) (*Upda
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2946,7 +2140,7 @@ func (a *VDIAPIService) UpdateVDIPoolsExecute(r ApiUpdateVDIPoolsRequest) (*Upda
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

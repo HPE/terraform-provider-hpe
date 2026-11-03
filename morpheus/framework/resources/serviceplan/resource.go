@@ -13,10 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -61,18 +63,21 @@ func getServicePlanAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
-) (ServicePlanModel, diag.Diagnostics) {
+) (ServicePlanModel, bool, diag.Diagnostics) {
 	var state ServicePlanModel
 	var diags diag.Diagnostics
 
 	sp, hresp, err := client.ServicePlansAPI.GetServicePlans(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK || sp == nil {
 		diags.AddError(
 			"populate service plan resource",
 			fmt.Sprintf("service plan %d GET failed", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	pricesetIDValues := []attr.Value{}
@@ -82,7 +87,7 @@ func getServicePlanAsState(
 
 	pricesetIDSet, diags := types.SetValue(types.Int64Type, pricesetIDValues)
 	if diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 
 	// config is defaulted to empty map by api
@@ -119,7 +124,7 @@ func getServicePlanAsState(
 			ConfigRangesValue{}.AttributeTypes(ctx), configRanges,
 		)
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 		state.ConfigRanges = configRangesValue
 	}
@@ -146,7 +151,7 @@ func getServicePlanAsState(
 		state.ProvisionTypeCode = convert.StrToType(sp.ServicePlan.ProvisionType.Code)
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 // helper function to set provisionType in addServicePlan struct
@@ -235,6 +240,64 @@ func setProvisionTypeInUpdate(
 	updateServicePlan.ProvisionType = provisionType
 
 	return nil
+}
+
+// setOptionalScalarsInCreate copies the optional scalar attributes of the plan
+// into the create request. Every one of them is skipped when it is null OR
+// unknown: max_cores, max_cpu, max_disks and sort_order are Optional+Computed,
+// so when the configuration leaves them out their planned value is unknown,
+// not null, and ValueInt64Pointer() on an unknown value yields a pointer to 0.
+// Sending that 0 made Morpheus store maxDisks: 0 on the new plan, which its
+// minDisks (defaults to 1) then turns into "Number of volumes must be between
+// 1 and 0 for the selected plan" for every instance (MORPH-18341). Left unset,
+// Morpheus keeps the attribute null, the same as a plan created in the UI.
+func setOptionalScalarsInCreate(
+	plan *ServicePlanModel,
+	addServicePlan *sdk.AddServicePlansRequestServicePlan,
+) {
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		addServicePlan.Description = plan.Description.ValueStringPointer()
+	}
+
+	if !plan.MaxCores.IsNull() && !plan.MaxCores.IsUnknown() {
+		addServicePlan.MaxCores = plan.MaxCores.ValueInt64Pointer()
+	}
+
+	if !plan.MaxCpu.IsNull() && !plan.MaxCpu.IsUnknown() {
+		addServicePlan.MaxCpu = plan.MaxCpu.ValueInt64Pointer()
+	}
+
+	if !plan.MaxDisks.IsNull() && !plan.MaxDisks.IsUnknown() {
+		addServicePlan.MaxDisks = plan.MaxDisks.ValueInt64Pointer()
+	}
+
+	if !plan.CoresPerSocket.IsNull() && !plan.CoresPerSocket.IsUnknown() {
+		addServicePlan.CoresPerSocket = plan.CoresPerSocket.ValueInt64Pointer()
+	}
+
+	if !plan.CustomCores.IsNull() && !plan.CustomCores.IsUnknown() {
+		addServicePlan.CustomCores = plan.CustomCores.ValueBoolPointer()
+	}
+
+	if !plan.CustomCpu.IsNull() && !plan.CustomCpu.IsUnknown() {
+		addServicePlan.CustomCpu = plan.CustomCpu.ValueBoolPointer()
+	}
+
+	if !plan.CustomMaxMemory.IsNull() && !plan.CustomMaxMemory.IsUnknown() {
+		addServicePlan.CustomMaxMemory = plan.CustomMaxMemory.ValueBoolPointer()
+	}
+
+	if !plan.CustomMaxStorage.IsNull() && !plan.CustomMaxStorage.IsUnknown() {
+		addServicePlan.CustomMaxStorage = plan.CustomMaxStorage.ValueBoolPointer()
+	}
+
+	if !plan.AddVolumes.IsNull() && !plan.AddVolumes.IsUnknown() {
+		addServicePlan.AddVolumes = plan.AddVolumes.ValueBoolPointer()
+	}
+
+	if !plan.SortOrder.IsNull() && !plan.SortOrder.IsUnknown() {
+		addServicePlan.SortOrder = plan.SortOrder.ValueInt64Pointer()
+	}
 }
 
 // helper function to nest schema values into config struct
@@ -422,49 +485,7 @@ func (r *Resource) Create(
 		addServicePlan.PriceSets = pricesets
 	}
 
-	if !plan.Description.IsNull() {
-		addServicePlan.Description = plan.Description.ValueStringPointer()
-	}
-
-	if !plan.MaxCores.IsNull() {
-		addServicePlan.MaxCores = plan.MaxCores.ValueInt64Pointer()
-	}
-
-	if !plan.MaxCpu.IsNull() {
-		addServicePlan.MaxCpu = plan.MaxCpu.ValueInt64Pointer()
-	}
-
-	if !plan.MaxDisks.IsNull() {
-		addServicePlan.MaxDisks = plan.MaxDisks.ValueInt64Pointer()
-	}
-
-	if !plan.CoresPerSocket.IsNull() && !plan.CoresPerSocket.IsUnknown() {
-		addServicePlan.CoresPerSocket = plan.CoresPerSocket.ValueInt64Pointer()
-	}
-
-	if !plan.CustomCores.IsNull() && !plan.CustomCores.IsUnknown() {
-		addServicePlan.CustomCores = plan.CustomCores.ValueBoolPointer()
-	}
-
-	if !plan.CustomCpu.IsNull() && !plan.CustomCpu.IsUnknown() {
-		addServicePlan.CustomCpu = plan.CustomCpu.ValueBoolPointer()
-	}
-
-	if !plan.CustomMaxMemory.IsNull() && !plan.CustomMaxMemory.IsUnknown() {
-		addServicePlan.CustomMaxMemory = plan.CustomMaxMemory.ValueBoolPointer()
-	}
-
-	if !plan.CustomMaxStorage.IsNull() && !plan.CustomMaxStorage.IsUnknown() {
-		addServicePlan.CustomMaxStorage = plan.CustomMaxStorage.ValueBoolPointer()
-	}
-
-	if !plan.AddVolumes.IsNull() && !plan.AddVolumes.IsUnknown() {
-		addServicePlan.AddVolumes = plan.AddVolumes.ValueBoolPointer()
-	}
-
-	if !plan.SortOrder.IsNull() {
-		addServicePlan.SortOrder = plan.SortOrder.ValueInt64Pointer()
-	}
+	setOptionalScalarsInCreate(&plan, addServicePlan)
 
 	setConfigInCreate(ctx, &plan, addServicePlan)
 
@@ -503,7 +524,10 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, diags := getServicePlanAsState(ctx, id, client)
+	state, found, diags := getServicePlanAsState(ctx, id, client)
+	if !found && !diags.HasError() {
+		diags.AddError("failed to read service plan state", fmt.Sprintf("Service plan %d was created but could not be read", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
@@ -515,6 +539,7 @@ func (r *Resource) Create(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(
@@ -553,9 +578,16 @@ func (r *Resource) Update(
 		servicePlan.Code = plan.Code.ValueStringPointer()
 	}
 
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		servicePlan.Description = plan.Description.ValueStringPointer()
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	// Sent when known, null when being cleared, not sent otherwise.
+	clearable.NullableString(pending, "description", plan.Description, &servicePlan.Description)
 
 	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
 		servicePlan.MaxStorage = plan.MaxStorage.ValueInt64Pointer()
@@ -605,18 +637,18 @@ func (r *Resource) Update(
 		servicePlan.SortOrder = plan.SortOrder.ValueInt64Pointer()
 	}
 
-	if !plan.PriceSetIds.IsNull() && !plan.PriceSetIds.IsUnknown() {
-		var priceSetIDs []int64
-		diags := plan.PriceSetIds.ElementsAs(ctx, &priceSetIDs, false)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		var updatePricesets []sdk.UpdateServicePlansRequestServicePlanPriceSetsInner
+	// The planned price sets when known; an empty list — every price set
+	// removed — when the attribute is being cleared.
+	priceSetIDs, sendPriceSets, psdiags := pending.Int64s(ctx, "price_set_ids", plan.PriceSetIds)
+	resp.Diagnostics.Append(psdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if sendPriceSets {
+		updatePricesets := make([]sdk.UpdateServicePlansRequestServicePlanPriceSetsInner, 0, len(priceSetIDs))
 		for _, psid := range priceSetIDs {
-			updatePricesets = append(updatePricesets, sdk.UpdateServicePlansRequestServicePlanPriceSetsInner{
-				Id: &psid,
-			})
+			updatePricesets = append(updatePricesets, sdk.UpdateServicePlansRequestServicePlanPriceSetsInner{Id: &psid})
 		}
 		servicePlan.PriceSets = updatePricesets
 	}
@@ -660,7 +692,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	updatedState, diags := getServicePlanAsState(ctx, id, client)
+	updatedState, found, diags := getServicePlanAsState(ctx, id, client)
+	if !found && !diags.HasError() {
+		diags.AddError("update service plan resource", fmt.Sprintf("service plan %d not found after update", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
@@ -671,6 +706,7 @@ func (r *Resource) Update(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedState)...)
 }
 
@@ -697,9 +733,18 @@ func (r *Resource) Read(
 	}
 
 	id := plan.Id.ValueInt64()
-	state, diags := getServicePlanAsState(ctx, id, client)
+	state, found, diags := getServicePlanAsState(ctx, id, client)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
+
+		return
+	}
+
+	// The service plan was deleted out of band (Morpheus returned 404); remove
+	// it from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("service plan %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
 
 		return
 	}
@@ -733,11 +778,11 @@ func (r *Resource) Delete(
 
 	client, _ := r.NewClient(ctx)
 
-	_, hresp, err := client.ServicePlansAPI.RemoveServicePlans(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.ServicePlansAPI.RemoveServicePlans(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete service plan resource",
-			fmt.Sprintf("service plan %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("service plan %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

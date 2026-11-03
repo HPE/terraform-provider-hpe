@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -57,23 +58,26 @@ func getOsTypeImageAsState(
 	id int64,
 	knownOsTypeId types.Int64,
 	client *sdk.APIClient,
-) (OsTypeImageModel, diag.Diagnostics) {
+) (OsTypeImageModel, bool, diag.Diagnostics) {
 	var state OsTypeImageModel
 	var diags diag.Diagnostics
 
 	resp, hresp, err := client.LibraryAPI.GetOsTypeImage(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError("read ostypeimage",
 			fmt.Sprintf("GET osTypeImage %d failed: %s", id, errfmt.ErrMsg(err, hresp)))
 
-		return state, diags
+		return state, false, diags
 	}
 
 	img := resp.OsTypeImage
 	if img == nil {
 		diags.AddError("read ostypeimage", fmt.Sprintf("GET osTypeImage %d returned no osTypeImage", id))
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = convert.Int64ToType(img.Id)
@@ -95,12 +99,14 @@ func getOsTypeImageAsState(
 	if !knownOsTypeId.IsNull() && !knownOsTypeId.IsUnknown() {
 		state.OsTypeId = knownOsTypeId
 
-		return state, diags
+		return state, true, diags
 	}
 
 	// The virtual-image fallback (import only) dereferences VirtualImageId.
+	// Without one there is nothing to derive os_type_id from, but the
+	// association itself was read successfully.
 	if img.VirtualImageId == nil {
-		return state, diags
+		return state, true, diags
 	}
 
 	// Resolve OsTypeId by fetching the virtual image and reading its osType.id.
@@ -110,21 +116,21 @@ func getOsTypeImageAsState(
 			fmt.Sprintf("GET virtualImage %d (for osTypeImage %d) failed: %s",
 				*img.VirtualImageId, id, errfmt.ErrMsg(viErr, viHresp)))
 
-		return state, diags
+		return state, false, diags
 	}
 
 	vi := viResp.VirtualImage
 	if vi == nil {
 		diags.AddError("API returned nil", "VirtualImage is nil in the response")
 
-		return state, diags
+		return state, false, diags
 	}
 
 	if vi.OsType != nil && vi.OsType.Id != nil {
 		state.OsTypeId = types.Int64Value(*vi.OsType.Id)
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -198,7 +204,10 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	state, diags := getOsTypeImageAsState(ctx, createResp.ID, plan.OsTypeId, client)
+	state, found, diags := getOsTypeImageAsState(ctx, createResp.ID, plan.OsTypeId, client)
+	if !found && !diags.HasError() {
+		diags.AddError("read ostypeimage", "ostypeimage not found immediately after create")
+	}
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
@@ -229,9 +238,18 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	}
 
 	id := current.Id.ValueInt64()
-	state, diags := getOsTypeImageAsState(ctx, id, current.OsTypeId, client)
+	state, found, diags := getOsTypeImageAsState(ctx, id, current.OsTypeId, client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The OS type image was deleted out of band (Morpheus returned 404); remove
+	// it from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("os type image %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -259,10 +277,10 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	id := data.Id.ValueInt64()
-	_, hresp, err := client.LibraryAPI.DeleteOsTypeImage(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.LibraryAPI.DeleteOsTypeImage(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError("delete ostypeimage",
-			fmt.Sprintf("DELETE %d failed: %s", id, errfmt.ErrMsg(err, hresp)))
+			fmt.Sprintf("DELETE %d failed: %s", id, err.Error()))
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
@@ -59,9 +60,7 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	body := sdk.AddDeploymentsRequestDeployment{
 		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	body.Description.Set(plan.Description.ValueStringPointer())
 
 	result, httpResp, err := client.DeploymentsAPI.AddDeployments(ctx).AddDeploymentsRequest(sdk.AddDeploymentsRequest{
 		Deployment: &body,
@@ -158,12 +157,18 @@ func (r *deploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdateDeploymentRequestDeployment{
 		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "description", plan.Description, &body.Description)
 
 	_, httpResp, err := client.DeploymentsAPI.UpdateDeployment(ctx, id).
 		UpdateDeploymentRequest(sdk.UpdateDeploymentRequest{
@@ -208,8 +213,8 @@ func (r *deploymentResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.DeploymentsAPI.DeleteDeployment(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.DeploymentsAPI.DeleteDeployment(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "deployment", "", err, httpResp)
 
 		return

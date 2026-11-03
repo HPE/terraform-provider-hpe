@@ -7,13 +7,16 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -41,7 +44,7 @@ func (r *Resource) Create(
 	pool.Name = sdk.PtrString(plan.Name.ValueString())
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		pool.Description = sdk.PtrString(plan.Description.ValueString())
+		pool.Description.Set(plan.Description.ValueStringPointer())
 	}
 
 	if !plan.VipBalance.IsNull() && !plan.VipBalance.IsUnknown() {
@@ -64,8 +67,12 @@ func (r *Resource) Create(
 		pool.VipClientIpMode = sdk.PtrString(plan.VipClientIpMode.ValueString())
 	}
 
-	if !plan.Partition.IsNull() && !plan.Partition.IsUnknown() {
-		pool.Partition = sdk.PtrString(plan.Partition.ValueString())
+	// partition is write-only: its value is only in the configuration (the
+	// plan's is always null).
+	var partition types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("partition"), &partition)...)
+	if !partition.IsNull() && !partition.IsUnknown() {
+		pool.Partition = sdk.PtrString(partition.ValueString())
 	}
 
 	if err := setCreateConfig(ctx, pool, plan); err != nil {
@@ -103,9 +110,12 @@ func (r *Resource) Create(
 		return
 	}
 
-	state, diags := getLoadBalancerPoolAsState(
+	state, found, diags := getLoadBalancerPoolAsState(
 		ctx, loadBalancerID, *created.Id, client,
 	)
+	if !found && !diags.HasError() {
+		diags.AddError("read load balancer pool", "pool not found immediately after create")
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 
@@ -119,9 +129,12 @@ func (r *Resource) Create(
 		return
 	}
 
-	// Partition is write-only; preserve from plan.
-	state.Partition = plan.Partition
+	// Partition is write-only: never in state.
+	state.Partition = types.StringNull()
+	state.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

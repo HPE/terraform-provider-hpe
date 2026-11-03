@@ -4,3 +4,4 @@ package datastore
 
 //go:generate ../../../../bin/render -out examples/data-sources/morpheus_datastore/example-id.tf example-id.tf.tmpl Id 99
 //go:generate ../../../../bin/render -out examples/data-sources/morpheus_datastore/example-name.tf example-name.tf.tmpl Name "\"Example name\""
+//go:generate ../../../../bin/render -out examples/data-sources/morpheus_datastore/example-name-cluster.tf example-name-cluster.tf.tmpl Name "local" ClusterName "Example cluster"

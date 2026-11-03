@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,20 +24,20 @@ type UpdateStorageServersRequestStorageServer struct {
 	Name *string `json:"name,omitempty"`
 	// The `Storage Type` Code or ID
 	Type *string `json:"type,omitempty"`
-	// description
-	Description *string `json:"description,omitempty"`
+	// description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// The enabled flag
 	Enabled *bool `json:"enabled,omitempty"`
 	// Configuration object with parameters that vary by `type`
 	Config map[string]interface{} `json:"config,omitempty"`
 	// private or public
 	Visibility *string `json:"visibility,omitempty"`
-	// Storage server host
-	ServiceHost *string `json:"serviceHost,omitempty"`
-	// Storage server URL
-	ServiceUrl *string `json:"serviceUrl,omitempty"`
-	// Service username for authentication
-	ServiceUsername *string `json:"serviceUsername,omitempty"`
+	// Storage server host; null clears it
+	ServiceHost NullableString `json:"serviceHost,omitempty"`
+	// Storage server URL; null clears it
+	ServiceUrl NullableString `json:"serviceUrl,omitempty"`
+	// Service username for authentication; null clears it
+	ServiceUsername NullableString `json:"serviceUsername,omitempty"`
 	// Service password for authentication
 	ServicePassword *string `json:"servicePassword,omitempty"`
 	// Service port
@@ -66,8 +66,8 @@ func (o UpdateStorageServersRequestStorageServer) ToMap() (map[string]interface{
 	if !IsNil(o.Type) {
 		toSerialize["type"] = o.Type
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Enabled) {
 		toSerialize["enabled"] = o.Enabled
@@ -78,14 +78,14 @@ func (o UpdateStorageServersRequestStorageServer) ToMap() (map[string]interface{
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
 	}
-	if !IsNil(o.ServiceHost) {
-		toSerialize["serviceHost"] = o.ServiceHost
+	if o.ServiceHost.IsSet() {
+		toSerialize["serviceHost"] = o.ServiceHost.Get()
 	}
-	if !IsNil(o.ServiceUrl) {
-		toSerialize["serviceUrl"] = o.ServiceUrl
+	if o.ServiceUrl.IsSet() {
+		toSerialize["serviceUrl"] = o.ServiceUrl.Get()
 	}
-	if !IsNil(o.ServiceUsername) {
-		toSerialize["serviceUsername"] = o.ServiceUsername
+	if o.ServiceUsername.IsSet() {
+		toSerialize["serviceUsername"] = o.ServiceUsername.Get()
 	}
 	if !IsNil(o.ServicePassword) {
 		toSerialize["servicePassword"] = o.ServicePassword
@@ -105,51 +105,6 @@ func (o UpdateStorageServersRequestStorageServer) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateStorageServersRequestStorageServer struct {
-	value *UpdateStorageServersRequestStorageServer
-	isSet bool
-}
-
-func (v NullableUpdateStorageServersRequestStorageServer) Get() *UpdateStorageServersRequestStorageServer {
-	return v.value
-}
-
-func (v *NullableUpdateStorageServersRequestStorageServer) Set(val *UpdateStorageServersRequestStorageServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateStorageServersRequestStorageServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateStorageServersRequestStorageServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateStorageServersRequestStorageServer(val *UpdateStorageServersRequestStorageServer) *NullableUpdateStorageServersRequestStorageServer {
-	return &NullableUpdateStorageServersRequestStorageServer{value: val, isSet: true}
-}
-
-func (v NullableUpdateStorageServersRequestStorageServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateStorageServersRequestStorageServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateStorageServersRequestStorageServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateStorageServersRequestStorageServer) UnmarshalJSON(data []byte) (err error) {

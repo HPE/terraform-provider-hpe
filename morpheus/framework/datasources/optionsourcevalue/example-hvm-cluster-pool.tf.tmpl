@@ -1,0 +1,57 @@
+# Provisioning into an HVM cluster: read the cluster's own resource pool — the
+# one its networks belong to — from the zonePools source, by the cluster's name.
+
+data "hpe_morpheus_cloud" "hvm" {
+  name = "my-hvm-cloud"
+}
+
+# The layout supplies the provisioning context. Without it (or a provision type)
+# zonePools returns an empty list rather than an error.
+data "hpe_morpheus_instance_type_layout" "hvm" {
+  name    = "Single KVM VM"
+  version = "22.04"
+}
+
+data "hpe_morpheus_instance_type" "ubuntu" {
+  name = "Ubuntu"
+}
+
+data "hpe_morpheus_service_plan" "small" {
+  name                = "1 CPU, 1GB Memory"
+  provision_type_code = "kvm"
+}
+
+# The cluster's pool, selected by the cluster's name. value is already in the
+# form the instance takes ("pool-<id>"), and the source reports the pool's
+# provider type alongside.
+data "hpe_morpheus_option_source_value" "cluster_pool" {
+  source    = "zonePools"
+  cloud_id   = data.hpe_morpheus_cloud.hvm.id
+  layout_id = data.hpe_morpheus_instance_type_layout.hvm.id
+  name      = "hvm-cluster-01"
+}
+
+resource "hpe_morpheus_instance" "vm" {
+  name             = "web-01"
+  cloud_id         = data.hpe_morpheus_cloud.hvm.id
+  group_id         = 1
+  instance_type_id = data.hpe_morpheus_instance_type.ubuntu.id
+  layout_id        = data.hpe_morpheus_instance_type_layout.hvm.id
+  plan_id          = data.hpe_morpheus_service_plan.small.id
+
+  network_interfaces = [
+    { network_id = var.network_id }
+  ]
+
+  config_hvm = {
+    resource_pool_id = data.hpe_morpheus_option_source_value.cluster_pool.value
+  }
+
+  # With the generic config block instead of config_hvm, the pool's provider
+  # type is needed too, and the source has it:
+  #
+  #   config = {
+  #     resourcePoolId   = data.hpe_morpheus_option_source_value.cluster_pool.value
+  #     poolProviderType = data.hpe_morpheus_option_source_value.cluster_pool.attributes["providerType"]
+  #   }
+}

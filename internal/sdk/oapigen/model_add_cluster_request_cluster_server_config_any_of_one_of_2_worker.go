@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o AddClusterRequestClusterServerConfigAnyOfOneOf2Worker) ToMap() (map[stri
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddClusterRequestClusterServerConfigAnyOfOneOf2Worker struct {
-	value *AddClusterRequestClusterServerConfigAnyOfOneOf2Worker
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2Worker) Get() *AddClusterRequestClusterServerConfigAnyOfOneOf2Worker {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2Worker) Set(val *AddClusterRequestClusterServerConfigAnyOfOneOf2Worker) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2Worker) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2Worker) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterServerConfigAnyOfOneOf2Worker(val *AddClusterRequestClusterServerConfigAnyOfOneOf2Worker) *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2Worker {
-	return &NullableAddClusterRequestClusterServerConfigAnyOfOneOf2Worker{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2Worker) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2Worker) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2Worker) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddClusterRequestClusterServerConfigAnyOfOneOf2Worker) UnmarshalJSON(data []byte) (err error) {

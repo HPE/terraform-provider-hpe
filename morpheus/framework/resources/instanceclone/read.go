@@ -6,7 +6,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -204,6 +206,8 @@ func mergeVolumesFromAPI(
 ) (types.List, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
+	apiVolumes = slices.DeleteFunc(slices.Clone(apiVolumes), isCDROMVolume)
+
 	if planVolumes.IsNull() || planVolumes.IsUnknown() {
 		objs, d := mapVolumeObjs(ctx, apiVolumes)
 		diags.Append(d...)
@@ -281,6 +285,8 @@ func mergeVolumesForRead(
 	apiVolumes []sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner,
 ) (types.List, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
+	apiVolumes = slices.DeleteFunc(slices.Clone(apiVolumes), isCDROMVolume)
 
 	if len(apiVolumes) == 0 {
 		return types.ListNull(VolumesValue{}.Type(ctx)), diags
@@ -626,4 +632,27 @@ func mergeChildInterfacesFromAPI(
 	diags.Append(d...)
 
 	return listVal, diags
+}
+
+// isCDROMVolume reports whether a volume is the virtual CD/DVD drive Morpheus
+// attaches to a VM that boots from an ISO or takes its cloud-init data from
+// one. It is not one of the clone's configured disks, so it must not reach
+// state: left in, the read appended it as an extra volume and every plan
+// proposed removing it (and, with the list shifted, re-reading the real one).
+//
+// The instance's volume listing carries the category as volumeCategory, which
+// the generated model does not declare, so it is read from the additional
+// properties; the drive's names ("CD ROM" on VMware, "CD Drive" on HVM/KVM)
+// are the fallback for responses that omit it. Same rule as the instance
+// resource's isCDROMVolume, on the other API shape.
+func isCDROMVolume(v sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner) bool {
+	if category, ok := v.AdditionalProperties["volumeCategory"].(string); ok && category != "" {
+		return strings.EqualFold(category, "cd")
+	}
+
+	if v.Name == nil {
+		return false
+	}
+
+	return strings.HasPrefix(*v.Name, "CD ROM") || strings.HasPrefix(*v.Name, "CD Drive")
 }

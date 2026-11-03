@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetPrices200ResponsePriceDatastore) ToMap() (map[string]interface{}, err
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetPrices200ResponsePriceDatastore struct {
-	value *GetPrices200ResponsePriceDatastore
-	isSet bool
-}
-
-func (v NullableGetPrices200ResponsePriceDatastore) Get() *GetPrices200ResponsePriceDatastore {
-	return v.value
-}
-
-func (v *NullableGetPrices200ResponsePriceDatastore) Set(val *GetPrices200ResponsePriceDatastore) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetPrices200ResponsePriceDatastore) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetPrices200ResponsePriceDatastore) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetPrices200ResponsePriceDatastore(val *GetPrices200ResponsePriceDatastore) *NullableGetPrices200ResponsePriceDatastore {
-	return &NullableGetPrices200ResponsePriceDatastore{value: val, isSet: true}
-}
-
-func (v NullableGetPrices200ResponsePriceDatastore) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetPrices200ResponsePriceDatastore) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetPrices200ResponsePriceDatastore) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetPrices200ResponsePriceDatastore) UnmarshalJSON(data []byte) (err error) {

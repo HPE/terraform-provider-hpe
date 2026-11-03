@@ -41,7 +41,9 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
+			// Case-insensitively: Google network names must be lowercase, so the
+			// GCP tests lower-case the prefix.
+			return strings.HasPrefix(strings.ToLower(*name), strings.ToLower(testsweep.TestResourcePrefix))
 		},
 		// Delete the test network.
 		func(

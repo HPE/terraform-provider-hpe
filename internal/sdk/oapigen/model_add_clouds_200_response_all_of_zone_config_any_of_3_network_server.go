@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o AddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer) ToMap() (map[str
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer struct {
-	value *AddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer
-	isSet bool
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer) Get() *AddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer {
-	return v.value
-}
-
-func (v *NullableAddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer) Set(val *AddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer(val *AddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer) *NullableAddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer {
-	return &NullableAddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer{value: val, isSet: true}
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer) UnmarshalJSON(data []byte) (err error) {

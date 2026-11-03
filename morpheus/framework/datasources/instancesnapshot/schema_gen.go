@@ -64,6 +64,11 @@ func InstanceSnapshotDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the snapshot to look up.",
 				MarkdownDescription: "The ID of the snapshot to look up.",
 			},
+			"max_storage": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Total size of the snapshot in bytes. Null when not populated.",
+				MarkdownDescription: "Total size of the snapshot in bytes. Null when not populated.",
+			},
 			"memory_snapshot": schema.BoolAttribute{
 				Computed:            true,
 				Description:         "Whether the snapshot includes the instance's memory.",
@@ -95,6 +100,11 @@ func InstanceSnapshotDataSourceSchema(ctx context.Context) schema.Schema {
 						},
 						"external_id": schema.StringAttribute{
 							Computed: true,
+						},
+						"file_size": schema.Int64Attribute{
+							Computed:            true,
+							Description:         "Size of the snapshot file in bytes. Null when not populated.",
+							MarkdownDescription: "Size of the snapshot file in bytes. Null when not populated.",
 						},
 						"id": schema.Int64Attribute{
 							Computed: true,
@@ -161,6 +171,7 @@ type InstanceSnapshotModel struct {
 	ForBackup       types.Bool   `tfsdk:"for_backup"`
 	ForExport       types.Bool   `tfsdk:"for_export"`
 	Id              types.Int64  `tfsdk:"id"`
+	MaxStorage      types.Int64  `tfsdk:"max_storage"`
 	MemorySnapshot  types.Bool   `tfsdk:"memory_snapshot"`
 	Name            types.String `tfsdk:"name"`
 	ParentSnapshot  types.String `tfsdk:"parent_snapshot"`
@@ -256,6 +267,24 @@ func (t SnapshotFilesType) ValueFromObject(ctx context.Context, in basetypes.Obj
 		diags.AddError(
 			"Attribute Wrong Type",
 			fmt.Sprintf(`external_id expected to be basetypes.StringValue, was: %T`, externalIdAttribute))
+	}
+
+	fileSizeAttribute, ok := attributes["file_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`file_size is missing from object`)
+
+		return nil, diags
+	}
+
+	fileSizeVal, ok := fileSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`file_size expected to be basetypes.Int64Value, was: %T`, fileSizeAttribute))
 	}
 
 	idAttribute, ok := attributes["id"]
@@ -356,6 +385,7 @@ func (t SnapshotFilesType) ValueFromObject(ctx context.Context, in basetypes.Obj
 		DiskIndex:         diskIndexVal,
 		ExportPath:        exportPathVal,
 		ExternalId:        externalIdVal,
+		FileSize:          fileSizeVal,
 		Id:                idVal,
 		Name:              nameVal,
 		Path:              pathVal,
@@ -482,6 +512,24 @@ func NewSnapshotFilesValue(attributeTypes map[string]attr.Type, attributes map[s
 			fmt.Sprintf(`external_id expected to be basetypes.StringValue, was: %T`, externalIdAttribute))
 	}
 
+	fileSizeAttribute, ok := attributes["file_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`file_size is missing from object`)
+
+		return NewSnapshotFilesValueUnknown(), diags
+	}
+
+	fileSizeVal, ok := fileSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`file_size expected to be basetypes.Int64Value, was: %T`, fileSizeAttribute))
+	}
+
 	idAttribute, ok := attributes["id"]
 
 	if !ok {
@@ -580,6 +628,7 @@ func NewSnapshotFilesValue(attributeTypes map[string]attr.Type, attributes map[s
 		DiskIndex:         diskIndexVal,
 		ExportPath:        exportPathVal,
 		ExternalId:        externalIdVal,
+		FileSize:          fileSizeVal,
 		Id:                idVal,
 		Name:              nameVal,
 		Path:              pathVal,
@@ -658,6 +707,7 @@ type SnapshotFilesValue struct {
 	DiskIndex         basetypes.Int64Value  `tfsdk:"disk_index"`
 	ExportPath        basetypes.StringValue `tfsdk:"export_path"`
 	ExternalId        basetypes.StringValue `tfsdk:"external_id"`
+	FileSize          basetypes.Int64Value  `tfsdk:"file_size"`
 	Id                basetypes.Int64Value  `tfsdk:"id"`
 	Name              basetypes.StringValue `tfsdk:"name"`
 	Path              basetypes.StringValue `tfsdk:"path"`
@@ -667,7 +717,7 @@ type SnapshotFilesValue struct {
 }
 
 func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 8)
+	attrTypes := make(map[string]tftypes.Type, 9)
 
 	var val tftypes.Value
 	var err error
@@ -675,6 +725,7 @@ func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 	attrTypes["disk_index"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["export_path"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["external_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["file_size"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["path"] = basetypes.StringType{}.TerraformType(ctx)
@@ -687,7 +738,7 @@ func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 8)
+		vals := make(map[string]tftypes.Value, 9)
 
 		val, err = v.DiskIndex.ToTerraformValue(ctx)
 		if err != nil {
@@ -709,6 +760,13 @@ func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		}
 
 		vals["external_id"] = val
+
+		val, err = v.FileSize.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["file_size"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
 		if err != nil {
@@ -799,6 +857,7 @@ func (v SnapshotFilesValue) ToObjectValue(ctx context.Context) (basetypes.Object
 		"disk_index":  basetypes.Int64Type{},
 		"export_path": basetypes.StringType{},
 		"external_id": basetypes.StringType{},
+		"file_size":   basetypes.Int64Type{},
 		"id":          basetypes.Int64Type{},
 		"name":        basetypes.StringType{},
 		"path":        basetypes.StringType{},
@@ -822,6 +881,7 @@ func (v SnapshotFilesValue) ToObjectValue(ctx context.Context) (basetypes.Object
 			"disk_index":  v.DiskIndex,
 			"export_path": v.ExportPath,
 			"external_id": v.ExternalId,
+			"file_size":   v.FileSize,
 			"id":          v.Id,
 			"name":        v.Name,
 			"path":        v.Path,
@@ -856,6 +916,10 @@ func (v SnapshotFilesValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.ExternalId.Equal(other.ExternalId) {
+		return false
+	}
+
+	if !v.FileSize.Equal(other.FileSize) {
 		return false
 	}
 
@@ -895,6 +959,7 @@ func (v SnapshotFilesValue) AttributeTypes(ctx context.Context) map[string]attr.
 		"disk_index":  basetypes.Int64Type{},
 		"export_path": basetypes.StringType{},
 		"external_id": basetypes.StringType{},
+		"file_size":   basetypes.Int64Type{},
 		"id":          basetypes.Int64Type{},
 		"name":        basetypes.StringType{},
 		"path":        basetypes.StringType{},

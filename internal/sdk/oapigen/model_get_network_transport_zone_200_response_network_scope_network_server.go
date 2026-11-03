@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o GetNetworkTransportZone200ResponseNetworkScopeNetworkServer) ToMap() (ma
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkTransportZone200ResponseNetworkScopeNetworkServer struct {
-	value *GetNetworkTransportZone200ResponseNetworkScopeNetworkServer
-	isSet bool
-}
-
-func (v NullableGetNetworkTransportZone200ResponseNetworkScopeNetworkServer) Get() *GetNetworkTransportZone200ResponseNetworkScopeNetworkServer {
-	return v.value
-}
-
-func (v *NullableGetNetworkTransportZone200ResponseNetworkScopeNetworkServer) Set(val *GetNetworkTransportZone200ResponseNetworkScopeNetworkServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkTransportZone200ResponseNetworkScopeNetworkServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkTransportZone200ResponseNetworkScopeNetworkServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkTransportZone200ResponseNetworkScopeNetworkServer(val *GetNetworkTransportZone200ResponseNetworkScopeNetworkServer) *NullableGetNetworkTransportZone200ResponseNetworkScopeNetworkServer {
-	return &NullableGetNetworkTransportZone200ResponseNetworkScopeNetworkServer{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkTransportZone200ResponseNetworkScopeNetworkServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkTransportZone200ResponseNetworkScopeNetworkServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkTransportZone200ResponseNetworkScopeNetworkServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkTransportZone200ResponseNetworkScopeNetworkServer) UnmarshalJSON(data []byte) (err error) {

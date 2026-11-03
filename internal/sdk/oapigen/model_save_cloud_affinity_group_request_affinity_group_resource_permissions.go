@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o SaveCloudAffinityGroupRequestAffinityGroupResourcePermissions) ToMap() (
 	}
 
 	return toSerialize, nil
-}
-
-type NullableSaveCloudAffinityGroupRequestAffinityGroupResourcePermissions struct {
-	value *SaveCloudAffinityGroupRequestAffinityGroupResourcePermissions
-	isSet bool
-}
-
-func (v NullableSaveCloudAffinityGroupRequestAffinityGroupResourcePermissions) Get() *SaveCloudAffinityGroupRequestAffinityGroupResourcePermissions {
-	return v.value
-}
-
-func (v *NullableSaveCloudAffinityGroupRequestAffinityGroupResourcePermissions) Set(val *SaveCloudAffinityGroupRequestAffinityGroupResourcePermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveCloudAffinityGroupRequestAffinityGroupResourcePermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveCloudAffinityGroupRequestAffinityGroupResourcePermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveCloudAffinityGroupRequestAffinityGroupResourcePermissions(val *SaveCloudAffinityGroupRequestAffinityGroupResourcePermissions) *NullableSaveCloudAffinityGroupRequestAffinityGroupResourcePermissions {
-	return &NullableSaveCloudAffinityGroupRequestAffinityGroupResourcePermissions{value: val, isSet: true}
-}
-
-func (v NullableSaveCloudAffinityGroupRequestAffinityGroupResourcePermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveCloudAffinityGroupRequestAffinityGroupResourcePermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveCloudAffinityGroupRequestAffinityGroupResourcePermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *SaveCloudAffinityGroupRequestAffinityGroupResourcePermissions) UnmarshalJSON(data []byte) (err error) {

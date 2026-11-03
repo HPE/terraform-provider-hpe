@@ -18,6 +18,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -132,7 +133,10 @@ func (r *Resource) Create(
 	id := *result.Id.Get()
 	plan.Id = types.Int64Value(id)
 
-	state, pdiags := getRouteAsState(ctx, id, routerID, client, plan)
+	state, found, pdiags := getRouteAsState(ctx, id, routerID, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError("read network router route resource", fmt.Sprintf("route %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
@@ -145,6 +149,7 @@ func (r *Resource) Create(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -158,29 +163,32 @@ func getRouteAsState(
 	routerID int64,
 	client *sdk.APIClient,
 	plan NetworkRouterRouteModel,
-) (NetworkRouterRouteModel, diag.Diagnostics) {
+) (NetworkRouterRouteModel, bool, diag.Diagnostics) {
 	var state NetworkRouterRouteModel
 	var diags diag.Diagnostics
 
 	resp, hresp, err := client.NetworksAPI.
 		GetNetworkRouterRoute(ctx, id, routerID).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("route %d GET failed: %s", id, errfmt.ErrMsg(err, hresp)),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	route := resp.NetworkRoute
 	if route == nil {
 		diags.AddError("API returned nil", "NetworkRoute is nil in the response")
 
-		return state, diags
+		return state, false, diags
 	}
 
-	return mapRouteToState(route, plan), diags
+	return mapRouteToState(route, plan), true, diags
 }
 
 // mapRouteToState maps a fetched network router route into resource state. It is the
@@ -257,9 +265,18 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, diags := getRouteAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
+	state, found, diags := getRouteAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The route was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("network router route %d not found, removing from state", plan.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -312,18 +329,12 @@ func (r *Resource) Delete(
 
 	tflog.Debug(ctx, fmt.Sprintf("Deleting route %d on router %d", id, routerID))
 
-	_, hresp, err := client.NetworksAPI.
+	result, hresp, err := client.NetworksAPI.
 		DeleteNetworkRouterRoute(ctx, id, routerID).Execute()
-	if err != nil {
-		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-			tflog.Debug(ctx, fmt.Sprintf("Route %d already deleted (404)", id))
-
-			return
-		}
-
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete network router route resource",
-			fmt.Sprintf("route %d DELETE failed: %s", id, errfmt.ErrMsg(err, hresp)),
+			fmt.Sprintf("route %d DELETE failed: %s", id, err.Error()),
 		)
 	}
 }

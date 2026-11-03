@@ -93,9 +93,11 @@ resource "hpe_morpheus_load_balancer" "haproxy_generic" {
 - `description` (String) Description
 - `enabled` (Boolean) Whether the load balancer is enabled
 - `group_id` (Number, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The ID of the group associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment group_id_version to force replacement into the new group.
-- `group_id_version` (Number) Version marker for the write-only group_id attribute. Because group_id is write-only it is never stored in state, so editing group_id on its own produces no plan diff. The group is set only when the load balancer is created and the API provides no way to move it afterwards, so increment this value when group_id changes to replace the load balancer with one in the new group.
+- `group_id_version` (Number, Deprecated) Deprecated. Changes to group_id are detected automatically; this attribute is no longer
+needed and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
 - `network_server_id` (Number, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The ID of the network server associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment network_server_id_version to force replacement against the new network server.
-- `network_server_id_version` (Number) Version marker for the write-only network_server_id attribute. Because network_server_id is write-only it is never stored in state, so editing network_server_id on its own produces no plan diff. The network server is set only when the load balancer is created and the API provides no way to change it afterwards, so increment this value when network_server_id changes to replace the load balancer with one registered against the new network server.
+- `network_server_id_version` (Number, Deprecated) Deprecated. Changes to network_server_id are detected automatically; this attribute is no longer
+needed and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
 - `permissions` (Attributes) Resource permissions for the load balancer (see [below for nested schema](#nestedatt--permissions))
 - `tenants` (Attributes Set) Array of tenant account ids that are allowed access (see [below for nested schema](#nestedatt--tenants))
 - `type_code` (String) The type code of the load balancer (e.g. haproxyContainer)
@@ -104,6 +106,8 @@ resource "hpe_morpheus_load_balancer" "haproxy_generic" {
 ### Read-Only
 
 - `id` (Number) The ID of this resource.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which group_id or network_server_id were last
+sent to Morpheus. Changes when the load balancer is created; not configurable.
 
 <a id="nestedatt--config_haproxy"></a>
 ### Nested Schema for `config_haproxy`
@@ -172,3 +176,15 @@ Load balancers can be imported using the load balancer ID, e.g.
 ```shell
 terraform import hpe_morpheus_load_balancer.example 42
 ```
+
+The write-only values `group_id`, `network_server_id` are not stored in state, so the import cannot tell whether
+the values in your configuration match the appliance: they are taken as already applied, the plan
+after import is empty, and a later change is only detected once the resource is next updated for
+another reason (Terraform warns about this on every plan until then). To have changes detected from
+the start, append the sha256 digest of each configured write-only value to the import ID:
+
+```shell
+terraform import hpe_morpheus_load_balancer.example "42#group_id=<sha256 hex>&network_server_id=<sha256 hex>"
+```
+
+The digest is sha256 of the value's text (Terraform's `sha256()` function, with numbers as `tostring(v)`). A change to these values plans a **replacement**: Morpheus takes them only at creation.

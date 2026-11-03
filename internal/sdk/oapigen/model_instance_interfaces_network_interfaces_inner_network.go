@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -65,51 +65,6 @@ func (o InstanceInterfacesNetworkInterfacesInnerNetwork) ToMap() (map[string]int
 	}
 
 	return toSerialize, nil
-}
-
-type NullableInstanceInterfacesNetworkInterfacesInnerNetwork struct {
-	value *InstanceInterfacesNetworkInterfacesInnerNetwork
-	isSet bool
-}
-
-func (v NullableInstanceInterfacesNetworkInterfacesInnerNetwork) Get() *InstanceInterfacesNetworkInterfacesInnerNetwork {
-	return v.value
-}
-
-func (v *NullableInstanceInterfacesNetworkInterfacesInnerNetwork) Set(val *InstanceInterfacesNetworkInterfacesInnerNetwork) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceInterfacesNetworkInterfacesInnerNetwork) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceInterfacesNetworkInterfacesInnerNetwork) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceInterfacesNetworkInterfacesInnerNetwork(val *InstanceInterfacesNetworkInterfacesInnerNetwork) *NullableInstanceInterfacesNetworkInterfacesInnerNetwork {
-	return &NullableInstanceInterfacesNetworkInterfacesInnerNetwork{value: val, isSet: true}
-}
-
-func (v NullableInstanceInterfacesNetworkInterfacesInnerNetwork) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceInterfacesNetworkInterfacesInnerNetwork) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceInterfacesNetworkInterfacesInnerNetwork) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *InstanceInterfacesNetworkInterfacesInnerNetwork) UnmarshalJSON(data []byte) (err error) {

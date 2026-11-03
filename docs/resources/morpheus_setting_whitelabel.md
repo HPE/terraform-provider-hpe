@@ -43,17 +43,29 @@ resource "hpe_morpheus_setting_whitelabel" "example" {
 
 - `appliance_name` (String) The appliance name. Master account only.
 - `enabled` (Boolean) Whether the whitelabel feature is enabled.
+- `external_legal_text` (String) External legal text shown on the login page.
 - `favicon` (String) Local path to a favicon image file (ico/png) to upload. Remote URLs are not supported.
 - `footer_logo` (String) Local path to a footer logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
 - `header_logo` (String) Local path to a header logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
 - `login_logo` (String) Local path to a login logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
 - `primary_color` (String) The primary button background color.
 - `secondary_color` (String) The header background color.
+- `security_banner` (String) Security banner text shown to users at login.
 - `support_menu_links` (String) Support menu links as a JSON string.
+- `supports_themes` (Boolean) Whether the appliance theme selector is offered to users.
 
 ### Read-Only
 
+- `account` (Attributes) The tenant (account) that owns these whitelabel settings. (see [below for nested schema](#nestedatt--account))
 - `id` (String) The fixed identifier for the whitelabel settings singleton.
+
+<a id="nestedatt--account"></a>
+### Nested Schema for `account`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
 
 ## Limitations
 

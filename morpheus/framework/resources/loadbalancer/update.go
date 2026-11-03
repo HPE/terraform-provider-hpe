@@ -11,7 +11,9 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -34,9 +36,16 @@ func (r *Resource) Update(
 		Name: plan.Name.ValueStringPointer(),
 	}
 
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		updateLB.Description = plan.Description.ValueStringPointer()
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	// Sent when known, null when being cleared, not sent otherwise.
+	clearable.NullableString(pending, "description", plan.Description, &updateLB.Description)
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		updateLB.Visibility = plan.Visibility.ValueStringPointer()
@@ -88,6 +97,14 @@ func (r *Resource) Update(
 		return
 	}
 
+	// group_id and network_server_id are create-only (a change replaces the
+	// load balancer); an update planned through write_only_revision only
+	// records the digests of the configured values.
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+
 	newState, err := getLoadBalancerAsState(ctx, id, client, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -105,6 +122,11 @@ func (r *Resource) Update(
 		newState.Config = plan.Config
 	}
 
+	// Record the digests once the read-back succeeded, so private state and
+	// state move together.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -38,15 +39,26 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, diags := getLoadBalancerPoolAsState(
+	state, found, diags := getLoadBalancerPoolAsState(
 		ctx, data.LoadBalancerId.ValueInt64(), data.Id.ValueInt64(), client,
 	)
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Partition is write-only; preserve from prior state.
-	state.Partition = data.Partition
+	// The pool was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("load balancer pool %d not found, removing from state", data.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
+		return
+	}
+
+	// Partition is write-only; never in state. write_only_revision is not in
+	// the API; carried from prior state.
+	state.Partition = types.StringNull()
+	state.WriteOnlyRevision = data.WriteOnlyRevision
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -56,12 +68,15 @@ func getLoadBalancerPoolAsState(
 	loadBalancerID int64,
 	id int64,
 	client *sdk.APIClient,
-) (LoadBalancerPoolModel, diag.Diagnostics) {
+) (LoadBalancerPoolModel, bool, diag.Diagnostics) {
 	var state LoadBalancerPoolModel
 	var diags diag.Diagnostics
 
 	poolResp, httpResp, err := client.LoadBalancersAPI.
 		GetLoadBalancerPool(ctx, loadBalancerID, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return state, false, diags
+	}
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"error reading load balancer pool",
@@ -69,7 +84,7 @@ func getLoadBalancerPoolAsState(
 				errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	p := poolResp.LoadBalancerPool
@@ -79,7 +94,7 @@ func getLoadBalancerPoolAsState(
 			fmt.Sprintf("load balancer pool %d GET returned no pool", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// Core fields
@@ -219,7 +234,7 @@ func getLoadBalancerPoolAsState(
 	// Nested LoadBalancer object
 	lb, lbDiags := buildLoadBalancerValue(ctx, p.LoadBalancer)
 	if diags.Append(lbDiags...); diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 
 	state.LoadBalancer = lb
@@ -256,7 +271,7 @@ func getLoadBalancerPoolAsState(
 					fmt.Sprintf("failed to convert config map to dynamic: %s", err),
 				)
 
-				return state, diags
+				return state, false, diags
 			}
 
 			state.Config = dynVal
@@ -265,7 +280,7 @@ func getLoadBalancerPoolAsState(
 		}
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 func buildLoadBalancerValue(

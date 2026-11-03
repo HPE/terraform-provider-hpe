@@ -6,8 +6,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/budget"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dscosting "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/costing"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
@@ -36,12 +38,21 @@ func TestAccMorpheusDataSourceBudgetExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	name := "example-budget"
+	// MORPH-16544: the budget data source test previously looked up a static
+	// master-tenant budget ("example-budget") that does not exist as a
+	// sub-tenant. Create the budget per-run in dependenciesConfig and point the
+	// data source lookup at the resource's name so the test is self-contained.
+	name := acctest.RandomWithPrefix(t.Name())
 
-	var dependenciesConfig string
+	dependenciesConfig, err := budget.RenderBudgetConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	datasourceConfig, err := dscosting.RenderBudgetConfig(t, map[string]string{
-		"Name": name,
+		"Name": "hpe_morpheus_budget.example.name",
 	})
 	if err != nil {
 		t.Fatal(err)

@@ -5,13 +5,10 @@ package image
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-
-	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
@@ -33,26 +30,23 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	deleteReq := client.LibraryAPI.RemoveVirtualImage(ctx, id)
-	_, hresp, err := deleteReq.Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := deleteReq.Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete image resource",
-			fmt.Sprintf("image %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("image %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return
 	}
 
-	waitForDeleted := func() (*sdk.GetInstance200Response, error) {
+	// Wait until the image can no longer be read; a successful GET means it is
+	// still there and the loop tries again (see errfmt.PollDeleted).
+	what := fmt.Sprintf("virtual image %d", id)
+	waitForDeleted := func() (struct{}, error) {
 		_, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, id).Execute()
-		// 404 status code counts as a successful delete
-		if err != nil {
-			if httpResp == nil || httpResp.StatusCode != http.StatusNotFound {
-				return nil, backoff.Permanent(err)
-			}
-		}
 
-		return nil, nil
+		return struct{}{}, errfmt.PollDeleted(what, err, httpResp)
 	}
 
 	if _, err := backoff.Retry(

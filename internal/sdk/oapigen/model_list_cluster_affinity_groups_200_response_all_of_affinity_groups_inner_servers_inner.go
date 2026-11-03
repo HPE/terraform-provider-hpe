@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner struct {
-	value *ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner
-	isSet bool
-}
-
-func (v NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) Get() *ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner {
-	return v.value
-}
-
-func (v *NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) Set(val *ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner(val *ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) *NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner {
-	return &NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner{value: val, isSet: true}
-}
-
-func (v NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) UnmarshalJSON(data []byte) (err error) {

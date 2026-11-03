@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,9 +20,9 @@ var _ MappedNullable = &UpdateClusterAffinityGroupRequestAffinityGroupResourcePe
 
 // UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions Resource Permissions for controlling Group Access
 type UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions struct {
-	All                  *bool                                                                       `json:"all,omitempty"`
-	Sites                []SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner `json:"sites,omitempty"`
-	AdditionalProperties map[string]interface{}                                                      `json:",remain"`
+	All                  *bool                                                                         `json:"all,omitempty"`
+	Sites                []UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner `json:"sites,omitempty"`
+	AdditionalProperties map[string]interface{}                                                        `json:",remain"`
 }
 
 type _UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions
@@ -49,51 +49,6 @@ func (o UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions) ToMap
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions struct {
-	value *UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions
-	isSet bool
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions) Get() *UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions {
-	return v.value
-}
-
-func (v *NullableUpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions) Set(val *UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions(val *UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions) *NullableUpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions {
-	return &NullableUpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions{value: val, isSet: true}
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions) UnmarshalJSON(data []byte) (err error) {

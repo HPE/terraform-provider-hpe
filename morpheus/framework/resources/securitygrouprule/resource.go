@@ -13,6 +13,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -114,7 +115,7 @@ func (r *securityGroupRuleResource) Create(
 	}
 
 	id := *result.Rule.Id
-	ruleIDParam := float32(id) //nolint:gosec // value range is safe
+	ruleIDParam := id
 
 	readResult, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroupRules(ctx, sgID, ruleIDParam).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -155,7 +156,7 @@ func (r *securityGroupRuleResource) Read(ctx context.Context, req resource.ReadR
 	}
 
 	sgID := state.SecurityGroupId.ValueInt64()
-	ruleID := float32(state.Id.ValueInt64())
+	ruleID := state.Id.ValueInt64()
 
 	result, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroupRules(ctx, sgID, ruleID).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -205,15 +206,21 @@ func (r *securityGroupRuleResource) Update(
 	}
 
 	sgID := plan.SecurityGroupId.ValueInt64()
-	ruleID := float32(plan.Id.ValueInt64())
+	ruleID := plan.Id.ValueInt64()
+
+	// Attributes removed from the configuration, to be cleared.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	body := sdk.UpdateSecurityGroupRulesRequestRule{
 		Protocol: plan.Protocol.ValueString(),
 		RuleType: plan.RuleType.ValueString(),
 	}
-	if !plan.Name.IsNull() {
-		body.Name = plan.Name.ValueStringPointer()
-	}
+	// Sent when known, null when being cleared, not sent otherwise.
+	clearable.NullableString(pending, "name", plan.Name, &body.Name)
 	if !plan.Direction.IsNull() {
 		body.Direction = plan.Direction.ValueStringPointer()
 	}
@@ -282,10 +289,10 @@ func (r *securityGroupRuleResource) Delete(
 	}
 
 	sgID := state.SecurityGroupId.ValueInt64()
-	ruleID := float32(state.Id.ValueInt64())
+	ruleID := state.Id.ValueInt64()
 
-	_, httpResp, err := client.SecurityGroupsAPI.RemoveSecurityGroupRules(ctx, sgID, ruleID).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.SecurityGroupsAPI.RemoveSecurityGroupRules(ctx, sgID, ruleID).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "security_group_rule", "", err, httpResp)
 
 		return

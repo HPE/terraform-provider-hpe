@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner) To
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner struct {
-	value *ListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner
-	isSet bool
-}
-
-func (v NullableListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner) Get() *ListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner {
-	return v.value
-}
-
-func (v *NullableListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner) Set(val *ListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner(val *ListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner) *NullableListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner {
-	return &NullableListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner{value: val, isSet: true}
-}
-
-func (v NullableListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListStorageServers200ResponseAllOfStorageServersInnerHostGroupsInner) UnmarshalJSON(data []byte) (err error) {

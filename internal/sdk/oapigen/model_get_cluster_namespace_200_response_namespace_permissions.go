@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetClusterNamespace200ResponseNamespacePermissions) ToMap() (map[string]
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClusterNamespace200ResponseNamespacePermissions struct {
-	value *GetClusterNamespace200ResponseNamespacePermissions
-	isSet bool
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissions) Get() *GetClusterNamespace200ResponseNamespacePermissions {
-	return v.value
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissions) Set(val *GetClusterNamespace200ResponseNamespacePermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterNamespace200ResponseNamespacePermissions(val *GetClusterNamespace200ResponseNamespacePermissions) *NullableGetClusterNamespace200ResponseNamespacePermissions {
-	return &NullableGetClusterNamespace200ResponseNamespacePermissions{value: val, isSet: true}
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClusterNamespace200ResponseNamespacePermissions) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj CreateNetworkRouterRequestNetworkRouterConfigAnyOf) GetActualInstanceV
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOf struct {
-	value *CreateNetworkRouterRequestNetworkRouterConfigAnyOf
-	isSet bool
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOf) Get() *CreateNetworkRouterRequestNetworkRouterConfigAnyOf {
-	return v.value
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOf) Set(val *CreateNetworkRouterRequestNetworkRouterConfigAnyOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkRouterRequestNetworkRouterConfigAnyOf(val *CreateNetworkRouterRequestNetworkRouterConfigAnyOf) *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOf {
-	return &NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOf{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetClusterLayout200ResponseLayoutOptionTypesInnerOptionList) ToMap() (ma
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClusterLayout200ResponseLayoutOptionTypesInnerOptionList struct {
-	value *GetClusterLayout200ResponseLayoutOptionTypesInnerOptionList
-	isSet bool
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutOptionTypesInnerOptionList) Get() *GetClusterLayout200ResponseLayoutOptionTypesInnerOptionList {
-	return v.value
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutOptionTypesInnerOptionList) Set(val *GetClusterLayout200ResponseLayoutOptionTypesInnerOptionList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutOptionTypesInnerOptionList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutOptionTypesInnerOptionList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterLayout200ResponseLayoutOptionTypesInnerOptionList(val *GetClusterLayout200ResponseLayoutOptionTypesInnerOptionList) *NullableGetClusterLayout200ResponseLayoutOptionTypesInnerOptionList {
-	return &NullableGetClusterLayout200ResponseLayoutOptionTypesInnerOptionList{value: val, isSet: true}
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutOptionTypesInnerOptionList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutOptionTypesInnerOptionList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutOptionTypesInnerOptionList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClusterLayout200ResponseLayoutOptionTypesInnerOptionList) UnmarshalJSON(data []byte) (err error) {

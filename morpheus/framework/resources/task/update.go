@@ -2,12 +2,14 @@ package task
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -42,6 +44,14 @@ func (r *Resource) Update(
 	}
 
 	updateRequest := &sdk.UpdateTasksRequest{}
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	updateTask := &sdk.UpdateTasksRequestTask{}
 
 	// allow_custom_config
@@ -50,9 +60,7 @@ func (r *Resource) Update(
 	}
 
 	// code
-	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		updateTask.Code = plan.Code.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "code", plan.Code, &updateTask.Code)
 
 	taskOptions := sdk.UpdateTasksRequestTaskTaskOptions{}
 
@@ -113,15 +121,10 @@ func (r *Resource) Update(
 		updateTask.ExecuteTarget = plan.ExecuteTarget.ValueStringPointer()
 	}
 
-	// labels
-	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
-		labels, err := convert.SetToStrSlice(plan.Labels)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"create task resource",
-				"task "+plan.Name.ValueString()+": failed to parse label: "+err.Error(),
-			)
-
+	// labels: the planned list, or an empty list when being cleared
+	if labels, ok, ldiags := pending.Strings(ctx, "labels", plan.Labels); ok {
+		resp.Diagnostics.Append(ldiags...)
+		if resp.Diagnostics.HasError() {
 			return
 		}
 
@@ -134,19 +137,13 @@ func (r *Resource) Update(
 	}
 
 	// result_type
-	if !plan.ResultType.IsNull() && !plan.ResultType.IsUnknown() {
-		updateTask.ResultType.Set(plan.ResultType.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "result_type", plan.ResultType, &updateTask.ResultType)
 
 	// retry_count
-	if !plan.RetryCount.IsNull() && !plan.RetryCount.IsUnknown() {
-		updateTask.RetryCount = plan.RetryCount.ValueInt64Pointer()
-	}
+	clearable.NullableInt64(pending, "retry_count", plan.RetryCount, &updateTask.RetryCount)
 
 	// retry_delay_seconds
-	if !plan.RetryDelaySeconds.IsNull() && !plan.RetryDelaySeconds.IsUnknown() {
-		updateTask.RetryDelaySeconds = plan.RetryDelaySeconds.ValueInt64Pointer()
-	}
+	clearable.NullableInt64(pending, "retry_delay_seconds", plan.RetryDelaySeconds, &updateTask.RetryDelaySeconds)
 
 	// retryable
 	if !plan.Retryable.IsNull() && !plan.Retryable.IsUnknown() {
@@ -195,11 +192,15 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diag := getTaskAsState(ctx, *taskResp.Task.Id, client, plan)
+	state, found, diag := getTaskAsState(ctx, *taskResp.Task.Id, client, plan)
+	if !found && !diag.HasError() {
+		diag.AddError("read task", fmt.Sprintf("task %d not found after update", *taskResp.Task.Id))
+	}
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return

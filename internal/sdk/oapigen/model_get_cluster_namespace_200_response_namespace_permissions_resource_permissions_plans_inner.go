@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPla
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner struct {
-	value *GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner
-	isSet bool
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner) Get() *GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner {
-	return v.value
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner) Set(val *GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner(val *GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner) *NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner {
-	return &NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner{value: val, isSet: true}
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsPlansInner) UnmarshalJSON(data []byte) (err error) {

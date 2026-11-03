@@ -30,6 +30,7 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Description of the route",
 				MarkdownDescription: "Description of the route",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -62,6 +63,7 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Name of the route",
 				MarkdownDescription: "Name of the route",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -76,6 +78,7 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Priority of the route rule",
 				MarkdownDescription: "Priority of the route rule",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},

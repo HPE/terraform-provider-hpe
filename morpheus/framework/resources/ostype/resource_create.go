@@ -2,12 +2,14 @@ package ostype
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
@@ -108,7 +110,10 @@ func (r *Resource) Create(
 		createdID = *createResp.Id.Get()
 	}
 
-	state, diag := getOsTypeAsState(ctx, createdID, client)
+	state, found, diag := getOsTypeAsState(ctx, createdID, client)
+	if !found && !diag.HasError() {
+		diag.AddError("error reading os type", fmt.Sprintf("os type %d not found immediately after create", createdID))
+	}
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
 			ResourceType: "ostype",
@@ -120,5 +125,6 @@ func (r *Resource) Create(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

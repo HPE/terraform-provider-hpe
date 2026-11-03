@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,8 @@ var _ MappedNullable = &CreateLoadBalancerMonitorRequestLoadBalancerMonitor{}
 type CreateLoadBalancerMonitorRequestLoadBalancerMonitor struct {
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Description
-	Description          *string                                                    `json:"description,omitempty"`
+	// Description; null clears it
+	Description          NullableString                                             `json:"description,omitempty"`
 	MonitorType          *string                                                    `json:"monitorType,omitempty"`
 	MonitorInterval      *int64                                                     `json:"monitorInterval,omitempty"`
 	MonitorTimeout       *int64                                                     `json:"monitorTimeout,omitempty"`
@@ -61,8 +61,8 @@ func (o CreateLoadBalancerMonitorRequestLoadBalancerMonitor) ToMap() (map[string
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.MonitorType) {
 		toSerialize["monitorType"] = o.MonitorType
@@ -127,51 +127,6 @@ func (o CreateLoadBalancerMonitorRequestLoadBalancerMonitor) ToMap() (map[string
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateLoadBalancerMonitorRequestLoadBalancerMonitor struct {
-	value *CreateLoadBalancerMonitorRequestLoadBalancerMonitor
-	isSet bool
-}
-
-func (v NullableCreateLoadBalancerMonitorRequestLoadBalancerMonitor) Get() *CreateLoadBalancerMonitorRequestLoadBalancerMonitor {
-	return v.value
-}
-
-func (v *NullableCreateLoadBalancerMonitorRequestLoadBalancerMonitor) Set(val *CreateLoadBalancerMonitorRequestLoadBalancerMonitor) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateLoadBalancerMonitorRequestLoadBalancerMonitor) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateLoadBalancerMonitorRequestLoadBalancerMonitor) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateLoadBalancerMonitorRequestLoadBalancerMonitor(val *CreateLoadBalancerMonitorRequestLoadBalancerMonitor) *NullableCreateLoadBalancerMonitorRequestLoadBalancerMonitor {
-	return &NullableCreateLoadBalancerMonitorRequestLoadBalancerMonitor{value: val, isSet: true}
-}
-
-func (v NullableCreateLoadBalancerMonitorRequestLoadBalancerMonitor) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateLoadBalancerMonitorRequestLoadBalancerMonitor) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateLoadBalancerMonitorRequestLoadBalancerMonitor) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateLoadBalancerMonitorRequestLoadBalancerMonitor) UnmarshalJSON(data []byte) (err error) {

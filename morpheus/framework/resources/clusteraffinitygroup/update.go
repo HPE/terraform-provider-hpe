@@ -93,7 +93,10 @@ func (r *clusterAffinityGroupResource) Update(
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			rp.Sites = buildSitesPayload(groups)
+			rp.Sites = buildSitesPayload(groups,
+				func(id *int64, dflt *bool) sdk.UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner {
+					return sdk.UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner{Id: id, Default: dflt}
+				})
 		}
 		ag.ResourcePermissions = &rp
 	}
@@ -157,14 +160,12 @@ func (r *clusterAffinityGroupResource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-// buildSitesPayload converts GroupsValue slice to the SDK sites type.
-func buildSitesPayload(
-	groups []GroupsValue,
-) []sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner {
-	sites := make(
-		[]sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner,
-		0, len(groups),
-	)
+// buildSitesPayload converts GroupsValue slice to the SDK sites type. The
+// create and update requests use distinct but identically shaped site types
+// (an id and a default flag), so the element type is a parameter and each
+// element is built by the caller's constructor from those two values.
+func buildSitesPayload[T any](groups []GroupsValue, site func(id *int64, dflt *bool) T) []T {
+	sites := make([]T, 0, len(groups))
 	for _, g := range groups {
 		// Skip an entry with no usable id rather than sending 0, which the API
 		// would take as a real group. id is required by the schema, so this
@@ -175,13 +176,13 @@ func buildSitesPayload(
 		}
 
 		id := g.Id.ValueInt64()
-		inner := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner{
-			Id: &id,
-		}
+
+		var dflt *bool
 		if !g.Default.IsNull() && !g.Default.IsUnknown() {
-			inner.Default = g.Default.ValueBoolPointer()
+			dflt = g.Default.ValueBoolPointer()
 		}
-		sites = append(sites, inner)
+
+		sites = append(sites, site(&id, dflt))
 	}
 
 	return sites

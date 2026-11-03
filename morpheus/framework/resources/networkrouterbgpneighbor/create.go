@@ -13,7 +13,9 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -164,6 +166,14 @@ func (r *Resource) Create(
 	id := *idPtr
 	plan.Id = types.Int64Value(id)
 
+	// Store the configured-value digests now the create POST succeeded, before
+	// the read-back's early returns -- a read-back failure must not discard
+	// them and make the next apply see a spurious change.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	taintResourceState := func(id int64) {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
 			ResourceType: "network_router_bgp_neighbor",
@@ -173,7 +183,10 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, pdiags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
+	state, apiObj, found, pdiags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError(createOperation, fmt.Sprintf("BGP neighbor %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -185,6 +198,12 @@ func (r *Resource) Create(
 		return
 	}
 
+	state.WriteOnlyRevision = wodigest.NewRevision()
+	// Record the appliance-side drift baseline now the read-back succeeded;
+	// the configured-value digests were already stored above after the POST.
+	resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, apiObj)...)
+
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(

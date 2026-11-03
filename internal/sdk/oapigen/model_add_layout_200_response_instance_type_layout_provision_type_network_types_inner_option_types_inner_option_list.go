@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOpti
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList struct {
-	value *AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList
-	isSet bool
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList) Get() *AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList {
-	return v.value
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList) Set(val *AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList(val *AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList) *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList {
-	return &NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList{value: val, isSet: true}
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInnerOptionList) UnmarshalJSON(data []byte) (err error) {

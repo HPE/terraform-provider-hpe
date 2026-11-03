@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
@@ -24,18 +25,21 @@ func getRouterAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan NetworkRouterModel,
-) (NetworkRouterModel, diag.Diagnostics) {
+) (NetworkRouterModel, bool, diag.Diagnostics) {
 	var state NetworkRouterModel
 	var diags diag.Diagnostics
 	importing := plan.Name.IsNull()
 	resp, hresp, err := client.NetworksAPI.GetNetworkRouter(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || resp == nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("network router %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	router := resp.NetworkRouter
@@ -45,7 +49,7 @@ func getRouterAsState(
 			fmt.Sprintf("network router %d GET returned no networkRouter payload", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = convert.Int64ToType(router.Id)
@@ -91,8 +95,8 @@ func getRouterAsState(
 		// import would not match apply.
 		if router.NetworkServer != nil && router.NetworkServer.Id != nil {
 			state.NetworkIntegrationId = convert.Int64ToType(router.NetworkServer.Id)
-		} else if router.Zone != nil && router.Zone.Id != nil {
-			state.CloudId = convert.Int64ToType(router.Zone.Id)
+		} else if zone := router.Zone.Get(); zone != nil && zone.Id != nil {
+			state.CloudId = convert.Int64ToType(zone.Id)
 		}
 
 		// On import, site == null means shared group access
@@ -145,7 +149,7 @@ func getRouterAsState(
 		state.Visibility = types.StringNull()
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 // hydrateImportedConfig populates the config representation on import. The typed
@@ -207,9 +211,18 @@ func (r *Resource) Read(
 
 	id := state.Id.ValueInt64()
 
-	newState, diags := getRouterAsState(ctx, id, client, state)
+	newState, found, diags := getRouterAsState(ctx, id, client, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The router was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("network router %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 

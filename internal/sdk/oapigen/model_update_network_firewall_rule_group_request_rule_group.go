@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -66,51 +66,6 @@ func (o UpdateNetworkFirewallRuleGroupRequestRuleGroup) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateNetworkFirewallRuleGroupRequestRuleGroup struct {
-	value *UpdateNetworkFirewallRuleGroupRequestRuleGroup
-	isSet bool
-}
-
-func (v NullableUpdateNetworkFirewallRuleGroupRequestRuleGroup) Get() *UpdateNetworkFirewallRuleGroupRequestRuleGroup {
-	return v.value
-}
-
-func (v *NullableUpdateNetworkFirewallRuleGroupRequestRuleGroup) Set(val *UpdateNetworkFirewallRuleGroupRequestRuleGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetworkFirewallRuleGroupRequestRuleGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetworkFirewallRuleGroupRequestRuleGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetworkFirewallRuleGroupRequestRuleGroup(val *UpdateNetworkFirewallRuleGroupRequestRuleGroup) *NullableUpdateNetworkFirewallRuleGroupRequestRuleGroup {
-	return &NullableUpdateNetworkFirewallRuleGroupRequestRuleGroup{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetworkFirewallRuleGroupRequestRuleGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetworkFirewallRuleGroupRequestRuleGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetworkFirewallRuleGroupRequestRuleGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateNetworkFirewallRuleGroupRequestRuleGroup) UnmarshalJSON(data []byte) (err error) {

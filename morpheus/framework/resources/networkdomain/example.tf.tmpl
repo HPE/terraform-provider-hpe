@@ -1,0 +1,15 @@
+resource "hpe_morpheus_network_domain" "example" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  public_zone = {{.PublicZone}}
+  visibility  = "{{.Visibility}}"
+  active      = {{.Active}}
+
+  # Write-only: never stored in state. Changes are detected through a
+  # private-state digest (see write_only_revision).
+  domain_password_wo = "{{.DomainPasswordWo}}"
+  domain_username    = "{{.DomainUsername}}"
+
+  # domain_password_wo_version is deprecated: changes to domain_password_wo are
+  # detected automatically. It will be removed in the 2.6 release.
+}

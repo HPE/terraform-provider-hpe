@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -46,51 +46,6 @@ func (o HAProxyLoadBalancerConfigObjectPlan) ToMap() (map[string]interface{}, er
 	}
 
 	return toSerialize, nil
-}
-
-type NullableHAProxyLoadBalancerConfigObjectPlan struct {
-	value *HAProxyLoadBalancerConfigObjectPlan
-	isSet bool
-}
-
-func (v NullableHAProxyLoadBalancerConfigObjectPlan) Get() *HAProxyLoadBalancerConfigObjectPlan {
-	return v.value
-}
-
-func (v *NullableHAProxyLoadBalancerConfigObjectPlan) Set(val *HAProxyLoadBalancerConfigObjectPlan) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableHAProxyLoadBalancerConfigObjectPlan) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableHAProxyLoadBalancerConfigObjectPlan) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableHAProxyLoadBalancerConfigObjectPlan(val *HAProxyLoadBalancerConfigObjectPlan) *NullableHAProxyLoadBalancerConfigObjectPlan {
-	return &NullableHAProxyLoadBalancerConfigObjectPlan{value: val, isSet: true}
-}
-
-func (v NullableHAProxyLoadBalancerConfigObjectPlan) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableHAProxyLoadBalancerConfigObjectPlan) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableHAProxyLoadBalancerConfigObjectPlan) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *HAProxyLoadBalancerConfigObjectPlan) UnmarshalJSON(data []byte) (err error) {

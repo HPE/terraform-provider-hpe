@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o UpdateRole200ResponseAllOfClusterTypePermissionsInner) ToMap() (map[stri
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateRole200ResponseAllOfClusterTypePermissionsInner struct {
-	value *UpdateRole200ResponseAllOfClusterTypePermissionsInner
-	isSet bool
-}
-
-func (v NullableUpdateRole200ResponseAllOfClusterTypePermissionsInner) Get() *UpdateRole200ResponseAllOfClusterTypePermissionsInner {
-	return v.value
-}
-
-func (v *NullableUpdateRole200ResponseAllOfClusterTypePermissionsInner) Set(val *UpdateRole200ResponseAllOfClusterTypePermissionsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateRole200ResponseAllOfClusterTypePermissionsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateRole200ResponseAllOfClusterTypePermissionsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateRole200ResponseAllOfClusterTypePermissionsInner(val *UpdateRole200ResponseAllOfClusterTypePermissionsInner) *NullableUpdateRole200ResponseAllOfClusterTypePermissionsInner {
-	return &NullableUpdateRole200ResponseAllOfClusterTypePermissionsInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateRole200ResponseAllOfClusterTypePermissionsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateRole200ResponseAllOfClusterTypePermissionsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateRole200ResponseAllOfClusterTypePermissionsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateRole200ResponseAllOfClusterTypePermissionsInner) UnmarshalJSON(data []byte) (err error) {

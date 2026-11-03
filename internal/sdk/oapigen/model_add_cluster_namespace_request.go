@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o AddClusterNamespaceRequest) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddClusterNamespaceRequest struct {
-	value *AddClusterNamespaceRequest
-	isSet bool
-}
-
-func (v NullableAddClusterNamespaceRequest) Get() *AddClusterNamespaceRequest {
-	return v.value
-}
-
-func (v *NullableAddClusterNamespaceRequest) Set(val *AddClusterNamespaceRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterNamespaceRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterNamespaceRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterNamespaceRequest(val *AddClusterNamespaceRequest) *NullableAddClusterNamespaceRequest {
-	return &NullableAddClusterNamespaceRequest{value: val, isSet: true}
-}
-
-func (v NullableAddClusterNamespaceRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterNamespaceRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterNamespaceRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddClusterNamespaceRequest) UnmarshalJSON(data []byte) (err error) {

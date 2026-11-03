@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,14 +21,16 @@ var _ MappedNullable = &GetSnapshotInstance200ResponseSnapshot{}
 
 // GetSnapshotInstance200ResponseSnapshot struct for GetSnapshotInstance200ResponseSnapshot
 type GetSnapshotInstance200ResponseSnapshot struct {
-	Id                   *int64                                                       `json:"id,omitempty"`
-	Name                 *string                                                      `json:"name,omitempty"`
-	Description          NullableString                                               `json:"description,omitempty"`
-	ExternalId           NullableString                                               `json:"externalId,omitempty"`
-	Status               *string                                                      `json:"status,omitempty"`
-	State                NullableString                                               `json:"state,omitempty"`
-	SnapshotType         *string                                                      `json:"snapshotType,omitempty"`
-	SnapshotCreated      NullableTime                                                 `json:"snapshotCreated,omitempty"`
+	Id              *int64         `json:"id,omitempty"`
+	Name            *string        `json:"name,omitempty"`
+	Description     NullableString `json:"description,omitempty"`
+	ExternalId      NullableString `json:"externalId,omitempty"`
+	Status          *string        `json:"status,omitempty"`
+	State           NullableString `json:"state,omitempty"`
+	SnapshotType    *string        `json:"snapshotType,omitempty"`
+	SnapshotCreated NullableTime   `json:"snapshotCreated,omitempty"`
+	// Total size of the snapshot in bytes. Null when not populated.
+	MaxStorage           NullableInt64                                                `json:"maxStorage,omitempty"`
 	Zone                 *GetHostSnpshots200ResponseSnapshotsInnerZone                `json:"zone,omitempty"`
 	Datastore            NullableString                                               `json:"datastore,omitempty"`
 	ParentSnapshot       NullableString                                               `json:"parentSnapshot,omitempty"`
@@ -77,6 +79,9 @@ func (o GetSnapshotInstance200ResponseSnapshot) ToMap() (map[string]interface{},
 	if o.SnapshotCreated.IsSet() {
 		toSerialize["snapshotCreated"] = o.SnapshotCreated.Get()
 	}
+	if o.MaxStorage.IsSet() {
+		toSerialize["maxStorage"] = o.MaxStorage.Get()
+	}
 	if !IsNil(o.Zone) {
 		toSerialize["zone"] = o.Zone
 	}
@@ -110,51 +115,6 @@ func (o GetSnapshotInstance200ResponseSnapshot) ToMap() (map[string]interface{},
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetSnapshotInstance200ResponseSnapshot struct {
-	value *GetSnapshotInstance200ResponseSnapshot
-	isSet bool
-}
-
-func (v NullableGetSnapshotInstance200ResponseSnapshot) Get() *GetSnapshotInstance200ResponseSnapshot {
-	return v.value
-}
-
-func (v *NullableGetSnapshotInstance200ResponseSnapshot) Set(val *GetSnapshotInstance200ResponseSnapshot) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetSnapshotInstance200ResponseSnapshot) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetSnapshotInstance200ResponseSnapshot) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetSnapshotInstance200ResponseSnapshot(val *GetSnapshotInstance200ResponseSnapshot) *NullableGetSnapshotInstance200ResponseSnapshot {
-	return &NullableGetSnapshotInstance200ResponseSnapshot{value: val, isSet: true}
-}
-
-func (v NullableGetSnapshotInstance200ResponseSnapshot) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetSnapshotInstance200ResponseSnapshot) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetSnapshotInstance200ResponseSnapshot) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetSnapshotInstance200ResponseSnapshot) UnmarshalJSON(data []byte) (err error) {

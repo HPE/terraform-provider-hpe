@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -51,51 +51,6 @@ func (o AddBackupJobs200ResponseAllOfJobBackupProvider) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddBackupJobs200ResponseAllOfJobBackupProvider struct {
-	value *AddBackupJobs200ResponseAllOfJobBackupProvider
-	isSet bool
-}
-
-func (v NullableAddBackupJobs200ResponseAllOfJobBackupProvider) Get() *AddBackupJobs200ResponseAllOfJobBackupProvider {
-	return v.value
-}
-
-func (v *NullableAddBackupJobs200ResponseAllOfJobBackupProvider) Set(val *AddBackupJobs200ResponseAllOfJobBackupProvider) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddBackupJobs200ResponseAllOfJobBackupProvider) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddBackupJobs200ResponseAllOfJobBackupProvider) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddBackupJobs200ResponseAllOfJobBackupProvider(val *AddBackupJobs200ResponseAllOfJobBackupProvider) *NullableAddBackupJobs200ResponseAllOfJobBackupProvider {
-	return &NullableAddBackupJobs200ResponseAllOfJobBackupProvider{value: val, isSet: true}
-}
-
-func (v NullableAddBackupJobs200ResponseAllOfJobBackupProvider) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddBackupJobs200ResponseAllOfJobBackupProvider) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddBackupJobs200ResponseAllOfJobBackupProvider) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddBackupJobs200ResponseAllOfJobBackupProvider) UnmarshalJSON(data []byte) (err error) {

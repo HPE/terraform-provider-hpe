@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,24 +22,24 @@ var _ MappedNullable = &UpdateLoadBalancerVirtualServerRequestLoadBalancerInstan
 type UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance struct {
 	// VIP Name
 	VipName *string `json:"vipName,omitempty"`
-	// Description
-	Description *string `json:"description,omitempty"`
+	// Description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// VIP Address
 	VipAddress *string `json:"vipAddress,omitempty"`
 	// VIP Port
 	VipPort *int64 `json:"vipPort,omitempty"`
 	// VIP Protocol. For NSX-T load balancers, this is the virtual server type. Valid values are `http`, `tcp`, `udp`.
 	VipProtocol *string `json:"vipProtocol,omitempty"`
-	// VIP Hostname
-	VipHostname *string `json:"vipHostname,omitempty"`
+	// VIP Hostname; null clears it
+	VipHostname NullableString `json:"vipHostname,omitempty"`
 	// Network Pool ID for automatic VIP address allocation. When set, a VIP address will be leased from this pool and `vipAddress` does not need to be specified.
 	VipPool NullableInt64 `json:"vipPool,omitempty"`
 	// Backend server pool ID. Can also be specified in `config.pool` for NSX-T load balancers.
 	Pool *int64 `json:"pool,omitempty"`
-	// SSL Client Certificate ID. Use `0` for none.
-	SslCert *int64 `json:"sslCert,omitempty"`
-	// SSL Server Certificate ID. Use `0` for none.
-	SslServerCert        *int64                                                            `json:"sslServerCert,omitempty"`
+	// SSL Client Certificate ID. Use `0` for none. Null clears it.
+	SslCert NullableInt64 `json:"sslCert,omitempty"`
+	// SSL Server Certificate ID. Use `0` for none. Null clears it.
+	SslServerCert        NullableInt64                                                     `json:"sslServerCert,omitempty"`
 	Config               *UpdateLoadBalancerVirtualServerRequestLoadBalancerInstanceConfig `json:"config,omitempty"`
 	AdditionalProperties map[string]interface{}                                            `json:",remain"`
 }
@@ -59,8 +59,8 @@ func (o UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) ToMap() (map
 	if !IsNil(o.VipName) {
 		toSerialize["vipName"] = o.VipName
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.VipAddress) {
 		toSerialize["vipAddress"] = o.VipAddress
@@ -71,8 +71,8 @@ func (o UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) ToMap() (map
 	if !IsNil(o.VipProtocol) {
 		toSerialize["vipProtocol"] = o.VipProtocol
 	}
-	if !IsNil(o.VipHostname) {
-		toSerialize["vipHostname"] = o.VipHostname
+	if o.VipHostname.IsSet() {
+		toSerialize["vipHostname"] = o.VipHostname.Get()
 	}
 	if o.VipPool.IsSet() {
 		toSerialize["vipPool"] = o.VipPool.Get()
@@ -80,11 +80,11 @@ func (o UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) ToMap() (map
 	if !IsNil(o.Pool) {
 		toSerialize["pool"] = o.Pool
 	}
-	if !IsNil(o.SslCert) {
-		toSerialize["sslCert"] = o.SslCert
+	if o.SslCert.IsSet() {
+		toSerialize["sslCert"] = o.SslCert.Get()
 	}
-	if !IsNil(o.SslServerCert) {
-		toSerialize["sslServerCert"] = o.SslServerCert
+	if o.SslServerCert.IsSet() {
+		toSerialize["sslServerCert"] = o.SslServerCert.Get()
 	}
 	if !IsNil(o.Config) {
 		toSerialize["config"] = o.Config
@@ -95,51 +95,6 @@ func (o UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) ToMap() (map
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateLoadBalancerVirtualServerRequestLoadBalancerInstance struct {
-	value *UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance
-	isSet bool
-}
-
-func (v NullableUpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) Get() *UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance {
-	return v.value
-}
-
-func (v *NullableUpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) Set(val *UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateLoadBalancerVirtualServerRequestLoadBalancerInstance(val *UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) *NullableUpdateLoadBalancerVirtualServerRequestLoadBalancerInstance {
-	return &NullableUpdateLoadBalancerVirtualServerRequestLoadBalancerInstance{value: val, isSet: true}
-}
-
-func (v NullableUpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance) UnmarshalJSON(data []byte) (err error) {

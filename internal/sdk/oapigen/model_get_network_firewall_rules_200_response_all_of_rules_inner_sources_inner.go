@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner) ToMap() (
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner struct {
-	value *GetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner
-	isSet bool
-}
-
-func (v NullableGetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner) Get() *GetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner) Set(val *GetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner(val *GetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner) *NullableGetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner {
-	return &NullableGetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkFirewallRules200ResponseAllOfRulesInnerSourcesInner) UnmarshalJSON(data []byte) (err error) {

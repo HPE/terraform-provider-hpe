@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -205,51 +205,6 @@ func (o ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner) ToMap
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner struct {
-	value *ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner
-	isSet bool
-}
-
-func (v NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner) Get() *ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner) Set(val *ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner(val *ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner) *NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner {
-	return &NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInner) UnmarshalJSON(data []byte) (err error) {

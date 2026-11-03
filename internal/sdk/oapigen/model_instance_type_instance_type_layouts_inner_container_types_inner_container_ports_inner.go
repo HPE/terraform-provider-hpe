@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInn
 	}
 
 	return toSerialize, nil
-}
-
-type NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner struct {
-	value *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner
-	isSet bool
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) Get() *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner {
-	return v.value
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) Set(val *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner(val *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner {
-	return &NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner{value: val, isSet: true}
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o SaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner) ToMap()
 	}
 
 	return toSerialize, nil
-}
-
-type NullableSaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner struct {
-	value *SaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner
-	isSet bool
-}
-
-func (v NullableSaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner) Get() *SaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner {
-	return v.value
-}
-
-func (v *NullableSaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner) Set(val *SaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner(val *SaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner) *NullableSaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner {
-	return &NullableSaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner{value: val, isSet: true}
-}
-
-func (v NullableSaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *SaveCloudAffinityGroup200ResponseAllOfAffinityGroupServersInner) UnmarshalJSON(data []byte) (err error) {

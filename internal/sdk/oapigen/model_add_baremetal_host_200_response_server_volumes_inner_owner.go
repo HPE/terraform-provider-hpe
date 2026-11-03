@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddBaremetalHost200ResponseServerVolumesInnerOwner) ToMap() (map[string]
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddBaremetalHost200ResponseServerVolumesInnerOwner struct {
-	value *AddBaremetalHost200ResponseServerVolumesInnerOwner
-	isSet bool
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerOwner) Get() *AddBaremetalHost200ResponseServerVolumesInnerOwner {
-	return v.value
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerVolumesInnerOwner) Set(val *AddBaremetalHost200ResponseServerVolumesInnerOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerVolumesInnerOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddBaremetalHost200ResponseServerVolumesInnerOwner(val *AddBaremetalHost200ResponseServerVolumesInnerOwner) *NullableAddBaremetalHost200ResponseServerVolumesInnerOwner {
-	return &NullableAddBaremetalHost200ResponseServerVolumesInnerOwner{value: val, isSet: true}
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerVolumesInnerOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddBaremetalHost200ResponseServerVolumesInnerOwner) UnmarshalJSON(data []byte) (err error) {

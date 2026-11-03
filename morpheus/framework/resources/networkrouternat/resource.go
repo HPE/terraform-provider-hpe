@@ -18,7 +18,9 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -27,6 +29,7 @@ import (
 var (
 	_ resource.Resource                = &Resource{}
 	_ resource.ResourceWithImportState = &Resource{}
+	_ resource.ResourceWithModifyPlan  = &Resource{}
 )
 
 func NewResource() resource.Resource {
@@ -158,7 +161,13 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, pdiags := getNatAsState(ctx, id, routerID, client, plan)
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
+	state, found, pdiags := getNatAsState(ctx, id, routerID, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError(createOperation, fmt.Sprintf("NAT %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -170,6 +179,7 @@ func (r *Resource) Create(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		taintState()
@@ -186,26 +196,29 @@ func getNatAsState(
 	routerID int64,
 	client *sdk.APIClient,
 	plan NetworkRouterNatModel,
-) (NetworkRouterNatModel, diag.Diagnostics) {
+) (NetworkRouterNatModel, bool, diag.Diagnostics) {
 	var state NetworkRouterNatModel
 	var diags diag.Diagnostics
 
 	resp, hresp, err := client.NetworksAPI.
 		GetNetworkRouterNat(ctx, id, routerID).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("NAT %d GET failed: %s", id, errfmt.ErrMsg(err, hresp)),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	nat := resp.NetworkRouterNAT
 	if nat == nil {
 		diags.AddError("API returned nil", "NetworkRouterNAT is nil in the response")
 
-		return state, diags
+		return state, false, diags
 	}
 
 	if nat.Id != nil {
@@ -227,6 +240,7 @@ func getNatAsState(
 	state.ActionVersion = plan.ActionVersion
 	state.FirewallVersion = plan.FirewallVersion
 	state.ServiceVersion = plan.ServiceVersion
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
 	state.Description = convert.StrToType(nat.Description)
 
@@ -262,7 +276,7 @@ func getNatAsState(
 		state.Protocol = types.StringNull()
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 func (r *Resource) Read(
@@ -284,9 +298,18 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, diags := getNatAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
+	state, found, diags := getNatAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The NAT rule was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("network router nat %d not found, removing from state", plan.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -338,24 +361,24 @@ func (r *Resource) Update(
 		Name:   plan.Name.ValueStringPointer(),
 		Config: natConfig,
 	}
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		nat.Description = plan.Description.ValueStringPointer()
+
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared: sent when known, null when being cleared, not sent otherwise.
+	// Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	clearable.NullableString(pending, "description", plan.Description, &nat.Description)
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		nat.Enabled = plan.Enabled.ValueBoolPointer()
 	}
-	if !plan.SourceNetwork.IsNull() && !plan.SourceNetwork.IsUnknown() {
-		nat.SourceNetwork = plan.SourceNetwork.ValueStringPointer()
-	}
-	if !plan.DestinationNetwork.IsNull() && !plan.DestinationNetwork.IsUnknown() {
-		nat.DestinationNetwork = plan.DestinationNetwork.ValueStringPointer()
-	}
-	if !plan.TranslatedNetwork.IsNull() && !plan.TranslatedNetwork.IsUnknown() {
-		nat.TranslatedNetwork = plan.TranslatedNetwork.ValueStringPointer()
-	}
-	if !plan.TranslatedPorts.IsNull() && !plan.TranslatedPorts.IsUnknown() {
-		nat.TranslatedPorts = plan.TranslatedPorts.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "source_network", plan.SourceNetwork, &nat.SourceNetwork)
+	clearable.NullableString(pending, "destination_network", plan.DestinationNetwork, &nat.DestinationNetwork)
+	clearable.NullableString(pending, "translated_network", plan.TranslatedNetwork, &nat.TranslatedNetwork)
+	clearable.NullableString(pending, "translated_ports", plan.TranslatedPorts, &nat.TranslatedPorts)
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		nat.Priority = plan.Priority.ValueInt64Pointer()
 	}
@@ -381,12 +404,30 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diags := getNatAsState(ctx, id, routerID, client, plan)
+	// The update always carries the configured action/firewall/service (the
+	// controller merges them over the current rule); write_only_revision
+	// records when a change to one of them was the reason for the update.
+	var priorState NetworkRouterNatModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
+	plan.WriteOnlyRevision = priorState.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+
+	state, found, diags := getNatAsState(ctx, id, routerID, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError("update network router nat resource", fmt.Sprintf("NAT %d not found after update", id))
+	}
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	// Record the digests once the read-back succeeded, so private state and
+	// state move together.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -416,18 +457,12 @@ func (r *Resource) Delete(
 
 	tflog.Debug(ctx, fmt.Sprintf("Deleting NAT %d on router %d", id, routerID))
 
-	_, hresp, err := client.NetworksAPI.
+	result, hresp, err := client.NetworksAPI.
 		DeleteNetworkRouterNat(ctx, id, routerID).Execute()
-	if err != nil {
-		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-			tflog.Debug(ctx, fmt.Sprintf("NAT %d already deleted (404)", id))
-
-			return
-		}
-
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete network router nat resource",
-			fmt.Sprintf("NAT %d DELETE failed: %s", id, errfmt.ErrMsg(err, hresp)),
+			fmt.Sprintf("NAT %d DELETE failed: %s", id, err.Error()),
 		)
 	}
 }
@@ -439,11 +474,18 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.SplitN(req.ID, ".", 2)
+	// "router_id.nat_id", optionally followed by "#action=<sha256 hex>&..."
+	// (see wodigest).
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	parts := strings.SplitN(rawID, ".", 2)
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError(
 			"import network router nat resource",
-			"provided import ID '"+req.ID+"' is invalid, expected format 'router_id.nat_id'",
+			"provided import ID '"+rawID+"' is invalid, expected format 'router_id.nat_id'",
 		)
 
 		return

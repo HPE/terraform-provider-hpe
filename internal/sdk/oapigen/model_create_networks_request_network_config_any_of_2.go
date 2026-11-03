@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -47,51 +47,6 @@ func (o CreateNetworksRequestNetworkConfigAnyOf2) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateNetworksRequestNetworkConfigAnyOf2 struct {
-	value *CreateNetworksRequestNetworkConfigAnyOf2
-	isSet bool
-}
-
-func (v NullableCreateNetworksRequestNetworkConfigAnyOf2) Get() *CreateNetworksRequestNetworkConfigAnyOf2 {
-	return v.value
-}
-
-func (v *NullableCreateNetworksRequestNetworkConfigAnyOf2) Set(val *CreateNetworksRequestNetworkConfigAnyOf2) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworksRequestNetworkConfigAnyOf2) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworksRequestNetworkConfigAnyOf2) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworksRequestNetworkConfigAnyOf2(val *CreateNetworksRequestNetworkConfigAnyOf2) *NullableCreateNetworksRequestNetworkConfigAnyOf2 {
-	return &NullableCreateNetworksRequestNetworkConfigAnyOf2{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworksRequestNetworkConfigAnyOf2) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworksRequestNetworkConfigAnyOf2) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworksRequestNetworkConfigAnyOf2) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateNetworksRequestNetworkConfigAnyOf2) UnmarshalJSON(data []byte) (err error) {

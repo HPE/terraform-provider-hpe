@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o ListVDIPools200ResponseAllOfVdiPoolsInnerOwner) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListVDIPools200ResponseAllOfVdiPoolsInnerOwner struct {
-	value *ListVDIPools200ResponseAllOfVdiPoolsInnerOwner
-	isSet bool
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerOwner) Get() *ListVDIPools200ResponseAllOfVdiPoolsInnerOwner {
-	return v.value
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerOwner) Set(val *ListVDIPools200ResponseAllOfVdiPoolsInnerOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListVDIPools200ResponseAllOfVdiPoolsInnerOwner(val *ListVDIPools200ResponseAllOfVdiPoolsInnerOwner) *NullableListVDIPools200ResponseAllOfVdiPoolsInnerOwner {
-	return &NullableListVDIPools200ResponseAllOfVdiPoolsInnerOwner{value: val, isSet: true}
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListVDIPools200ResponseAllOfVdiPoolsInnerOwner) UnmarshalJSON(data []byte) (err error) {

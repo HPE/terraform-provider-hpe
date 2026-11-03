@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -108,49 +108,4 @@ func (obj MessageOfTheDayPolicyTypeConfiguration3MotdFullPage) GetActualInstance
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableMessageOfTheDayPolicyTypeConfiguration3MotdFullPage struct {
-	value *MessageOfTheDayPolicyTypeConfiguration3MotdFullPage
-	isSet bool
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration3MotdFullPage) Get() *MessageOfTheDayPolicyTypeConfiguration3MotdFullPage {
-	return v.value
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration3MotdFullPage) Set(val *MessageOfTheDayPolicyTypeConfiguration3MotdFullPage) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration3MotdFullPage) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration3MotdFullPage) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMessageOfTheDayPolicyTypeConfiguration3MotdFullPage(val *MessageOfTheDayPolicyTypeConfiguration3MotdFullPage) *NullableMessageOfTheDayPolicyTypeConfiguration3MotdFullPage {
-	return &NullableMessageOfTheDayPolicyTypeConfiguration3MotdFullPage{value: val, isSet: true}
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration3MotdFullPage) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration3MotdFullPage) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration3MotdFullPage) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

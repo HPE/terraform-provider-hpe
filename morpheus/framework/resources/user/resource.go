@@ -13,11 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -27,6 +29,7 @@ import (
 var (
 	_ resource.Resource                = &Resource{}
 	_ resource.ResourceWithImportState = &Resource{}
+	_ resource.ResourceWithModifyPlan  = &Resource{}
 )
 
 func NewResource() resource.Resource {
@@ -55,43 +58,33 @@ func (r *Resource) Schema(
 	resp.Schema = UserResourceSchema(ctx)
 }
 
-func getUser(
-	ctx context.Context,
-	id int64,
-	client *sdk.APIClient,
-) (*sdk.GetUser200Response, error) {
-	u, hresp, err := client.UsersAPI.GetUser(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("user %d GET failed: %s", id, errfmt.ErrMsg(err, hresp))
-	}
-
-	return u, nil
-}
-
 // populate user resource model with current API values
 func getUserAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
 	priorRoleIds types.Set,
-) (UserModel, diag.Diagnostics) {
+) (UserModel, bool, diag.Diagnostics) {
 	var state UserModel
 	var diags diag.Diagnostics
 
 	u, hresp, err := client.UsersAPI.GetUser(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate user resource",
 			fmt.Sprintf("user %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	if u.User == nil {
 		diags.AddError("API returned nil", "User is nil in the response")
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// role_ids: the API injects auto-assigned roles (e.g. a default role granted
@@ -116,7 +109,7 @@ func getUserAsState(
 		roleIDSet, d = types.SetValue(types.Int64Type, roleIDValues)
 		diags.Append(d...)
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 	}
 
@@ -133,7 +126,7 @@ func getUserAsState(
 	state.ReceiveNotifications = convert.BoolToType(u.User.ReceiveNotifications)
 	state.RoleIds = roleIDSet
 
-	return state, diags
+	return state, true, diags
 }
 
 func (r *Resource) Create(
@@ -160,7 +153,7 @@ func (r *Resource) Create(
 	var roles []sdk.AddUserRequestUserRolesInner
 	for _, roleID := range roleIDs {
 		rolevalue := sdk.AddUserRequestUserRolesInner{
-			Id: &roleID,
+			AddUserRequestUserRolesInnerOneOf: &sdk.AddUserRequestUserRolesInnerOneOf{Id: &roleID},
 		}
 		roles = append(roles, rolevalue)
 	}
@@ -179,6 +172,12 @@ func (r *Resource) Create(
 	addUser.Email = plan.Email.ValueString()
 	addUser.Roles = roles
 	addUser.Password = config.PasswordWo.ValueString()
+
+	// require_password_change: create the user with the password marked
+	// expired, so the first UI sign-in has to change it (MORPH-18374).
+	if plan.RequirePasswordChange.ValueBool() {
+		addUser.PasswordExpired = sdk.PtrBool(true)
+	}
 
 	// optional
 	if !plan.FirstName.IsUnknown() {
@@ -200,7 +199,7 @@ func (r *Resource) Create(
 		addUser.WindowsPassword = plan.WindowsPasswordWo.ValueStringPointer()
 	}
 	if !plan.LinuxKeyPairId.IsUnknown() {
-		addUser.LinuxKeyPairId = plan.LinuxKeyPairId.ValueInt64Pointer()
+		addUser.LinuxKeyPairId.Set(&sdk.AddUserRequestUserLinuxKeyPairId{Int64: plan.LinuxKeyPairId.ValueInt64Pointer()})
 	}
 	if !plan.ReceiveNotifications.IsUnknown() {
 		addUser.ReceiveNotifications = plan.ReceiveNotifications.ValueBoolPointer()
@@ -261,7 +260,10 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, pdiags := getUserAsState(ctx, id, client, plan.RoleIds)
+	state, found, pdiags := getUserAsState(ctx, id, client, plan.RoleIds)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError("create user resource", fmt.Sprintf("user %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -277,6 +279,9 @@ func (r *Resource) Create(
 	state.PasswordWoVersion = plan.PasswordWoVersion
 	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
 	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
+	state.RequirePasswordChange = plan.RequirePasswordChange // not in the API
+	state.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -324,7 +329,7 @@ func (r *Resource) Update(
 	var roles []sdk.UpdateUserRequestUserRolesInner
 	for _, roleID := range roleIDs {
 		rolevalue := sdk.UpdateUserRequestUserRolesInner{
-			Id: roleID,
+			UpdateUserRequestUserRolesInnerOneOf: &sdk.UpdateUserRequestUserRolesInnerOneOf{Id: roleID},
 		}
 		roles = append(roles, rolevalue)
 	}
@@ -343,17 +348,27 @@ func (r *Resource) Update(
 	updateUser.Email = plan.Email.ValueStringPointer()
 	updateUser.Roles = roles
 
-	if !plan.PasswordWoVersion.Equal(state.PasswordWoVersion) {
-		if config.PasswordWo.IsUnknown() {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %s: 'password_wo_version' changed, "+
-					"but 'password_wo' is not set", username),
-			)
+	// ModifyPlan marks write_only_revision unknown when a write-only value
+	// changed (or a deprecated *_wo_version marker did); that is the signal
+	// to re-send the configured write-only values. See write_only.go.
+	resend := plan.WriteOnlyRevision.IsUnknown()
 
-			return
-		}
+	passwordSent := false
+
+	if resend && !config.PasswordWo.IsNull() && !config.PasswordWo.IsUnknown() {
 		updateUser.Password = config.PasswordWo.ValueStringPointer()
+		passwordSent = true
+	}
+
+	// require_password_change marks the password expired in two cases: a new
+	// password set by the administrator while the flag is on is a temporary
+	// one again, and turning the flag on for an existing user expires their
+	// current password. Nothing is sent otherwise -- not for false, not for
+	// true staying true -- so the user's own change, which clears the flag,
+	// stays cleared (MORPH-18374).
+	turnedOn := plan.RequirePasswordChange.ValueBool() && !state.RequirePasswordChange.ValueBool()
+	if plan.RequirePasswordChange.ValueBool() && (passwordSent || turnedOn) {
+		updateUser.PasswordExpired = sdk.PtrBool(true)
 	}
 
 	// nullable
@@ -372,55 +387,26 @@ func (r *Resource) Update(
 	if plan.LinuxKeyPairId.IsUnknown() || plan.LinuxKeyPairId.IsNull() {
 		updateUser.LinuxKeyPairId.Set(nil)
 	} else {
-		updateUser.LinuxKeyPairId.Set(plan.LinuxKeyPairId.ValueInt64Pointer())
+		updateUser.LinuxKeyPairId.Set(&sdk.UpdateUserRequestUserLinuxKeyPairId{Int64: plan.LinuxKeyPairId.ValueInt64Pointer()})
 	}
 
-	if plan.LinuxUsername.IsNull() {
-		updateUser.LinuxUsername.Set(nil)
-	} else {
-		updateUser.LinuxUsername.Set(plan.LinuxUsername.ValueStringPointer())
-	}
-
-	if plan.WindowsUsername.IsNull() {
-		updateUser.WindowsUsername.Set(nil)
-	} else {
-		updateUser.WindowsUsername.Set(plan.WindowsUsername.ValueStringPointer())
-	}
+	// A username removed from the configuration is planned as null (see
+	// NullableStringUpdateModifier). It is sent as "" rather than as an
+	// explicit null: the API validates these two fields on key presence with a
+	// validator that is not null-safe and answers a null with HTTP 500
+	// (MORPH-18060; Windows on 9.0.1 and 9.1.0, Linux on 9.0.1), whereas ""
+	// clears the field and reads back as null, so state converges. MORPH-18061.
+	updateUser.LinuxUsername.Set(sdk.PtrString(plan.LinuxUsername.ValueString()))
+	updateUser.WindowsUsername.Set(sdk.PtrString(plan.WindowsUsername.ValueString()))
 
 	updateUser.ReceiveNotifications = plan.ReceiveNotifications.ValueBoolPointer()
 
-	if !plan.LinuxPasswordWoVersion.Equal(state.LinuxPasswordWoVersion) {
-		if config.LinuxPasswordWo.IsUnknown() {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %s: 'linux_password_wo_version' changed, "+
-					"but 'linux_password_wo' is not set", username),
-			)
-
-			return
-		}
-		if plan.LinuxPasswordWo.IsNull() {
-			updateUser.LinuxPassword.Set(nil)
-		} else {
-			updateUser.LinuxPassword.Set(plan.LinuxPasswordWo.ValueStringPointer())
-		}
+	if resend && !config.LinuxPasswordWo.IsNull() && !config.LinuxPasswordWo.IsUnknown() {
+		updateUser.LinuxPassword.Set(config.LinuxPasswordWo.ValueStringPointer())
 	}
 
-	if !plan.WindowsPasswordWoVersion.Equal(state.WindowsPasswordWoVersion) {
-		if config.WindowsPasswordWo.IsUnknown() {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %s: 'windows_password_wo_version' changed, "+
-					"but 'windows_password_wo' is not set", username),
-			)
-
-			return
-		}
-		if plan.WindowsPasswordWo.IsNull() {
-			updateUser.WindowsPassword.Set(nil)
-		} else {
-			updateUser.WindowsPassword.Set(plan.WindowsPasswordWo.ValueStringPointer())
-		}
+	if resend && !config.WindowsPasswordWo.IsNull() && !config.WindowsPasswordWo.IsUnknown() {
+		updateUser.WindowsPassword.Set(config.WindowsPasswordWo.ValueStringPointer())
 	}
 
 	client, err := r.NewClient(ctx)
@@ -435,89 +421,23 @@ func (r *Resource) Update(
 
 	id := plan.Id.ValueInt64()
 
-	originalUserState, err := getUser(ctx, id, client)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"update user resource",
-			fmt.Sprintf("user %d: failed to read from api", id),
-		)
-
-		return
-	}
-
-	if originalUserState == nil {
-		resp.Diagnostics.AddError(
-			"update user resource",
-			fmt.Sprintf("user %d: GET returned nil response", id),
-		)
-
-		return
-	}
-
-	if originalUserState.User == nil || originalUserState.User.LastUpdated == nil {
-		resp.Diagnostics.AddError(
-			"update user resource",
-			fmt.Sprintf("user %d: original user state or LastUpdated is nil", id),
-		)
-
-		return
-	}
-
 	apiUpdateUserReq := client.UsersAPI.UpdateUser(ctx, id)
 
 	updateUserReq := &sdk.UpdateUserRequest{User: *updateUser}
 	user, hresp, err := apiUpdateUserReq.UpdateUserRequest(*updateUserReq).Execute()
 
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		if hresp.StatusCode != http.StatusInternalServerError {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				"user "+username+" PUT failed: "+errfmt.ErrMsg(err, hresp),
-			)
+		// Until MORPH-18061 a 500 here was assumed to be a transient API fault
+		// and the update judged by re-reading the user's lastUpdated; the 500
+		// was in fact the API rejecting the request (MORPH-18060), so the
+		// heuristic only hid the real error as "resource was not updated".
+		// A failed PUT is now reported as what it is.
+		resp.Diagnostics.AddError(
+			"update user resource",
+			"user "+username+" PUT failed: "+errfmt.ErrMsg(err, hresp),
+		)
 
-			return
-		}
-
-		// Work around an API bug
-		newUserState, err := getUser(ctx, id, client)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %d: failed to read from api", id),
-			)
-
-			return
-		}
-
-		if newUserState == nil {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %d: GET returned nil response", id),
-			)
-
-			return
-		}
-
-		if newUserState.User == nil || newUserState.User.LastUpdated == nil {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %d: new user state or LastUpdated is nil", id),
-			)
-
-			return
-		}
-
-		if !newUserState.User.LastUpdated.After(*originalUserState.User.LastUpdated) {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %d: resource was not updated", id),
-			)
-		}
-
-		innerUser := &sdk.AddUser200ResponseAllOfUser{}
-		innerUser.Id = sdk.PtrInt64(id)
-		user = &sdk.UpdateUser200Response{}
-		user.User = innerUser
+		return
 	}
 
 	if user.User == nil || user.User.Id == nil {
@@ -539,7 +459,12 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, pdiags := getUserAsState(ctx, newid, client, plan.RoleIds)
+	prior := state
+
+	state, found, pdiags := getUserAsState(ctx, newid, client, plan.RoleIds)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError("update user resource", fmt.Sprintf("user %d not found after update", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -554,6 +479,16 @@ func (r *Resource) Update(
 	state.PasswordWoVersion = plan.PasswordWoVersion
 	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
 	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
+	state.RequirePasswordChange = plan.RequirePasswordChange // not in the API
+
+	state.WriteOnlyRevision = prior.WriteOnlyRevision
+	if resend {
+		state.WriteOnlyRevision = wodigest.NewRevision()
+	}
+
+	// Always record the digests of the configured values, sent or not, so an
+	// import sentinel or a missing digest never survives an update.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -581,7 +516,7 @@ func (r *Resource) Read(
 	}
 
 	id := plan.Id.ValueInt64()
-	state, pdiags := getUserAsState(ctx, id, client, plan.RoleIds)
+	state, found, pdiags := getUserAsState(ctx, id, client, plan.RoleIds)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -592,10 +527,21 @@ func (r *Resource) Read(
 		return
 	}
 
+	// The user was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("user %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
+
+		return
+	}
+
 	// special cases - can't read from API
 	state.PasswordWoVersion = plan.PasswordWoVersion
 	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
 	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
+	state.RequirePasswordChange = plan.RequirePasswordChange // not in the API
+	state.WriteOnlyRevision = plan.WriteOnlyRevision         // not in the API; carried from prior state
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -624,11 +570,11 @@ func (r *Resource) Delete(
 
 	id := data.Id.ValueInt64()
 	client, _ := r.NewClient(ctx)
-	_, hresp, err := client.UsersAPI.DeleteUser(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.UsersAPI.DeleteUser(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete user resource",
-			fmt.Sprintf("user %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("user %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return
@@ -640,11 +586,18 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.Atoi(req.ID)
+	// The import ID is the user id, optionally followed by the sha256 digests
+	// of the configured write-only values: "<id>#password_wo=<hex>[&...]".
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.Atoi(rawID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"import user resource",
-			"provided import ID '"+req.ID+"' is invalid (non-number)",
+			"provided import ID '"+rawID+"' is invalid (non-number)",
 		)
 
 		return

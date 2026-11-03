@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -117,7 +117,7 @@ func (a *StorageAPIService) AddStorageBucketsExecute(r ApiAddStorageBucketsReque
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -128,7 +128,7 @@ func (a *StorageAPIService) AddStorageBucketsExecute(r ApiAddStorageBucketsReque
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -245,7 +245,7 @@ func (a *StorageAPIService) AddStorageServersExecute(r ApiAddStorageServersReque
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -256,7 +256,7 @@ func (a *StorageAPIService) AddStorageServersExecute(r ApiAddStorageServersReque
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -375,7 +375,7 @@ func (a *StorageAPIService) AddStorageVolumesExecute(r ApiAddStorageVolumesReque
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -386,284 +386,7 @@ func (a *StorageAPIService) AddStorageVolumesExecute(r ApiAddStorageVolumesReque
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiAttachServerVolumeRequest struct {
-	ctx                       context.Context
-	ApiService                *StorageAPIService
-	id                        UpdateHostIdParameter
-	volumeId                  AttachServerVolumeVolumeIdParameter
-	attachServerVolumeRequest *AttachServerVolumeRequest
-}
-
-func (r ApiAttachServerVolumeRequest) AttachServerVolumeRequest(attachServerVolumeRequest AttachServerVolumeRequest) ApiAttachServerVolumeRequest {
-	r.attachServerVolumeRequest = &attachServerVolumeRequest
-	return r
-}
-
-func (r ApiAttachServerVolumeRequest) Execute() (*AttachServerVolume200Response, *http.Response, error) {
-	return r.ApiService.AttachServerVolumeExecute(r)
-}
-
-/*
-AttachServerVolume Attach existing storage volume
-
-This will attach an existing storage volume, optionally specifying the mount point (controller and unit number). Available for HVM only.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id The `id` or `uuid` to identify the server record.
-	@param volumeId The `id` or `uuid` to identify the storage volume record.
-	@return ApiAttachServerVolumeRequest
-*/
-func (a *StorageAPIService) AttachServerVolume(ctx context.Context, id UpdateHostIdParameter, volumeId AttachServerVolumeVolumeIdParameter) ApiAttachServerVolumeRequest {
-	return ApiAttachServerVolumeRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-		volumeId:   volumeId,
-	}
-}
-
-// Execute executes the request
-//
-//	@return AttachServerVolume200Response
-func (a *StorageAPIService) AttachServerVolumeExecute(r ApiAttachServerVolumeRequest) (*AttachServerVolume200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *AttachServerVolume200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "StorageAPIService.AttachServerVolume")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/servers/{id}/volumes/{volumeId}/attach"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"volumeId"+"}", url.PathEscape(parameterValueToString(r.volumeId, "volumeId")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.attachServerVolumeRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiDetachServerVolumeRequest struct {
-	ctx        context.Context
-	ApiService *StorageAPIService
-	id         UpdateHostIdParameter
-	volumeId   DetachServerVolumeVolumeIdParameter
-	force      *bool
-}
-
-// Force the detachment of the volume
-func (r ApiDetachServerVolumeRequest) Force(force bool) ApiDetachServerVolumeRequest {
-	r.force = &force
-	return r
-}
-
-func (r ApiDetachServerVolumeRequest) Execute() (*DetachServerVolume200Response, *http.Response, error) {
-	return r.ApiService.DetachServerVolumeExecute(r)
-}
-
-/*
-DetachServerVolume Detach storage volume
-
-This will detach a storage volume from the server. Available for HVM only.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id The `id` or `uuid` to identify the server record.
-	@param volumeId The `id` or `uuid` to identify the storage volume record.
-	@return ApiDetachServerVolumeRequest
-*/
-func (a *StorageAPIService) DetachServerVolume(ctx context.Context, id UpdateHostIdParameter, volumeId DetachServerVolumeVolumeIdParameter) ApiDetachServerVolumeRequest {
-	return ApiDetachServerVolumeRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-		volumeId:   volumeId,
-	}
-}
-
-// Execute executes the request
-//
-//	@return DetachServerVolume200Response
-func (a *StorageAPIService) DetachServerVolumeExecute(r ApiDetachServerVolumeRequest) (*DetachServerVolume200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *DetachServerVolume200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "StorageAPIService.DetachServerVolume")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/servers/{id}/volumes/{volumeId}/detach"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"volumeId"+"}", url.PathEscape(parameterValueToString(r.volumeId, "volumeId")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	if r.force != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "force", r.force, "form", "")
-	} else {
-		var defaultValue bool = false
-		r.force = &defaultValue
-	}
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -776,7 +499,7 @@ func (a *StorageAPIService) GetStorageBucketsExecute(r ApiGetStorageBucketsReque
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -787,131 +510,7 @@ func (a *StorageAPIService) GetStorageBucketsExecute(r ApiGetStorageBucketsReque
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiGetStorageServerTypesRequest struct {
-	ctx        context.Context
-	ApiService *StorageAPIService
-	id         int64
-}
-
-func (r ApiGetStorageServerTypesRequest) Execute() (*GetStorageServerTypes200Response, *http.Response, error) {
-	return r.ApiService.GetStorageServerTypesExecute(r)
-}
-
-/*
-GetStorageServerTypes Retrieves a Specific Storage Server Type
-
-Retrieves a specific storage server type.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiGetStorageServerTypesRequest
-*/
-func (a *StorageAPIService) GetStorageServerTypes(ctx context.Context, id int64) ApiGetStorageServerTypesRequest {
-	return ApiGetStorageServerTypesRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return GetStorageServerTypes200Response
-func (a *StorageAPIService) GetStorageServerTypesExecute(r ApiGetStorageServerTypesRequest) (*GetStorageServerTypes200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *GetStorageServerTypes200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "StorageAPIService.GetStorageServerTypes")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/storage-server-types/{id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1024,7 +623,7 @@ func (a *StorageAPIService) GetStorageServersExecute(r ApiGetStorageServersReque
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1035,7 +634,7 @@ func (a *StorageAPIService) GetStorageServersExecute(r ApiGetStorageServersReque
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1148,7 +747,7 @@ func (a *StorageAPIService) GetStorageVolumeTypesExecute(r ApiGetStorageVolumeTy
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1159,7 +758,7 @@ func (a *StorageAPIService) GetStorageVolumeTypesExecute(r ApiGetStorageVolumeTy
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1272,7 +871,7 @@ func (a *StorageAPIService) GetStorageVolumesExecute(r ApiGetStorageVolumesReque
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1283,7 +882,7 @@ func (a *StorageAPIService) GetStorageVolumesExecute(r ApiGetStorageVolumesReque
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1464,7 +1063,7 @@ func (a *StorageAPIService) ListStorageBucketsExecute(r ApiListStorageBucketsReq
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1475,209 +1074,7 @@ func (a *StorageAPIService) ListStorageBucketsExecute(r ApiListStorageBucketsReq
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiListStorageServerTypesRequest struct {
-	ctx        context.Context
-	ApiService *StorageAPIService
-	max        *int64
-	offset     *int64
-	sort       *string
-	direction  *string
-	name       *string
-	code       *string
-	phrase     *string
-}
-
-// Maximum number of records to return
-func (r ApiListStorageServerTypesRequest) Max(max int64) ApiListStorageServerTypesRequest {
-	r.max = &max
-	return r
-}
-
-// Offset records, the number of records to skip, for paginating requests
-func (r ApiListStorageServerTypesRequest) Offset(offset int64) ApiListStorageServerTypesRequest {
-	r.offset = &offset
-	return r
-}
-
-// Sort order, the name of the property to sort by
-func (r ApiListStorageServerTypesRequest) Sort(sort string) ApiListStorageServerTypesRequest {
-	r.sort = &sort
-	return r
-}
-
-// Sort direction, use &#39;desc&#39; to reverse sort
-func (r ApiListStorageServerTypesRequest) Direction(direction string) ApiListStorageServerTypesRequest {
-	r.direction = &direction
-	return r
-}
-
-// Filter by name
-func (r ApiListStorageServerTypesRequest) Name(name string) ApiListStorageServerTypesRequest {
-	r.name = &name
-	return r
-}
-
-// If specified will return an exact match on code
-func (r ApiListStorageServerTypesRequest) Code(code string) ApiListStorageServerTypesRequest {
-	r.code = &code
-	return r
-}
-
-// Search phrase for partial matches on name or description
-func (r ApiListStorageServerTypesRequest) Phrase(phrase string) ApiListStorageServerTypesRequest {
-	r.phrase = &phrase
-	return r
-}
-
-func (r ApiListStorageServerTypesRequest) Execute() (*ListStorageServerTypes200Response, *http.Response, error) {
-	return r.ApiService.ListStorageServerTypesExecute(r)
-}
-
-/*
-ListStorageServerTypes Retrieves all Storage Server Types
-
-Fetch a paginated list of available storage server types.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListStorageServerTypesRequest
-*/
-func (a *StorageAPIService) ListStorageServerTypes(ctx context.Context) ApiListStorageServerTypesRequest {
-	return ApiListStorageServerTypesRequest{
-		ApiService: a,
-		ctx:        ctx,
-	}
-}
-
-// Execute executes the request
-//
-//	@return ListStorageServerTypes200Response
-func (a *StorageAPIService) ListStorageServerTypesExecute(r ApiListStorageServerTypesRequest) (*ListStorageServerTypes200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *ListStorageServerTypes200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "StorageAPIService.ListStorageServerTypes")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/storage-server-types"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	if r.max != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "max", r.max, "form", "")
-	} else {
-		var defaultValue int64 = 25
-		r.max = &defaultValue
-	}
-	if r.offset != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "offset", r.offset, "form", "")
-	} else {
-		var defaultValue int64 = 0
-		r.offset = &defaultValue
-	}
-	if r.sort != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", r.sort, "form", "")
-	} else {
-		var defaultValue string = "name"
-		r.sort = &defaultValue
-	}
-	if r.direction != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "direction", r.direction, "form", "")
-	} else {
-		var defaultValue string = "asc"
-		r.direction = &defaultValue
-	}
-	if r.name != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
-	}
-	if r.code != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "code", r.code, "form", "")
-	}
-	if r.phrase != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
-	}
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1858,7 +1255,7 @@ func (a *StorageAPIService) ListStorageServersExecute(r ApiListStorageServersReq
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1869,209 +1266,7 @@ func (a *StorageAPIService) ListStorageServersExecute(r ApiListStorageServersReq
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiListStorageVolumeTypesRequest struct {
-	ctx        context.Context
-	ApiService *StorageAPIService
-	max        *int64
-	offset     *int64
-	sort       *string
-	direction  *string
-	name       *string
-	code       *string
-	phrase     *string
-}
-
-// Maximum number of records to return
-func (r ApiListStorageVolumeTypesRequest) Max(max int64) ApiListStorageVolumeTypesRequest {
-	r.max = &max
-	return r
-}
-
-// Offset records, the number of records to skip, for paginating requests
-func (r ApiListStorageVolumeTypesRequest) Offset(offset int64) ApiListStorageVolumeTypesRequest {
-	r.offset = &offset
-	return r
-}
-
-// Sort order, the name of the property to sort by
-func (r ApiListStorageVolumeTypesRequest) Sort(sort string) ApiListStorageVolumeTypesRequest {
-	r.sort = &sort
-	return r
-}
-
-// Sort direction, use &#39;desc&#39; to reverse sort
-func (r ApiListStorageVolumeTypesRequest) Direction(direction string) ApiListStorageVolumeTypesRequest {
-	r.direction = &direction
-	return r
-}
-
-// Filter by name
-func (r ApiListStorageVolumeTypesRequest) Name(name string) ApiListStorageVolumeTypesRequest {
-	r.name = &name
-	return r
-}
-
-// If specified will return an exact match on code
-func (r ApiListStorageVolumeTypesRequest) Code(code string) ApiListStorageVolumeTypesRequest {
-	r.code = &code
-	return r
-}
-
-// Search phrase for partial matches on name or description
-func (r ApiListStorageVolumeTypesRequest) Phrase(phrase string) ApiListStorageVolumeTypesRequest {
-	r.phrase = &phrase
-	return r
-}
-
-func (r ApiListStorageVolumeTypesRequest) Execute() (*ListStorageVolumeTypes200Response, *http.Response, error) {
-	return r.ApiService.ListStorageVolumeTypesExecute(r)
-}
-
-/*
-ListStorageVolumeTypes Retrieves all Storage Volume Types
-
-Fetch a paginated list of available storage volume types.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListStorageVolumeTypesRequest
-*/
-func (a *StorageAPIService) ListStorageVolumeTypes(ctx context.Context) ApiListStorageVolumeTypesRequest {
-	return ApiListStorageVolumeTypesRequest{
-		ApiService: a,
-		ctx:        ctx,
-	}
-}
-
-// Execute executes the request
-//
-//	@return ListStorageVolumeTypes200Response
-func (a *StorageAPIService) ListStorageVolumeTypesExecute(r ApiListStorageVolumeTypesRequest) (*ListStorageVolumeTypes200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *ListStorageVolumeTypes200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "StorageAPIService.ListStorageVolumeTypes")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/storage-volume-types"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	if r.max != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "max", r.max, "form", "")
-	} else {
-		var defaultValue int64 = 25
-		r.max = &defaultValue
-	}
-	if r.offset != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "offset", r.offset, "form", "")
-	} else {
-		var defaultValue int64 = 0
-		r.offset = &defaultValue
-	}
-	if r.sort != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", r.sort, "form", "")
-	} else {
-		var defaultValue string = "name"
-		r.sort = &defaultValue
-	}
-	if r.direction != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "direction", r.direction, "form", "")
-	} else {
-		var defaultValue string = "asc"
-		r.direction = &defaultValue
-	}
-	if r.name != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
-	}
-	if r.code != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "code", r.code, "form", "")
-	}
-	if r.phrase != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
-	}
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2096,15 +1291,17 @@ func (a *StorageAPIService) ListStorageVolumeTypesExecute(r ApiListStorageVolume
 }
 
 type ApiListStorageVolumesRequest struct {
-	ctx        context.Context
-	ApiService *StorageAPIService
-	max        *int64
-	offset     *int64
-	sort       *string
-	direction  *string
-	phrase     *string
-	name       *string
-	uuid       *string
+	ctx            context.Context
+	ApiService     *StorageAPIService
+	max            *int64
+	offset         *int64
+	sort           *string
+	direction      *string
+	phrase         *string
+	name           *string
+	uuid           *string
+	includeTenants *bool
+	tenantId       *int64
 }
 
 // Maximum number of records to return
@@ -2146,6 +1343,18 @@ func (r ApiListStorageVolumesRequest) Name(name string) ApiListStorageVolumesReq
 // Filter by UUID
 func (r ApiListStorageVolumesRequest) Uuid(uuid string) ApiListStorageVolumesRequest {
 	r.uuid = &uuid
+	return r
+}
+
+// Optional ability to include all subtenant resources when calling from a master tenant user
+func (r ApiListStorageVolumesRequest) IncludeTenants(includeTenants bool) ApiListStorageVolumesRequest {
+	r.includeTenants = &includeTenants
+	return r
+}
+
+// Filter by Tenant ID. Only available to the master account.
+func (r ApiListStorageVolumesRequest) TenantId(tenantId int64) ApiListStorageVolumesRequest {
+	r.tenantId = &tenantId
 	return r
 }
 
@@ -2223,6 +1432,15 @@ func (a *StorageAPIService) ListStorageVolumesExecute(r ApiListStorageVolumesReq
 	if r.uuid != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "uuid", r.uuid, "form", "")
 	}
+	if r.includeTenants != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "includeTenants", r.includeTenants, "form", "")
+	} else {
+		var defaultValue bool = false
+		r.includeTenants = &defaultValue
+	}
+	if r.tenantId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "tenantId", r.tenantId, "form", "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -2262,7 +1480,7 @@ func (a *StorageAPIService) ListStorageVolumesExecute(r ApiListStorageVolumesReq
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2273,7 +1491,7 @@ func (a *StorageAPIService) ListStorageVolumesExecute(r ApiListStorageVolumesReq
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2399,7 +1617,7 @@ func (a *StorageAPIService) RemoveStorageBucketsExecute(r ApiRemoveStorageBucket
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2410,7 +1628,7 @@ func (a *StorageAPIService) RemoveStorageBucketsExecute(r ApiRemoveStorageBucket
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2523,7 +1741,7 @@ func (a *StorageAPIService) RemoveStorageServersExecute(r ApiRemoveStorageServer
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2534,7 +1752,7 @@ func (a *StorageAPIService) RemoveStorageServersExecute(r ApiRemoveStorageServer
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2561,7 +1779,7 @@ func (a *StorageAPIService) RemoveStorageServersExecute(r ApiRemoveStorageServer
 type ApiRemoveStorageVolumesRequest struct {
 	ctx        context.Context
 	ApiService *StorageAPIService
-	id         UpdateStorageVolumesIdParameter
+	id         TransferStorageVolumeOwnershipIdParameter
 	force      *string
 }
 
@@ -2584,7 +1802,7 @@ Deletes a specified storage volume.
 	@param id The `id` or `uuid` to identify the storage volume record.
 	@return ApiRemoveStorageVolumesRequest
 */
-func (a *StorageAPIService) RemoveStorageVolumes(ctx context.Context, id UpdateStorageVolumesIdParameter) ApiRemoveStorageVolumesRequest {
+func (a *StorageAPIService) RemoveStorageVolumes(ctx context.Context, id TransferStorageVolumeOwnershipIdParameter) ApiRemoveStorageVolumesRequest {
 	return ApiRemoveStorageVolumesRequest{
 		ApiService: a,
 		ctx:        ctx,
@@ -2660,7 +1878,7 @@ func (a *StorageAPIService) RemoveStorageVolumesExecute(r ApiRemoveStorageVolume
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2671,7 +1889,139 @@ func (a *StorageAPIService) RemoveStorageVolumesExecute(r ApiRemoveStorageVolume
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiResizeStorageVolumeRequest struct {
+	ctx                        context.Context
+	ApiService                 *StorageAPIService
+	id                         TransferStorageVolumeOwnershipIdParameter
+	resizeStorageVolumeRequest *ResizeStorageVolumeRequest
+}
+
+func (r ApiResizeStorageVolumeRequest) ResizeStorageVolumeRequest(resizeStorageVolumeRequest ResizeStorageVolumeRequest) ApiResizeStorageVolumeRequest {
+	r.resizeStorageVolumeRequest = &resizeStorageVolumeRequest
+	return r
+}
+
+func (r ApiResizeStorageVolumeRequest) Execute() (*ResizeStorageVolume200Response, *http.Response, error) {
+	return r.ApiService.ResizeStorageVolumeExecute(r)
+}
+
+/*
+ResizeStorageVolume Resizes a Specific Storage Volume
+
+Resizes a specific storage volume.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id The `id` or `uuid` to identify the storage volume record.
+	@return ApiResizeStorageVolumeRequest
+*/
+func (a *StorageAPIService) ResizeStorageVolume(ctx context.Context, id TransferStorageVolumeOwnershipIdParameter) ApiResizeStorageVolumeRequest {
+	return ApiResizeStorageVolumeRequest{
+		ApiService: a,
+		ctx:        ctx,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ResizeStorageVolume200Response
+func (a *StorageAPIService) ResizeStorageVolumeExecute(r ApiResizeStorageVolumeRequest) (*ResizeStorageVolume200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ResizeStorageVolume200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "StorageAPIService.ResizeStorageVolume")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/storage-volumes/{id}/resize"
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.resizeStorageVolumeRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2792,7 +2142,7 @@ func (a *StorageAPIService) UpdateStorageBucketsExecute(r ApiUpdateStorageBucket
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2803,7 +2153,7 @@ func (a *StorageAPIService) UpdateStorageBucketsExecute(r ApiUpdateStorageBucket
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2924,7 +2274,7 @@ func (a *StorageAPIService) UpdateStorageServersExecute(r ApiUpdateStorageServer
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2935,139 +2285,7 @@ func (a *StorageAPIService) UpdateStorageServersExecute(r ApiUpdateStorageServer
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiUpdateStorageVolumesRequest struct {
-	ctx                         context.Context
-	ApiService                  *StorageAPIService
-	id                          UpdateStorageVolumesIdParameter
-	updateStorageVolumesRequest *UpdateStorageVolumesRequest
-}
-
-func (r ApiUpdateStorageVolumesRequest) UpdateStorageVolumesRequest(updateStorageVolumesRequest UpdateStorageVolumesRequest) ApiUpdateStorageVolumesRequest {
-	r.updateStorageVolumesRequest = &updateStorageVolumesRequest
-	return r
-}
-
-func (r ApiUpdateStorageVolumesRequest) Execute() (*UpdateStorageVolumes200Response, *http.Response, error) {
-	return r.ApiService.UpdateStorageVolumesExecute(r)
-}
-
-/*
-UpdateStorageVolumes Updates a Storage Volume
-
-Updates a storage volume.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id The `id` or `uuid` to identify the storage volume record.
-	@return ApiUpdateStorageVolumesRequest
-*/
-func (a *StorageAPIService) UpdateStorageVolumes(ctx context.Context, id UpdateStorageVolumesIdParameter) ApiUpdateStorageVolumesRequest {
-	return ApiUpdateStorageVolumesRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return UpdateStorageVolumes200Response
-func (a *StorageAPIService) UpdateStorageVolumesExecute(r ApiUpdateStorageVolumesRequest) (*UpdateStorageVolumes200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *UpdateStorageVolumes200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "StorageAPIService.UpdateStorageVolumes")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/storage-volumes/{id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.updateStorageVolumesRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

@@ -89,6 +89,8 @@ value matches **any** of the supplied `values`; multiple `filter` blocks are
 ### Optional
 
 - `filter` (Block Set) Filter block. Repeat to apply multiple filters (all ANDed together). Filter values are case-sensitive and support Go regular expressions (https://regex101.com/). (see [below for nested schema](#nestedblock--filter))
+- `include_tenants` (Boolean) Optional ability to include all subtenant resources when calling from a master tenant user
+- `tenant_id` (Number) Filter by Tenant ID. Only available to the master account.
 
 ### Read-Only
 

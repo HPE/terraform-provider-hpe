@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj AddJobs200ResponseAllOfJobScheduleMode) GetActualInstanceValue() inter
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableAddJobs200ResponseAllOfJobScheduleMode struct {
-	value *AddJobs200ResponseAllOfJobScheduleMode
-	isSet bool
-}
-
-func (v NullableAddJobs200ResponseAllOfJobScheduleMode) Get() *AddJobs200ResponseAllOfJobScheduleMode {
-	return v.value
-}
-
-func (v *NullableAddJobs200ResponseAllOfJobScheduleMode) Set(val *AddJobs200ResponseAllOfJobScheduleMode) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddJobs200ResponseAllOfJobScheduleMode) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddJobs200ResponseAllOfJobScheduleMode) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddJobs200ResponseAllOfJobScheduleMode(val *AddJobs200ResponseAllOfJobScheduleMode) *NullableAddJobs200ResponseAllOfJobScheduleMode {
-	return &NullableAddJobs200ResponseAllOfJobScheduleMode{value: val, isSet: true}
-}
-
-func (v NullableAddJobs200ResponseAllOfJobScheduleMode) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddJobs200ResponseAllOfJobScheduleMode) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddJobs200ResponseAllOfJobScheduleMode) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

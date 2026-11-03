@@ -172,7 +172,7 @@ func (d *DataSource) Read(
 	data.Subdomain = convert.StrToType(a.Subdomain)
 	data.Currency = convert.StrToType(a.Currency)
 	data.AccountNumber = convert.StrToType(a.AccountNumber.Get())
-	data.AccountName = convert.StrToType(a.AccountName)
+	data.AccountName = convert.StrToType(a.AccountName.Get())
 	data.CustomerNumber = convert.StrToType(a.CustomerNumber.Get())
 	data.ExternalId = convert.StrToType(a.ExternalId.Get())
 	data.Master = convert.BoolToType(a.Master)

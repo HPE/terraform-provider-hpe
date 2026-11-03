@@ -12,6 +12,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
@@ -71,7 +72,7 @@ func (r *Resource) Create(
 	}
 	if !plan.BaseRoleId.IsNull() && !plan.BaseRoleId.IsUnknown() {
 		account.Role = &sdk.AddTenantRequestAccountRole{
-			Id: plan.BaseRoleId.ValueInt64Pointer(),
+			Id: &sdk.AddTenantRequestAccountRoleId{Int64: plan.BaseRoleId.ValueInt64Pointer()},
 		}
 	}
 	// parentAccount is bound on create only and is only honoured for master
@@ -79,7 +80,7 @@ func (r *Resource) Create(
 	// parent instead of the caller's own tenant.
 	if !plan.ParentId.IsNull() && !plan.ParentId.IsUnknown() {
 		account.ParentAccount = &sdk.AddTenantRequestAccountParentAccount{
-			Id: plan.ParentId.ValueInt64Pointer(),
+			Id: &sdk.AddTenantRequestAccountParentAccountId{Int64: plan.ParentId.ValueInt64Pointer()},
 		}
 	}
 	if !plan.AccountNumber.IsNull() && !plan.AccountNumber.IsUnknown() {
@@ -186,6 +187,7 @@ func (r *Resource) Create(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

@@ -127,10 +127,13 @@ func restoreUnchangedComputedAttributes(
 		return
 	}
 
+	// Triggers are judged on the plan as modified so far, so that an
+	// attribute clearable.Plan has just planned as a clear counts as a change
+	// by the practitioner, which it is.
 	applicable := make([]restoreRule, 0, len(restoreRules))
 
 	for _, rule := range restoreRules {
-		if anyAttributeChanged(req.Plan.Raw, req.State.Raw, rule.triggers) {
+		if anyAttributeChanged(resp.Plan.Raw, req.State.Raw, rule.triggers) {
 			continue
 		}
 

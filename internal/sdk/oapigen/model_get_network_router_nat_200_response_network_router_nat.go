@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -142,51 +142,6 @@ func (o GetNetworkRouterNat200ResponseNetworkRouterNAT) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkRouterNat200ResponseNetworkRouterNAT struct {
-	value *GetNetworkRouterNat200ResponseNetworkRouterNAT
-	isSet bool
-}
-
-func (v NullableGetNetworkRouterNat200ResponseNetworkRouterNAT) Get() *GetNetworkRouterNat200ResponseNetworkRouterNAT {
-	return v.value
-}
-
-func (v *NullableGetNetworkRouterNat200ResponseNetworkRouterNAT) Set(val *GetNetworkRouterNat200ResponseNetworkRouterNAT) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkRouterNat200ResponseNetworkRouterNAT) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkRouterNat200ResponseNetworkRouterNAT) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkRouterNat200ResponseNetworkRouterNAT(val *GetNetworkRouterNat200ResponseNetworkRouterNAT) *NullableGetNetworkRouterNat200ResponseNetworkRouterNAT {
-	return &NullableGetNetworkRouterNat200ResponseNetworkRouterNAT{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkRouterNat200ResponseNetworkRouterNAT) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkRouterNat200ResponseNetworkRouterNAT) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkRouterNat200ResponseNetworkRouterNAT) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkRouterNat200ResponseNetworkRouterNAT) UnmarshalJSON(data []byte) (err error) {

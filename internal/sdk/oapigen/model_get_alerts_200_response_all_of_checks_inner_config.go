@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -263,49 +263,4 @@ func (src GetAlerts200ResponseAllOfChecksInnerConfig) MarshalJSON() ([]byte, err
 	}
 
 	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
-}
-
-type NullableGetAlerts200ResponseAllOfChecksInnerConfig struct {
-	value *GetAlerts200ResponseAllOfChecksInnerConfig
-	isSet bool
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerConfig) Get() *GetAlerts200ResponseAllOfChecksInnerConfig {
-	return v.value
-}
-
-func (v *NullableGetAlerts200ResponseAllOfChecksInnerConfig) Set(val *GetAlerts200ResponseAllOfChecksInnerConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetAlerts200ResponseAllOfChecksInnerConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetAlerts200ResponseAllOfChecksInnerConfig(val *GetAlerts200ResponseAllOfChecksInnerConfig) *NullableGetAlerts200ResponseAllOfChecksInnerConfig {
-	return &NullableGetAlerts200ResponseAllOfChecksInnerConfig{value: val, isSet: true}
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetAlerts200ResponseAllOfChecksInnerConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

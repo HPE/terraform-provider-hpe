@@ -81,34 +81,50 @@ func dataSourceCloudFolderRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(helpers.TypeAssertFailError("cloud_id", d.Get("cloud_id")))
 	}
 
-	var resp *morpheus.Response
+	// Both lookup paths converge on a single *morpheus.Folder so the response
+	// mapping below is independent of which endpoint was called. The by-id
+	// path returns a *GetCloudResourceFolderResult wrapper, while the by-name
+	// path already resolves to a *Folder (MORPH-17898).
+	var cloudFolder *morpheus.Folder
 	var err error
 	if id == 0 && name != "" {
-		resp, err = getCloudFolderFromName(client, cloudID, name)
+		cloudFolder, err = getCloudFolderFromName(client, cloudID, name)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	} else if id != 0 && name == "" {
+		var resp *morpheus.Response
 		resp, err = client.GetCloudResourceFolder(int64(cloudID), int64(id), &morpheus.Request{})
-	} else {
-		return diag.Errorf("Virtual image cannot be read without name or id")
-	}
-	if err != nil {
-		if resp != nil && resp.StatusCode == 404 {
-			log.Printf("API 404: %s - %v", resp, err)
+		if err != nil {
+			if resp != nil && resp.StatusCode == 404 {
+				log.Printf("API 404: %s - %v", resp, err)
 
-			return nil
+				// MORPH-17898: a non-existent id must surface an error rather
+				// than silently returning no state.
+				return diag.Errorf(
+					"cloud folder not found (cloud_id=%d, id=%d)", cloudID, id,
+				)
+			}
+
+			return diag.FromErr(err)
 		}
 
-		return diag.FromErr(err)
-	}
+		if resp.Result == nil {
+			return diag.FromErr(helpers.NotFoundInResponseError("Result"))
+		}
 
-	if resp.Result == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
-	}
+		result, ok := resp.Result.(*morpheus.GetCloudResourceFolderResult)
+		if !ok {
+			return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
+		}
 
-	var cloudFolder *morpheus.Folder
-	if v, ok := resp.Result.(*morpheus.Folder); ok {
-		cloudFolder = v
+		if result.Folder == nil {
+			return diag.FromErr(helpers.NotFoundInResponseError("Folder"))
+		}
+
+		cloudFolder = result.Folder
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
+		return diag.Errorf("Cloud folder cannot be read without name or id")
 	}
 
 	d.SetId(convert.Int64ToString(cloudFolder.ID))
@@ -123,7 +139,7 @@ func getCloudFolderFromName(
 	client *morpheus.Client,
 	cloudID int,
 	name string,
-) (*morpheus.Response, error) {
+) (*morpheus.Folder, error) {
 	resp, err := client.ListCloudResourceFolders(int64(cloudID), &morpheus.Request{})
 	if err != nil {
 		return nil, err
@@ -146,11 +162,11 @@ func getCloudFolderFromName(
 
 	for _, folder := range *result.Folders {
 		if folder.Name == name {
-			ret := &morpheus.Response{Result: &folder}
+			ret := folder
 
-			return ret, nil
+			return &ret, nil
 		}
 	}
 
-	return nil, fmt.Errorf("Cloud Folder not found")
+	return nil, fmt.Errorf("cloud folder not found (cloud_id=%d, name=%q)", cloudID, name)
 }

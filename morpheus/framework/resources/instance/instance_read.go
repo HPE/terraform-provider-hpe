@@ -256,16 +256,45 @@ func getInstanceAsState(
 		return state, false, diags
 	}
 
+	// export / masked are plain Optional (no schema default -- see the spec for
+	// why a Default inside a set element is a problem), so an option the
+	// practitioner omitted is null in the plan and must stay null in state, or
+	// every apply would report an inconsistent result. Look up the planned
+	// element by name: when the plan sets the option, take the API's value
+	// (that is real drift detection); when it does not, keep it null. On a plain
+	// refresh with no plan the API value is used, which is what import needs.
+	plannedEvarOpts := map[string]EvarsValue{}
+	if !plan.Evars.IsNull() && !plan.Evars.IsUnknown() {
+		for _, e := range plan.Evars.Elements() {
+			if ev, ok := e.(EvarsValue); ok {
+				plannedEvarOpts[ev.Name.ValueString()] = ev
+			}
+		}
+	}
+
 	evars, d := convert.ToSetType(
 		ctx,
 		envVars,
 		func(
 			in sdk.GetEnvVariables200ResponseEnvsInner,
 		) EvarsValue {
+			export := types.BoolValue(in.Export)
+			masked := types.BoolValue(in.Masked)
+			if p, ok := plannedEvarOpts[in.Name]; ok {
+				if p.Export.IsNull() {
+					export = types.BoolNull()
+				}
+				if p.Masked.IsNull() {
+					masked = types.BoolNull()
+				}
+			}
+
 			return EvarsValue{
-				Name:  types.StringValue(in.Name),
-				Value: types.StringValue(in.Value),
-				state: attr.ValueStateKnown,
+				Name:   types.StringValue(in.Name),
+				Value:  types.StringValue(in.Value),
+				Export: export,
+				Masked: masked,
+				state:  attr.ValueStateKnown,
 			}
 		},
 	)
@@ -392,14 +421,21 @@ func getInstanceAsState(
 	state.UserGroup = userGroupId
 
 	// plan_id
-	state.PlanId = convert.Int64ToType(instance.Plan.Id)
+	if plan := instance.Plan.Get(); plan != nil {
+		state.PlanId = convert.Int64ToType(plan.Id)
+	} else {
+		state.PlanId = types.Int64Null()
+	}
 
 	// ports
-	// assume ports always match the plan. Ports are a bit complicated in the
-	// API. They are a part of container_details, which is an array which may
-	// be of arbitrary size. The ports are contained within every element of the
-	// array. The array of ports also may contain non-user controlled ports.
-	// This should probably be replaced by a plan modifier.
+	// Ports are carried from the plan rather than read from the API. They are
+	// part of container_details, an array of arbitrary size whose every element
+	// carries a ports list that also includes non-user-controlled ports, so the
+	// user's set cannot be recovered from the response. This is safe because
+	// ports are create-only in Morpheus (the update API does not read them and
+	// there is no post-provisioning ports endpoint) and the attribute requires
+	// replacement on change, so the plan value is by construction the value the
+	// instance was created with. MORPH-612.
 	state.Ports = plan.Ports
 
 	// timeouts
@@ -633,6 +669,15 @@ func getInstanceHVMConfig(
 	configHvm.AffinityGroupId = convert.Int64ToType(apiConfig.AffinityGroupId)
 
 	configHvm.ImageId = imageIDFromConfig(apiConfig)
+
+	// user_data is provision-time only and forces replacement, so like
+	// affinity_group_id it is read back for import: without it the next plan
+	// would see a change from null and propose recreating the instance. The
+	// response model keeps it among the untyped keys.
+	configHvm.UserData = types.StringNull()
+	if ud, ok := apiConfig.AdditionalProperties["userData"].(string); ok && ud != "" {
+		configHvm.UserData = types.StringValue(ud)
+	}
 
 	configHvm.state = attr.ValueStateKnown
 
@@ -1373,21 +1418,8 @@ func getVolumes(
 		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
 	}
 
-	// Remove any CD ROM volumes from the list
-	apiVolumes := slices.DeleteFunc(
-		serverVolumes,
-		func(v sdk.InstanceContainerServerVolume1) bool {
-			if v.Name == nil {
-				return false
-			}
-
-			if strings.HasPrefix(*v.Name, "CD ROM") {
-				return true
-			}
-
-			return false
-		},
-	)
+	// Remove any CD/DVD drives from the list
+	apiVolumes := slices.DeleteFunc(serverVolumes, isCDROMVolume)
 
 	// Remove externally-attached storage-server (SAN) volumes — e.g. Alletra MP
 	// BMaaS LUNs created by hpe_morpheus_storage_volume and exported to this
@@ -1503,6 +1535,18 @@ func setDatastoreAutoSelectionAndSize(
 			if !refresh && !planVol.StorageProfile.IsNull() && !planVol.StorageProfile.IsUnknown() {
 				apiVol.StorageProfile = planVol.StorageProfile.ValueStringPointer()
 			}
+
+			// controller_mount_point: "-1:bus:type:unit" asks for a controller
+			// to be created, and Morpheus reports back the one it made,
+			// "<id>:bus:type:unit". Morpheus itself never looks at the id — it
+			// matches a controller on bus and type (assignStorageVolumeController)
+			// — so the two forms are the same request. Keep the configured
+			// form when the API agrees on bus:type:unit, on refresh as well:
+			// the request is satisfied, which is not drift. A different tail
+			// means the disk really has moved and is reported as the API has it.
+			apiVol.ControllerMountPoint = reconcileControllerMountPoint(
+				planVol.ControllerMountPoint, apiVol.ControllerMountPoint,
+			)
 		}
 		// If i >= maxIndex, just append the apiVol as-is (unmatched volumes)
 
@@ -1668,6 +1712,29 @@ func isExternallyAttachedVolume(v sdk.InstanceContainerServerVolume1) bool {
 	}
 
 	return true
+}
+
+// isCDROMVolume reports whether a volume is the virtual CD/DVD drive Morpheus
+// attaches when an instance boots from an ISO virtual image. It is not one of
+// the instance's configured disks, so it must not reach state.
+//
+// Matching is on the volume category, which the API populates independently of
+// the display name. The name varies by provision type — "CD ROM" on VMware,
+// "CD Drive" on HVM/KVM — so the previous name-prefix check let the HVM drive
+// through, and getVolumes then appended it as an extra volume, failing the
+// apply with "Provider produced inconsistent result after apply: .volumes: new
+// element N has appeared". The names are retained only as a fallback for
+// responses that omit the category.
+func isCDROMVolume(v sdk.InstanceContainerServerVolume1) bool {
+	if v.Category != nil {
+		return strings.EqualFold(*v.Category, "cd")
+	}
+
+	if v.Name == nil {
+		return false
+	}
+
+	return strings.HasPrefix(*v.Name, "CD ROM") || strings.HasPrefix(*v.Name, "CD Drive")
 }
 
 // removeRaidDisks removes any RAID disks from the list of volumes

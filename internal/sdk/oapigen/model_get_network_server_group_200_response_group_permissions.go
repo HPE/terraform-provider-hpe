@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o GetNetworkServerGroup200ResponseGroupPermissions) ToMap() (map[string]in
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkServerGroup200ResponseGroupPermissions struct {
-	value *GetNetworkServerGroup200ResponseGroupPermissions
-	isSet bool
-}
-
-func (v NullableGetNetworkServerGroup200ResponseGroupPermissions) Get() *GetNetworkServerGroup200ResponseGroupPermissions {
-	return v.value
-}
-
-func (v *NullableGetNetworkServerGroup200ResponseGroupPermissions) Set(val *GetNetworkServerGroup200ResponseGroupPermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkServerGroup200ResponseGroupPermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkServerGroup200ResponseGroupPermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkServerGroup200ResponseGroupPermissions(val *GetNetworkServerGroup200ResponseGroupPermissions) *NullableGetNetworkServerGroup200ResponseGroupPermissions {
-	return &NullableGetNetworkServerGroup200ResponseGroupPermissions{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkServerGroup200ResponseGroupPermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkServerGroup200ResponseGroupPermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkServerGroup200ResponseGroupPermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkServerGroup200ResponseGroupPermissions) UnmarshalJSON(data []byte) (err error) {

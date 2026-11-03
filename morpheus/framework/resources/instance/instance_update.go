@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
@@ -71,12 +72,52 @@ func (g *Resource) Update(
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
-	var servicePlanOptions ServicePlanOptionsValue
-	if isAPIUpdateNeeded(plan, state) {
-		servicePlanOptions = makeUpdateAPIcalls(ctx, client, plan, state, updateTimeout, resp)
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Two appliance calls, each gated on its own attributes (see
+	// instance_update_gate.go). The gates read the raw plan and state so that
+	// unknown planned values -- optional-and-computed attributes the practitioner
+	// did not set -- are not mistaken for changes. A change to nothing but
+	// timeouts or wait_for_ip_address therefore makes no appliance call at all.
+	//
+	// evars are absent from both gates on purpose, not because they are never
+	// updated: neither the instance update call nor the resize carries them.
+	// They are applied through their own add/update and delete operations by
+	// applyEvarsUpdate below, which runs unconditionally and is a no-op when
+	// the planned variables match state.
+	if isUpdateCallNeeded(req.Plan.Raw, req.State.Raw) {
+		makeUpdateAPIcalls(ctx, client, plan, pending, resp)
 		if resp.Diagnostics.HasError() {
 			return
 		}
+	}
+
+	// service_plan_options is not returned by the API, so it is carried forward:
+	// the resize path returns the value to keep, and when no resize is needed
+	// the current state value is kept as-is.
+	servicePlanOptions := state.ServicePlanOptions
+	if isResizeNeeded(req.Plan.Raw, req.State.Raw) {
+		var diags diag.Diagnostics
+		servicePlanOptions, diags = makeResizeAPICalls(ctx, client, plan, state, updateTimeout)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	// Environment variables are not part of the instance update request; they
+	// have their own add/update and delete operations. Apply any difference
+	// between state and plan through those, independently of the two gated
+	// calls above -- this is why evars sit in neither gate. MORPH-612.
+	resp.Diagnostics.Append(applyEvarsUpdate(ctx, client, state.Id.ValueInt64(), plan, state)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	tflog.Info(ctx, fmt.Sprintf("Instance update state: %v", state.Volumes.Elements()))
@@ -120,20 +161,23 @@ func (g *Resource) Update(
 
 	newState.ServicePlanOptions = servicePlanOptions
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 }
 
-// makeUpdateAPIcalls makes any Update API calls that are needed
+// makeUpdateAPIcalls issues the instance update call. It carries exactly the
+// attributes listed in putAttributes; the resize call is separate and gated
+// independently (see Update).
 func makeUpdateAPIcalls(
 	ctx context.Context,
 	client *sdk.APIClient,
-	plan, state InstanceModel,
-	updateTimeout time.Duration,
+	plan InstanceModel,
+	pending clearable.Pending,
 	resp *resource.UpdateResponse,
-) ServicePlanOptionsValue {
+) {
 	updateInstance := client.InstancesAPI.UpdateInstance(ctx, plan.Id.ValueInt64())
 	updateRequest := &sdk.UpdateInstanceRequest{}
 	instanceUpdateRequest := &sdk.UpdateInstanceRequestInstance{}
@@ -146,10 +190,8 @@ func makeUpdateAPIcalls(
 		instanceUpdateRequest.DisplayName = plan.Name.ValueStringPointer()
 	}
 
-	// description
-	if !plan.Description.IsNull() {
-		instanceUpdateRequest.Description = plan.Description.ValueStringPointer()
-	}
+	// description: sent when known, null when being cleared, not sent otherwise
+	clearable.NullableString(pending, "description", plan.Description, &instanceUpdateRequest.Description)
 
 	// instance_context
 	if !plan.InstanceContext.IsNull() && !plan.InstanceContext.IsUnknown() {
@@ -170,7 +212,7 @@ func makeUpdateAPIcalls(
 			tflog.Error(ctx, "cannot convert tags")
 			resp.Diagnostics.Append(diags...)
 
-			return NewServicePlanOptionsValueNull()
+			return
 		}
 		instanceUpdateRequest.Tags = tags
 	} else {
@@ -178,13 +220,14 @@ func makeUpdateAPIcalls(
 		instanceUpdateRequest.Tags = []sdk.UpdateInstanceRequestInstanceTagsInner{}
 	}
 
-	// labels
-	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
-		var labels []string
-		resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)
-		if resp.Diagnostics.HasError() {
-			return NewServicePlanOptionsValueNull()
-		}
+	// labels: the planned list, or an empty list when being cleared
+	labels, sendLabels, ldiags := pending.Strings(ctx, "labels", plan.Labels)
+	resp.Diagnostics.Append(ldiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if sendLabels {
 		instanceUpdateRequest.Labels = labels
 	}
 
@@ -246,19 +289,12 @@ func makeUpdateAPIcalls(
 	if hasConfigUpdate {
 		updateRequest.Config = updateConfig
 	}
+	tflog.Debug(ctx, "instance update: issuing instance update call")
+	observeUpdateCall("update")
 	_, httpResp, err := updateInstance.UpdateInstanceRequest(*updateRequest).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError("error updating instance", errfmt.ErrMsg(err, httpResp))
-
-		return NewServicePlanOptionsValueNull()
 	}
-
-	// if we need to update volumes, network interfaces or service plan options, then we need to make the
-	// resize API call
-	servicePlanOptions, diags := makeResizeAPICalls(ctx, client, plan, state, updateTimeout)
-	resp.Diagnostics.Append(diags...)
-
-	return servicePlanOptions
 }
 
 // makeResizeAPICalls makes any Resize API calls that are needed.
@@ -284,7 +320,11 @@ func makeResizeAPICalls(
 
 	addServicePlanOptionsToResizeRequest(plan, state, resizeRequest)
 
-	if resizeRequest.Volumes != nil || resizeRequest.NetworkInterfaces != nil ||
+	// plan_id is compared here rather than through the request (which always
+	// carries the planned plan id, see createResizeRequest).
+	planChanged := !plan.PlanId.Equal(state.PlanId)
+
+	if planChanged || resizeRequest.Volumes != nil || resizeRequest.NetworkInterfaces != nil ||
 		resizeRequest.ServicePlanOptions != nil {
 		d.Append(makeResizeRequestAndWaitForComplete(ctx, client, resizeRequest, updateTimeout)...)
 		if d.HasError() {
@@ -304,14 +344,16 @@ func createResizeRequest(
 	plan InstanceModel,
 	state InstanceModel,
 ) *sdk.ResizeInstanceRequest {
-	resizeRequest := &sdk.ResizeInstanceRequest{}
-
-	// plan_id
-	if !plan.PlanId.IsNull() || !plan.PlanId.IsUnknown() {
-		resizeRequest.Instance = &sdk.ResizeInstanceRequestInstance{}
-		resizeRequest.Instance.Id = state.Id.ValueInt64Pointer()
-		resizeRequest.Instance.Plan = &sdk.ResizeInstanceRequestInstancePlan{}
-		resizeRequest.Instance.Plan.Id = plan.PlanId.ValueInt64Pointer()
+	// The resize call always needs the instance id. plan_id is Required, so it
+	// is always known here; send the planned value, which the appliance treats as
+	// the (possibly unchanged) target plan.
+	resizeRequest := &sdk.ResizeInstanceRequest{
+		Instance: &sdk.ResizeInstanceRequestInstance{
+			Id: state.Id.ValueInt64Pointer(),
+			Plan: &sdk.ResizeInstanceRequestInstancePlan{
+				Id: plan.PlanId.ValueInt64Pointer(),
+			},
+		},
 	}
 
 	return resizeRequest
@@ -713,7 +755,15 @@ func addServicePlanOptionsToResizeRequest(
 	plan, state InstanceModel,
 	resizeRequest *sdk.ResizeInstanceRequest,
 ) {
-	// compare state and plan service_plan_options so we only resize if required
+	// Attach service plan options only when the planned value differs from
+	// state. Previously an (all-null) options object was attached
+	// unconditionally, so the resize call fired on every update. The
+	// SingleNested Equal handles null/unknown correctly here because
+	// service_plan_options has no computed-only children that plan as unknown.
+	if plan.ServicePlanOptions.Equal(state.ServicePlanOptions) {
+		return
+	}
+
 	servicePlanOptions := &sdk.ResizeInstanceRequestServicePlanOptions{}
 	if !plan.ServicePlanOptions.MaxCores.IsNull() && !plan.ServicePlanOptions.MaxCores.IsUnknown() {
 		servicePlanOptions.MaxCores = plan.ServicePlanOptions.MaxCores.ValueInt64Pointer()
@@ -749,6 +799,9 @@ func makeResizeRequestAndWaitForComplete(
 		return d
 	}
 
+	tflog.Debug(ctx, fmt.Sprintf("instance update: issuing resize call (volumes=%v network_interfaces=%v service_plan_options=%v)",
+		resizeRequest.Volumes != nil, resizeRequest.NetworkInterfaces != nil, resizeRequest.ServicePlanOptions != nil))
+	observeUpdateCall("resize")
 	resizeInstance := client.InstancesAPI.ResizeInstance(ctx, *resizeRequest.Instance.Id)
 	resizeResp, httpResp, err := resizeInstance.ResizeInstanceRequest(*resizeRequest).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
@@ -800,55 +853,4 @@ func makeResizeRequestAndWaitForComplete(
 	}
 
 	return d
-}
-
-// isAPIUpdateNeeded compares plan and state for attributes that require an API
-// call and returns true when at least one differs. Provider-only fields
-// (wait_for_ip_address, timeouts) are excluded — they never trigger API calls.
-//
-// The function checks every API-affecting field first. If none differ, it
-// returns false. This structure ensures that adding a new API-affecting field
-// above the return cannot be short-circuited by a provider-only check.
-func isAPIUpdateNeeded(plan, state InstanceModel) bool {
-	// API-affecting fields — any difference triggers an update call.
-	if plan.Name != state.Name {
-		return true
-	}
-
-	if plan.Description != state.Description {
-		return true
-	}
-
-	if !plan.InstanceContext.Equal(state.InstanceContext) {
-		return true
-	}
-
-	if !plan.GroupId.Equal(state.GroupId) {
-		return true
-	}
-
-	if !plan.ConfigAzure.Equal(state.ConfigAzure) {
-		return true
-	}
-
-	if !plan.Tags.Equal(state.Tags) {
-		return true
-	}
-
-	if !plan.Volumes.Equal(state.Volumes) {
-		return true
-	}
-
-	if !plan.NetworkInterfaces.Equal(state.NetworkInterfaces) {
-		return true
-	}
-
-	if !plan.ServicePlanOptions.Equal(state.ServicePlanOptions) {
-		return true
-	}
-
-	// No API-affecting field changed. Provider-only fields (wait_for_ip_address,
-	// timeouts) are intentionally not checked — they never require an API call,
-	// and the default here is false, so they are safe to ignore.
-	return false
 }

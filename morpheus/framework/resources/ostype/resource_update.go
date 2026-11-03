@@ -2,12 +2,14 @@ package ostype
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -35,6 +37,14 @@ func (r *Resource) Update(
 		return
 	}
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	osType := &sdk.UpdateOsTypeRequestOsType{}
 
 	// bit_count
@@ -43,19 +53,13 @@ func (r *Resource) Update(
 	}
 
 	// category
-	if !plan.Category.IsNull() && !plan.Category.IsUnknown() {
-		osType.Category.Set(plan.Category.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "category", plan.Category, &osType.Category)
 
 	// cloud_init_version
-	if !plan.CloudInitVersion.IsNull() && !plan.CloudInitVersion.IsUnknown() {
-		osType.CloudInitVersion = plan.CloudInitVersion.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "cloud_init_version", plan.CloudInitVersion, &osType.CloudInitVersion)
 
 	// description
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		osType.Description.Set(plan.Description.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "description", plan.Description, &osType.Description)
 
 	// install_agent
 	if !plan.InstallAgent.IsNull() && !plan.InstallAgent.IsUnknown() {
@@ -68,24 +72,16 @@ func (r *Resource) Update(
 	}
 
 	// os_codename
-	if !plan.OsCodename.IsNull() && !plan.OsCodename.IsUnknown() {
-		osType.OsCodename.Set(plan.OsCodename.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "os_codename", plan.OsCodename, &osType.OsCodename)
 
 	// os_family
-	if !plan.OsFamily.IsNull() && !plan.OsFamily.IsUnknown() {
-		osType.OsFamily.Set(plan.OsFamily.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "os_family", plan.OsFamily, &osType.OsFamily)
 
 	// os_name
-	if !plan.OsName.IsNull() && !plan.OsName.IsUnknown() {
-		osType.OsName.Set(plan.OsName.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "os_name", plan.OsName, &osType.OsName)
 
 	// os_version
-	if !plan.OsVersion.IsNull() && !plan.OsVersion.IsUnknown() {
-		osType.OsVersion.Set(plan.OsVersion.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "os_version", plan.OsVersion, &osType.OsVersion)
 
 	// platform
 	if !plan.Platform.IsNull() && !plan.Platform.IsUnknown() {
@@ -93,9 +89,7 @@ func (r *Resource) Update(
 	}
 
 	// vendor
-	if !plan.Vendor.IsNull() && !plan.Vendor.IsUnknown() {
-		osType.Vendor.Set(plan.Vendor.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "vendor", plan.Vendor, &osType.Vendor)
 
 	updateReq := &sdk.UpdateOsTypeRequest{}
 	updateReq.OsType = osType
@@ -113,10 +107,14 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diag := getOsTypeAsState(ctx, id, client)
+	state, found, diag := getOsTypeAsState(ctx, id, client)
+	if !found && !diag.HasError() {
+		diag.AddError("error reading os type", fmt.Sprintf("os type %d not found after update", id))
+	}
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

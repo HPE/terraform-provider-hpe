@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,26 +21,47 @@ var _ MappedNullable = &ListPlugins200ResponseAllOfPluginsInner{}
 
 // ListPlugins200ResponseAllOfPluginsInner struct for ListPlugins200ResponseAllOfPluginsInner
 type ListPlugins200ResponseAllOfPluginsInner struct {
-	Id                    *int64                                                    `json:"id,omitempty"`
-	Name                  *string                                                   `json:"name,omitempty"`
-	Code                  *string                                                   `json:"code,omitempty"`
-	Description           *string                                                   `json:"description,omitempty"`
-	Version               *string                                                   `json:"version,omitempty"`
-	Enabled               *bool                                                     `json:"enabled,omitempty"`
-	Author                NullableString                                            `json:"author,omitempty"`
-	WebsiteUrl            NullableString                                            `json:"websiteUrl,omitempty"`
-	SourceCodeLocationUrl NullableString                                            `json:"sourceCodeLocationUrl,omitempty"`
-	IssueTrackerUrl       NullableString                                            `json:"issueTrackerUrl,omitempty"`
-	Valid                 *bool                                                     `json:"valid,omitempty"`
-	HasValidUpdate        *bool                                                     `json:"hasValidUpdate,omitempty"`
-	Status                *string                                                   `json:"status,omitempty"`
-	StatusMessage         NullableString                                            `json:"statusMessage,omitempty"`
-	Providers             []ListPlugins200ResponseAllOfPluginsInnerProvidersInner   `json:"providers,omitempty"`
-	Config                map[string]interface{}                                    `json:"config,omitempty"`
-	OptionTypes           []ListPlugins200ResponseAllOfPluginsInnerOptionTypesInner `json:"optionTypes,omitempty"`
-	DateCreated           *time.Time                                                `json:"dateCreated,omitempty"`
-	LastUpdated           *time.Time                                                `json:"lastUpdated,omitempty"`
-	AdditionalProperties  map[string]interface{}                                    `json:",remain"`
+	// The ID of the plugin.
+	Id *int64 `json:"id,omitempty"`
+	// The display name reported by the plugin.
+	Name *string `json:"name,omitempty"`
+	// The unique code reported by the plugin, for example `morpheus-infoblox-plugin`. Uploading a jar whose code matches an installed plugin updates that plugin.
+	Code *string `json:"code,omitempty"`
+	// The description reported by the plugin.
+	Description *string `json:"description,omitempty"`
+	// The version of the installed plugin jar.
+	Version *string `json:"version,omitempty"`
+	// Whether the plugin is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+	// The author reported by the plugin.
+	Author NullableString `json:"author,omitempty"`
+	// The plugin's website URL.
+	WebsiteUrl NullableString `json:"websiteUrl,omitempty"`
+	// The URL of the plugin's source code.
+	SourceCodeLocationUrl NullableString `json:"sourceCodeLocationUrl,omitempty"`
+	// The URL of the plugin's issue tracker.
+	IssueTrackerUrl NullableString `json:"issueTrackerUrl,omitempty"`
+	// Whether the plugin descriptor was valid and the plugin class could be loaded.
+	Valid *bool `json:"valid,omitempty"`
+	// Whether a newer compatible version was found on the plugin exchange by the last update check.
+	HasValidUpdate *bool `json:"hasValidUpdate,omitempty"`
+	// Indicates whether the plugin is prepackaged and bundled with the appliance.
+	IsPrepackaged *bool `json:"isPrepackaged,omitempty"`
+	// The lifecycle status of the plugin, one of `installing`, `updating`, `loaded` or `error`.
+	Status *string `json:"status,omitempty"`
+	// Details of the last load failure when the status is `error`.
+	StatusMessage NullableString `json:"statusMessage,omitempty"`
+	// The providers (integrations, task types, option sources, tabs and so on) registered by the plugin.
+	Providers []ListPlugins200ResponseAllOfPluginsInnerProvidersInner `json:"providers,omitempty"`
+	// The plugin's configuration values, keyed by its option type field names.
+	Config map[string]interface{} `json:"config,omitempty"`
+	// The option types describing the plugin's configurable settings.
+	OptionTypes []ListPlugins200ResponseAllOfPluginsInnerOptionTypesInner `json:"optionTypes,omitempty"`
+	// The date and time the plugin was installed.
+	DateCreated *time.Time `json:"dateCreated,omitempty"`
+	// The date and time the plugin was last updated.
+	LastUpdated          *time.Time             `json:"lastUpdated,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _ListPlugins200ResponseAllOfPluginsInner ListPlugins200ResponseAllOfPluginsInner
@@ -91,6 +112,9 @@ func (o ListPlugins200ResponseAllOfPluginsInner) ToMap() (map[string]interface{}
 	if !IsNil(o.HasValidUpdate) {
 		toSerialize["hasValidUpdate"] = o.HasValidUpdate
 	}
+	if !IsNil(o.IsPrepackaged) {
+		toSerialize["isPrepackaged"] = o.IsPrepackaged
+	}
 	if !IsNil(o.Status) {
 		toSerialize["status"] = o.Status
 	}
@@ -118,51 +142,6 @@ func (o ListPlugins200ResponseAllOfPluginsInner) ToMap() (map[string]interface{}
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListPlugins200ResponseAllOfPluginsInner struct {
-	value *ListPlugins200ResponseAllOfPluginsInner
-	isSet bool
-}
-
-func (v NullableListPlugins200ResponseAllOfPluginsInner) Get() *ListPlugins200ResponseAllOfPluginsInner {
-	return v.value
-}
-
-func (v *NullableListPlugins200ResponseAllOfPluginsInner) Set(val *ListPlugins200ResponseAllOfPluginsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListPlugins200ResponseAllOfPluginsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListPlugins200ResponseAllOfPluginsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListPlugins200ResponseAllOfPluginsInner(val *ListPlugins200ResponseAllOfPluginsInner) *NullableListPlugins200ResponseAllOfPluginsInner {
-	return &NullableListPlugins200ResponseAllOfPluginsInner{value: val, isSet: true}
-}
-
-func (v NullableListPlugins200ResponseAllOfPluginsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListPlugins200ResponseAllOfPluginsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListPlugins200ResponseAllOfPluginsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListPlugins200ResponseAllOfPluginsInner) UnmarshalJSON(data []byte) (err error) {

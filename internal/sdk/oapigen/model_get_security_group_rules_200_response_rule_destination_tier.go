@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetSecurityGroupRules200ResponseRuleDestinationTier) ToMap() (map[string
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetSecurityGroupRules200ResponseRuleDestinationTier struct {
-	value *GetSecurityGroupRules200ResponseRuleDestinationTier
-	isSet bool
-}
-
-func (v NullableGetSecurityGroupRules200ResponseRuleDestinationTier) Get() *GetSecurityGroupRules200ResponseRuleDestinationTier {
-	return v.value
-}
-
-func (v *NullableGetSecurityGroupRules200ResponseRuleDestinationTier) Set(val *GetSecurityGroupRules200ResponseRuleDestinationTier) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetSecurityGroupRules200ResponseRuleDestinationTier) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetSecurityGroupRules200ResponseRuleDestinationTier) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetSecurityGroupRules200ResponseRuleDestinationTier(val *GetSecurityGroupRules200ResponseRuleDestinationTier) *NullableGetSecurityGroupRules200ResponseRuleDestinationTier {
-	return &NullableGetSecurityGroupRules200ResponseRuleDestinationTier{value: val, isSet: true}
-}
-
-func (v NullableGetSecurityGroupRules200ResponseRuleDestinationTier) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetSecurityGroupRules200ResponseRuleDestinationTier) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetSecurityGroupRules200ResponseRuleDestinationTier) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetSecurityGroupRules200ResponseRuleDestinationTier) UnmarshalJSON(data []byte) (err error) {

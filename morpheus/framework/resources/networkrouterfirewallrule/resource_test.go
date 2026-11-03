@@ -22,23 +22,33 @@ import (
 // labelled hpe_morpheus_network_router_firewall_rule_group.example.
 //
 // parent_id is Required and RequiresReplace: NSX-T rejects a rule without a
-// parent group. Gateway firewall rule groups attach to the router's gateway
-// policy, which does not require an edge cluster or tier-0 connection -- a
-// simple dhcpLocal Tier-1 is sufficient. This mirrors the fixture used by the
-// firewall rule group resource/data source tests.
+// parent group. The tier-1 is connected to the fixture's tier-0 and given its
+// edge cluster so that it is realized in NSX-T, mirroring the firewall rule
+// group tests.
 //
-// QA constants: group_id 3, network_integration_id 5.
+// The group, network server, tier-0 and edge cluster must already exist on the
+// appliance under test and are supplied via the environment; see
+// testhelpers.RequireNsxtFixture. The test skips when they are not configured.
 func firewallRuleFixture(t *testing.T, name string) string {
 	t.Helper()
 
+	fixture := testhelpers.RequireNsxtFixture(t)
+
 	routerConfig := `
+data "hpe_morpheus_network_router" "fw_tier0" {
+  id = ` + fixture.Tier0RouterID + `
+}
+
 resource "hpe_morpheus_network_router" "fw_tier1" {
   name                   = "` + name + `-tier1"
-  group_id               = 3
-  network_integration_id = 5
+  group_id               = ` + fixture.GroupID + `
+  network_integration_id = ` + fixture.NetworkServerID + `
 
   config_nsxt_gateway_tier1 = {
     ip_management_type = "dhcpLocal"
+    edge_cluster       = "` + fixture.EdgeCluster + `"
+    fail_over          = "NON_PREEMPTIVE"
+    tier0_gateway      = data.hpe_morpheus_network_router.fw_tier0.provider_id
   }
 }
 `

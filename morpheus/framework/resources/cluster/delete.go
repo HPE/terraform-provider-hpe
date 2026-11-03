@@ -5,13 +5,10 @@ package cluster
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-
-	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
@@ -46,28 +43,26 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	// We'll do a force delete so that we can delete
 	// clusters that are in a provisioning state.
 	deleteReq := client.ClustersAPI.DeleteCluster(ctx, id).Force("on")
-	_, hresp, err := deleteReq.Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := deleteReq.Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete cluster resource",
-			fmt.Sprintf("cluster %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("cluster %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return
 	}
 
-	// We'll just check that the cluster itself has been deleted for now
-	// and assume that Morpheus took care of deleting its servers.
-	waitForDeleted := func() (*sdk.GetCluster200Response, error) {
+	// Morpheus accepts the delete and removes the cluster in a background
+	// job; its server group stays readable (status deprovisioning) until that
+	// job finishes. Wait for the GET to turn 404 -- a create that reuses the
+	// name races the job otherwise ("Cluster name must be unique",
+	// MORPH-18379). Morpheus is left to delete the cluster's servers.
+	what := fmt.Sprintf("cluster %d", id)
+	waitForDeleted := func() (struct{}, error) {
 		_, httpResp, err := client.ClustersAPI.GetCluster(ctx, id).Execute()
-		// 404 status code counts as a successful delete
-		if err != nil {
-			if httpResp == nil || httpResp.StatusCode != http.StatusNotFound {
-				return nil, backoff.Permanent(err)
-			}
-		}
 
-		return nil, nil
+		return struct{}{}, errfmt.PollDeleted(what, err, httpResp)
 	}
 
 	if _, err := backoff.Retry(

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -362,49 +362,4 @@ func (obj AddClusterRequestClusterServerConfigAnyOf) GetActualInstanceValue() in
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableAddClusterRequestClusterServerConfigAnyOf struct {
-	value *AddClusterRequestClusterServerConfigAnyOf
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOf) Get() *AddClusterRequestClusterServerConfigAnyOf {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOf) Set(val *AddClusterRequestClusterServerConfigAnyOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterServerConfigAnyOf(val *AddClusterRequestClusterServerConfigAnyOf) *NullableAddClusterRequestClusterServerConfigAnyOf {
-	return &NullableAddClusterRequestClusterServerConfigAnyOf{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

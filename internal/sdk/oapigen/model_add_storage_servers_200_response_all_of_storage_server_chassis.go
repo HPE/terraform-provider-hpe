@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,8 +21,8 @@ var _ MappedNullable = &AddStorageServers200ResponseAllOfStorageServerChassis{}
 // AddStorageServers200ResponseAllOfStorageServerChassis struct for AddStorageServers200ResponseAllOfStorageServerChassis
 type AddStorageServers200ResponseAllOfStorageServerChassis struct {
 	Id                   *int64                 `json:"id,omitempty"`
-	Code                 *string                `json:"code,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
+	Code                 *string                `json:"code,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -41,11 +41,11 @@ func (o AddStorageServers200ResponseAllOfStorageServerChassis) ToMap() (map[stri
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
-	if !IsNil(o.Code) {
-		toSerialize["code"] = o.Code
-	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.Code) {
+		toSerialize["code"] = o.Code
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -53,51 +53,6 @@ func (o AddStorageServers200ResponseAllOfStorageServerChassis) ToMap() (map[stri
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddStorageServers200ResponseAllOfStorageServerChassis struct {
-	value *AddStorageServers200ResponseAllOfStorageServerChassis
-	isSet bool
-}
-
-func (v NullableAddStorageServers200ResponseAllOfStorageServerChassis) Get() *AddStorageServers200ResponseAllOfStorageServerChassis {
-	return v.value
-}
-
-func (v *NullableAddStorageServers200ResponseAllOfStorageServerChassis) Set(val *AddStorageServers200ResponseAllOfStorageServerChassis) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddStorageServers200ResponseAllOfStorageServerChassis) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddStorageServers200ResponseAllOfStorageServerChassis) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddStorageServers200ResponseAllOfStorageServerChassis(val *AddStorageServers200ResponseAllOfStorageServerChassis) *NullableAddStorageServers200ResponseAllOfStorageServerChassis {
-	return &NullableAddStorageServers200ResponseAllOfStorageServerChassis{value: val, isSet: true}
-}
-
-func (v NullableAddStorageServers200ResponseAllOfStorageServerChassis) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddStorageServers200ResponseAllOfStorageServerChassis) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddStorageServers200ResponseAllOfStorageServerChassis) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddStorageServers200ResponseAllOfStorageServerChassis) UnmarshalJSON(data []byte) (err error) {

@@ -35,3 +35,9 @@ const AffinityGroupMinVersion = ">= 8.0.10"
 // an inconsistent-result error and every subsequent plan forces a replacement.
 // The gate turns that loop into a single, named diagnostic.
 const TenantParentMinVersion = ">= 8.1.0"
+
+// CloudBackupProvidersMinVersion is the first Morpheus release whose cloud API
+// returns backupProviders. The zones service binds and persists the field from
+// 9.0.x, but the API response only carries it from 9.0.2, so below that the
+// provider cannot read the value back and preserves what was configured.
+const CloudBackupProvidersMinVersion = ">= 9.0.2"

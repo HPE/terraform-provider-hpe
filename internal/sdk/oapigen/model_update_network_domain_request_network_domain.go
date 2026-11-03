@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,8 +45,11 @@ type UpdateNetworkDomainRequestNetworkDomain struct {
 	// Guest Username. If set, will change the instances RPC Service User after joining a Domain.
 	GuestUsername *string `json:"guestUsername,omitempty"`
 	// Guest Password
-	GuestPassword        *string                `json:"guestPassword,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	GuestPassword *string `json:"guestPassword,omitempty"`
+	// Visibility, private or public. Only honoured for the master tenant; a domain owned by a sub-tenant is always private.
+	Visibility           *string                                         `json:"visibility,omitempty"`
+	Account              *UpdateNetworkDomainRequestNetworkDomainAccount `json:"account,omitempty"`
+	AdditionalProperties map[string]interface{}                          `json:",remain"`
 }
 
 type _UpdateNetworkDomainRequestNetworkDomain UpdateNetworkDomainRequestNetworkDomain
@@ -100,57 +103,18 @@ func (o UpdateNetworkDomainRequestNetworkDomain) ToMap() (map[string]interface{}
 	if !IsNil(o.GuestPassword) {
 		toSerialize["guestPassword"] = o.GuestPassword
 	}
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
+	}
+	if !IsNil(o.Account) {
+		toSerialize["account"] = o.Account
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateNetworkDomainRequestNetworkDomain struct {
-	value *UpdateNetworkDomainRequestNetworkDomain
-	isSet bool
-}
-
-func (v NullableUpdateNetworkDomainRequestNetworkDomain) Get() *UpdateNetworkDomainRequestNetworkDomain {
-	return v.value
-}
-
-func (v *NullableUpdateNetworkDomainRequestNetworkDomain) Set(val *UpdateNetworkDomainRequestNetworkDomain) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetworkDomainRequestNetworkDomain) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetworkDomainRequestNetworkDomain) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetworkDomainRequestNetworkDomain(val *UpdateNetworkDomainRequestNetworkDomain) *NullableUpdateNetworkDomainRequestNetworkDomain {
-	return &NullableUpdateNetworkDomainRequestNetworkDomain{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetworkDomainRequestNetworkDomain) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetworkDomainRequestNetworkDomain) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetworkDomainRequestNetworkDomain) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateNetworkDomainRequestNetworkDomain) UnmarshalJSON(data []byte) (err error) {

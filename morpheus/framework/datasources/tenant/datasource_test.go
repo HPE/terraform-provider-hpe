@@ -5,6 +5,7 @@ package tenant_test
 import (
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -25,11 +26,16 @@ func TestMain(m *testing.M) {
 }
 
 // tenantFixture renders a tenant-scoped base role plus a tenant resource that
-// references it. The returned name is the tenant's name.
-func tenantFixture(t *testing.T) (string, string) {
+// references it. The returned name is the tenant's name and the second return
+// is the per-run subdomain (the lowercased name; see MORPH-16545).
+func tenantFixture(t *testing.T) (string, string, string) {
 	t.Helper()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	// MORPH-16545: subdomains are globally unique across all tenants, so
+	// reuse the per-run random name, lowercased to satisfy the subdomain
+	// validators.
+	subdomain := strings.ToLower(name)
 
 	roleConfig, err := role.RenderRoleTenantConfig(t, map[string]string{
 		"Name": name,
@@ -40,14 +46,14 @@ func tenantFixture(t *testing.T) (string, string) {
 
 	tenantConfig, err := restenant.RenderTenantConfig(t, map[string]string{
 		"Name":       name,
-		"Subdomain":  name,
+		"Subdomain":  subdomain,
 		"BaseRoleId": "hpe_morpheus_role.example.id",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	return name, roleConfig + tenantConfig
+	return name, subdomain, roleConfig + tenantConfig
 }
 
 func TestAccMorpheusFindTenantByName(t *testing.T) {
@@ -62,7 +68,7 @@ func TestAccMorpheusFindTenantByName(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
-	name, resourceConfig := tenantFixture(t)
+	name, subdomain, resourceConfig := tenantFixture(t)
 
 	dataSourceConfig, err := tenant.RenderExample(t, "example-name.tf.tmpl", map[string]string{
 		"Name": name,
@@ -77,7 +83,7 @@ func TestAccMorpheusFindTenantByName(t *testing.T) {
 		resource.TestCheckResourceAttr(dsName, "name", name),
 		resource.TestCheckResourceAttr(dsName, "enabled", "true"),
 		resource.TestCheckResourceAttr(dsName, "master", "false"),
-		resource.TestCheckResourceAttr(dsName, "subdomain", name),
+		resource.TestCheckResourceAttr(dsName, "subdomain", subdomain),
 		resource.TestCheckResourceAttr(dsName, "currency", "USD"),
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_tenant.example", "id", dsName, "id",
@@ -110,7 +116,7 @@ func TestAccMorpheusFindTenantById(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
-	name, resourceConfig := tenantFixture(t)
+	name, subdomain, resourceConfig := tenantFixture(t)
 
 	dataSourceConfig, err := tenant.RenderExample(t, "example-id.tf.tmpl", map[string]string{
 		"Id": "hpe_morpheus_tenant.example.id",
@@ -125,7 +131,7 @@ func TestAccMorpheusFindTenantById(t *testing.T) {
 		resource.TestCheckResourceAttr(dsName, "name", name),
 		resource.TestCheckResourceAttr(dsName, "enabled", "true"),
 		resource.TestCheckResourceAttr(dsName, "master", "false"),
-		resource.TestCheckResourceAttr(dsName, "subdomain", name),
+		resource.TestCheckResourceAttr(dsName, "subdomain", subdomain),
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_tenant.example", "id", dsName, "id",
 		),

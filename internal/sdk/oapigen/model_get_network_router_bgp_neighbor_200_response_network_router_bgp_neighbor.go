@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -158,51 +158,6 @@ func (o GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor) ToMap() 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor struct {
-	value *GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor
-	isSet bool
-}
-
-func (v NullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor) Get() *GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor {
-	return v.value
-}
-
-func (v *NullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor) Set(val *GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor(val *GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor) *NullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor {
-	return &NullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighbor) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,22 +20,22 @@ var _ MappedNullable = &ListPolicies200ResponseAllOfPoliciesInner{}
 
 // ListPolicies200ResponseAllOfPoliciesInner struct for ListPolicies200ResponseAllOfPoliciesInner
 type ListPolicies200ResponseAllOfPoliciesInner struct {
-	Id                   *int64                                                   `json:"id,omitempty"`
-	Name                 *string                                                  `json:"name,omitempty"`
-	Description          NullableString                                           `json:"description,omitempty"`
-	PolicyType           *ListPolicies200ResponseAllOfPoliciesInnerPolicyType     `json:"policyType,omitempty"`
-	Zone                 *ListPolicies200ResponseAllOfPoliciesInnerZone           `json:"zone,omitempty"`
-	Site                 *ListPolicies200ResponseAllOfPoliciesInnerSite           `json:"site,omitempty"`
-	User                 *ListPolicies200ResponseAllOfPoliciesInnerUser           `json:"user,omitempty"`
-	Role                 *ListPolicies200ResponseAllOfPoliciesInnerRole           `json:"role,omitempty"`
-	RefType              NullableString                                           `json:"refType,omitempty"`
-	RefId                NullableInt64                                            `json:"refId,omitempty"`
-	EachUser             NullableBool                                             `json:"eachUser,omitempty"`
-	Config               *ListPolicies200ResponseAllOfPoliciesInnerConfig         `json:"config,omitempty"`
-	Enabled              *bool                                                    `json:"enabled,omitempty"`
-	Owner                NullableListPolicies200ResponseAllOfPoliciesInnerOwner   `json:"owner,omitempty"`
-	Accounts             []ListPolicies200ResponseAllOfPoliciesInnerAccountsInner `json:"accounts,omitempty"`
-	AdditionalProperties map[string]interface{}                                   `json:",remain"`
+	Id                   *int64                                                      `json:"id,omitempty"`
+	Name                 *string                                                     `json:"name,omitempty"`
+	Description          NullableString                                              `json:"description,omitempty"`
+	PolicyType           NullableListPolicies200ResponseAllOfPoliciesInnerPolicyType `json:"policyType,omitempty"`
+	Zone                 *ListPolicies200ResponseAllOfPoliciesInnerZone              `json:"zone,omitempty"`
+	Site                 *ListPolicies200ResponseAllOfPoliciesInnerSite              `json:"site,omitempty"`
+	User                 *ListPolicies200ResponseAllOfPoliciesInnerUser              `json:"user,omitempty"`
+	Role                 *ListPolicies200ResponseAllOfPoliciesInnerRole              `json:"role,omitempty"`
+	RefType              NullableString                                              `json:"refType,omitempty"`
+	RefId                NullableInt64                                               `json:"refId,omitempty"`
+	EachUser             NullableBool                                                `json:"eachUser,omitempty"`
+	Config               *ListPolicies200ResponseAllOfPoliciesInnerConfig            `json:"config,omitempty"`
+	Enabled              *bool                                                       `json:"enabled,omitempty"`
+	Owner                NullableListPolicies200ResponseAllOfPoliciesInnerOwner      `json:"owner,omitempty"`
+	Accounts             []ListPolicies200ResponseAllOfPoliciesInnerAccountsInner    `json:"accounts,omitempty"`
+	AdditionalProperties map[string]interface{}                                      `json:",remain"`
 }
 
 type _ListPolicies200ResponseAllOfPoliciesInner ListPolicies200ResponseAllOfPoliciesInner
@@ -59,8 +59,8 @@ func (o ListPolicies200ResponseAllOfPoliciesInner) ToMap() (map[string]interface
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.PolicyType) {
-		toSerialize["policyType"] = o.PolicyType
+	if o.PolicyType.IsSet() {
+		toSerialize["policyType"] = o.PolicyType.Get()
 	}
 	if !IsNil(o.Zone) {
 		toSerialize["zone"] = o.Zone
@@ -101,51 +101,6 @@ func (o ListPolicies200ResponseAllOfPoliciesInner) ToMap() (map[string]interface
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListPolicies200ResponseAllOfPoliciesInner struct {
-	value *ListPolicies200ResponseAllOfPoliciesInner
-	isSet bool
-}
-
-func (v NullableListPolicies200ResponseAllOfPoliciesInner) Get() *ListPolicies200ResponseAllOfPoliciesInner {
-	return v.value
-}
-
-func (v *NullableListPolicies200ResponseAllOfPoliciesInner) Set(val *ListPolicies200ResponseAllOfPoliciesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListPolicies200ResponseAllOfPoliciesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListPolicies200ResponseAllOfPoliciesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListPolicies200ResponseAllOfPoliciesInner(val *ListPolicies200ResponseAllOfPoliciesInner) *NullableListPolicies200ResponseAllOfPoliciesInner {
-	return &NullableListPolicies200ResponseAllOfPoliciesInner{value: val, isSet: true}
-}
-
-func (v NullableListPolicies200ResponseAllOfPoliciesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListPolicies200ResponseAllOfPoliciesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListPolicies200ResponseAllOfPoliciesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListPolicies200ResponseAllOfPoliciesInner) UnmarshalJSON(data []byte) (err error) {

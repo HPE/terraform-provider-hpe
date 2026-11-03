@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -33,7 +33,7 @@ type GetInstance200ResponseInstance struct {
 	Servers                          []int64                                                       `json:"servers,omitempty"`
 	ConnectionInfo                   []AddInstance200ResponseAllOfOneOfInstanceConnectionInfoInner `json:"connectionInfo,omitempty"`
 	Layout                           *GetInstance200ResponseInstanceLayout                         `json:"layout,omitempty"`
-	Plan                             *GetInstance200ResponseInstancePlan                           `json:"plan,omitempty"`
+	Plan                             NullableGetInstance200ResponseInstancePlan                    `json:"plan,omitempty"`
 	Name                             *string                                                       `json:"name,omitempty"`
 	DisplayName                      *string                                                       `json:"displayName,omitempty"`
 	Description                      NullableString                                                `json:"description,omitempty"`
@@ -154,8 +154,8 @@ func (o GetInstance200ResponseInstance) ToMap() (map[string]interface{}, error) 
 	if !IsNil(o.Layout) {
 		toSerialize["layout"] = o.Layout
 	}
-	if !IsNil(o.Plan) {
-		toSerialize["plan"] = o.Plan
+	if o.Plan.IsSet() {
+		toSerialize["plan"] = o.Plan.Get()
 	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
@@ -370,51 +370,6 @@ func (o GetInstance200ResponseInstance) ToMap() (map[string]interface{}, error) 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetInstance200ResponseInstance struct {
-	value *GetInstance200ResponseInstance
-	isSet bool
-}
-
-func (v NullableGetInstance200ResponseInstance) Get() *GetInstance200ResponseInstance {
-	return v.value
-}
-
-func (v *NullableGetInstance200ResponseInstance) Set(val *GetInstance200ResponseInstance) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetInstance200ResponseInstance) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetInstance200ResponseInstance) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetInstance200ResponseInstance(val *GetInstance200ResponseInstance) *NullableGetInstance200ResponseInstance {
-	return &NullableGetInstance200ResponseInstance{value: val, isSet: true}
-}
-
-func (v NullableGetInstance200ResponseInstance) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetInstance200ResponseInstance) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetInstance200ResponseInstance) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetInstance200ResponseInstance) UnmarshalJSON(data []byte) (err error) {

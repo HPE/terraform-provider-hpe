@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o UpdatePolicies200ResponseAllOfPolicySite) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdatePolicies200ResponseAllOfPolicySite struct {
-	value *UpdatePolicies200ResponseAllOfPolicySite
-	isSet bool
-}
-
-func (v NullableUpdatePolicies200ResponseAllOfPolicySite) Get() *UpdatePolicies200ResponseAllOfPolicySite {
-	return v.value
-}
-
-func (v *NullableUpdatePolicies200ResponseAllOfPolicySite) Set(val *UpdatePolicies200ResponseAllOfPolicySite) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdatePolicies200ResponseAllOfPolicySite) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdatePolicies200ResponseAllOfPolicySite) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdatePolicies200ResponseAllOfPolicySite(val *UpdatePolicies200ResponseAllOfPolicySite) *NullableUpdatePolicies200ResponseAllOfPolicySite {
-	return &NullableUpdatePolicies200ResponseAllOfPolicySite{value: val, isSet: true}
-}
-
-func (v NullableUpdatePolicies200ResponseAllOfPolicySite) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdatePolicies200ResponseAllOfPolicySite) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdatePolicies200ResponseAllOfPolicySite) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdatePolicies200ResponseAllOfPolicySite) UnmarshalJSON(data []byte) (err error) {

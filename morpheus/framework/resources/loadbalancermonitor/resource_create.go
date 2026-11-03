@@ -12,7 +12,9 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -45,7 +47,7 @@ func (r *Resource) Create(
 	monitor.Name = plan.Name.ValueStringPointer()
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		monitor.Description = plan.Description.ValueStringPointer()
+		monitor.Description.Set(plan.Description.ValueStringPointer())
 	}
 
 	loadBalancerID := plan.LoadBalancerId.ValueInt64()
@@ -244,9 +246,20 @@ func (r *Resource) Create(
 		return
 	}
 
-	state, diags := getLoadBalancerMonitorAsState(
+	// Store the configured-value digests now the create POST succeeded, before
+	// the read-back's early returns -- a read-back failure must not discard
+	// them and make the next apply see a spurious change.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	state, apiObj, found, diags := getLoadBalancerMonitorAsState(
 		ctx, loadBalancerID, *created.Id, client,
 	)
+	if !found && !diags.HasError() {
+		diags.AddError("read load balancer monitor", "monitor not found immediately after create")
+	}
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
 			ResourceType: "loadbalancermonitor",
@@ -265,6 +278,10 @@ func (r *Resource) Create(
 	// Preserve write-only / sensitive values from plan.
 	state.ExtraConfig = plan.ExtraConfig
 	state.MonitorPasswordWoVersion = plan.MonitorPasswordWoVersion
+	state.WriteOnlyRevision = wodigest.NewRevision()
+	// Record the appliance-side drift baseline now the read-back succeeded;
+	// the configured-value digests were already stored above after the POST.
+	resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, apiObj)...)
 
 	// Preserve plan config since the API may not return it verbatim.
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
@@ -274,5 +291,6 @@ func (r *Resource) Create(
 	// Restore fields the API accepts but does not return.
 	preserveUnreturnedFields(&state, plan)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

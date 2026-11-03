@@ -17,22 +17,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
-// --- env var helpers (inlined because testhelpers/config.go is outside edit scope) ---
-
-const envAffinityGroupClusterAGID = "TF_VAR_testacc_morpheus_affinity_group_cluster_ag_id"
-
-func affinityGroupClusterAGID(t *testing.T) string {
-	t.Helper()
-
-	v := os.Getenv(envAffinityGroupClusterAGID)
-	if v == "" {
-		t.Skip(envAffinityGroupClusterAGID +
-			" not set; skipping test requiring a cluster affinity group for HVM instance placement")
-	}
-
-	return v
-}
-
 // checkServerInAffinityGroup asserts that at least one value in the instance's
 // compute_servers set appears in the affinity group data source's servers set.
 // This is the authoritative membership check — the affinity group is the source
@@ -261,41 +245,97 @@ data "hpe_morpheus_cloud_affinity_group" "check" {
 // cluster to have dynamic placement enabled, a group with existing members, and
 // a comparison against the host the scheduler would have chosen anyway.
 // exampleHCL/hvm covers that end to end.
-func TestAccMorpheusInstanceResourceAffinityGroupHVM(t *testing.T) {
-	defer testhelpers.RecordResult(t)
+// affinityHVMConfig renders an HVM instance placed in a cluster affinity
+// group, everything resolved by name: the cloud, cluster (and so the resource
+// pool), layout (and so the instance type), network, plan and image from the
+// HVM fixture (testhelpers/hvm_fixture.go), and the affinity group by name
+// within that cluster (TF_VAR_testacc_morpheus_hvm_affinity_group_name).
+// affinityGroupLine is the config_hvm line placing the instance, or empty for
+// an instance in no group; withCheck adds a read of the group after the
+// instance exists, for the membership assertion.
+func affinityHVMConfig(t *testing.T, label, name, affinityGroupLine string, withCheck bool) string {
+	t.Helper()
 
-	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
+	cloudName := testhelpers.HVMCloudName(t)
+	clusterName := testhelpers.HVMClusterName(t)
+	networkName := testhelpers.HVMNetworkName(t)
+	planName := testhelpers.HVMPlanName(t)
+	layoutName, layoutVersion := testhelpers.HVMLayout(t)
+	groupName := testhelpers.HVMAffinityGroupName(t)
 
-	clusterID := testhelpers.AffinityClusterID(t)
-	agID := affinityGroupClusterAGID(t)
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
+	imageData, imageLine := "", ""
+	if image := os.Getenv(testhelpers.EnvHVMImageName); image != "" {
+		imageData = `
+data "hpe_morpheus_image" "hvm" {
+  name = "` + image + `"
+}
+`
+		imageLine = "\n    image_id          = data.hpe_morpheus_image.hvm.id"
 	}
 
-	t.Parallel()
+	check := ""
+	if withCheck {
+		check = `
+# Read the cluster affinity group AFTER the instance is created.
+data "hpe_morpheus_cluster_affinity_group" "check" {
+  cluster_id = data.hpe_morpheus_cluster.hvm.id
+  id         = data.hpe_morpheus_cluster_affinity_group.target.id
 
-	providerConfig := testhelpers.ProviderBlock()
-	name := acctest.RandomWithPrefix(t.Name())
+  depends_on = [hpe_morpheus_instance.` + label + `]
+}
+`
+	}
 
-	resourceConfig := fmt.Sprintf(`
+	return `
 data "hpe_morpheus_cloud" "hvm_cloud" {
-  name = "QA HVM"
+  name = "` + cloudName + `"
 }
 
-resource "hpe_morpheus_instance" "affinity_hvm" {
-  name             = "%[1]s"
+data "hpe_morpheus_cluster" "hvm" {
+  name = "` + clusterName + `"
+}
+
+data "hpe_morpheus_instance_type_layout" "hvm" {
+  name    = "` + layoutName + `"
+  version = "` + layoutVersion + `"
+}
+
+data "hpe_morpheus_network" "hvm" {
+  name       = "` + networkName + `"
+  cluster_id = data.hpe_morpheus_cluster.hvm.id
+}
+
+data "hpe_morpheus_service_plan" "hvm" {
+  name                = "` + planName + `"
+  provision_type_code = "kvm"
+}
+` + imageData + `
+# The affinity group to place the instance in, by name within the cluster.
+data "hpe_morpheus_cluster_affinity_group" "target" {
+  cluster_id = data.hpe_morpheus_cluster.hvm.id
+  name       = "` + groupName + `"
+}
+
+# MORPH-16458: create a per-run group in the current tenant instead of pinning
+# group_id = 1 (the master group), which a sub-tenant cannot use (403).
+resource "hpe_morpheus_group" "test" {
+  name      = "` + name + `-grp"
+  cloud_ids = [data.hpe_morpheus_cloud.hvm_cloud.id]
+}
+
+resource "hpe_morpheus_instance" "` + label + `" {
+  name             = "` + name + `"
   cloud_id         = data.hpe_morpheus_cloud.hvm_cloud.id
-  layout_id        = 5385
-  instance_type_id = 9
-  group_id         = 1
-  plan_id          = 176
+  layout_id        = data.hpe_morpheus_instance_type_layout.hvm.id
+  instance_type_id = data.hpe_morpheus_instance_type_layout.hvm.instance_type.id
+  group_id         = hpe_morpheus_group.test.id
+  plan_id          = data.hpe_morpheus_service_plan.hvm.id
 
   instance_context = "dev"
 
   network_interfaces = [
     {
-      network_id = 235699
+      network_id = data.hpe_morpheus_network.hvm.id
     }
   ]
 
@@ -303,7 +343,7 @@ resource "hpe_morpheus_instance" "affinity_hvm" {
     {
       root_volume              = true
       name                     = "root"
-      size                     = 80
+      size                     = 10
       storage_type_id          = 1
       datastore_auto_selection = "auto"
     }
@@ -321,10 +361,10 @@ resource "hpe_morpheus_instance" "affinity_hvm" {
   ]
 
   config_hvm = {
-    resource_pool_id  = "pool-153047"
-    no_agent          = true
-    create_user       = false
-    affinity_group_id = %[2]s
+    resource_pool_id  = "pool-${data.hpe_morpheus_cluster.hvm.permissions.resource_pool.id}"
+    no_agent          = ` + fmt.Sprintf("%t", testhelpers.HVMNoAgent()) + `
+    create_user       = false` + imageLine + `
+` + affinityGroupLine + `
   }
 
   timeouts = {
@@ -332,15 +372,26 @@ resource "hpe_morpheus_instance" "affinity_hvm" {
     delete = "20m"
   }
 }
-
-# Read the cluster affinity group AFTER the instance is created.
-data "hpe_morpheus_cluster_affinity_group" "check" {
-  cluster_id = %[3]s
-  id         = %[2]s
-
-  depends_on = [hpe_morpheus_instance.affinity_hvm]
+` + check
 }
-`, name, agID, clusterID)
+
+const affinityGroupLine = "    affinity_group_id = data.hpe_morpheus_cluster_affinity_group.target.id"
+
+func TestAccMorpheusInstanceResourceAffinityGroupHVM(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := affinityHVMConfig(t, "affinity_hvm", name, affinityGroupLine, true)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
@@ -370,9 +421,6 @@ func TestAccMorpheusInstanceResourceAffinityGroupRequiresReplace(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
 
-	_ = testhelpers.AffinityClusterID(t) // ensures env is set
-	agID := affinityGroupClusterAGID(t)
-
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -382,80 +430,18 @@ func TestAccMorpheusInstanceResourceAffinityGroupRequiresReplace(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	// affinityGroupLine is either the attribute assignment or nothing at all,
-	// so the second step drops the attribute entirely.
-	makeConfig := func(affinityGroupLine string) string {
-		return fmt.Sprintf(`
-data "hpe_morpheus_cloud" "hvm_cloud" {
-  name = "QA HVM"
-}
-
-resource "hpe_morpheus_instance" "replace_test" {
-  name             = "%[1]s"
-  cloud_id         = data.hpe_morpheus_cloud.hvm_cloud.id
-  layout_id        = 5385
-  instance_type_id = 9
-  group_id         = 1
-  plan_id          = 176
-
-  instance_context = "dev"
-
-  network_interfaces = [
-    {
-      network_id = 235699
-    }
-  ]
-
-  volumes = [
-    {
-      root_volume              = true
-      name                     = "root"
-      size                     = 80
-      storage_type_id          = 1
-      datastore_auto_selection = "auto"
-    }
-  ]
-
-  tags = [
-    {
-      name  = "sweepable"
-      value = "true"
-    },
-    {
-      name  = "managed_by"
-      value = "terraform"
-    }
-  ]
-
-  config_hvm = {
-    resource_pool_id  = "pool-153047"
-    no_agent          = true
-    create_user       = false
-%[2]s
-  }
-
-  timeouts = {
-    create = "1h"
-    delete = "20m"
-  }
-}
-`, name, affinityGroupLine)
-	}
-
 	resourceName := "hpe_morpheus_instance.replace_test"
-
-	withGroup := fmt.Sprintf("    affinity_group_id = %s", agID)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + makeConfig(withGroup),
+				Config: providerConfig + affinityHVMConfig(t, "replace_test", name, affinityGroupLine, false),
 			},
 			{
 				// Dropping affinity_group_id must replace the instance, not
 				// update it in place.
-				Config: providerConfig + makeConfig(""),
+				Config: providerConfig + affinityHVMConfig(t, "replace_test", name, "", false),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
@@ -469,21 +455,16 @@ resource "hpe_morpheus_instance" "replace_test" {
 }
 
 // TestAccMorpheusInstanceResourceAffinityGroupImport verifies that an instance
-// provisioned into an affinity group can be imported without the next plan
-// proposing a replacement.
+// created with config_hvm.affinity_group_id can be imported and that the
+// imported state carries the same affinity_group_id, so a subsequent plan is
+// clean.
 //
 // This is the case that makes reading affinity_group_id back from the API
-// necessary. On refresh the prior state carries the value, so nothing appears
-// to be wrong; on import there is no prior state, and if Read does not populate
-// the attribute the plan sees a change from null. Because the attribute forces
-// replacement, that becomes a proposal to destroy and recreate the instance.
+// matter: without it, every imported instance would plan a replacement.
 func TestAccMorpheusInstanceResourceAffinityGroupImport(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
-
-	clusterID := testhelpers.AffinityClusterID(t)
-	agID := affinityGroupClusterAGID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -494,63 +475,7 @@ func TestAccMorpheusInstanceResourceAffinityGroupImport(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig := fmt.Sprintf(`
-data "hpe_morpheus_cloud" "hvm_cloud" {
-  name = "QA HVM"
-}
-
-resource "hpe_morpheus_instance" "import_test" {
-  name             = "%[1]s"
-  cloud_id         = data.hpe_morpheus_cloud.hvm_cloud.id
-  layout_id        = 5385
-  instance_type_id = 9
-  group_id         = 1
-  plan_id          = 176
-
-  instance_context = "dev"
-
-  network_interfaces = [
-    {
-      network_id = 235699
-    }
-  ]
-
-  volumes = [
-    {
-      root_volume              = true
-      name                     = "root"
-      size                     = 80
-      storage_type_id          = 1
-      datastore_auto_selection = "auto"
-    }
-  ]
-
-  tags = [
-    {
-      name  = "sweepable"
-      value = "true"
-    },
-    {
-      name  = "managed_by"
-      value = "terraform"
-    }
-  ]
-
-  config_hvm = {
-    resource_pool_id  = "pool-153047"
-    no_agent          = true
-    create_user       = false
-    affinity_group_id = %[2]s
-  }
-
-  timeouts = {
-    create = "1h"
-    delete = "20m"
-  }
-}
-`, name, agID)
-
-	_ = clusterID
+	resourceConfig := affinityHVMConfig(t, "import_test", name, affinityGroupLine, false)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),

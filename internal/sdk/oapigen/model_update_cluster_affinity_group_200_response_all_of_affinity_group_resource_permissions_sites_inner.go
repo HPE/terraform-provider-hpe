@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -51,51 +51,6 @@ func (o UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissio
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner struct {
-	value *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner) Get() *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner) Set(val *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner(val *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner) *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner {
-	return &NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {

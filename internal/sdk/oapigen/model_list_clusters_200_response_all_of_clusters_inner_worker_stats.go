@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -73,51 +73,6 @@ func (o ListClusters200ResponseAllOfClustersInnerWorkerStats) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListClusters200ResponseAllOfClustersInnerWorkerStats struct {
-	value *ListClusters200ResponseAllOfClustersInnerWorkerStats
-	isSet bool
-}
-
-func (v NullableListClusters200ResponseAllOfClustersInnerWorkerStats) Get() *ListClusters200ResponseAllOfClustersInnerWorkerStats {
-	return v.value
-}
-
-func (v *NullableListClusters200ResponseAllOfClustersInnerWorkerStats) Set(val *ListClusters200ResponseAllOfClustersInnerWorkerStats) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusters200ResponseAllOfClustersInnerWorkerStats) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusters200ResponseAllOfClustersInnerWorkerStats) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusters200ResponseAllOfClustersInnerWorkerStats(val *ListClusters200ResponseAllOfClustersInnerWorkerStats) *NullableListClusters200ResponseAllOfClustersInnerWorkerStats {
-	return &NullableListClusters200ResponseAllOfClustersInnerWorkerStats{value: val, isSet: true}
-}
-
-func (v NullableListClusters200ResponseAllOfClustersInnerWorkerStats) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusters200ResponseAllOfClustersInnerWorkerStats) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusters200ResponseAllOfClustersInnerWorkerStats) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListClusters200ResponseAllOfClustersInnerWorkerStats) UnmarshalJSON(data []byte) (err error) {

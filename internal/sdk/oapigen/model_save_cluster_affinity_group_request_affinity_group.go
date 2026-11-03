@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,13 +22,15 @@ var _ MappedNullable = &SaveClusterAffinityGroupRequestAffinityGroup{}
 type SaveClusterAffinityGroupRequestAffinityGroup struct {
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Affinity Type
+	// Affinity Type. KEEP_TOGETHER / KEEP_SEPARATE express a preferred (SHOULD) placement, while the KEEP_TOGETHER_MUST / KEEP_SEPARATE_MUST variants express a mandatory (MUST) placement constraint.
 	AffinityType *string `json:"affinityType,omitempty"`
 	// Active
 	Active *bool                                             `json:"active,omitempty"`
 	Pool   *SaveClusterAffinityGroupRequestAffinityGroupPool `json:"pool,omitempty"`
-	// List of Server IDs to include in the Affinity Group
-	Servers []int64 `json:"servers,omitempty"`
+	// List of Server IDs to include in the Affinity Group. Use this for a legacy VM-to-VM rule. Mutually exclusive with `vmGroup`/`hostGroup` — send either `servers`, or both `vmGroup` and `hostGroup`, never both shapes at once.
+	Servers   []int64                                                `json:"servers,omitempty"`
+	VmGroup   *SaveClusterAffinityGroupRequestAffinityGroupVmGroup   `json:"vmGroup,omitempty"`
+	HostGroup *SaveClusterAffinityGroupRequestAffinityGroupHostGroup `json:"hostGroup,omitempty"`
 	// Visibility - Set to public to allow all tenants
 	Visibility *string `json:"visibility,omitempty"`
 	// Array of tenant account ids that are allowed access
@@ -64,6 +66,12 @@ func (o SaveClusterAffinityGroupRequestAffinityGroup) ToMap() (map[string]interf
 	if !IsNil(o.Servers) {
 		toSerialize["servers"] = o.Servers
 	}
+	if !IsNil(o.VmGroup) {
+		toSerialize["vmGroup"] = o.VmGroup
+	}
+	if !IsNil(o.HostGroup) {
+		toSerialize["hostGroup"] = o.HostGroup
+	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
 	}
@@ -79,51 +87,6 @@ func (o SaveClusterAffinityGroupRequestAffinityGroup) ToMap() (map[string]interf
 	}
 
 	return toSerialize, nil
-}
-
-type NullableSaveClusterAffinityGroupRequestAffinityGroup struct {
-	value *SaveClusterAffinityGroupRequestAffinityGroup
-	isSet bool
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroup) Get() *SaveClusterAffinityGroupRequestAffinityGroup {
-	return v.value
-}
-
-func (v *NullableSaveClusterAffinityGroupRequestAffinityGroup) Set(val *SaveClusterAffinityGroupRequestAffinityGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveClusterAffinityGroupRequestAffinityGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveClusterAffinityGroupRequestAffinityGroup(val *SaveClusterAffinityGroupRequestAffinityGroup) *NullableSaveClusterAffinityGroupRequestAffinityGroup {
-	return &NullableSaveClusterAffinityGroupRequestAffinityGroup{value: val, isSet: true}
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveClusterAffinityGroupRequestAffinityGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *SaveClusterAffinityGroupRequestAffinityGroup) UnmarshalJSON(data []byte) (err error) {

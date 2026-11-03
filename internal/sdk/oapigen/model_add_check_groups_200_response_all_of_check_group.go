@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -150,51 +150,6 @@ func (o AddCheckGroups200ResponseAllOfCheckGroup) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddCheckGroups200ResponseAllOfCheckGroup struct {
-	value *AddCheckGroups200ResponseAllOfCheckGroup
-	isSet bool
-}
-
-func (v NullableAddCheckGroups200ResponseAllOfCheckGroup) Get() *AddCheckGroups200ResponseAllOfCheckGroup {
-	return v.value
-}
-
-func (v *NullableAddCheckGroups200ResponseAllOfCheckGroup) Set(val *AddCheckGroups200ResponseAllOfCheckGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddCheckGroups200ResponseAllOfCheckGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddCheckGroups200ResponseAllOfCheckGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddCheckGroups200ResponseAllOfCheckGroup(val *AddCheckGroups200ResponseAllOfCheckGroup) *NullableAddCheckGroups200ResponseAllOfCheckGroup {
-	return &NullableAddCheckGroups200ResponseAllOfCheckGroup{value: val, isSet: true}
-}
-
-func (v NullableAddCheckGroups200ResponseAllOfCheckGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddCheckGroups200ResponseAllOfCheckGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddCheckGroups200ResponseAllOfCheckGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddCheckGroups200ResponseAllOfCheckGroup) UnmarshalJSON(data []byte) (err error) {

@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
 )
 
@@ -41,7 +42,6 @@ func (g *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_" + "instance"
 	resp.TypeName = req.ProviderTypeName + "_" + "instance"
 }
 
@@ -75,10 +75,22 @@ func (g *Resource) ModifyPlan(
 		return
 	}
 
+	// Attributes removed from the configuration since they were last applied
+	// are planned as clears; see clearableAttributes. When there is one, Plan
+	// also marks the computed attributes the configuration leaves null as
+	// unknown, as the framework does for any other update.
+	_, cdiags := clearable.Plan(ctx, req, resp, clearableAttributes)
+	resp.Diagnostics.Append(cdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Put prior state back into the plan for computed attributes whose
-	// triggering configuration has not changed, so that an unrelated edit does
-	// not show them as "(known after apply)". Done before the checks below,
-	// which return early when the appliance version cannot be determined.
+	// triggering configuration has not changed, so that an unrelated edit —
+	// or a clear — does not show them as "(known after apply)". Runs after
+	// clearable.Plan so that it has the last word on what is unknown, and
+	// before the checks below, which return early when the appliance version
+	// cannot be determined.
 	restoreUnchangedComputedAttributes(ctx, req, resp)
 	if resp.Diagnostics.HasError() {
 		return

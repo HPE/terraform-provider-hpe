@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -85,51 +85,6 @@ func (o AnsibleTowerTaskConfig) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAnsibleTowerTaskConfig struct {
-	value *AnsibleTowerTaskConfig
-	isSet bool
-}
-
-func (v NullableAnsibleTowerTaskConfig) Get() *AnsibleTowerTaskConfig {
-	return v.value
-}
-
-func (v *NullableAnsibleTowerTaskConfig) Set(val *AnsibleTowerTaskConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAnsibleTowerTaskConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAnsibleTowerTaskConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAnsibleTowerTaskConfig(val *AnsibleTowerTaskConfig) *NullableAnsibleTowerTaskConfig {
-	return &NullableAnsibleTowerTaskConfig{value: val, isSet: true}
-}
-
-func (v NullableAnsibleTowerTaskConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAnsibleTowerTaskConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAnsibleTowerTaskConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AnsibleTowerTaskConfig) UnmarshalJSON(data []byte) (err error) {

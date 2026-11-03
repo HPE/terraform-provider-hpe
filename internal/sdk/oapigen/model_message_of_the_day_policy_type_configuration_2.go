@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -63,51 +63,6 @@ func (o MessageOfTheDayPolicyTypeConfiguration2) ToMap() (map[string]interface{}
 	}
 
 	return toSerialize, nil
-}
-
-type NullableMessageOfTheDayPolicyTypeConfiguration2 struct {
-	value *MessageOfTheDayPolicyTypeConfiguration2
-	isSet bool
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration2) Get() *MessageOfTheDayPolicyTypeConfiguration2 {
-	return v.value
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration2) Set(val *MessageOfTheDayPolicyTypeConfiguration2) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration2) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration2) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMessageOfTheDayPolicyTypeConfiguration2(val *MessageOfTheDayPolicyTypeConfiguration2) *NullableMessageOfTheDayPolicyTypeConfiguration2 {
-	return &NullableMessageOfTheDayPolicyTypeConfiguration2{value: val, isSet: true}
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration2) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration2) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration2) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *MessageOfTheDayPolicyTypeConfiguration2) UnmarshalJSON(data []byte) (err error) {

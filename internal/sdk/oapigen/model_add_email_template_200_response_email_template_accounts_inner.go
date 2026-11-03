@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddEmailTemplate200ResponseEmailTemplateAccountsInner) ToMap() (map[stri
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddEmailTemplate200ResponseEmailTemplateAccountsInner struct {
-	value *AddEmailTemplate200ResponseEmailTemplateAccountsInner
-	isSet bool
-}
-
-func (v NullableAddEmailTemplate200ResponseEmailTemplateAccountsInner) Get() *AddEmailTemplate200ResponseEmailTemplateAccountsInner {
-	return v.value
-}
-
-func (v *NullableAddEmailTemplate200ResponseEmailTemplateAccountsInner) Set(val *AddEmailTemplate200ResponseEmailTemplateAccountsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddEmailTemplate200ResponseEmailTemplateAccountsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddEmailTemplate200ResponseEmailTemplateAccountsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddEmailTemplate200ResponseEmailTemplateAccountsInner(val *AddEmailTemplate200ResponseEmailTemplateAccountsInner) *NullableAddEmailTemplate200ResponseEmailTemplateAccountsInner {
-	return &NullableAddEmailTemplate200ResponseEmailTemplateAccountsInner{value: val, isSet: true}
-}
-
-func (v NullableAddEmailTemplate200ResponseEmailTemplateAccountsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddEmailTemplate200ResponseEmailTemplateAccountsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddEmailTemplate200ResponseEmailTemplateAccountsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddEmailTemplate200ResponseEmailTemplateAccountsInner) UnmarshalJSON(data []byte) (err error) {

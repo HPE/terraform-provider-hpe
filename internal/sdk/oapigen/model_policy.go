@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,7 @@ type Policy struct {
 	Id                   *int64                                                   `json:"id,omitempty"`
 	Name                 *string                                                  `json:"name,omitempty"`
 	Description          NullableString                                           `json:"description,omitempty"`
-	PolicyType           *PolicyPolicyType                                        `json:"policyType,omitempty"`
+	PolicyType           NullablePolicyPolicyType                                 `json:"policyType,omitempty"`
 	Zone                 *PolicyZone                                              `json:"zone,omitempty"`
 	Site                 *PolicySite                                              `json:"site,omitempty"`
 	User                 *PolicyUser                                              `json:"user,omitempty"`
@@ -59,8 +59,8 @@ func (o Policy) ToMap() (map[string]interface{}, error) {
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.PolicyType) {
-		toSerialize["policyType"] = o.PolicyType
+	if o.PolicyType.IsSet() {
+		toSerialize["policyType"] = o.PolicyType.Get()
 	}
 	if !IsNil(o.Zone) {
 		toSerialize["zone"] = o.Zone
@@ -101,51 +101,6 @@ func (o Policy) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullablePolicy struct {
-	value *Policy
-	isSet bool
-}
-
-func (v NullablePolicy) Get() *Policy {
-	return v.value
-}
-
-func (v *NullablePolicy) Set(val *Policy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePolicy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePolicy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePolicy(val *Policy) *NullablePolicy {
-	return &NullablePolicy{value: val, isSet: true}
-}
-
-func (v NullablePolicy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePolicy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePolicy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *Policy) UnmarshalJSON(data []byte) (err error) {

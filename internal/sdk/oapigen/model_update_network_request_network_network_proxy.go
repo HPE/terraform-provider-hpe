@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -18,10 +18,10 @@ import (
 // checks if the UpdateNetworkRequestNetworkNetworkProxy type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdateNetworkRequestNetworkNetworkProxy{}
 
-// UpdateNetworkRequestNetworkNetworkProxy struct for UpdateNetworkRequestNetworkNetworkProxy
+// UpdateNetworkRequestNetworkNetworkProxy Network proxy; null, or a null id, removes it
 type UpdateNetworkRequestNetworkNetworkProxy struct {
-	// Network Proxy ID
-	Id                   *int64                 `json:"id,omitempty"`
+	// Network Proxy ID; null removes the proxy
+	Id                   NullableInt64          `json:"id,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -37,8 +37,8 @@ func (o UpdateNetworkRequestNetworkNetworkProxy) MarshalJSON() ([]byte, error) {
 
 func (o UpdateNetworkRequestNetworkNetworkProxy) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Id) {
-		toSerialize["id"] = o.Id
+	if o.Id.IsSet() {
+		toSerialize["id"] = o.Id.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -46,51 +46,6 @@ func (o UpdateNetworkRequestNetworkNetworkProxy) ToMap() (map[string]interface{}
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateNetworkRequestNetworkNetworkProxy struct {
-	value *UpdateNetworkRequestNetworkNetworkProxy
-	isSet bool
-}
-
-func (v NullableUpdateNetworkRequestNetworkNetworkProxy) Get() *UpdateNetworkRequestNetworkNetworkProxy {
-	return v.value
-}
-
-func (v *NullableUpdateNetworkRequestNetworkNetworkProxy) Set(val *UpdateNetworkRequestNetworkNetworkProxy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetworkRequestNetworkNetworkProxy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetworkRequestNetworkNetworkProxy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetworkRequestNetworkNetworkProxy(val *UpdateNetworkRequestNetworkNetworkProxy) *NullableUpdateNetworkRequestNetworkNetworkProxy {
-	return &NullableUpdateNetworkRequestNetworkNetworkProxy{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetworkRequestNetworkNetworkProxy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetworkRequestNetworkNetworkProxy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetworkRequestNetworkNetworkProxy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateNetworkRequestNetworkNetworkProxy) UnmarshalJSON(data []byte) (err error) {

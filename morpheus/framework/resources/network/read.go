@@ -12,10 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/networkconfig"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
@@ -25,11 +27,14 @@ func getNetworkAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan NetworkModel,
-) (NetworkModel, diag.Diagnostics) {
+) (NetworkModel, bool, diag.Diagnostics) {
 	var state NetworkModel
 	var diags diag.Diagnostics
 
 	network, hresp, err := client.NetworksAPI.GetNetwork(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate network resource",
@@ -37,7 +42,7 @@ func getNetworkAsState(
 				errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	net := network.Network
@@ -47,7 +52,7 @@ func getNetworkAsState(
 			fmt.Sprintf("network %d GET returned no network payload", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = convert.Int64ToType(net.Id)
@@ -144,7 +149,7 @@ func getNetworkAsState(
 			"could not parse a slice of labels",
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// Morpheus API may change the casing of the labels, to avoid Terraform
@@ -162,7 +167,14 @@ func getNetworkAsState(
 
 	state.Labels = convert.StrSliceToSet(respLabels)
 
+	// config and the typed config_* blocks are write-only: never in state (the
+	// model's zero values are null). What the server holds is exposed read-only
+	// in config_from_api.
 	state.Config = types.DynamicNull()
+
+	fromAPI, cdiags := configFromAPI(ctx, id, net.Config)
+	diags.Append(cdiags...)
+	state.ConfigFromApi = fromAPI
 
 	if net.Config != nil {
 		state.ConnectedGateway = convert.StrToType(net.Config.ConnectedGateway)
@@ -176,6 +188,34 @@ func getNetworkAsState(
 		)
 	} else {
 		state.NetworkDomainId = types.Int64Null()
+	}
+
+	// Morpheus does not return the network server, nor the type-specific
+	// fields it accepts on create — the NSX-T transport zone, the OVS
+	// overlay's VXLAN id, a child network's parent — so the configured values
+	// are kept; should a response ever carry {"id": n} for the network server
+	// or the parent under its remaining properties, that wins.
+	// An unconfigured Optional+Computed attribute is unknown in the plan; in
+	// state it is null.
+	state.NetworkServerId = knownInt64OrNull(plan.NetworkServerId)
+	state.ScopeId = knownStringOrNull(plan.ScopeId)
+	state.VxlanId = knownInt64OrNull(plan.VxlanId)
+	state.ParentNetworkId = knownInt64OrNull(plan.ParentNetworkId)
+
+	if ns, ok := net.AdditionalProperties["networkServer"].(map[string]any); ok {
+		if idf, ok := ns["id"].(float64); ok {
+			state.NetworkServerId = types.Int64Value(int64(idf))
+		}
+	}
+
+	if pn, ok := net.AdditionalProperties["parentNetwork"].(map[string]any); ok {
+		if idf, ok := pn["id"].(float64); ok {
+			state.ParentNetworkId = types.Int64Value(int64(idf))
+		}
+	}
+
+	if net.AvailabilityZone.IsSet() {
+		state.AvailabilityZone = convert.StrToType(net.AvailabilityZone.Get())
 	}
 
 	if net.NetworkProxy != nil {
@@ -200,8 +240,10 @@ func getNetworkAsState(
 
 	if net.Type != nil {
 		state.TypeId = convert.Int64ToType(net.Type.Id)
+		state.TypeCode = convert.StrToType(net.Type.Code)
 	} else {
 		state.TypeId = types.Int64Null()
+		state.TypeCode = types.StringNull()
 	}
 
 	state.TenantIds = types.SetNull(types.Int64Type)
@@ -218,7 +260,7 @@ func getNetworkAsState(
 			)
 			diags.Append(d...)
 			if diags.HasError() {
-				return state, diags
+				return state, false, diags
 			}
 			state.TenantIds = tenantSet
 		}
@@ -230,14 +272,14 @@ func getNetworkAsState(
 		resourcePermissions, d := convertResourcePermissions(ctx, net.ResourcePermission)
 		diags.Append(d...)
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 		state.ResourcePermissions = resourcePermissions
 	} else {
 		state.ResourcePermissions = NewResourcePermissionsValueNull()
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 func convertResourcePermissions(
@@ -303,14 +345,51 @@ func (r *Resource) Read(
 
 	id := plan.Id.ValueInt64()
 
-	state, diags := getNetworkAsState(ctx, id, client, plan)
+	state, foundNet, diags := getNetworkAsState(ctx, id, client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		state.Config = plan.Config
+	// The network was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !foundNet {
+		tflog.Info(ctx, fmt.Sprintf("network %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
+
+		return
+	}
+
+	// A network created before configuration became write-only has no digests
+	// in private state; its configured config arrives here from the state
+	// upgrade, stashed in config_from_api. Seed the digests from it on this
+	// first refresh, so the next plan compares the configuration against what
+	// was applied rather than treating it as new. The stash is replaced by the
+	// API's view above, so it exists only until this Read.
+	if _, ok, ldiags := networkconfig.Load(ctx, req.Private); !ldiags.HasError() && !ok {
+		if stash, found, err := upgradeStash(ctx, plan.ConfigFromApi); err != nil {
+			resp.Diagnostics.AddWarning("network configuration digests not seeded", err.Error())
+		} else if found {
+			seed := plan
+			seed.Config = types.DynamicNull()
+
+			if len(stash) > 0 {
+				dyn, derr := convert.MapToDynamic(ctx, stash)
+				if derr == nil {
+					seed.Config = dyn
+				}
+			}
+
+			// Routed for the type the API reports, as every later plan will be.
+			typ := typeSpec(ctx, client, knownInt64(state.TypeId), knownString(state.TypeCode))
+
+			inputs, idiags := resolveConfigInputs(ctx, seed, typ)
+			resp.Diagnostics.Append(idiags...)
+
+			if !idiags.HasError() {
+				resp.Diagnostics.Append(networkconfig.Store(ctx, resp.Private, inputs.digests)...)
+			}
+		}
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

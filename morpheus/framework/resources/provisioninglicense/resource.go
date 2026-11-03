@@ -16,7 +16,9 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
@@ -24,6 +26,7 @@ var (
 	_ resource.Resource                = &provisioningLicenseResource{}
 	_ resource.ResourceWithConfigure   = &provisioningLicenseResource{}
 	_ resource.ResourceWithImportState = &provisioningLicenseResource{}
+	_ resource.ResourceWithModifyPlan  = &provisioningLicenseResource{}
 )
 
 type provisioningLicenseResource struct {
@@ -76,7 +79,7 @@ func (r *provisioningLicenseResource) Create(
 
 	body := sdk.AddProvisioningLicenseRequestLicense{
 		Name:        plan.Name.ValueString(),
-		LicenseType: plan.LicenseType.ValueString(),
+		LicenseType: sdk.AddProvisioningLicenseRequestLicenseLicenseType{String: plan.LicenseType.ValueStringPointer()},
 		LicenseKey:  config.LicenseKeyWo.ValueString(),
 	}
 	if !plan.Description.IsNull() {
@@ -88,7 +91,10 @@ func (r *provisioningLicenseResource) Create(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		body.VirtualImages = images
+		body.VirtualImages = make([]sdk.AddProvisioningLicenseRequestLicenseVirtualImagesInner, 0, len(images))
+		for i := range images {
+			body.VirtualImages = append(body.VirtualImages, sdk.AddProvisioningLicenseRequestLicenseVirtualImagesInner{Int64: &images[i]})
+		}
 	}
 	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
 		var tenants []int64
@@ -101,7 +107,7 @@ func (r *provisioningLicenseResource) Create(
 
 	result, httpResp, err := client.ProvisioningLicensesAPI.AddProvisioningLicense(ctx).
 		AddProvisioningLicenseRequest(sdk.AddProvisioningLicenseRequest{
-			License: &body,
+			License: body,
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "provisioning_license", plan.Name.ValueString(), err, httpResp)
@@ -149,7 +155,10 @@ func (r *provisioningLicenseResource) Create(
 		plan.Tenants = savedTenants
 	}
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -237,29 +246,41 @@ func (r *provisioningLicenseResource) Update(
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdateProvisioningLicenseRequestLicense{
 		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
-	if !plan.VirtualImages.IsNull() {
-		var images []int64
-		resp.Diagnostics.Append(plan.VirtualImages.ElementsAs(ctx, &images, false)...)
+	clearable.NullableString(pending, "description", plan.Description, &body.Description)
+	// virtual_images and tenants: the planned list, or an empty list when being cleared
+	if images, ok, ldiags := pending.Int64s(ctx, "virtual_images", plan.VirtualImages); ok {
+		resp.Diagnostics.Append(ldiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		body.VirtualImages = images
+		body.VirtualImages = make([]sdk.UpdateProvisioningLicenseRequestLicenseVirtualImagesInner, 0, len(images))
+		for i := range images {
+			body.VirtualImages = append(body.VirtualImages, sdk.UpdateProvisioningLicenseRequestLicenseVirtualImagesInner{Int64: &images[i]})
+		}
 	}
-	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
-		var tenants []int64
-		resp.Diagnostics.Append(plan.Tenants.ElementsAs(ctx, &tenants, false)...)
+	if tenants, ok, ldiags := pending.Int64s(ctx, "tenants", plan.Tenants); ok {
+		resp.Diagnostics.Append(ldiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 		body.Tenants = tenants
 	}
-	if !plan.LicenseKeyWoVersion.Equal(state.LicenseKeyWoVersion) {
+	// license_key_wo is re-sent when ModifyPlan marked write_only_revision
+	// unknown (its digest changed, or the deprecated marker did). See
+	// write_only.go.
+	resend := wodigest.Resend(ctx, req.Plan)
+	if resend && !config.LicenseKeyWo.IsNull() && !config.LicenseKeyWo.IsUnknown() {
 		body.AdditionalProperties = map[string]interface{}{
 			"licenseKey": config.LicenseKeyWo.ValueString(),
 		}
@@ -267,7 +288,7 @@ func (r *provisioningLicenseResource) Update(
 
 	_, httpResp, err := client.ProvisioningLicensesAPI.UpdateProvisioningLicense(ctx, id).
 		UpdateProvisioningLicenseRequest(sdk.UpdateProvisioningLicenseRequest{
-			License: &body,
+			License: body,
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "provisioning_license", plan.Name.ValueString(), err, httpResp)
@@ -297,7 +318,14 @@ func (r *provisioningLicenseResource) Update(
 		plan.Tenants = savedTenants
 	}
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if resend {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	// Always record the digests of the configured values, sent or not.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -321,8 +349,8 @@ func (r *provisioningLicenseResource) Delete(
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.ProvisioningLicensesAPI.RemoveProvisioningLicense(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.ProvisioningLicensesAPI.RemoveProvisioningLicense(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "provisioning_license", "", err, httpResp)
 
 		return
@@ -334,9 +362,15 @@ func (r *provisioningLicenseResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.ParseInt(req.ID, 10, 64)
+	// "<id>" or "<id>#license_key_wo=<sha256 hex>": see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.ParseInt(rawID, 10, 64)
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", rawID, err))
 
 		return
 	}

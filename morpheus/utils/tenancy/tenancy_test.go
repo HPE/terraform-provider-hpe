@@ -240,6 +240,114 @@ func TestUnitGuardMasterOnlyAttribute_MORPH16546(t *testing.T) {
 	}
 }
 
+// boolModel mirrors the single boolean attribute the bool guard reads.
+type boolModel struct {
+	Flag types.Bool `tfsdk:"flag"`
+}
+
+func boolSchema() fwschema.Schema {
+	return fwschema.Schema{
+		Attributes: map[string]fwschema.Attribute{
+			"flag": fwschema.BoolAttribute{Optional: true, Computed: true},
+		},
+	}
+}
+
+func makeBoolPlan(t *testing.T, v types.Bool) tfsdk.Plan {
+	t.Helper()
+	ctx := context.Background()
+	p := tfsdk.Plan{Schema: boolSchema()}
+	if diags := p.Set(ctx, &boolModel{Flag: v}); diags.HasError() {
+		t.Fatalf("build plan: %v", diags)
+	}
+
+	return p
+}
+
+// TestUnitGuardMasterOnlyBoolAttribute_MORPH17516 covers the Bool master-only
+// guard: a non-master planned true is rejected, false (the default) is always
+// allowed regardless of tenancy and without calling whoami, master+true passes,
+// null/unknown short-circuit, and a whoami failure fails open with a warning.
+func TestUnitGuardMasterOnlyBoolAttribute_MORPH17516(t *testing.T) {
+	ctx := context.Background()
+	attr := path.Root("flag")
+
+	cases := []struct {
+		name       string
+		value      types.Bool
+		isMaster   bool
+		fail       bool
+		wantErrors int
+		wantWarns  int
+		wantCalled bool
+	}{
+		{
+			name:       "non-master true is rejected",
+			value:      types.BoolValue(true),
+			isMaster:   false,
+			wantErrors: 1,
+			wantCalled: true,
+		},
+		{
+			name:       "non-master false is allowed without whoami",
+			value:      types.BoolValue(false),
+			isMaster:   false,
+			wantErrors: 0,
+			wantCalled: false,
+		},
+		{
+			name:       "master true is allowed",
+			value:      types.BoolValue(true),
+			isMaster:   true,
+			wantErrors: 0,
+			wantCalled: true,
+		},
+		{
+			name:       "null value short-circuits",
+			value:      types.BoolNull(),
+			isMaster:   false,
+			wantErrors: 0,
+			wantCalled: false,
+		},
+		{
+			name:       "unknown value short-circuits",
+			value:      types.BoolUnknown(),
+			isMaster:   false,
+			wantErrors: 0,
+			wantCalled: false,
+		},
+		{
+			name:       "whoami failure fails open with warning",
+			value:      types.BoolValue(true),
+			fail:       true,
+			wantErrors: 0,
+			wantWarns:  1,
+			wantCalled: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			resetCache(t)
+
+			client, hits := guardClient(t, tc.isMaster, tc.fail)
+			plan := makeBoolPlan(t, tc.value)
+			var diags diag.Diagnostics
+			GuardMasterOnlyBoolAttribute(ctx, client, plan, attr, &diags)
+
+			if got := diags.ErrorsCount(); got != tc.wantErrors {
+				t.Errorf("errors = %d, want %d (%v)", got, tc.wantErrors, diags)
+			}
+			if got := diags.WarningsCount(); got != tc.wantWarns {
+				t.Errorf("warnings = %d, want %d (%v)", got, tc.wantWarns, diags)
+			}
+			if called := hits.Load() > 0; called != tc.wantCalled {
+				t.Errorf("whoami called = %v, want %v", called, tc.wantCalled)
+			}
+		})
+	}
+}
+
 // TestUnitCheckVisibilityApplied_MORPH16419 covers the apply-time fallback.
 func TestUnitCheckVisibilityApplied_MORPH16419(t *testing.T) {
 	cases := []struct {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o ListClouds200ResponseAllOfZonesInnerCredentialAnyOf) ToMap() (map[string
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListClouds200ResponseAllOfZonesInnerCredentialAnyOf struct {
-	value *ListClouds200ResponseAllOfZonesInnerCredentialAnyOf
-	isSet bool
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerCredentialAnyOf) Get() *ListClouds200ResponseAllOfZonesInnerCredentialAnyOf {
-	return v.value
-}
-
-func (v *NullableListClouds200ResponseAllOfZonesInnerCredentialAnyOf) Set(val *ListClouds200ResponseAllOfZonesInnerCredentialAnyOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerCredentialAnyOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClouds200ResponseAllOfZonesInnerCredentialAnyOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClouds200ResponseAllOfZonesInnerCredentialAnyOf(val *ListClouds200ResponseAllOfZonesInnerCredentialAnyOf) *NullableListClouds200ResponseAllOfZonesInnerCredentialAnyOf {
-	return &NullableListClouds200ResponseAllOfZonesInnerCredentialAnyOf{value: val, isSet: true}
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerCredentialAnyOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClouds200ResponseAllOfZonesInnerCredentialAnyOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerCredentialAnyOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListClouds200ResponseAllOfZonesInnerCredentialAnyOf) UnmarshalJSON(data []byte) (err error) {

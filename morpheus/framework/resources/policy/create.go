@@ -12,6 +12,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
@@ -134,7 +135,10 @@ func (r *Resource) Create(
 	}
 
 	// Read the created policy to get full state
-	state, diags := getPolicyAsState(ctx, id, client, &plan)
+	state, found, diags := getPolicyAsState(ctx, id, client, &plan)
+	if !found && !diags.HasError() {
+		diags.AddError("failed to read policy state", fmt.Sprintf("Policy %d was created but could not be read", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
@@ -147,6 +151,7 @@ func (r *Resource) Create(
 	}
 
 	// Set the state
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(

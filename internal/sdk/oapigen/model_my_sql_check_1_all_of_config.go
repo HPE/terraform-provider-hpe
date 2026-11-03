@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -90,51 +90,6 @@ func (o MySqlCheck1AllOfConfig) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableMySqlCheck1AllOfConfig struct {
-	value *MySqlCheck1AllOfConfig
-	isSet bool
-}
-
-func (v NullableMySqlCheck1AllOfConfig) Get() *MySqlCheck1AllOfConfig {
-	return v.value
-}
-
-func (v *NullableMySqlCheck1AllOfConfig) Set(val *MySqlCheck1AllOfConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMySqlCheck1AllOfConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMySqlCheck1AllOfConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMySqlCheck1AllOfConfig(val *MySqlCheck1AllOfConfig) *NullableMySqlCheck1AllOfConfig {
-	return &NullableMySqlCheck1AllOfConfig{value: val, isSet: true}
-}
-
-func (v NullableMySqlCheck1AllOfConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMySqlCheck1AllOfConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMySqlCheck1AllOfConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *MySqlCheck1AllOfConfig) UnmarshalJSON(data []byte) (err error) {

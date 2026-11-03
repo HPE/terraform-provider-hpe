@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -12,7 +13,9 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -118,7 +121,7 @@ func (r *settingWhitelabelResource) Read(ctx context.Context, req resource.ReadR
 
 		return
 	}
-	mapResponseToModel(&state, settings)
+	mapResponseToModel(ctx, &state, settings)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -142,7 +145,24 @@ func (r *settingWhitelabelResource) Update(
 		return
 	}
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared: the strings Morpheus resets with an empty value.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := buildUpdateRequest(&plan)
+	if s := pending.String("appliance_name", plan.ApplianceName); s != nil {
+		body.WhitelabelSettings.ApplianceName = s
+	}
+	if s := pending.String("primary_color", plan.PrimaryColor); s != nil {
+		body.WhitelabelSettings.HeaderBgColor = s
+	}
+	if s := pending.String("secondary_color", plan.SecondaryColor); s != nil {
+		body.WhitelabelSettings.HeaderFgColor = s
+	}
 
 	// Reset a logo/favicon only when Terraform previously tracked a path for it
 	// and the plan now clears it, so an image set outside Terraform (e.g. in the
@@ -249,7 +269,7 @@ func (r *settingWhitelabelResource) readIntoModel(
 
 		return
 	}
-	mapResponseToModel(model, settings)
+	mapResponseToModel(ctx, model, settings)
 }
 
 // uploadImages uploads the logo/favicon image files referenced by the plan to
@@ -282,7 +302,7 @@ func (r *settingWhitelabelResource) uploadImages(
 			return err
 		}
 		defer headerLogo.Close()
-		imgReq = imgReq.HeaderLogoFile(headerLogo)
+		imgReq = imgReq.HeaderLogo(headerLogo)
 	}
 
 	if !plan.FooterLogo.IsNull() && !plan.FooterLogo.IsUnknown() {
@@ -291,7 +311,7 @@ func (r *settingWhitelabelResource) uploadImages(
 			return err
 		}
 		defer footerLogo.Close()
-		imgReq = imgReq.FooterLogoFile(footerLogo)
+		imgReq = imgReq.FooterLogo(footerLogo)
 	}
 
 	if !plan.LoginLogo.IsNull() && !plan.LoginLogo.IsUnknown() {
@@ -300,7 +320,7 @@ func (r *settingWhitelabelResource) uploadImages(
 			return err
 		}
 		defer loginLogo.Close()
-		imgReq = imgReq.LoginLogoFile(loginLogo)
+		imgReq = imgReq.LoginLogo(loginLogo)
 	}
 
 	if !plan.Favicon.IsNull() && !plan.Favicon.IsUnknown() {
@@ -309,7 +329,7 @@ func (r *settingWhitelabelResource) uploadImages(
 			return err
 		}
 		defer favicon.Close()
-		imgReq = imgReq.FaviconFile(favicon)
+		imgReq = imgReq.Favicon(favicon)
 	}
 
 	_, httpResp, err := imgReq.Execute()
@@ -346,12 +366,24 @@ func buildUpdateRequest(plan *SettingWhitelabelModel) sdk.UpdateWhitelabelSettin
 		settings.HeaderFgColor = plan.SecondaryColor.ValueStringPointer()
 	}
 
+	// Spec additions (MORPH-18721): settable via the PUT body.
+	if !plan.SecurityBanner.IsNull() && !plan.SecurityBanner.IsUnknown() {
+		settings.SecurityBanner = plan.SecurityBanner.ValueStringPointer()
+	}
+	if !plan.ExternalLegalText.IsNull() && !plan.ExternalLegalText.IsUnknown() {
+		settings.ExternalLegalText = plan.ExternalLegalText.ValueStringPointer()
+	}
+	if !plan.SupportsThemes.IsNull() && !plan.SupportsThemes.IsUnknown() {
+		settings.SupportsThemes = plan.SupportsThemes.ValueBoolPointer()
+	}
+
 	return sdk.UpdateWhitelabelSettingsRequest{
 		WhitelabelSettings: &settings,
 	}
 }
 
 func mapResponseToModel(
+	ctx context.Context,
 	model *SettingWhitelabelModel,
 	settings *sdk.ListWhitelabelSettings200ResponseWhitelabelSettings,
 ) {
@@ -383,6 +415,23 @@ func mapResponseToModel(
 		model.SecondaryColor = types.StringNull()
 	}
 	// SupportMenuLinks is not directly mapped from the response as it requires JSON serialization
+
+	// Spec additions (MORPH-18721).
+	model.SecurityBanner = convert.StrToType(settings.SecurityBanner)
+	model.ExternalLegalText = convert.StrToType(settings.ExternalLegalText)
+	model.SupportsThemes = convert.BoolToType(settings.SupportsThemes)
+
+	if acct := settings.Account.Get(); acct != nil {
+		model.Account = NewAccountValueMust(
+			AccountValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"id":   convert.Int64ToType(acct.Id),
+				"name": convert.StrToType(acct.Name),
+			},
+		)
+	} else {
+		model.Account = NewAccountValueNull()
+	}
 }
 
 func boolPtr(v bool) *bool {

@@ -12,6 +12,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
@@ -163,17 +164,20 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration, to be cleared.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdateVDIGatewaysRequestVdiGatewayOneOf{
 		Name: plan.Name.ValueStringPointer(),
 	}
 
-	if !plan.GatewayUrl.IsNull() && !plan.GatewayUrl.IsUnknown() {
-		body.GatewayUrl = plan.GatewayUrl.ValueStringPointer()
-	}
-
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	// Sent when known, null when being cleared, not sent otherwise.
+	clearable.NullableString(pending, "gateway_url", plan.GatewayUrl, &body.GatewayUrl)
+	clearable.NullableString(pending, "description", plan.Description, &body.Description)
 
 	_, httpResp, err := client.VDIAPI.UpdateVDIGateways(ctx, id).
 		UpdateVDIGatewaysRequest(sdk.UpdateVDIGatewaysRequest{
@@ -218,8 +222,8 @@ func (r *vdiGatewayResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.VDIAPI.RemoveVDIGateways(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.VDIAPI.RemoveVDIGateways(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "vdi_gateway", "", err, httpResp)
 
 		return

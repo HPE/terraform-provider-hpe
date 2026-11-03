@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o CreateNetworkPool200ResponseNetworkPoolAccount) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateNetworkPool200ResponseNetworkPoolAccount struct {
-	value *CreateNetworkPool200ResponseNetworkPoolAccount
-	isSet bool
-}
-
-func (v NullableCreateNetworkPool200ResponseNetworkPoolAccount) Get() *CreateNetworkPool200ResponseNetworkPoolAccount {
-	return v.value
-}
-
-func (v *NullableCreateNetworkPool200ResponseNetworkPoolAccount) Set(val *CreateNetworkPool200ResponseNetworkPoolAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkPool200ResponseNetworkPoolAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkPool200ResponseNetworkPoolAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkPool200ResponseNetworkPoolAccount(val *CreateNetworkPool200ResponseNetworkPoolAccount) *NullableCreateNetworkPool200ResponseNetworkPoolAccount {
-	return &NullableCreateNetworkPool200ResponseNetworkPoolAccount{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkPool200ResponseNetworkPoolAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkPool200ResponseNetworkPoolAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkPool200ResponseNetworkPoolAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateNetworkPool200ResponseNetworkPoolAccount) UnmarshalJSON(data []byte) (err error) {

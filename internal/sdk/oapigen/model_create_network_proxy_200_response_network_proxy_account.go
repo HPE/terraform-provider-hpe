@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o CreateNetworkProxy200ResponseNetworkProxyAccount) ToMap() (map[string]in
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateNetworkProxy200ResponseNetworkProxyAccount struct {
-	value *CreateNetworkProxy200ResponseNetworkProxyAccount
-	isSet bool
-}
-
-func (v NullableCreateNetworkProxy200ResponseNetworkProxyAccount) Get() *CreateNetworkProxy200ResponseNetworkProxyAccount {
-	return v.value
-}
-
-func (v *NullableCreateNetworkProxy200ResponseNetworkProxyAccount) Set(val *CreateNetworkProxy200ResponseNetworkProxyAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkProxy200ResponseNetworkProxyAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkProxy200ResponseNetworkProxyAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkProxy200ResponseNetworkProxyAccount(val *CreateNetworkProxy200ResponseNetworkProxyAccount) *NullableCreateNetworkProxy200ResponseNetworkProxyAccount {
-	return &NullableCreateNetworkProxy200ResponseNetworkProxyAccount{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkProxy200ResponseNetworkProxyAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkProxy200ResponseNetworkProxyAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkProxy200ResponseNetworkProxyAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateNetworkProxy200ResponseNetworkProxyAccount) UnmarshalJSON(data []byte) (err error) {

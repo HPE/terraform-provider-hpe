@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -56,51 +56,6 @@ func (o UpdateNetwork200ResponseAllOfNetworkPool) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateNetwork200ResponseAllOfNetworkPool struct {
-	value *UpdateNetwork200ResponseAllOfNetworkPool
-	isSet bool
-}
-
-func (v NullableUpdateNetwork200ResponseAllOfNetworkPool) Get() *UpdateNetwork200ResponseAllOfNetworkPool {
-	return v.value
-}
-
-func (v *NullableUpdateNetwork200ResponseAllOfNetworkPool) Set(val *UpdateNetwork200ResponseAllOfNetworkPool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetwork200ResponseAllOfNetworkPool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetwork200ResponseAllOfNetworkPool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetwork200ResponseAllOfNetworkPool(val *UpdateNetwork200ResponseAllOfNetworkPool) *NullableUpdateNetwork200ResponseAllOfNetworkPool {
-	return &NullableUpdateNetwork200ResponseAllOfNetworkPool{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetwork200ResponseAllOfNetworkPool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetwork200ResponseAllOfNetworkPool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetwork200ResponseAllOfNetworkPool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateNetwork200ResponseAllOfNetworkPool) UnmarshalJSON(data []byte) (err error) {

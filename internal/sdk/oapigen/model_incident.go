@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -134,51 +134,6 @@ func (o Incident) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableIncident struct {
-	value *Incident
-	isSet bool
-}
-
-func (v NullableIncident) Get() *Incident {
-	return v.value
-}
-
-func (v *NullableIncident) Set(val *Incident) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableIncident) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableIncident) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableIncident(val *Incident) *NullableIncident {
-	return &NullableIncident{value: val, isSet: true}
-}
-
-func (v NullableIncident) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableIncident) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableIncident) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *Incident) UnmarshalJSON(data []byte) (err error) {

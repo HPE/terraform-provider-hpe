@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -26,18 +27,21 @@ func getImageAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan ImageModel,
-) (ImageModel, diag.Diagnostics) {
+) (ImageModel, *sdk.GetVirtualImage200ResponseVirtualImage, bool, diag.Diagnostics) {
 	var state ImageModel
 	var diags diag.Diagnostics
 
 	resp, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return state, nil, false, diags
+	}
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate image resource",
 			fmt.Sprintf("image %d GET failed: ", id)+errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, diags
+		return state, nil, false, diags
 	}
 
 	image := resp.VirtualImage
@@ -47,7 +51,7 @@ func getImageAsState(
 			fmt.Sprintf("image %d GET returned no virtualImage", id),
 		)
 
-		return state, diags
+		return state, nil, false, diags
 	}
 
 	// auto_join_domain
@@ -103,7 +107,7 @@ func getImageAsState(
 			"could not parse a slice of labels",
 		)
 
-		return state, diags
+		return state, image, false, diags
 	}
 
 	// Morpheus API may change the casing of the labels, to avoid Terraform
@@ -158,6 +162,7 @@ func getImageAsState(
 
 	// ssh_password_wo_version
 	state.SshPasswordWoVersion = plan.SshPasswordWoVersion
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
 	// storage_provider_id
 	if image.StorageProvider != nil {
@@ -204,7 +209,7 @@ func getImageAsState(
 			)
 			diags.Append(d...)
 			if diags.HasError() {
-				return state, diags
+				return state, image, false, diags
 			}
 			state.TenantIds = tenantSet
 		}
@@ -231,7 +236,7 @@ func getImageAsState(
 	// vm_tools_installed
 	state.VmToolsInstalled = convert.BoolToType(image.VmToolsInstalled)
 
-	return state, diags
+	return state, image, true, diags
 }
 
 // Read implements resource.Resource.
@@ -250,8 +255,29 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	state, diag := getImageAsState(ctx, data.Id.ValueInt64(), client, data)
+	state, apiObj, found, diag := getImageAsState(ctx, data.Id.ValueInt64(), client, data)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Compare the appliance's hash of the stored secret with the baseline
+	// recorded when the provider last sent it; an inequality means the secret
+	// was changed out of band and the next plan re-sends the configured value.
+	if found {
+		drifted, driftDiags := wo.CheckDrift(ctx, resp.Private, apiObj)
+		resp.Diagnostics.Append(driftDiags...)
+		if len(drifted) > 0 {
+			tflog.Info(ctx, "write-only value changed on the appliance",
+				map[string]any{"attributes": drifted})
+		}
+	}
+
+	// The image was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("image %d not found, removing from state", data.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -13,87 +13,131 @@ package sdk
 
 import (
 	"encoding/json"
+	"fmt"
+
+	"gopkg.in/validator.v2"
 )
 
-// checks if the AddUserRequestUserRolesInner type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &AddUserRequestUserRolesInner{}
+// very silly way of avoiding `"fmt" imported and not used` errors
+var _ fmt.Stringer
 
-// AddUserRequestUserRolesInner struct for AddUserRequestUserRolesInner
+// AddUserRequestUserRolesInner - struct for AddUserRequestUserRolesInner
 type AddUserRequestUserRolesInner struct {
-	Id                   *int64                 `json:"id,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	AddUserRequestUserRolesInnerOneOf *AddUserRequestUserRolesInnerOneOf
+	Int64                             *int64
 }
 
-type _AddUserRequestUserRolesInner AddUserRequestUserRolesInner
-
-func (o AddUserRequestUserRolesInner) MarshalJSON() ([]byte, error) {
-	toSerialize, err := o.ToMap()
-	if err != nil {
-		return []byte{}, err
-	}
-	return json.Marshal(toSerialize)
-}
-
-func (o AddUserRequestUserRolesInner) ToMap() (map[string]interface{}, error) {
-	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Id) {
-		toSerialize["id"] = o.Id
+func (dst *AddUserRequestUserRolesInner) UnmarshalMapstructure(data any) (any, error) {
+	if dst == nil {
+		dst = &AddUserRequestUserRolesInner{}
 	}
 
-	for key, value := range o.AdditionalProperties {
-		toSerialize[key] = value
+	mapstructDecode(data, &dst.AddUserRequestUserRolesInnerOneOf)
+
+	if IsEmpty(dst.AddUserRequestUserRolesInnerOneOf) {
+		dst.AddUserRequestUserRolesInnerOneOf = nil
 	}
 
-	return toSerialize, nil
-}
+	mapstructDecode(data, &dst.Int64)
 
-type NullableAddUserRequestUserRolesInner struct {
-	value *AddUserRequestUserRolesInner
-	isSet bool
-}
-
-func (v NullableAddUserRequestUserRolesInner) Get() *AddUserRequestUserRolesInner {
-	return v.value
-}
-
-func (v *NullableAddUserRequestUserRolesInner) Set(val *AddUserRequestUserRolesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddUserRequestUserRolesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddUserRequestUserRolesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddUserRequestUserRolesInner(val *AddUserRequestUserRolesInner) *NullableAddUserRequestUserRolesInner {
-	return &NullableAddUserRequestUserRolesInner{value: val, isSet: true}
-}
-
-func (v NullableAddUserRequestUserRolesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddUserRequestUserRolesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddUserRequestUserRolesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
+	if IsEmpty(dst.Int64) {
+		dst.Int64 = nil
 	}
-	v.isSet = true
 
-	return v, nil
+	return dst, nil
 }
 
-func (o *AddUserRequestUserRolesInner) UnmarshalJSON(data []byte) (err error) {
-	return decode(data, &o)
+// Unmarshal JSON data into one of the pointers in the struct
+func (dst *AddUserRequestUserRolesInner) UnmarshalJSON(data []byte) error {
+	var err error
+	match := 0
+	// try to unmarshal data into AddUserRequestUserRolesInnerOneOf
+	err = newStrictDecoder(data).Decode(&dst.AddUserRequestUserRolesInnerOneOf)
+	if err == nil {
+		jsonAddUserRequestUserRolesInnerOneOf, _ := json.Marshal(dst.AddUserRequestUserRolesInnerOneOf)
+		if string(jsonAddUserRequestUserRolesInnerOneOf) == "{}" { // empty struct
+			dst.AddUserRequestUserRolesInnerOneOf = nil
+		} else {
+			if err = validator.Validate(dst.AddUserRequestUserRolesInnerOneOf); err != nil {
+				dst.AddUserRequestUserRolesInnerOneOf = nil
+			} else {
+				match++
+			}
+		}
+	} else {
+		dst.AddUserRequestUserRolesInnerOneOf = nil
+	}
+
+	// try to unmarshal data into Int64
+	err = newStrictDecoder(data).Decode(&dst.Int64)
+	if err == nil {
+		jsonInt64, _ := json.Marshal(dst.Int64)
+		if string(jsonInt64) == "{}" { // empty struct
+			dst.Int64 = nil
+		} else {
+			if err = validator.Validate(dst.Int64); err != nil {
+				dst.Int64 = nil
+			} else {
+				match++
+			}
+		}
+	} else {
+		dst.Int64 = nil
+	}
+
+	if match > 1 { // more than 1 match
+		// reset to nil
+		dst.AddUserRequestUserRolesInnerOneOf = nil
+		dst.Int64 = nil
+
+		return NewResponseValidationError("data matches more than one schema in oneOf(AddUserRequestUserRolesInner)")
+	} else if match == 1 {
+		return nil // exactly one match
+	} else { // no match
+		return NewResponseValidationError("data failed to match schemas in oneOf(AddUserRequestUserRolesInner)")
+	}
 }
 
-// - model_simple.mustache
+// Marshal data from the first non-nil pointers in the struct to JSON
+func (src AddUserRequestUserRolesInner) MarshalJSON() ([]byte, error) {
+	if src.AddUserRequestUserRolesInnerOneOf != nil {
+		return json.Marshal(&src.AddUserRequestUserRolesInnerOneOf)
+	}
+
+	if src.Int64 != nil {
+		return json.Marshal(&src.Int64)
+	}
+
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
+}
+
+// Get the actual instance
+func (obj *AddUserRequestUserRolesInner) GetActualInstance() interface{} {
+	if obj == nil {
+		return nil
+	}
+	if obj.AddUserRequestUserRolesInnerOneOf != nil {
+		return obj.AddUserRequestUserRolesInnerOneOf
+	}
+
+	if obj.Int64 != nil {
+		return obj.Int64
+	}
+
+	// all schemas are nil
+	return nil
+}
+
+// Get the actual instance value
+func (obj AddUserRequestUserRolesInner) GetActualInstanceValue() interface{} {
+	if obj.AddUserRequestUserRolesInnerOneOf != nil {
+		return *obj.AddUserRequestUserRolesInnerOneOf
+	}
+
+	if obj.Int64 != nil {
+		return *obj.Int64
+	}
+
+	// all schemas are nil
+	return nil
+}

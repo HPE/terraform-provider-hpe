@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddStorageVolumes200ResponseAllOfStorageVolumeAccount) ToMap() (map[stri
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddStorageVolumes200ResponseAllOfStorageVolumeAccount struct {
-	value *AddStorageVolumes200ResponseAllOfStorageVolumeAccount
-	isSet bool
-}
-
-func (v NullableAddStorageVolumes200ResponseAllOfStorageVolumeAccount) Get() *AddStorageVolumes200ResponseAllOfStorageVolumeAccount {
-	return v.value
-}
-
-func (v *NullableAddStorageVolumes200ResponseAllOfStorageVolumeAccount) Set(val *AddStorageVolumes200ResponseAllOfStorageVolumeAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddStorageVolumes200ResponseAllOfStorageVolumeAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddStorageVolumes200ResponseAllOfStorageVolumeAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddStorageVolumes200ResponseAllOfStorageVolumeAccount(val *AddStorageVolumes200ResponseAllOfStorageVolumeAccount) *NullableAddStorageVolumes200ResponseAllOfStorageVolumeAccount {
-	return &NullableAddStorageVolumes200ResponseAllOfStorageVolumeAccount{value: val, isSet: true}
-}
-
-func (v NullableAddStorageVolumes200ResponseAllOfStorageVolumeAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddStorageVolumes200ResponseAllOfStorageVolumeAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddStorageVolumes200ResponseAllOfStorageVolumeAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddStorageVolumes200ResponseAllOfStorageVolumeAccount) UnmarshalJSON(data []byte) (err error) {

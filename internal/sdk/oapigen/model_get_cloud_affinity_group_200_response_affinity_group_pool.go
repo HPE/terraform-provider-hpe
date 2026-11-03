@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o GetCloudAffinityGroup200ResponseAffinityGroupPool) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetCloudAffinityGroup200ResponseAffinityGroupPool struct {
-	value *GetCloudAffinityGroup200ResponseAffinityGroupPool
-	isSet bool
-}
-
-func (v NullableGetCloudAffinityGroup200ResponseAffinityGroupPool) Get() *GetCloudAffinityGroup200ResponseAffinityGroupPool {
-	return v.value
-}
-
-func (v *NullableGetCloudAffinityGroup200ResponseAffinityGroupPool) Set(val *GetCloudAffinityGroup200ResponseAffinityGroupPool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCloudAffinityGroup200ResponseAffinityGroupPool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCloudAffinityGroup200ResponseAffinityGroupPool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCloudAffinityGroup200ResponseAffinityGroupPool(val *GetCloudAffinityGroup200ResponseAffinityGroupPool) *NullableGetCloudAffinityGroup200ResponseAffinityGroupPool {
-	return &NullableGetCloudAffinityGroup200ResponseAffinityGroupPool{value: val, isSet: true}
-}
-
-func (v NullableGetCloudAffinityGroup200ResponseAffinityGroupPool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCloudAffinityGroup200ResponseAffinityGroupPool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCloudAffinityGroup200ResponseAffinityGroupPool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetCloudAffinityGroup200ResponseAffinityGroupPool) UnmarshalJSON(data []byte) (err error) {

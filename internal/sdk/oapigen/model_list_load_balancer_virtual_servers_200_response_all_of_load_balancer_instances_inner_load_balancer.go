@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer struct {
-	value *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer
-	isSet bool
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer) Get() *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer {
-	return v.value
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer) Set(val *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer(val *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer) *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer {
-	return &NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer{value: val, isSet: true}
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerLoadBalancer) UnmarshalJSON(data []byte) (err error) {

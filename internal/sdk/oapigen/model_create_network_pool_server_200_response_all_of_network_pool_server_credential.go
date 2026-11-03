@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential) ToMa
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential struct {
-	value *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential
-	isSet bool
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential) Get() *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential {
-	return v.value
-}
-
-func (v *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential) Set(val *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential(val *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential) *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential {
-	return &NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerCredential) UnmarshalJSON(data []byte) (err error) {

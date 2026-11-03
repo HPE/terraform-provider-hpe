@@ -12,6 +12,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -211,13 +212,18 @@ func (r *monitoringCheckResource) Update(
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration, to be cleared.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	checkBody := sdk.WebCheck1{
 		Name: plan.Name.ValueString(),
 	}
-	if !plan.Description.IsNull() {
-		desc := sdk.NewNullableString(plan.Description.ValueStringPointer())
-		checkBody.Description = *desc
-	}
+	// Sent when known, null when being cleared, not sent otherwise.
+	clearable.NullableString(pending, "description", plan.Description, &checkBody.Description)
 	if !plan.CheckInterval.IsNull() {
 		interval := int32(plan.CheckInterval.ValueInt64()) //nolint:gosec // value range is safe
 		checkBody.CheckInterval = &interval
@@ -281,8 +287,8 @@ func (r *monitoringCheckResource) Delete(
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.ChecksAPI.DeleteChecks(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.ChecksAPI.DeleteChecks(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "monitoring_check", "", err, httpResp)
 
 		return

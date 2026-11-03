@@ -17,6 +17,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/sdkfuncs"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -140,6 +141,17 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
+	// Gate HVM 2.0 network fields on the selected layout's clusterVersion.
+	if !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown() &&
+		!plan.LayoutId.IsNull() && !plan.LayoutId.IsUnknown() {
+		resp.Diagnostics.Append(requireHvm2Layout(
+			ctx, client, plan.LayoutId.ValueInt64(), plan.ConfigHvm,
+		)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	clusterResp, httpResp, err := client.ClustersAPI.AddCluster(ctx).
 		AddClusterRequest(*addClusterReq).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
@@ -162,6 +174,15 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	clusterId := *clusterResp.Cluster.Id
 	plan.Id = convert.Int64ToType(&clusterId)
+
+	// Record the configured-value digests unconditionally, right after the
+	// create call succeeded and before any early return, so that even a failed
+	// read-back leaves the configured-value digests on record (the appliance
+	// baseline is only taken later, after a successful read-back).
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// write the ID now
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -247,10 +268,24 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	state, diag := getClusterAsState(ctx, clusterId, client, plan)
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+
+	state, found, diag := getClusterAsState(ctx, clusterId, client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
+	if !found {
+		resp.Diagnostics.AddError(readOperation, fmt.Sprintf("cluster %d not found after create", clusterId))
+
+		return
+	}
+
+	// Record the appliance-hash drift baseline only now that the read-back
+	// succeeded, so private state and state move together. clusterHostHashes
+	// reads each host so the per-host sshPasswordHash map for the password we
+	// just set becomes the baseline compared on every later read.
+	resp.Diagnostics.Append(wo.Observe(ctx, resp.Private,
+		clusterHostHashes(ctx, client, clusterId))...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -460,6 +495,44 @@ func buildCreateClusterServer(
 
 		if !plan.ConfigHvm.CreateUser.IsNull() && !plan.ConfigHvm.CreateUser.IsUnknown() {
 			cfg.CreateUser = plan.ConfigHvm.CreateUser.ValueBoolPointer()
+		}
+
+		// HVM 2.0 network configuration. Only honoured by Morpheus when the
+		// selected cluster layout has clusterVersion >= 2.0 (see gate.go).
+		if !plan.ConfigHvm.VirtSwitchName.IsNull() && !plan.ConfigHvm.VirtSwitchName.IsUnknown() {
+			cfg.VirtSwitchName = plan.ConfigHvm.VirtSwitchName.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Dns1.IsNull() && !plan.ConfigHvm.Dns1.IsUnknown() {
+			cfg.Dns1 = plan.ConfigHvm.Dns1.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Dns2.IsNull() && !plan.ConfigHvm.Dns2.IsUnknown() {
+			cfg.Dns2 = plan.ConfigHvm.Dns2.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Dns3.IsNull() && !plan.ConfigHvm.Dns3.IsUnknown() {
+			cfg.Dns3 = plan.ConfigHvm.Dns3.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.SearchDomain.IsNull() && !plan.ConfigHvm.SearchDomain.IsUnknown() {
+			cfg.SearchDomain = plan.ConfigHvm.SearchDomain.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Ntp1.IsNull() && !plan.ConfigHvm.Ntp1.IsUnknown() {
+			cfg.Ntp1 = plan.ConfigHvm.Ntp1.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Ntp2.IsNull() && !plan.ConfigHvm.Ntp2.IsUnknown() {
+			cfg.Ntp2 = plan.ConfigHvm.Ntp2.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Proxy.IsNull() && !plan.ConfigHvm.Proxy.IsUnknown() {
+			cfg.Proxy = plan.ConfigHvm.Proxy.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.NoProxy.IsNull() && !plan.ConfigHvm.NoProxy.IsUnknown() {
+			cfg.NoProxy = plan.ConfigHvm.NoProxy.ValueStringPointer()
 		}
 
 		cfgAnyOf := sdkfuncs.NewHvmClusterServerConfigAsAnyOf(cfg)

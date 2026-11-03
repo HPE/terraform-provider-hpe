@@ -2,15 +2,24 @@
 page_title: "hpe_morpheus_task_powershell_script Resource - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
-  Provides a Morpheus powershell script task resource
+  Manages a Morpheus PowerShell script task.
 ---
 # hpe_morpheus_task_powershell_script (Resource)
 
-Provides a Morpheus powershell script task resource
+Manages a Morpheus PowerShell script task.
+
+## Write-only remote target password
+
+The remote target password is a write-only value: `remote_target_password_wo` is sent to Morpheus
+but never stored in Terraform state. Changes to it are detected through a private-state digest and
+surface as a change to the computed `write_only_revision` attribute, which plans an in-place update
+that re-sends the value. The deprecated `remote_target_password_wo_version` marker still forces a
+re-send when it changes, but is no longer required and will be removed in the 2.6 release. The
+write-only attribute requires Terraform/OpenTofu 1.11 or later.
 
 ## Example Usage
 
-Creating the powershell script task with local script content:
+Creating the PowerShell script task with local script content:
 
 ```terraform
 resource "hpe_morpheus_task_powershell_script" "tfexample_powershell_local" {
@@ -19,7 +28,7 @@ resource "hpe_morpheus_task_powershell_script" "tfexample_powershell_local" {
   labels              = ["demo", "terraform"]
   source_type         = "local"
   script_content      = <<EOF
-  Write-Output "testing"
+Write-Output "testing"
 EOF
   elevated_shell      = true
   retryable           = true
@@ -29,7 +38,7 @@ EOF
 }
 ```
 
-Creating the powershell script task with the script fetched from a url:
+Creating the PowerShell script task with the script fetched from a url:
 
 ```terraform
 resource "hpe_morpheus_task_powershell_script" "tfexample_powershell_url" {
@@ -47,7 +56,7 @@ resource "hpe_morpheus_task_powershell_script" "tfexample_powershell_url" {
 }
 ```
 
-Creating the powershell script task with the script fetch via git:
+Creating the PowerShell script task with the script fetch via git:
 
 ```terraform
 resource "hpe_morpheus_task_powershell_script" "tfexample_powershell_git" {
@@ -72,57 +81,76 @@ resource "hpe_morpheus_task_powershell_script" "tfexample_powershell_git" {
 
 ### Required
 
-- `name` (String) The name of the powershell script task
-- `source_type` (String) The source of the powershell script (local, url or repository)
+- `name` (String) A unique name for the task.
+- `source_type` (String) Where the script comes from (local, url, repository).
 
 ### Optional
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `allow_custom_config` (Boolean) Custom configuration data to pass during the execution of the shell script
-- `code` (String) The code of the powershell script task
-- `elevated_shell` (Boolean) Run the powershell script with elevated permissions
-- `execute_target` (String) The execute target for the powershell script (local, remote or resource)
-- `labels` (Set of String) The organization labels associated with the task (Only supported on Morpheus 5.5.3 or higher)
-- `remote_target_host` (String) The hostname or ip address of the remote target
-- `remote_target_password` (String, Sensitive, Deprecated) The password of the user account used to authenticate to the remote target
-- `remote_target_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of the user account used to authenticate to the remote target (write-only, not stored in state).
-- `remote_target_password_wo_version` (Number) Increment to re-send remote_target_password_wo; write-only values are not stored in state.
-- `remote_target_port` (String) The port used to connect to the remote target
-- `remote_target_username` (String) The username of the user account used to authenticate to the remote target
-- `repository_id` (Number) The ID of the git repository integration
-- `result_type` (String) The expected result type (value, keyValue, json)
-- `retry_count` (Number) The number of times to retry the task if there is a failure
-- `retry_delay_seconds` (Number) The number of seconds to wait between retry attempts
-- `retryable` (Boolean) Whether to retry the task if there is a failure
-- `script_content` (String) The content of the powershell script. Used when the local source type is specified
-- `script_path` (String) The path of the powershell script, either the url or the path in the repository
-- `version_ref` (String) The git reference of the repository to pull (main, master, etc.)
-- `visibility` (String) The visibility of the task (private or public)
+- `allow_custom_config` (Boolean) When enabled, a text area is provided during manual task execution to allow the user to pass extra variables or specify extra configuration. Defaults to false.
+- `code` (String) The code used to reference the task programmatically.
+- `elevated_shell` (Boolean) Whether to run the script in an elevated WinRM shell. Defaults to false.
+- `execute_target` (String) Where the script runs (local, remote, resource). Defaults to local.
+- `labels` (Set of String) An array of labels for filtering the task.
+- `remote_target_host` (String) The host to execute the script on, when execute_target is remote.
+- `remote_target_password` (String, Sensitive, Deprecated) Deprecated. Use remote_target_password_wo, which is never stored in state. When set, the value is
+sent on create and whenever it changes. Will be removed in the 2.6 release.
+- `remote_target_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Remote target password (write-only; never stored in state). Changes are detected through a
+private-state digest; see write_only_revision.
+- `remote_target_password_wo_version` (Number, Deprecated) Deprecated. Changes to remote_target_password_wo are detected automatically; this attribute is no
+longer needed and will be removed in the 2.6 release. Changing it still re-sends
+remote_target_password_wo.
+- `remote_target_port` (String) The WinRM port to connect to on the remote host, when execute_target is remote.
+- `remote_target_username` (String) The username used to connect to the remote host, when execute_target is remote.
+- `repository_id` (Number) The ID of the git repository integration that holds the script, when source_type is repository.
+- `result_type` (String) The format of the task result (value, keyValue, json).
+- `retry_count` (Number) The number of times to retry the task. Defaults to 5.
+- `retry_delay_seconds` (Number) The delay, in seconds, between retries. Defaults to 10.
+- `retryable` (Boolean) Whether the task should be retried on failure. Defaults to false.
+- `script_content` (String) The script content, when source_type is local.
+- `script_path` (String) The path to the script within the repository, when source_type is repository.
+- `version_ref` (String) The git reference (branch or tag) of the script, when source_type is repository.
+- `visibility` (String) Visibility of the task (private or public). Defaults to private.
 
 ### Read-Only
 
-- `id` (String) The ID of the powershell script task
-
-## Switching to `remote_target_password_wo`
-
-As of version 1.7, the `remote_target_password` attribute is deprecated. Morpheus
-returns the password as a hash, so this attribute holds the password hash — not the
-original password — in Terraform state. Prefer the write-only
-`remote_target_password_wo` attribute, whose value is never persisted to state
-(requires Terraform/OpenTofu 1.11 or later).
-
-To migrate, replace `remote_target_password` with `remote_target_password_wo` using
-the same value, and set `remote_target_password_wo_version` to an integer such as
-`1`. The two password attributes are mutually exclusive, so set only one. Because
-write-only values are not stored in state, rotating the password later requires
-updating `remote_target_password_wo` **and** incrementing
-`remote_target_password_wo_version`.
+- `id` (Number) The ID of this resource.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (remote_target_password_wo)
+was last sent to Morpheus. Changes whenever that value changes; not configurable.
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_task_powershell_script.tf_example_task_powershell_script 1
+# Import by task ID. The write-only value remote_target_password_wo is not
+# stored in state, so the import cannot tell whether the value in your
+# configuration matches the one on the appliance: it is taken as already
+# applied, the plan after import is empty, and a change to it is only detected
+# once the task is next updated for another reason. Terraform warns about this
+# on every plan until then.
+
+terraform import hpe_morpheus_task_powershell_script.tfexample_powershell_local 19777
+
+# To have changes detected from the start, add the sha256 digest of the
+# configured write-only value to the import ID, as <attribute>=<hex>:
+
+terraform import hpe_morpheus_task_powershell_script.tfexample_powershell_local \
+  "19777#remote_target_password_wo=$(printf '%s' 'Secret123!' | sha256sum | cut -d' ' -f1)"
+
+# The same ID works in an import block, where Terraform's sha256() function
+# produces the digest:
+#
+#   import {
+#     to = hpe_morpheus_task_powershell_script.tfexample_powershell_local
+#     id = "19777#remote_target_password_wo=${sha256("Secret123!")}"
+#   }
 ```
+
+The write-only value `remote_target_password_wo` is not stored in state, so the import cannot tell
+whether the value in your configuration matches the appliance: it is taken as already applied, the
+plan after import is empty, and a later change to it is only detected once the resource is next
+updated for another reason (Terraform warns about this on every plan until then). To have changes
+detected from the start, append the sha256 digest of the configured write-only value to the import
+ID, as shown above.

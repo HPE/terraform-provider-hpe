@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o PhpIPAMNetworkPoolServerUpdateCredential) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullablePhpIPAMNetworkPoolServerUpdateCredential struct {
-	value *PhpIPAMNetworkPoolServerUpdateCredential
-	isSet bool
-}
-
-func (v NullablePhpIPAMNetworkPoolServerUpdateCredential) Get() *PhpIPAMNetworkPoolServerUpdateCredential {
-	return v.value
-}
-
-func (v *NullablePhpIPAMNetworkPoolServerUpdateCredential) Set(val *PhpIPAMNetworkPoolServerUpdateCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePhpIPAMNetworkPoolServerUpdateCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePhpIPAMNetworkPoolServerUpdateCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePhpIPAMNetworkPoolServerUpdateCredential(val *PhpIPAMNetworkPoolServerUpdateCredential) *NullablePhpIPAMNetworkPoolServerUpdateCredential {
-	return &NullablePhpIPAMNetworkPoolServerUpdateCredential{value: val, isSet: true}
-}
-
-func (v NullablePhpIPAMNetworkPoolServerUpdateCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePhpIPAMNetworkPoolServerUpdateCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePhpIPAMNetworkPoolServerUpdateCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *PhpIPAMNetworkPoolServerUpdateCredential) UnmarshalJSON(data []byte) (err error) {

@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 )
 
 const defaultUpdateTimeout = 45 * time.Minute
@@ -50,6 +52,23 @@ func (r *Resource) Update(
 	plan.IPAddress = state.IPAddress
 	plan.Name = state.Name
 	plan.ContainerUUID = state.ContainerUUID
+
+	// ssh_password is create-only (a change replaces the node); an update
+	// planned through write_only_revision only records the digests.
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+
+	// Record the configured-value digests and re-baseline the appliance-hash
+	// drift detection off a fresh read of the node's server (see
+	// write_only.go). The client is best-effort: on a construction failure the
+	// baseline is simply not refreshed, which never blocks the update.
+	var serverResp *sdk.GetHost200ResponseServer
+	if client, cerr := r.NewClient(ctx); cerr == nil {
+		serverResp = serverForDrift(ctx, client, plan.ServerID.ValueInt64())
+	}
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, serverResp)...)
 
 	if plan.WaitForIPAddress.ValueBool() &&
 		(!state.IPAddress.IsNull() && containerip.Ready(state.IPAddress.ValueString())) {

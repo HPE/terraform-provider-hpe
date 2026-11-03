@@ -89,13 +89,45 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 						},
 						Default: booldefault.StaticBool(false),
 					},
+					"dns1": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Primary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+						MarkdownDescription: "Primary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+					},
+					"dns2": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Secondary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+						MarkdownDescription: "Secondary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+					},
+					"dns3": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Tertiary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+						MarkdownDescription: "Tertiary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+					},
 					"dynamic_placement": schema.BoolAttribute{
 						Optional:            true,
 						Description:         "When enabled, Dynamic Placement will automatically balance VMs across cluster hosts based on resource utilization. When disabled, VMs will only migrate to a new host if they are pinned to a specific host or failed over and not running on the preferred host.",
 						MarkdownDescription: "When enabled, Dynamic Placement will automatically balance VMs across cluster hosts based on resource utilization. When disabled, VMs will only migrate to a new host if they are pinned to a specific host or failed over and not running on the preferred host.",
 					},
+					"no_proxy": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Comma-separated list of hosts that bypass the proxy. Requires a cluster layout with clusterVersion 2.0 or greater.",
+						MarkdownDescription: "Comma-separated list of hosts that bypass the proxy. Requires a cluster layout with clusterVersion 2.0 or greater.",
+					},
+					"ntp1": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Primary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+						MarkdownDescription: "Primary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+					},
+					"ntp2": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Secondary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+						MarkdownDescription: "Secondary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+					},
 					"overlay_interface_name": schema.StringAttribute{
-						Optional: true,
+						Optional:            true,
+						Description:         "Name of the host network interface used for the overlay (VXLAN) Open vSwitch bridge, for example `ens193`. Optional: Morpheus creates the overlay bridge only when it is set, and recommends setting it whenever overlay networks will be used. Applies to HVM 1.x cluster layouts; HVM 2.0 (virtual switch) layouts do not use it. Note that on Morpheus 9.0.x with an HVM 1.x layout, omitting it makes every host fail to build at the \"HVM Host Build OVS Interface\" step (`build-ovs.py` exits with `KeyError: None`), so set it until the appliance fix is available.",
+						MarkdownDescription: "Name of the host network interface used for the overlay (VXLAN) Open vSwitch bridge, for example `ens193`. Optional: Morpheus creates the overlay bridge only when it is set, and recommends setting it whenever overlay networks will be used. Applies to HVM 1.x cluster layouts; HVM 2.0 (virtual switch) layouts do not use it. Note that on Morpheus 9.0.x with an HVM 1.x layout, omitting it makes every host fail to build at the \"HVM Host Build OVS Interface\" step (`build-ovs.py` exits with `KeyError: None`), so set it until the appliance fix is available.",
 					},
 					"power_policy": schema.StringAttribute{
 						Required: true,
@@ -105,6 +137,16 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								"performance",
 							),
 						},
+					},
+					"proxy": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Proxy server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+						MarkdownDescription: "Proxy server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+					},
+					"search_domain": schema.StringAttribute{
+						Optional:            true,
+						Description:         "DNS search domain for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
+						MarkdownDescription: "DNS search domain for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.",
 					},
 					"storage_interface_name": schema.StringAttribute{
 						Optional: true,
@@ -116,6 +158,14 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								"unmanaged",
 								"auto",
 							),
+						},
+					},
+					"virt_switch_name": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Name of the HVM virtual switch. Requires a cluster layout with clusterVersion 2.0 or greater.",
+						MarkdownDescription: "Name of the HVM virtual switch. Requires a cluster layout with clusterVersion 2.0 or greater.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
 						},
 					},
 				},
@@ -307,8 +357,9 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"ssh_password_wo_version": schema.Int64Attribute{
 						Optional:            true,
-						Description:         "SSH password version. Used to determine if ssh_password_wo has been updated.",
-						MarkdownDescription: "SSH password version. Used to determine if ssh_password_wo has been updated.",
+						Description:         "Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is\nno longer needed and will be removed in the 2.6 release. The SSH password cannot be changed\nafter the cluster is created, so a change replaces the cluster.",
+						MarkdownDescription: "Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is\nno longer needed and will be removed in the 2.6 release. The SSH password cannot be changed\nafter the cluster is created, so a change replaces the cluster.",
+						DeprecationMessage:  "No longer needed: changes to server.ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 					},
 					"ssh_port": schema.Int64Attribute{
 						Optional:            true,
@@ -471,27 +522,36 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					int64planmodifier.RequiresReplace(),
 				},
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which a write-only value (server.ssh_password_wo) was last\nsent to Morpheus. Changes whenever the cluster is created; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which a write-only value (server.ssh_password_wo) was last\nsent to Morpheus. Changes whenever the cluster is created; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
 
 type ClusterModel struct {
-	CloudId          types.Int64    `tfsdk:"cloud_id"`
-	ClusterTypeCode  types.String   `tfsdk:"cluster_type_code"`
-	Config           types.Dynamic  `tfsdk:"config"`
-	ConfigHvm        ConfigHvmValue `tfsdk:"config_hvm"`
-	CpuPlacementMode types.String   `tfsdk:"cpu_placement_mode"`
-	Description      types.String   `tfsdk:"description"`
-	GroupId          types.Int64    `tfsdk:"group_id"`
-	Id               types.Int64    `tfsdk:"id"`
-	Labels           types.Set      `tfsdk:"labels"`
-	LayoutId         types.Int64    `tfsdk:"layout_id"`
-	Name             types.String   `tfsdk:"name"`
-	Server           ServerValue    `tfsdk:"server"`
-	ServiceUrl       types.String   `tfsdk:"service_url"`
-	Timeouts         timeouts.Value `tfsdk:"timeouts"`
-	Uuid             types.String   `tfsdk:"uuid"`
-	WorkflowId       types.Int64    `tfsdk:"workflow_id"`
+	CloudId           types.Int64    `tfsdk:"cloud_id"`
+	ClusterTypeCode   types.String   `tfsdk:"cluster_type_code"`
+	Config            types.Dynamic  `tfsdk:"config"`
+	ConfigHvm         ConfigHvmValue `tfsdk:"config_hvm"`
+	CpuPlacementMode  types.String   `tfsdk:"cpu_placement_mode"`
+	Description       types.String   `tfsdk:"description"`
+	GroupId           types.Int64    `tfsdk:"group_id"`
+	Id                types.Int64    `tfsdk:"id"`
+	Labels            types.Set      `tfsdk:"labels"`
+	LayoutId          types.Int64    `tfsdk:"layout_id"`
+	Name              types.String   `tfsdk:"name"`
+	Server            ServerValue    `tfsdk:"server"`
+	ServiceUrl        types.String   `tfsdk:"service_url"`
+	Timeouts          timeouts.Value `tfsdk:"timeouts"`
+	Uuid              types.String   `tfsdk:"uuid"`
+	WorkflowId        types.Int64    `tfsdk:"workflow_id"`
+	WriteOnlyRevision types.Int64    `tfsdk:"write_only_revision"`
 }
 
 var _ basetypes.ObjectTypable = ConfigHvmType{}
@@ -617,6 +677,60 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
 	}
 
+	dns1Attribute, ok := attributes["dns1"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dns1 is missing from object`)
+
+		return nil, diags
+	}
+
+	dns1Val, ok := dns1Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dns1 expected to be basetypes.StringValue, was: %T`, dns1Attribute))
+	}
+
+	dns2Attribute, ok := attributes["dns2"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dns2 is missing from object`)
+
+		return nil, diags
+	}
+
+	dns2Val, ok := dns2Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dns2 expected to be basetypes.StringValue, was: %T`, dns2Attribute))
+	}
+
+	dns3Attribute, ok := attributes["dns3"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dns3 is missing from object`)
+
+		return nil, diags
+	}
+
+	dns3Val, ok := dns3Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dns3 expected to be basetypes.StringValue, was: %T`, dns3Attribute))
+	}
+
 	dynamicPlacementAttribute, ok := attributes["dynamic_placement"]
 
 	if !ok {
@@ -633,6 +747,60 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 		diags.AddError(
 			"Attribute Wrong Type",
 			fmt.Sprintf(`dynamic_placement expected to be basetypes.BoolValue, was: %T`, dynamicPlacementAttribute))
+	}
+
+	noProxyAttribute, ok := attributes["no_proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`no_proxy is missing from object`)
+
+		return nil, diags
+	}
+
+	noProxyVal, ok := noProxyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`no_proxy expected to be basetypes.StringValue, was: %T`, noProxyAttribute))
+	}
+
+	ntp1Attribute, ok := attributes["ntp1"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ntp1 is missing from object`)
+
+		return nil, diags
+	}
+
+	ntp1Val, ok := ntp1Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ntp1 expected to be basetypes.StringValue, was: %T`, ntp1Attribute))
+	}
+
+	ntp2Attribute, ok := attributes["ntp2"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ntp2 is missing from object`)
+
+		return nil, diags
+	}
+
+	ntp2Val, ok := ntp2Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ntp2 expected to be basetypes.StringValue, was: %T`, ntp2Attribute))
 	}
 
 	overlayInterfaceNameAttribute, ok := attributes["overlay_interface_name"]
@@ -671,6 +839,42 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 			fmt.Sprintf(`power_policy expected to be basetypes.StringValue, was: %T`, powerPolicyAttribute))
 	}
 
+	proxyAttribute, ok := attributes["proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`proxy is missing from object`)
+
+		return nil, diags
+	}
+
+	proxyVal, ok := proxyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`proxy expected to be basetypes.StringValue, was: %T`, proxyAttribute))
+	}
+
+	searchDomainAttribute, ok := attributes["search_domain"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`search_domain is missing from object`)
+
+		return nil, diags
+	}
+
+	searchDomainVal, ok := searchDomainAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`search_domain expected to be basetypes.StringValue, was: %T`, searchDomainAttribute))
+	}
+
 	storageInterfaceNameAttribute, ok := attributes["storage_interface_name"]
 
 	if !ok {
@@ -707,6 +911,24 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 			fmt.Sprintf(`vcpu_placement_mode expected to be basetypes.StringValue, was: %T`, vcpuPlacementModeAttribute))
 	}
 
+	virtSwitchNameAttribute, ok := attributes["virt_switch_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virt_switch_name is missing from object`)
+
+		return nil, diags
+	}
+
+	virtSwitchNameVal, ok := virtSwitchNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virt_switch_name expected to be basetypes.StringValue, was: %T`, virtSwitchNameAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -717,11 +939,20 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 		CpuArch:              cpuArchVal,
 		CpuModel:             cpuModelVal,
 		CreateUser:           createUserVal,
+		Dns1:                 dns1Val,
+		Dns2:                 dns2Val,
+		Dns3:                 dns3Val,
 		DynamicPlacement:     dynamicPlacementVal,
+		NoProxy:              noProxyVal,
+		Ntp1:                 ntp1Val,
+		Ntp2:                 ntp2Val,
 		OverlayInterfaceName: overlayInterfaceNameVal,
 		PowerPolicy:          powerPolicyVal,
+		Proxy:                proxyVal,
+		SearchDomain:         searchDomainVal,
 		StorageInterfaceName: storageInterfaceNameVal,
 		VcpuPlacementMode:    vcpuPlacementModeVal,
+		VirtSwitchName:       virtSwitchNameVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -879,6 +1110,60 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
 	}
 
+	dns1Attribute, ok := attributes["dns1"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dns1 is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	dns1Val, ok := dns1Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dns1 expected to be basetypes.StringValue, was: %T`, dns1Attribute))
+	}
+
+	dns2Attribute, ok := attributes["dns2"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dns2 is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	dns2Val, ok := dns2Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dns2 expected to be basetypes.StringValue, was: %T`, dns2Attribute))
+	}
+
+	dns3Attribute, ok := attributes["dns3"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dns3 is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	dns3Val, ok := dns3Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dns3 expected to be basetypes.StringValue, was: %T`, dns3Attribute))
+	}
+
 	dynamicPlacementAttribute, ok := attributes["dynamic_placement"]
 
 	if !ok {
@@ -895,6 +1180,60 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 		diags.AddError(
 			"Attribute Wrong Type",
 			fmt.Sprintf(`dynamic_placement expected to be basetypes.BoolValue, was: %T`, dynamicPlacementAttribute))
+	}
+
+	noProxyAttribute, ok := attributes["no_proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`no_proxy is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	noProxyVal, ok := noProxyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`no_proxy expected to be basetypes.StringValue, was: %T`, noProxyAttribute))
+	}
+
+	ntp1Attribute, ok := attributes["ntp1"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ntp1 is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	ntp1Val, ok := ntp1Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ntp1 expected to be basetypes.StringValue, was: %T`, ntp1Attribute))
+	}
+
+	ntp2Attribute, ok := attributes["ntp2"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ntp2 is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	ntp2Val, ok := ntp2Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ntp2 expected to be basetypes.StringValue, was: %T`, ntp2Attribute))
 	}
 
 	overlayInterfaceNameAttribute, ok := attributes["overlay_interface_name"]
@@ -933,6 +1272,42 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 			fmt.Sprintf(`power_policy expected to be basetypes.StringValue, was: %T`, powerPolicyAttribute))
 	}
 
+	proxyAttribute, ok := attributes["proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`proxy is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	proxyVal, ok := proxyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`proxy expected to be basetypes.StringValue, was: %T`, proxyAttribute))
+	}
+
+	searchDomainAttribute, ok := attributes["search_domain"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`search_domain is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	searchDomainVal, ok := searchDomainAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`search_domain expected to be basetypes.StringValue, was: %T`, searchDomainAttribute))
+	}
+
 	storageInterfaceNameAttribute, ok := attributes["storage_interface_name"]
 
 	if !ok {
@@ -969,6 +1344,24 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 			fmt.Sprintf(`vcpu_placement_mode expected to be basetypes.StringValue, was: %T`, vcpuPlacementModeAttribute))
 	}
 
+	virtSwitchNameAttribute, ok := attributes["virt_switch_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virt_switch_name is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	virtSwitchNameVal, ok := virtSwitchNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virt_switch_name expected to be basetypes.StringValue, was: %T`, virtSwitchNameAttribute))
+	}
+
 	if diags.HasError() {
 		return NewConfigHvmValueUnknown(), diags
 	}
@@ -979,11 +1372,20 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 		CpuArch:              cpuArchVal,
 		CpuModel:             cpuModelVal,
 		CreateUser:           createUserVal,
+		Dns1:                 dns1Val,
+		Dns2:                 dns2Val,
+		Dns3:                 dns3Val,
 		DynamicPlacement:     dynamicPlacementVal,
+		NoProxy:              noProxyVal,
+		Ntp1:                 ntp1Val,
+		Ntp2:                 ntp2Val,
 		OverlayInterfaceName: overlayInterfaceNameVal,
 		PowerPolicy:          powerPolicyVal,
+		Proxy:                proxyVal,
+		SearchDomain:         searchDomainVal,
 		StorageInterfaceName: storageInterfaceNameVal,
 		VcpuPlacementMode:    vcpuPlacementModeVal,
+		VirtSwitchName:       virtSwitchNameVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -1059,16 +1461,25 @@ type ConfigHvmValue struct {
 	CpuArch              basetypes.StringValue `tfsdk:"cpu_arch"`
 	CpuModel             basetypes.StringValue `tfsdk:"cpu_model"`
 	CreateUser           basetypes.BoolValue   `tfsdk:"create_user"`
+	Dns1                 basetypes.StringValue `tfsdk:"dns1"`
+	Dns2                 basetypes.StringValue `tfsdk:"dns2"`
+	Dns3                 basetypes.StringValue `tfsdk:"dns3"`
 	DynamicPlacement     basetypes.BoolValue   `tfsdk:"dynamic_placement"`
+	NoProxy              basetypes.StringValue `tfsdk:"no_proxy"`
+	Ntp1                 basetypes.StringValue `tfsdk:"ntp1"`
+	Ntp2                 basetypes.StringValue `tfsdk:"ntp2"`
 	OverlayInterfaceName basetypes.StringValue `tfsdk:"overlay_interface_name"`
 	PowerPolicy          basetypes.StringValue `tfsdk:"power_policy"`
+	Proxy                basetypes.StringValue `tfsdk:"proxy"`
+	SearchDomain         basetypes.StringValue `tfsdk:"search_domain"`
 	StorageInterfaceName basetypes.StringValue `tfsdk:"storage_interface_name"`
 	VcpuPlacementMode    basetypes.StringValue `tfsdk:"vcpu_placement_mode"`
+	VirtSwitchName       basetypes.StringValue `tfsdk:"virt_switch_name"`
 	state                attr.ValueState
 }
 
 func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 10)
+	attrTypes := make(map[string]tftypes.Type, 19)
 
 	var val tftypes.Value
 	var err error
@@ -1078,17 +1489,26 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 	attrTypes["cpu_arch"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["cpu_model"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["dns1"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["dns2"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["dns3"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["dynamic_placement"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["no_proxy"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["ntp1"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["ntp2"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["overlay_interface_name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["power_policy"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["proxy"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["search_domain"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["storage_interface_name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["vcpu_placement_mode"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["virt_switch_name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 10)
+		vals := make(map[string]tftypes.Value, 19)
 
 		val, err = v.ComputeInterfaceName.ToTerraformValue(ctx)
 		if err != nil {
@@ -1125,12 +1545,54 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 
 		vals["create_user"] = val
 
+		val, err = v.Dns1.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dns1"] = val
+
+		val, err = v.Dns2.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dns2"] = val
+
+		val, err = v.Dns3.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dns3"] = val
+
 		val, err = v.DynamicPlacement.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
 		vals["dynamic_placement"] = val
+
+		val, err = v.NoProxy.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["no_proxy"] = val
+
+		val, err = v.Ntp1.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ntp1"] = val
+
+		val, err = v.Ntp2.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ntp2"] = val
 
 		val, err = v.OverlayInterfaceName.ToTerraformValue(ctx)
 		if err != nil {
@@ -1146,6 +1608,20 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 
 		vals["power_policy"] = val
 
+		val, err = v.Proxy.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["proxy"] = val
+
+		val, err = v.SearchDomain.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["search_domain"] = val
+
 		val, err = v.StorageInterfaceName.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -1159,6 +1635,13 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		}
 
 		vals["vcpu_placement_mode"] = val
+
+		val, err = v.VirtSwitchName.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["virt_switch_name"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -1195,11 +1678,20 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 		"cpu_arch":               basetypes.StringType{},
 		"cpu_model":              basetypes.StringType{},
 		"create_user":            basetypes.BoolType{},
+		"dns1":                   basetypes.StringType{},
+		"dns2":                   basetypes.StringType{},
+		"dns3":                   basetypes.StringType{},
 		"dynamic_placement":      basetypes.BoolType{},
+		"no_proxy":               basetypes.StringType{},
+		"ntp1":                   basetypes.StringType{},
+		"ntp2":                   basetypes.StringType{},
 		"overlay_interface_name": basetypes.StringType{},
 		"power_policy":           basetypes.StringType{},
+		"proxy":                  basetypes.StringType{},
+		"search_domain":          basetypes.StringType{},
 		"storage_interface_name": basetypes.StringType{},
 		"vcpu_placement_mode":    basetypes.StringType{},
+		"virt_switch_name":       basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -1218,11 +1710,20 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 			"cpu_arch":               v.CpuArch,
 			"cpu_model":              v.CpuModel,
 			"create_user":            v.CreateUser,
+			"dns1":                   v.Dns1,
+			"dns2":                   v.Dns2,
+			"dns3":                   v.Dns3,
 			"dynamic_placement":      v.DynamicPlacement,
+			"no_proxy":               v.NoProxy,
+			"ntp1":                   v.Ntp1,
+			"ntp2":                   v.Ntp2,
 			"overlay_interface_name": v.OverlayInterfaceName,
 			"power_policy":           v.PowerPolicy,
+			"proxy":                  v.Proxy,
+			"search_domain":          v.SearchDomain,
 			"storage_interface_name": v.StorageInterfaceName,
 			"vcpu_placement_mode":    v.VcpuPlacementMode,
+			"virt_switch_name":       v.VirtSwitchName,
 		})
 
 	return objVal, diags
@@ -1263,7 +1764,31 @@ func (v ConfigHvmValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.Dns1.Equal(other.Dns1) {
+		return false
+	}
+
+	if !v.Dns2.Equal(other.Dns2) {
+		return false
+	}
+
+	if !v.Dns3.Equal(other.Dns3) {
+		return false
+	}
+
 	if !v.DynamicPlacement.Equal(other.DynamicPlacement) {
+		return false
+	}
+
+	if !v.NoProxy.Equal(other.NoProxy) {
+		return false
+	}
+
+	if !v.Ntp1.Equal(other.Ntp1) {
+		return false
+	}
+
+	if !v.Ntp2.Equal(other.Ntp2) {
 		return false
 	}
 
@@ -1275,11 +1800,23 @@ func (v ConfigHvmValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.Proxy.Equal(other.Proxy) {
+		return false
+	}
+
+	if !v.SearchDomain.Equal(other.SearchDomain) {
+		return false
+	}
+
 	if !v.StorageInterfaceName.Equal(other.StorageInterfaceName) {
 		return false
 	}
 
 	if !v.VcpuPlacementMode.Equal(other.VcpuPlacementMode) {
+		return false
+	}
+
+	if !v.VirtSwitchName.Equal(other.VirtSwitchName) {
 		return false
 	}
 
@@ -1301,11 +1838,20 @@ func (v ConfigHvmValue) AttributeTypes(ctx context.Context) map[string]attr.Type
 		"cpu_arch":               basetypes.StringType{},
 		"cpu_model":              basetypes.StringType{},
 		"create_user":            basetypes.BoolType{},
+		"dns1":                   basetypes.StringType{},
+		"dns2":                   basetypes.StringType{},
+		"dns3":                   basetypes.StringType{},
 		"dynamic_placement":      basetypes.BoolType{},
+		"no_proxy":               basetypes.StringType{},
+		"ntp1":                   basetypes.StringType{},
+		"ntp2":                   basetypes.StringType{},
 		"overlay_interface_name": basetypes.StringType{},
 		"power_policy":           basetypes.StringType{},
+		"proxy":                  basetypes.StringType{},
+		"search_domain":          basetypes.StringType{},
 		"storage_interface_name": basetypes.StringType{},
 		"vcpu_placement_mode":    basetypes.StringType{},
+		"virt_switch_name":       basetypes.StringType{},
 	}
 }
 

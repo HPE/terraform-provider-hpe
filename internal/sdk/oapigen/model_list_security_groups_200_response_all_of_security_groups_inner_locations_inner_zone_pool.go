@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZoneP
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool struct {
-	value *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool
-	isSet bool
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool) Get() *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool {
-	return v.value
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool) Set(val *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool(val *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool) *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool {
-	return &NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool{value: val, isSet: true}
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerLocationsInnerZonePool) UnmarshalJSON(data []byte) (err error) {

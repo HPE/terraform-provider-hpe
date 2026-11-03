@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -73,51 +73,6 @@ func (o GetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner) To
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner struct {
-	value *GetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner
-	isSet bool
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner) Get() *GetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner {
-	return v.value
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner) Set(val *GetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner(val *GetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner) *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner {
-	return &NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetLayout200ResponseInstanceTypeLayoutProvisionTypeStorageTypesInner) UnmarshalJSON(data []byte) (err error) {

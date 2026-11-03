@@ -48,6 +48,25 @@ setting_whitelabel:
     - success
     - terms_of_use
   overrides:
+    # Spec additions. security_banner / supports_themes / external_legal_text are
+    # in the PUT body, so they are settable (optional+computed). account is a
+    # read-only echo of the owning tenant (GET response only), so it is computed.
+    account:
+      computed_optional_required: computed
+      description: The tenant (account) that owns these whitelabel settings.
+    account.id:
+      computed_optional_required: computed
+    account.name:
+      computed_optional_required: computed
+    security_banner:
+      computed_optional_required: computed_optional
+      description: Security banner text shown to users at login.
+    supports_themes:
+      computed_optional_required: computed_optional
+      description: Whether the appliance theme selector is offered to users.
+    external_legal_text:
+      computed_optional_required: computed_optional
+      description: External legal text shown on the login page.
     appliance_name:
       computed_optional_required: optional
       description: The appliance name. Master account only.

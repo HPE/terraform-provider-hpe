@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup) ToMa
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup struct {
-	value *GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup
-	isSet bool
-}
-
-func (v NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup) Get() *GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup {
-	return v.value
-}
-
-func (v *NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup) Set(val *GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup(val *GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup) *NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup {
-	return &NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerRuleGroup) UnmarshalJSON(data []byte) (err error) {

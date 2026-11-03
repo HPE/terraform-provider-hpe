@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -18,10 +18,10 @@ import (
 // checks if the UpdateNetworkRequestNetworkZonePool type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdateNetworkRequestNetworkZonePool{}
 
-// UpdateNetworkRequestNetworkZonePool struct for UpdateNetworkRequestNetworkZonePool
+// UpdateNetworkRequestNetworkZonePool Zone pool (resource pool) the network is assigned to; null, or a null id, removes the assignment
 type UpdateNetworkRequestNetworkZonePool struct {
-	// Morpheus zone pool ID of the GCP Project for the network
-	Id                   *int64                 `json:"id,omitempty"`
+	// Morpheus zone pool ID of the GCP Project for the network; null removes the assignment
+	Id                   NullableInt64          `json:"id,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -37,8 +37,8 @@ func (o UpdateNetworkRequestNetworkZonePool) MarshalJSON() ([]byte, error) {
 
 func (o UpdateNetworkRequestNetworkZonePool) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Id) {
-		toSerialize["id"] = o.Id
+	if o.Id.IsSet() {
+		toSerialize["id"] = o.Id.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -46,51 +46,6 @@ func (o UpdateNetworkRequestNetworkZonePool) ToMap() (map[string]interface{}, er
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateNetworkRequestNetworkZonePool struct {
-	value *UpdateNetworkRequestNetworkZonePool
-	isSet bool
-}
-
-func (v NullableUpdateNetworkRequestNetworkZonePool) Get() *UpdateNetworkRequestNetworkZonePool {
-	return v.value
-}
-
-func (v *NullableUpdateNetworkRequestNetworkZonePool) Set(val *UpdateNetworkRequestNetworkZonePool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetworkRequestNetworkZonePool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetworkRequestNetworkZonePool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetworkRequestNetworkZonePool(val *UpdateNetworkRequestNetworkZonePool) *NullableUpdateNetworkRequestNetworkZonePool {
-	return &NullableUpdateNetworkRequestNetworkZonePool{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetworkRequestNetworkZonePool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetworkRequestNetworkZonePool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetworkRequestNetworkZonePool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateNetworkRequestNetworkZonePool) UnmarshalJSON(data []byte) (err error) {

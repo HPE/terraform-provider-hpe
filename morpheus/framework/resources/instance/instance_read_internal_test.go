@@ -280,6 +280,96 @@ func TestUnitIsExternallyAttachedVolume(t *testing.T) {
 	}
 }
 
+// TestUnitIsCDROMVolume verifies that the virtual CD/DVD drive attached to an
+// ISO-booted instance is recognised regardless of its display name.
+//
+// The drive is named "CD ROM" on VMware but "CD Drive" on HVM/KVM, so the
+// original name-prefix check missed the HVM device. getVolumes then saw one
+// more volume than the configuration declared, took the count-mismatch path,
+// and reorderVolumes appended the unmatched drive — failing the apply with
+// "Provider produced inconsistent result after apply: .volumes: new element N
+// has appeared".
+func TestUnitIsCDROMVolume(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		volume sdk.InstanceContainerServerVolume1
+		want   bool
+	}{
+		{
+			name: "HVM CD drive",
+			volume: sdk.InstanceContainerServerVolume1{
+				Id:       sdk.PtrInt64(1),
+				Name:     sdk.PtrString("CD Drive"),
+				Category: sdk.PtrString("cd"),
+				TypeId:   sdk.PtrInt64(2),
+			},
+			want: true,
+		},
+		{
+			name: "VMware CD ROM",
+			volume: sdk.InstanceContainerServerVolume1{
+				Id:       sdk.PtrInt64(2),
+				Name:     sdk.PtrString("CD ROM 1"),
+				Category: sdk.PtrString("cd"),
+			},
+			want: true,
+		},
+		{
+			name: "root disk",
+			volume: sdk.InstanceContainerServerVolume1{
+				Id:         sdk.PtrInt64(3),
+				Name:       sdk.PtrString("root"),
+				Category:   sdk.PtrString("disk"),
+				RootVolume: sdk.PtrBool(true),
+			},
+			want: false,
+		},
+		{
+			name: "data disk",
+			volume: sdk.InstanceContainerServerVolume1{
+				Id:       sdk.PtrInt64(4),
+				Name:     sdk.PtrString("data-1"),
+				Category: sdk.PtrString("disk"),
+			},
+			want: false,
+		},
+		{
+			name: "CD drive with no category falls back to the name",
+			volume: sdk.InstanceContainerServerVolume1{
+				Id:   sdk.PtrInt64(5),
+				Name: sdk.PtrString("CD Drive"),
+			},
+			want: true,
+		},
+		{
+			name: "disk whose name merely starts with CD",
+			volume: sdk.InstanceContainerServerVolume1{
+				Id:       sdk.PtrInt64(6),
+				Name:     sdk.PtrString("CDN cache"),
+				Category: sdk.PtrString("disk"),
+			},
+			want: false,
+		},
+		{
+			name:   "volume with neither category nor name",
+			volume: sdk.InstanceContainerServerVolume1{Id: sdk.PtrInt64(7)},
+			want:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := isCDROMVolume(tt.volume); got != tt.want {
+				t.Errorf("isCDROMVolume() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 // TestUnitRemoveExternalStorageVolumesKeepsDatastoreBackedDisks verifies the
 // reported failure case: an instance whose disks are provisioned on a
 // storage-server-backed datastore keeps those disks, while an array LUN exported

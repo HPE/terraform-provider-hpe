@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o GetNetworkFirewallRule200Response) ToMap() (map[string]interface{}, erro
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkFirewallRule200Response struct {
-	value *GetNetworkFirewallRule200Response
-	isSet bool
-}
-
-func (v NullableGetNetworkFirewallRule200Response) Get() *GetNetworkFirewallRule200Response {
-	return v.value
-}
-
-func (v *NullableGetNetworkFirewallRule200Response) Set(val *GetNetworkFirewallRule200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkFirewallRule200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkFirewallRule200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkFirewallRule200Response(val *GetNetworkFirewallRule200Response) *NullableGetNetworkFirewallRule200Response {
-	return &NullableGetNetworkFirewallRule200Response{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkFirewallRule200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkFirewallRule200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkFirewallRule200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkFirewallRule200Response) UnmarshalJSON(data []byte) (err error) {

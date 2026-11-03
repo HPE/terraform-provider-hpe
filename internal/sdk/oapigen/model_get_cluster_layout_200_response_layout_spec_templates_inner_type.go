@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o GetClusterLayout200ResponseLayoutSpecTemplatesInnerType) ToMap() (map[st
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerType struct {
-	value *GetClusterLayout200ResponseLayoutSpecTemplatesInnerType
-	isSet bool
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerType) Get() *GetClusterLayout200ResponseLayoutSpecTemplatesInnerType {
-	return v.value
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerType) Set(val *GetClusterLayout200ResponseLayoutSpecTemplatesInnerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerType(val *GetClusterLayout200ResponseLayoutSpecTemplatesInnerType) *NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerType {
-	return &NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerType{value: val, isSet: true}
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClusterLayout200ResponseLayoutSpecTemplatesInnerType) UnmarshalJSON(data []byte) (err error) {

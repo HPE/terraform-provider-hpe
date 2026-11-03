@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetProvisioningLicense200ResponseLicenseTenantsInner) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetProvisioningLicense200ResponseLicenseTenantsInner struct {
-	value *GetProvisioningLicense200ResponseLicenseTenantsInner
-	isSet bool
-}
-
-func (v NullableGetProvisioningLicense200ResponseLicenseTenantsInner) Get() *GetProvisioningLicense200ResponseLicenseTenantsInner {
-	return v.value
-}
-
-func (v *NullableGetProvisioningLicense200ResponseLicenseTenantsInner) Set(val *GetProvisioningLicense200ResponseLicenseTenantsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetProvisioningLicense200ResponseLicenseTenantsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetProvisioningLicense200ResponseLicenseTenantsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetProvisioningLicense200ResponseLicenseTenantsInner(val *GetProvisioningLicense200ResponseLicenseTenantsInner) *NullableGetProvisioningLicense200ResponseLicenseTenantsInner {
-	return &NullableGetProvisioningLicense200ResponseLicenseTenantsInner{value: val, isSet: true}
-}
-
-func (v NullableGetProvisioningLicense200ResponseLicenseTenantsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetProvisioningLicense200ResponseLicenseTenantsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetProvisioningLicense200ResponseLicenseTenantsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetProvisioningLicense200ResponseLicenseTenantsInner) UnmarshalJSON(data []byte) (err error) {

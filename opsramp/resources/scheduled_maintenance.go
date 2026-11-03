@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 
@@ -334,6 +335,35 @@ func (r *ScheduledMaintenanceResource) getTenantId(clientId types.String) string
 	return r.apiClient.TenantId
 }
 
+// scheduledMaintenanceTimeLayout matches the ISO 8601 form required by the schema
+// validators: YYYY-MM-DDTHH:MM:SS+HHMM.
+const scheduledMaintenanceTimeLayout = "2006-01-02T15:04:05-0700"
+
+// normalizeScheduleTime returns priorValue instead of apiValue when both denote the
+// same instant, even if their textual offset differs (the API echoes times back in
+// the OAuth account's own timezone rather than the offset the user configured).
+func normalizeScheduleTime(apiValue string, priorValue string) string {
+	if priorValue == "" || apiValue == priorValue {
+		return apiValue
+	}
+
+	apiTime, err := time.Parse(scheduledMaintenanceTimeLayout, apiValue)
+	if err != nil {
+		return apiValue
+	}
+
+	priorTime, err := time.Parse(scheduledMaintenanceTimeLayout, priorValue)
+	if err != nil {
+		return apiValue
+	}
+
+	if apiTime.Equal(priorTime) {
+		return priorValue
+	}
+
+	return apiValue
+}
+
 // mapScheduledMaintenanceResponse maps an API response onto a model in place.
 // It is used by Create, Read, and Update to keep state consistent.
 func mapScheduledMaintenanceResponse(existing *client.ScheduledMaintenanceResponse, model *ScheduledMaintenanceModel) {
@@ -345,11 +375,22 @@ func mapScheduledMaintenanceResponse(existing *client.ScheduledMaintenanceRespon
 	model.RunEscalateAction = types.BoolValue(existing.RunEscalateAction)
 	model.Status = types.StringValue(existing.Status)
 
+	// The API echoes start/end times back in the OAuth account's own timezone offset,
+	// which can differ textually from the user's input while denoting the same instant.
+	// Prefer the user's prior value when it is equal in time to what the API returned,
+	// so Terraform doesn't report drift or "inconsistent result after apply" errors.
+	startTime := existing.Schedule.StartTime
+	endTime := existing.Schedule.EndTime
+	if model.Schedule != nil {
+		startTime = normalizeScheduleTime(existing.Schedule.StartTime, model.Schedule.StartTime.ValueString())
+		endTime = normalizeScheduleTime(existing.Schedule.EndTime, model.Schedule.EndTime.ValueString())
+	}
+
 	// Fully rebuild Schedule from API response (required for import and drift detection)
 	sched := ScheduledMaintenanceScheduleModel{
 		Type:      types.StringValue(existing.Schedule.Type),
-		StartTime: types.StringValue(existing.Schedule.StartTime),
-		EndTime:   types.StringValue(existing.Schedule.EndTime),
+		StartTime: types.StringValue(startTime),
+		EndTime:   types.StringValue(endTime),
 		Timezone:  types.StringValue(existing.Schedule.Timezone),
 		EndBy:     types.StringNull(),
 	}

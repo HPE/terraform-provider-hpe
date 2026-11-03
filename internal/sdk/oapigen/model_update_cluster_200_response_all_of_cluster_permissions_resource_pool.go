@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o UpdateCluster200ResponseAllOfClusterPermissionsResourcePool) ToMap() (ma
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateCluster200ResponseAllOfClusterPermissionsResourcePool struct {
-	value *UpdateCluster200ResponseAllOfClusterPermissionsResourcePool
-	isSet bool
-}
-
-func (v NullableUpdateCluster200ResponseAllOfClusterPermissionsResourcePool) Get() *UpdateCluster200ResponseAllOfClusterPermissionsResourcePool {
-	return v.value
-}
-
-func (v *NullableUpdateCluster200ResponseAllOfClusterPermissionsResourcePool) Set(val *UpdateCluster200ResponseAllOfClusterPermissionsResourcePool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateCluster200ResponseAllOfClusterPermissionsResourcePool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateCluster200ResponseAllOfClusterPermissionsResourcePool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateCluster200ResponseAllOfClusterPermissionsResourcePool(val *UpdateCluster200ResponseAllOfClusterPermissionsResourcePool) *NullableUpdateCluster200ResponseAllOfClusterPermissionsResourcePool {
-	return &NullableUpdateCluster200ResponseAllOfClusterPermissionsResourcePool{value: val, isSet: true}
-}
-
-func (v NullableUpdateCluster200ResponseAllOfClusterPermissionsResourcePool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateCluster200ResponseAllOfClusterPermissionsResourcePool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateCluster200ResponseAllOfClusterPermissionsResourcePool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateCluster200ResponseAllOfClusterPermissionsResourcePool) UnmarshalJSON(data []byte) (err error) {

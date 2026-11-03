@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o UpdateDatastores200ResponseDatastoreAllOfOwner) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateDatastores200ResponseDatastoreAllOfOwner struct {
-	value *UpdateDatastores200ResponseDatastoreAllOfOwner
-	isSet bool
-}
-
-func (v NullableUpdateDatastores200ResponseDatastoreAllOfOwner) Get() *UpdateDatastores200ResponseDatastoreAllOfOwner {
-	return v.value
-}
-
-func (v *NullableUpdateDatastores200ResponseDatastoreAllOfOwner) Set(val *UpdateDatastores200ResponseDatastoreAllOfOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateDatastores200ResponseDatastoreAllOfOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateDatastores200ResponseDatastoreAllOfOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateDatastores200ResponseDatastoreAllOfOwner(val *UpdateDatastores200ResponseDatastoreAllOfOwner) *NullableUpdateDatastores200ResponseDatastoreAllOfOwner {
-	return &NullableUpdateDatastores200ResponseDatastoreAllOfOwner{value: val, isSet: true}
-}
-
-func (v NullableUpdateDatastores200ResponseDatastoreAllOfOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateDatastores200ResponseDatastoreAllOfOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateDatastores200ResponseDatastoreAllOfOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateDatastores200ResponseDatastoreAllOfOwner) UnmarshalJSON(data []byte) (err error) {

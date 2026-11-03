@@ -92,7 +92,7 @@ func TestAccMorpheusLoadBalancerPoolResourceNsxtExampleOk(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateIdFunc:       importStateIDFunc(resourceName),
 				ResourceName:            resourceName,
-				ImportStateVerifyIgnore: []string{"config_nsxt", "partition"},
+				ImportStateVerifyIgnore: []string{"config_nsxt", "partition", "write_only_revision"},
 			},
 		},
 	})

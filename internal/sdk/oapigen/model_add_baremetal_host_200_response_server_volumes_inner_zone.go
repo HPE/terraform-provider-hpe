@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddBaremetalHost200ResponseServerVolumesInnerZone) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddBaremetalHost200ResponseServerVolumesInnerZone struct {
-	value *AddBaremetalHost200ResponseServerVolumesInnerZone
-	isSet bool
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerZone) Get() *AddBaremetalHost200ResponseServerVolumesInnerZone {
-	return v.value
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerVolumesInnerZone) Set(val *AddBaremetalHost200ResponseServerVolumesInnerZone) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerZone) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerVolumesInnerZone) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddBaremetalHost200ResponseServerVolumesInnerZone(val *AddBaremetalHost200ResponseServerVolumesInnerZone) *NullableAddBaremetalHost200ResponseServerVolumesInnerZone {
-	return &NullableAddBaremetalHost200ResponseServerVolumesInnerZone{value: val, isSet: true}
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerZone) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerVolumesInnerZone) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddBaremetalHost200ResponseServerVolumesInnerZone) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddBaremetalHost200ResponseServerVolumesInnerZone) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddVDIPools200ResponseAnyOfVdiPoolGateway) ToMap() (map[string]interface
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddVDIPools200ResponseAnyOfVdiPoolGateway struct {
-	value *AddVDIPools200ResponseAnyOfVdiPoolGateway
-	isSet bool
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolGateway) Get() *AddVDIPools200ResponseAnyOfVdiPoolGateway {
-	return v.value
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolGateway) Set(val *AddVDIPools200ResponseAnyOfVdiPoolGateway) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolGateway) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolGateway) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVDIPools200ResponseAnyOfVdiPoolGateway(val *AddVDIPools200ResponseAnyOfVdiPoolGateway) *NullableAddVDIPools200ResponseAnyOfVdiPoolGateway {
-	return &NullableAddVDIPools200ResponseAnyOfVdiPoolGateway{value: val, isSet: true}
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolGateway) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolGateway) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolGateway) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddVDIPools200ResponseAnyOfVdiPoolGateway) UnmarshalJSON(data []byte) (err error) {

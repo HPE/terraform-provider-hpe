@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -30,14 +30,14 @@ type UpdateBackupsRequestBackup struct {
 	BackupJobId *int64 `json:"backupJobId,omitempty"`
 	// Cron expression for custom schedule (overrides job schedule).
 	CronExpression *string `json:"cronExpression,omitempty"`
-	// The file or directory path on the target host. Applies to server/host backups (fileBackup, directoryBackup).
-	TargetPath *string `json:"targetPath,omitempty"`
+	// The file or directory path on the target host. Applies to server/host backups (fileBackup, directoryBackup). Null clears it.
+	TargetPath NullableString `json:"targetPath,omitempty"`
 	// Target host address. Applies to server/host and database backups.
 	TargetHost *string `json:"targetHost,omitempty"`
 	// Target port. Applies to server/host and database backups.
 	TargetPort *int32 `json:"targetPort,omitempty"`
-	// Target username for connecting to the backup target.
-	TargetUsername *string `json:"targetUsername,omitempty"`
+	// Target username for connecting to the backup target. Null clears it.
+	TargetUsername NullableString `json:"targetUsername,omitempty"`
 	// Target password for connecting to the backup target.
 	TargetPassword *string `json:"targetPassword,omitempty"`
 	// Whether to backup all databases. Applies to database backup types.
@@ -74,8 +74,8 @@ func (o UpdateBackupsRequestBackup) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.CronExpression) {
 		toSerialize["cronExpression"] = o.CronExpression
 	}
-	if !IsNil(o.TargetPath) {
-		toSerialize["targetPath"] = o.TargetPath
+	if o.TargetPath.IsSet() {
+		toSerialize["targetPath"] = o.TargetPath.Get()
 	}
 	if !IsNil(o.TargetHost) {
 		toSerialize["targetHost"] = o.TargetHost
@@ -83,8 +83,8 @@ func (o UpdateBackupsRequestBackup) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.TargetPort) {
 		toSerialize["targetPort"] = o.TargetPort
 	}
-	if !IsNil(o.TargetUsername) {
-		toSerialize["targetUsername"] = o.TargetUsername
+	if o.TargetUsername.IsSet() {
+		toSerialize["targetUsername"] = o.TargetUsername.Get()
 	}
 	if !IsNil(o.TargetPassword) {
 		toSerialize["targetPassword"] = o.TargetPassword
@@ -101,51 +101,6 @@ func (o UpdateBackupsRequestBackup) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateBackupsRequestBackup struct {
-	value *UpdateBackupsRequestBackup
-	isSet bool
-}
-
-func (v NullableUpdateBackupsRequestBackup) Get() *UpdateBackupsRequestBackup {
-	return v.value
-}
-
-func (v *NullableUpdateBackupsRequestBackup) Set(val *UpdateBackupsRequestBackup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateBackupsRequestBackup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateBackupsRequestBackup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateBackupsRequestBackup(val *UpdateBackupsRequestBackup) *NullableUpdateBackupsRequestBackup {
-	return &NullableUpdateBackupsRequestBackup{value: val, isSet: true}
-}
-
-func (v NullableUpdateBackupsRequestBackup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateBackupsRequestBackup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateBackupsRequestBackup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateBackupsRequestBackup) UnmarshalJSON(data []byte) (err error) {

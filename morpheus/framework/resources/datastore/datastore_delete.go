@@ -31,11 +31,11 @@ func (r *Resource) Delete(
 
 	client, _ := r.NewClient(ctx)
 
-	_, hresp, err := client.DatastoresAPI.DeleteDatastores(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.DatastoresAPI.DeleteDatastores(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete datastore resource",
-			fmt.Sprintf("datastore %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("datastore %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

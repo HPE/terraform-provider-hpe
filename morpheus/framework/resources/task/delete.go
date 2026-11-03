@@ -3,13 +3,10 @@ package task
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-
-	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
@@ -31,26 +28,23 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	deleteReq := client.AutomationAPI.RemoveTasks(ctx, id)
-	_, hresp, err := deleteReq.Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := deleteReq.Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete task resource",
-			fmt.Sprintf("task %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("task %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return
 	}
 
-	waitForDeleted := func() (*sdk.GetTasks200Response, error) {
+	// Wait until the task can no longer be read; a successful GET means it is
+	// still there and the loop tries again (see errfmt.PollDeleted).
+	what := fmt.Sprintf("task %d", id)
+	waitForDeleted := func() (struct{}, error) {
 		_, httpResp, err := client.AutomationAPI.GetTasks(ctx, id).Execute()
-		// 404 status code counts as a successful delete
-		if err != nil {
-			if httpResp == nil || httpResp.StatusCode != http.StatusNotFound {
-				return nil, backoff.Permanent(err)
-			}
-		}
 
-		return nil, nil
+		return struct{}{}, errfmt.PollDeleted(what, err, httpResp)
 	}
 
 	if _, err := backoff.Retry(

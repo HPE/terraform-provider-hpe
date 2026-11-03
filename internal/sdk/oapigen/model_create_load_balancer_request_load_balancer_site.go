@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -46,51 +46,6 @@ func (o CreateLoadBalancerRequestLoadBalancerSite) ToMap() (map[string]interface
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateLoadBalancerRequestLoadBalancerSite struct {
-	value *CreateLoadBalancerRequestLoadBalancerSite
-	isSet bool
-}
-
-func (v NullableCreateLoadBalancerRequestLoadBalancerSite) Get() *CreateLoadBalancerRequestLoadBalancerSite {
-	return v.value
-}
-
-func (v *NullableCreateLoadBalancerRequestLoadBalancerSite) Set(val *CreateLoadBalancerRequestLoadBalancerSite) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateLoadBalancerRequestLoadBalancerSite) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateLoadBalancerRequestLoadBalancerSite) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateLoadBalancerRequestLoadBalancerSite(val *CreateLoadBalancerRequestLoadBalancerSite) *NullableCreateLoadBalancerRequestLoadBalancerSite {
-	return &NullableCreateLoadBalancerRequestLoadBalancerSite{value: val, isSet: true}
-}
-
-func (v NullableCreateLoadBalancerRequestLoadBalancerSite) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateLoadBalancerRequestLoadBalancerSite) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateLoadBalancerRequestLoadBalancerSite) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateLoadBalancerRequestLoadBalancerSite) UnmarshalJSON(data []byte) (err error) {

@@ -12,6 +12,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
@@ -158,12 +159,18 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration, to be cleared.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdateVDIAppsRequestVdiAppOneOf{
 		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	// Sent when known, null when being cleared, not sent otherwise.
+	clearable.NullableString(pending, "description", plan.Description, &body.Description)
 	if !plan.LaunchPrefix.IsNull() && !plan.LaunchPrefix.IsUnknown() {
 		body.LaunchPrefix = plan.LaunchPrefix.ValueStringPointer()
 	}
@@ -210,8 +217,8 @@ func (r *vdiAppResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.VDIAPI.RemoveVDIApps(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.VDIAPI.RemoveVDIApps(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "vdi_app", "", err, httpResp)
 
 		return

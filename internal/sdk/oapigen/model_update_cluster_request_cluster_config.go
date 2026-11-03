@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,8 +21,12 @@ var _ MappedNullable = &UpdateClusterRequestClusterConfig{}
 // UpdateClusterRequestClusterConfig Configuration object with parameters that vary by `type`. Only the specified config properties will be updated, other existing config properties will be left unchanged.
 type UpdateClusterRequestClusterConfig struct {
 	// Dynamic Placement
-	DynamicPlacementMode *string                `json:"dynamicPlacementMode,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	DynamicPlacementMode *string `json:"dynamicPlacementMode,omitempty"`
+	// Sets the maximum number of VMs to migrate in parallel per host during maintenance mode.
+	MigrationConcurrencyLimit *string `json:"migrationConcurrencyLimit,omitempty"`
+	// When enabled, Morpheus automatically sizes maintenance mode migration concurrency based on available bandwidth and VM count, using Migration Concurrency (if set) as an upper bound. When disabled, Migration Concurrency runs as a fixed number of parallel migrations at all times.
+	MigrationConcurrencyAutoMode *string                `json:"migrationConcurrencyAutoMode,omitempty"`
+	AdditionalProperties         map[string]interface{} `json:",remain"`
 }
 
 type _UpdateClusterRequestClusterConfig UpdateClusterRequestClusterConfig
@@ -40,57 +44,18 @@ func (o UpdateClusterRequestClusterConfig) ToMap() (map[string]interface{}, erro
 	if !IsNil(o.DynamicPlacementMode) {
 		toSerialize["dynamicPlacementMode"] = o.DynamicPlacementMode
 	}
+	if !IsNil(o.MigrationConcurrencyLimit) {
+		toSerialize["migrationConcurrencyLimit"] = o.MigrationConcurrencyLimit
+	}
+	if !IsNil(o.MigrationConcurrencyAutoMode) {
+		toSerialize["migrationConcurrencyAutoMode"] = o.MigrationConcurrencyAutoMode
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateClusterRequestClusterConfig struct {
-	value *UpdateClusterRequestClusterConfig
-	isSet bool
-}
-
-func (v NullableUpdateClusterRequestClusterConfig) Get() *UpdateClusterRequestClusterConfig {
-	return v.value
-}
-
-func (v *NullableUpdateClusterRequestClusterConfig) Set(val *UpdateClusterRequestClusterConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateClusterRequestClusterConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateClusterRequestClusterConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateClusterRequestClusterConfig(val *UpdateClusterRequestClusterConfig) *NullableUpdateClusterRequestClusterConfig {
-	return &NullableUpdateClusterRequestClusterConfig{value: val, isSet: true}
-}
-
-func (v NullableUpdateClusterRequestClusterConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateClusterRequestClusterConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateClusterRequestClusterConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateClusterRequestClusterConfig) UnmarshalJSON(data []byte) (err error) {

@@ -67,7 +67,7 @@ func getTenantAsState(
 	state.Subdomain = convert.StrToType(a.Subdomain)
 	state.Currency = convert.StrToType(a.Currency)
 	state.AccountNumber = convert.StrToType(a.AccountNumber.Get())
-	state.AccountName = convert.StrToType(a.AccountName)
+	state.AccountName = convert.StrToType(a.AccountName.Get())
 	state.CustomerNumber = convert.StrToType(a.CustomerNumber.Get())
 	state.ExternalId = convert.StrToType(a.ExternalId.Get())
 	state.Master = convert.BoolToType(a.Master)

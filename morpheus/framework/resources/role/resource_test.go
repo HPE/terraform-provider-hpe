@@ -1,9 +1,10 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package role_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -208,14 +209,21 @@ func TestAccMorpheusRoleResourceAllAttrsOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// multitenant / multitenant_locked are master-tenant-only; only exercise
+	// the true case as the master tenant (MORPH-17516).
+	multitenantVal := "false"
+	if testhelpers.IsMasterTenant(t) {
+		multitenantVal = "true"
+	}
+
 	resourceConfig := `
 resource "hpe_morpheus_role" "example_all" {
   name = "` + name + `"
   description = "test"
   default_persona_code = "standard"
   landing_url = "https://test.com"
-  multitenant = true
-  multitenant_locked = true
+  multitenant = ` + multitenantVal + `
+  multitenant_locked = ` + multitenantVal + `
   role_type = "user"
   permissions = {
 	feature_permissions = [
@@ -253,12 +261,12 @@ resource "hpe_morpheus_role" "example_all" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.example_all",
 			"multitenant",
-			"true",
+			multitenantVal,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.example_all",
 			"multitenant_locked",
-			"true",
+			multitenantVal,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.example_all",
@@ -786,6 +794,12 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_user_role_ok" {
 
 // the difference between user and tenant role is that user roles can be assigned
 // group permissions while tenant roles can be assigned cloud permissions
+//
+// MORPH-17517 regression: cloud_permissions on a cloud in a sub-tenant caller's
+// own tenant are persisted but omitted from the role GET echo (echo filters
+// zones by caller visibility). The provider read-repairs the echo-gapped entry
+// so this test passes for sub-tenant callers instead of failing with
+// "was cty.SetVal(...), but now null".
 func TestAccMorpheusRoleResourceTenantAllPermissionsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -1078,12 +1092,73 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_tenant_role_ok" {
 			{
 				ImportState:       true,
 				ImportStateVerify: true, // Check state post import
-				ImportStateVerifyIgnore: []string{
-					"permissions.feature_permissions",
-					"permissions.default_group_access",
-				},
+				ImportStateVerifyIgnore: func() []string {
+					// MORPH-17517 known limitation: a fresh sub-tenant import
+					// cannot recover cloud_permissions on the caller's own
+					// clouds (the role GET echo filters zones by caller
+					// visibility, and import has no prior state to repair
+					// from). Ignore cloud_permissions on import for sub-tenant
+					// callers only; master-tenant import remains bit-identical.
+					ignore := []string{
+						"permissions.feature_permissions",
+						"permissions.default_group_access",
+					}
+					if !testhelpers.IsMasterTenant(t) {
+						ignore = append(ignore, "permissions.cloud_permissions")
+					}
+
+					return ignore
+				}(),
 				ResourceName: "hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 				Check:        checkFn,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusRoleResourceMultitenantRequiresMasterTenant_MORPH17516 asserts
+// that a sub-tenant caller setting multitenant = true is rejected at plan time
+// with a clear message, instead of Morpheus silently ignoring the value and the
+// apply failing with "Provider produced inconsistent result after apply"
+// (was cty.True, but now cty.False). It only runs as a sub-tenant; on the master
+// tenant it skips (master callers are allowed to set multitenant).
+func TestAccMorpheusRoleResourceMultitenantRequiresMasterTenant_MORPH17516(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	if testhelpers.IsMasterTenant(t) {
+		t.Skip("multitenant is settable by the master tenant; " +
+			"this negative test only applies to sub-tenant callers")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_role" "multitenant_guard" {
+  name        = "` + name + `"
+  role_type   = "user"
+  multitenant = true
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
+			t, adapter.NewMorpheus(), sdkv2morpheus.Provider(),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("master tenant"),
 			},
 		},
 	})

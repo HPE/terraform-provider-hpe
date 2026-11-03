@@ -3,18 +3,24 @@
 package cluster_test
 
 import (
+	"context"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/skip"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
@@ -195,18 +201,35 @@ data "hpe_morpheus_service_plan" "test" {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	var stashed *terraform.State
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + dataSourcesConfig + resourceConfig,
-				Check:  checkFn,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkFn,
+					testhelpers.StashState(&stashed),
+				),
 			},
 			{
 				Config:             providerConfig + dataSourcesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
+			// MORPH-18584: delete the cluster outside Terraform; the next
+			// refresh must remove it from state and plan a create, not fail.
+			testhelpers.DeleteOutOfBand(
+				t,
+				&stashed,
+				"hpe_morpheus_cluster.example_hvm",
+				func(ctx context.Context, client *sdk.APIClient, id int64) error {
+					result, hresp, err := client.ClustersAPI.DeleteCluster(ctx, id).Force("on").Execute()
+
+					return errfmt.CheckDeleted(result, err, hresp)
+				},
+			),
 		},
 	})
 }
@@ -511,6 +534,33 @@ resource "hpe_morpheus_cluster" "test" {
 }
 `
 
+	// description and labels removed: both are cleared on the cluster
+	// (MORPH-17990); the labels through the API's labelArray key, since it
+	// rejects an empty labels list. The step lives here, on the cluster this
+	// test has already provisioned, rather than in a clearable_test.go of its
+	// own: a cluster takes most of an hour to build and tear down, and the
+	// other resources' separate clear tests each create a resource in
+	// seconds.
+	clearedConfig := providerConfig + dataSourcesConfig + `
+resource "hpe_morpheus_cluster" "test" {
+	name        = "` + updatedName + `"
+	cloud_id    = data.hpe_morpheus_cloud.test.id
+	group_id    = data.hpe_morpheus_group.test.id
+	layout_id   = 449
+
+	config_hvm = {
+		create_user         = false
+		dynamic_placement   = true
+		cpu_arch            = "x86_64"
+		cpu_model           = "host-passthrough"
+		power_policy        = "performance"
+		vcpu_placement_mode = "auto"
+	}
+
+` + serverConfig + `
+}
+`
+
 	resourceName := "hpe_morpheus_cluster.test"
 
 	createChecks := resource.ComposeAggregateTestCheckFunc(
@@ -565,6 +615,25 @@ resource "hpe_morpheus_cluster" "test" {
 			},
 			{
 				Config:             updateConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				Config: clearedConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New("description"), knownvalue.Null()),
+						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New("labels"), knownvalue.Null()),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(resourceName, "description"),
+					resource.TestCheckNoResourceAttr(resourceName, "labels.#"),
+				),
+			},
+			{
+				Config:             clearedConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

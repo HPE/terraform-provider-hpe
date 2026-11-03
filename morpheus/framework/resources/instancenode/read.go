@@ -61,6 +61,33 @@ func (r *Resource) Read(
 		return
 	}
 
+	// Appliance-side drift detection: compare the current sshPasswordHash on
+	// the node's server with the baseline recorded after the provider last
+	// sent the password. Any drift is recorded in private state for ModifyPlan
+	// to act on (a warning only, since ssh_password is immutable); it is
+	// logged, not surfaced as an error, so a read is never blocked by it.
+	//
+	// When no baseline has been recorded yet but the appliance now renders a
+	// hash, seed the baseline here (wo.Observe) rather than comparing. At
+	// create time the hash is often not rendered yet (see create.go), so the
+	// first read that sees one is the earliest point a baseline can be taken.
+	// This is safe because the appliance value is ours -- we sent it and no
+	// out-of-band change has been observed -- until a later read proves
+	// otherwise. The same rule is applied in cluster's Read.
+	driftResp := serverForDrift(ctx, client, state.ServerID.ValueInt64())
+	if !hasDriftBaseline(ctx, resp.Private) {
+		resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, driftResp)...)
+	} else {
+		drifted, ddiags := wo.CheckDrift(ctx, resp.Private, driftResp)
+		resp.Diagnostics.Append(ddiags...)
+		if len(drifted) > 0 {
+			tflog.Info(ctx, "instance_node: write-only secret changed on the appliance",
+				map[string]any{
+					"instance": instanceID, "container": containerID, "attributes": drifted,
+				})
+		}
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

@@ -31,8 +31,9 @@ func StorageBucketResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"access_key_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Access key version. Used to determine if access_key has been updated.",
-				MarkdownDescription: "Access key version. Used to determine if access_key has been updated.",
+				Description:         "Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				DeprecationMessage:  "No longer needed: changes to access_key are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"bucket_name": schema.StringAttribute{
 				Optional:            true,
@@ -97,8 +98,17 @@ func StorageBucketResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"secret_key_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Secret key version. Used to determine if secret_key has been updated.",
-				MarkdownDescription: "Secret key version. Used to determine if secret_key has been updated.",
+				Description:         "Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				DeprecationMessage:  "No longer needed: changes to secret_key are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
+			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which one of the write-only values (access_key, secret_key) was last\nsent to Morpheus. Changes whenever one of those values changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which one of the write-only values (access_key, secret_key) was last\nsent to Morpheus. Changes whenever one of those values changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 		Description:         "Manages a Morpheus Storage Bucket resource.",
@@ -118,4 +128,5 @@ type StorageBucketModel struct {
 	RetentionDays       types.Int64  `tfsdk:"retention_days"`
 	SecretKey           types.String `tfsdk:"secret_key"`
 	SecretKeyVersion    types.Int64  `tfsdk:"secret_key_version"`
+	WriteOnlyRevision   types.Int64  `tfsdk:"write_only_revision"`
 }

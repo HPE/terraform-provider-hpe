@@ -88,6 +88,7 @@ resource "hpe_morpheus_instance_node" "ha" {
 - `name` (String) The name of the node container, assigned by the appliance.
 - `server_id` (Number) The compute server ID of the added node.
 - `server_resource_pool_id` (Number) The resource pool the node's server currently belongs to. For bare-metal instances this is the pool the server was drawn from. For virtual instances it reflects the hypervisor pool. Compare with `resource_pool_id` (the placement requested at create time, bare-metal only) to detect drift.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which the write-only `ssh_password` was sent to Morpheus. Changes when the node is created; not configurable.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -97,6 +98,8 @@ Optional:
 - `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 - `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+
+~> A change to `ssh_password` made outside Terraform (in the UI or by another tool) is reported as a warning on the next plan; because the attribute cannot be changed after the node is provisioned, set it to the appliance's value or replace the node.
 
 ## Import
 

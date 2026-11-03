@@ -61,9 +61,10 @@ func TestAccMorpheusStorageVolumeResourceExampleOk(t *testing.T) {
 				PlanOnly:           true,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_storage_volume.example",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"write_only_revision"},
+				ResourceName:            "hpe_morpheus_storage_volume.example",
 			},
 		},
 	})
@@ -189,7 +190,7 @@ func TestAccMorpheusStorageVolumeResourceCompleteOk(t *testing.T) {
 				// config_alletramp_bmaas_wo_version is a client-side replace
 				// trigger the API does not return, so it cannot round-trip on
 				// import.
-				ImportStateVerifyIgnore: []string{"config_alletramp_bmaas_wo_version"},
+				ImportStateVerifyIgnore: []string{"config_alletramp_bmaas_wo_version", "write_only_revision"},
 			},
 		},
 	})

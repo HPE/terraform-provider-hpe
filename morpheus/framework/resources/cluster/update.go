@@ -12,7 +12,9 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -53,23 +55,33 @@ func (r *Resource) Update(
 		cluster.Name = plan.Name.ValueStringPointer()
 	}
 
-	// description
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		cluster.Description = plan.Description.ValueStringPointer()
+	// Attributes removed from the configuration, to be cleared: sent when
+	// known, sent empty when being cleared, not sent otherwise.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	// labels
-	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
-		labels, err := convert.SetToStrSlice(plan.Labels)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				updateOperation,
-				"cluster "+plan.Name.ValueString()+": failed to parse label: "+err.Error(),
-			)
+	cluster.Description = pending.String("description", plan.Description)
 
-			return
+	labels, sendLabels, ldiags := pending.Strings(ctx, "labels", plan.Labels)
+	resp.Diagnostics.Append(ldiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	switch {
+	case sendLabels && len(labels) == 0:
+		// The API rejects an empty labels list as an unrecognised field (its
+		// handler only renames a non-empty one to labelArray, the key it
+		// binds), so an empty list is sent under that key directly.
+		if cluster.AdditionalProperties == nil {
+			cluster.AdditionalProperties = map[string]interface{}{}
 		}
 
+		cluster.AdditionalProperties["labelArray"] = []string{}
+	case sendLabels:
 		cluster.Labels = labels
 	}
 
@@ -126,6 +138,48 @@ func (r *Resource) Update(
 			config.AdditionalProperties["powerPolicy"] = plan.ConfigHvm.PowerPolicy.ValueString()
 		}
 
+		// HVM 2.0 network configuration. virt_switch_name is requires_replace
+		// (virtual switches are provisioned per host at create/scale-out time),
+		// so an in-place update never changes it; it is re-sent here only so a
+		// config rebuild does not drop it. The remaining network fields are
+		// reconciled onto the hosts by the daily cluster drift-correction sync,
+		// so a change is an in-place update that converges on the next sync.
+		if !plan.ConfigHvm.VirtSwitchName.IsNull() && !plan.ConfigHvm.VirtSwitchName.IsUnknown() {
+			config.AdditionalProperties["virtSwitchName"] = plan.ConfigHvm.VirtSwitchName.ValueString()
+		}
+
+		if !plan.ConfigHvm.Dns1.IsNull() && !plan.ConfigHvm.Dns1.IsUnknown() {
+			config.AdditionalProperties["dns1"] = plan.ConfigHvm.Dns1.ValueString()
+		}
+
+		if !plan.ConfigHvm.Dns2.IsNull() && !plan.ConfigHvm.Dns2.IsUnknown() {
+			config.AdditionalProperties["dns2"] = plan.ConfigHvm.Dns2.ValueString()
+		}
+
+		if !plan.ConfigHvm.Dns3.IsNull() && !plan.ConfigHvm.Dns3.IsUnknown() {
+			config.AdditionalProperties["dns3"] = plan.ConfigHvm.Dns3.ValueString()
+		}
+
+		if !plan.ConfigHvm.SearchDomain.IsNull() && !plan.ConfigHvm.SearchDomain.IsUnknown() {
+			config.AdditionalProperties["searchDomain"] = plan.ConfigHvm.SearchDomain.ValueString()
+		}
+
+		if !plan.ConfigHvm.Ntp1.IsNull() && !plan.ConfigHvm.Ntp1.IsUnknown() {
+			config.AdditionalProperties["ntp1"] = plan.ConfigHvm.Ntp1.ValueString()
+		}
+
+		if !plan.ConfigHvm.Ntp2.IsNull() && !plan.ConfigHvm.Ntp2.IsUnknown() {
+			config.AdditionalProperties["ntp2"] = plan.ConfigHvm.Ntp2.ValueString()
+		}
+
+		if !plan.ConfigHvm.Proxy.IsNull() && !plan.ConfigHvm.Proxy.IsUnknown() {
+			config.AdditionalProperties["proxy"] = plan.ConfigHvm.Proxy.ValueString()
+		}
+
+		if !plan.ConfigHvm.NoProxy.IsNull() && !plan.ConfigHvm.NoProxy.IsUnknown() {
+			config.AdditionalProperties["noProxy"] = plan.ConfigHvm.NoProxy.ValueString()
+		}
+
 		cluster.Config = config
 
 	}
@@ -139,6 +193,22 @@ func (r *Resource) Update(
 		return
 	}
 
+	// Gate the HVM 2.0 network fields on the selected layout's clusterVersion.
+	// layout_id is requires_replace, so the layout cannot change in place --
+	// but the network fields (other than virt_switch_name) are now in-place
+	// updatable, so a user could add them to a cluster whose fixed layout
+	// predates clusterVersion 2.0, where Morpheus would silently ignore them.
+	// Refuse that here, mirroring the create-path gate (see create.go).
+	if !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown() &&
+		!plan.LayoutId.IsNull() && !plan.LayoutId.IsUnknown() {
+		resp.Diagnostics.Append(requireHvm2Layout(
+			ctx, client, plan.LayoutId.ValueInt64(), plan.ConfigHvm,
+		)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	_, httpResp, err := client.ClustersAPI.UpdateCluster(ctx, id).
 		UpdateClusterRequest(*updateClusterReq).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
@@ -150,10 +220,30 @@ func (r *Resource) Update(
 		return
 	}
 
-	updatedState, diag := getClusterAsState(ctx, id, client, plan)
+	// The SSH password cannot be updated (a change replaces the cluster); an
+	// update planned through write_only_revision only records the digests of
+	// the configured values -- the one-time upgrade from a provider without
+	// them, or a deprecated marker being removed.
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+
+	updatedState, found, diag := getClusterAsState(ctx, id, client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
+	if !found {
+		resp.Diagnostics.AddError(readOperation, fmt.Sprintf("cluster %d not found after update", id))
+
+		return
+	}
+
+	// Record the digests once the read-back succeeded, so private state and
+	// state move together, and re-baseline the appliance-hash drift detection
+	// off a fresh read of the cluster's hosts (see write_only.go).
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config,
+		clusterHostHashes(ctx, client, id))...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedState)...)
 }

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -114,7 +114,7 @@ func (a *PluginsAPIService) GetPluginExecute(r ApiGetPluginRequest) (*GetPlugin2
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -125,7 +125,7 @@ func (a *PluginsAPIService) GetPluginExecute(r ApiGetPluginRequest) (*GetPlugin2
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -158,6 +158,7 @@ type ApiListPluginsRequest struct {
 	direction  *string
 	phrase     *string
 	name       *string
+	code       *string
 }
 
 // Maximum number of records to return
@@ -193,6 +194,12 @@ func (r ApiListPluginsRequest) Phrase(phrase string) ApiListPluginsRequest {
 // Filter by name
 func (r ApiListPluginsRequest) Name(name string) ApiListPluginsRequest {
 	r.name = &name
+	return r
+}
+
+// If specified will return an exact match on code
+func (r ApiListPluginsRequest) Code(code string) ApiListPluginsRequest {
+	r.code = &code
 	return r
 }
 
@@ -267,6 +274,9 @@ func (a *PluginsAPIService) ListPluginsExecute(r ApiListPluginsRequest) (*ListPl
 	if r.name != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
 	}
+	if r.code != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "code", r.code, "form", "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -306,7 +316,7 @@ func (a *PluginsAPIService) ListPluginsExecute(r ApiListPluginsRequest) (*ListPl
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -317,7 +327,7 @@ func (a *PluginsAPIService) ListPluginsExecute(r ApiListPluginsRequest) (*ListPl
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -430,7 +440,7 @@ func (a *PluginsAPIService) RemovePluginExecute(r ApiRemovePluginRequest) (*Remo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -441,7 +451,7 @@ func (a *PluginsAPIService) RemovePluginExecute(r ApiRemovePluginRequest) (*Remo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -562,7 +572,7 @@ func (a *PluginsAPIService) UpdatePluginExecute(r ApiUpdatePluginRequest) (*Upda
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -573,7 +583,7 @@ func (a *PluginsAPIService) UpdatePluginExecute(r ApiUpdatePluginRequest) (*Upda
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -601,11 +611,18 @@ type ApiUploadPluginRequest struct {
 	ctx        context.Context
 	ApiService *PluginsAPIService
 	file       *os.File
+	plugin     *os.File
 }
 
 // Plugin .jar file contents
 func (r ApiUploadPluginRequest) File(file *os.File) ApiUploadPluginRequest {
 	r.file = file
+	return r
+}
+
+// Alias for &#x60;file&#x60;
+func (r ApiUploadPluginRequest) Plugin(plugin *os.File) ApiUploadPluginRequest {
+	r.plugin = plugin
 	return r
 }
 
@@ -684,6 +701,21 @@ func (a *PluginsAPIService) UploadPluginExecute(r ApiUploadPluginRequest) (*Uplo
 		fileLocalVarFile.Close()
 		formFiles = append(formFiles, formFile{fileBytes: fileLocalVarFileBytes, fileName: fileLocalVarFileName, formFileName: fileLocalVarFormFileName})
 	}
+	var pluginLocalVarFormFileName string
+	var pluginLocalVarFileName string
+	var pluginLocalVarFileBytes []byte
+
+	pluginLocalVarFormFileName = "plugin"
+	pluginLocalVarFile := r.plugin
+
+	if pluginLocalVarFile != nil {
+		fbs, _ := io.ReadAll(pluginLocalVarFile)
+
+		pluginLocalVarFileBytes = fbs
+		pluginLocalVarFileName = pluginLocalVarFile.Name()
+		pluginLocalVarFile.Close()
+		formFiles = append(formFiles, formFile{fileBytes: pluginLocalVarFileBytes, fileName: pluginLocalVarFileName, formFileName: pluginLocalVarFormFileName})
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -706,7 +738,7 @@ func (a *PluginsAPIService) UploadPluginExecute(r ApiUploadPluginRequest) (*Uplo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -717,7 +749,7 @@ func (a *PluginsAPIService) UploadPluginExecute(r ApiUploadPluginRequest) (*Uplo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

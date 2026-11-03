@@ -50,6 +50,7 @@ resource "hpe_morpheus_instance_snapshot" "example" {
 - `external_id` (String) The external (cloud-provider) identifier of the snapshot.
 - `for_backup` (Boolean) Whether the snapshot was created as part of a backup operation.
 - `id` (Number) The ID of the snapshot.
+- `max_storage` (Number) Total size of the snapshot in bytes. Null when not populated.
 - `parent_snapshot` (String) The ID of the parent snapshot in the snapshot lineage, if any.
 - `snapshot_created` (String) When the snapshot was taken on the underlying platform.
 - `snapshot_type` (String) The type of the snapshot (cloud/provider specific).

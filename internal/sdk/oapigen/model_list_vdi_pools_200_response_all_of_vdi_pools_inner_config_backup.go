@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,7 @@ type ListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup struct {
 	CreateBackup         *bool                  `json:"createBackup,omitempty"`
 	JobAction            *string                `json:"jobAction,omitempty"`
 	JobRetentionCount    *string                `json:"jobRetentionCount,omitempty"`
-	ProviderBackupType   *int64                 `json:"providerBackupType,omitempty"`
+	ProviderBackupType   NullableInt64          `json:"providerBackupType,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -48,8 +48,8 @@ func (o ListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) ToMap() (map[stri
 	if !IsNil(o.JobRetentionCount) {
 		toSerialize["jobRetentionCount"] = o.JobRetentionCount
 	}
-	if !IsNil(o.ProviderBackupType) {
-		toSerialize["providerBackupType"] = o.ProviderBackupType
+	if o.ProviderBackupType.IsSet() {
+		toSerialize["providerBackupType"] = o.ProviderBackupType.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -57,51 +57,6 @@ func (o ListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) ToMap() (map[stri
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup struct {
-	value *ListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup
-	isSet bool
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) Get() *ListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup {
-	return v.value
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) Set(val *ListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup(val *ListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup {
-	return &NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup{value: val, isSet: true}
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListVDIPools200ResponseAllOfVdiPoolsInnerConfigBackup) UnmarshalJSON(data []byte) (err error) {

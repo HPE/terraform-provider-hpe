@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -101,51 +101,6 @@ func (o ListCertificates200ResponseCertificatesInner) ToMap() (map[string]interf
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListCertificates200ResponseCertificatesInner struct {
-	value *ListCertificates200ResponseCertificatesInner
-	isSet bool
-}
-
-func (v NullableListCertificates200ResponseCertificatesInner) Get() *ListCertificates200ResponseCertificatesInner {
-	return v.value
-}
-
-func (v *NullableListCertificates200ResponseCertificatesInner) Set(val *ListCertificates200ResponseCertificatesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListCertificates200ResponseCertificatesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListCertificates200ResponseCertificatesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListCertificates200ResponseCertificatesInner(val *ListCertificates200ResponseCertificatesInner) *NullableListCertificates200ResponseCertificatesInner {
-	return &NullableListCertificates200ResponseCertificatesInner{value: val, isSet: true}
-}
-
-func (v NullableListCertificates200ResponseCertificatesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListCertificates200ResponseCertificatesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListCertificates200ResponseCertificatesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListCertificates200ResponseCertificatesInner) UnmarshalJSON(data []byte) (err error) {

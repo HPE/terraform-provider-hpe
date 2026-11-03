@@ -70,6 +70,7 @@ Read-Only:
 - `external_id` (String) The external ID of the compute server.
 - `external_ip` (String) The external IP address of the compute server.
 - `group_id` (Number) The ID of the group this compute server belongs to.
+- `guest_agent_status` (String)
 - `hostname` (String) The hostname of the compute server.
 - `id` (Number) The ID of the compute server.
 - `instance_id` (Number) The ID of the instance associated with this compute server, if any.

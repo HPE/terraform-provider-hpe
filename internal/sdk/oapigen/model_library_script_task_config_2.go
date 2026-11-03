@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -81,51 +81,6 @@ func (o LibraryScriptTaskConfig2) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableLibraryScriptTaskConfig2 struct {
-	value *LibraryScriptTaskConfig2
-	isSet bool
-}
-
-func (v NullableLibraryScriptTaskConfig2) Get() *LibraryScriptTaskConfig2 {
-	return v.value
-}
-
-func (v *NullableLibraryScriptTaskConfig2) Set(val *LibraryScriptTaskConfig2) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableLibraryScriptTaskConfig2) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableLibraryScriptTaskConfig2) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableLibraryScriptTaskConfig2(val *LibraryScriptTaskConfig2) *NullableLibraryScriptTaskConfig2 {
-	return &NullableLibraryScriptTaskConfig2{value: val, isSet: true}
-}
-
-func (v NullableLibraryScriptTaskConfig2) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableLibraryScriptTaskConfig2) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableLibraryScriptTaskConfig2) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *LibraryScriptTaskConfig2) UnmarshalJSON(data []byte) (err error) {

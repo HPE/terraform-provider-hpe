@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,7 +21,7 @@ var _ MappedNullable = &AlletraMPHVMDatastoreConfiguration1{}
 // AlletraMPHVMDatastoreConfiguration1 AlletraMP HVM Datastore Configuration
 type AlletraMPHVMDatastoreConfiguration1 struct {
 	// Enable ransomware protection for this datastore
-	Enableransomware *string `json:"enableransomware,omitempty"`
+	Enableransomware string `json:"enableransomware"`
 	// Storage protocol to use, can be 'iSCSI' or 'FC'
 	ProtocolType         string                 `json:"protocolType"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -39,9 +39,7 @@ func (o AlletraMPHVMDatastoreConfiguration1) MarshalJSON() ([]byte, error) {
 
 func (o AlletraMPHVMDatastoreConfiguration1) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Enableransomware) {
-		toSerialize["enableransomware"] = o.Enableransomware
-	}
+	toSerialize["enableransomware"] = o.Enableransomware
 	toSerialize["protocolType"] = o.ProtocolType
 
 	for key, value := range o.AdditionalProperties {
@@ -49,51 +47,6 @@ func (o AlletraMPHVMDatastoreConfiguration1) ToMap() (map[string]interface{}, er
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAlletraMPHVMDatastoreConfiguration1 struct {
-	value *AlletraMPHVMDatastoreConfiguration1
-	isSet bool
-}
-
-func (v NullableAlletraMPHVMDatastoreConfiguration1) Get() *AlletraMPHVMDatastoreConfiguration1 {
-	return v.value
-}
-
-func (v *NullableAlletraMPHVMDatastoreConfiguration1) Set(val *AlletraMPHVMDatastoreConfiguration1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAlletraMPHVMDatastoreConfiguration1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAlletraMPHVMDatastoreConfiguration1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAlletraMPHVMDatastoreConfiguration1(val *AlletraMPHVMDatastoreConfiguration1) *NullableAlletraMPHVMDatastoreConfiguration1 {
-	return &NullableAlletraMPHVMDatastoreConfiguration1{value: val, isSet: true}
-}
-
-func (v NullableAlletraMPHVMDatastoreConfiguration1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAlletraMPHVMDatastoreConfiguration1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAlletraMPHVMDatastoreConfiguration1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AlletraMPHVMDatastoreConfiguration1) UnmarshalJSON(data []byte) (err error) {

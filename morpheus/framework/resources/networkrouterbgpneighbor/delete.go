@@ -5,7 +5,6 @@ package networkrouterbgpneighbor
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -40,20 +39,13 @@ func (r *Resource) Delete(
 
 	tflog.Debug(ctx, fmt.Sprintf("Deleting BGP neighbor %d on router %d", id, routerID))
 
-	_, hresp, err := client.NetworksAPI.
+	result, hresp, err := client.NetworksAPI.
 		DeleteNetworkRouterBgpNeighbor(ctx, id, routerID).Execute()
-	if err != nil {
-		// Treat 404 as success — resource is already gone
-		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-			tflog.Debug(ctx, fmt.Sprintf("BGP neighbor %d already deleted (404)", id))
-
-			return
-		}
-
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete network router bgp neighbor resource",
 			fmt.Sprintf("bgp neighbor %d DELETE failed: %s",
-				id, errfmt.ErrMsg(err, hresp)),
+				id, err.Error()),
 		)
 	}
 }

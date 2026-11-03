@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -125,51 +125,6 @@ func (o GetClusterLayout200ResponseLayoutComputeServersInner) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClusterLayout200ResponseLayoutComputeServersInner struct {
-	value *GetClusterLayout200ResponseLayoutComputeServersInner
-	isSet bool
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInner) Get() *GetClusterLayout200ResponseLayoutComputeServersInner {
-	return v.value
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutComputeServersInner) Set(val *GetClusterLayout200ResponseLayoutComputeServersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutComputeServersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterLayout200ResponseLayoutComputeServersInner(val *GetClusterLayout200ResponseLayoutComputeServersInner) *NullableGetClusterLayout200ResponseLayoutComputeServersInner {
-	return &NullableGetClusterLayout200ResponseLayoutComputeServersInner{value: val, isSet: true}
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutComputeServersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClusterLayout200ResponseLayoutComputeServersInner) UnmarshalJSON(data []byte) (err error) {

@@ -173,8 +173,9 @@ func NetworkRouterBgpNeighborResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Password version. Used to determine if password_wo has been updated.",
-				MarkdownDescription: "Password version. Used to determine if password_wo has been updated.",
+				Description:         "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends password_wo.",
+				MarkdownDescription: "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends password_wo.",
+				DeprecationMessage:  "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"protocol_address": schema.StringAttribute{
 				Optional:            true,
@@ -235,6 +236,14 @@ func NetworkRouterBgpNeighborResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Route weight",
 				Default:             int64default.StaticInt64(60),
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which a write-only value (password_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which a write-only value (password_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -264,6 +273,7 @@ type NetworkRouterBgpNeighborModel struct {
 	RouteFilteringType types.String    `tfsdk:"route_filtering_type"`
 	RouterId           types.Int64     `tfsdk:"router_id"`
 	Weight             types.Int64     `tfsdk:"weight"`
+	WriteOnlyRevision  types.Int64     `tfsdk:"write_only_revision"`
 }
 
 var _ basetypes.ObjectTypable = ConfigNsxtType{}

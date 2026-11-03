@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -69,51 +69,6 @@ func (o BootScript) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableBootScript struct {
-	value *BootScript
-	isSet bool
-}
-
-func (v NullableBootScript) Get() *BootScript {
-	return v.value
-}
-
-func (v *NullableBootScript) Set(val *BootScript) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableBootScript) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableBootScript) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableBootScript(val *BootScript) *NullableBootScript {
-	return &NullableBootScript{value: val, isSet: true}
-}
-
-func (v NullableBootScript) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableBootScript) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableBootScript) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *BootScript) UnmarshalJSON(data []byte) (err error) {

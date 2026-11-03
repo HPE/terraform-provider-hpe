@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,7 +20,9 @@ var _ MappedNullable = &ListTenants200ResponseAllOfAccountsInnerRole{}
 
 // ListTenants200ResponseAllOfAccountsInnerRole struct for ListTenants200ResponseAllOfAccountsInnerRole
 type ListTenants200ResponseAllOfAccountsInnerRole struct {
-	Id                   *int64                 `json:"id,omitempty"`
+	Id *int64 `json:"id,omitempty"`
+	// Role name
+	Name                 *string                `json:"name,omitempty"`
 	Authority            *string                `json:"authority,omitempty"`
 	Description          NullableString         `json:"description,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -41,6 +43,9 @@ func (o ListTenants200ResponseAllOfAccountsInnerRole) ToMap() (map[string]interf
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
 	if !IsNil(o.Authority) {
 		toSerialize["authority"] = o.Authority
 	}
@@ -53,51 +58,6 @@ func (o ListTenants200ResponseAllOfAccountsInnerRole) ToMap() (map[string]interf
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListTenants200ResponseAllOfAccountsInnerRole struct {
-	value *ListTenants200ResponseAllOfAccountsInnerRole
-	isSet bool
-}
-
-func (v NullableListTenants200ResponseAllOfAccountsInnerRole) Get() *ListTenants200ResponseAllOfAccountsInnerRole {
-	return v.value
-}
-
-func (v *NullableListTenants200ResponseAllOfAccountsInnerRole) Set(val *ListTenants200ResponseAllOfAccountsInnerRole) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListTenants200ResponseAllOfAccountsInnerRole) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListTenants200ResponseAllOfAccountsInnerRole) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListTenants200ResponseAllOfAccountsInnerRole(val *ListTenants200ResponseAllOfAccountsInnerRole) *NullableListTenants200ResponseAllOfAccountsInnerRole {
-	return &NullableListTenants200ResponseAllOfAccountsInnerRole{value: val, isSet: true}
-}
-
-func (v NullableListTenants200ResponseAllOfAccountsInnerRole) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListTenants200ResponseAllOfAccountsInnerRole) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListTenants200ResponseAllOfAccountsInnerRole) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListTenants200ResponseAllOfAccountsInnerRole) UnmarshalJSON(data []byte) (err error) {

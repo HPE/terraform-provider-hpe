@@ -42,7 +42,7 @@ func init() {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}
 
-			idParam := sdk.UpdateStorageVolumesIdParameter{Int64: &id}
+			idParam := sdk.TransferStorageVolumeOwnershipIdParameter{Int64: &id}
 
 			_, hresp, delErr := client.StorageAPI.RemoveStorageVolumes(ctx, idParam).Execute()
 			if delErr != nil && hresp != nil && hresp.StatusCode == http.StatusNotFound {

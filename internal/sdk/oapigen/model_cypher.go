@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -74,51 +74,6 @@ func (o Cypher) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCypher struct {
-	value *Cypher
-	isSet bool
-}
-
-func (v NullableCypher) Get() *Cypher {
-	return v.value
-}
-
-func (v *NullableCypher) Set(val *Cypher) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCypher) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCypher) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCypher(val *Cypher) *NullableCypher {
-	return &NullableCypher{value: val, isSet: true}
-}
-
-func (v NullableCypher) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCypher) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCypher) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *Cypher) UnmarshalJSON(data []byte) (err error) {

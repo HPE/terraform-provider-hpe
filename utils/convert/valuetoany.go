@@ -45,6 +45,8 @@ func ValueToAny(ctx context.Context, v attr.Value) (any, error) {
 		return f, nil
 	case basetypes.Float64Value:
 		return val.ValueFloat64(), nil
+	case basetypes.Int64Value:
+		return val.ValueInt64(), nil
 	case basetypes.ListValue:
 		return ListToAny(ctx, val)
 	case basetypes.SetValue:

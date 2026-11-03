@@ -187,6 +187,9 @@ resource "hpe_morpheus_cloud" "example" {
 - `agent_install_mode` (String) The method used to install the Morpheus agent on virtual machines provisioned in the cloud (ssh, cloudInit)
 - `appliance_url` (String) The URL used by workloads provisioned in the cloud for interacting with the Morpheus appliance.
 - `auto_recover_power_state` (Boolean) Automatically Power on VMs
+- `backup_provider_ids` (Set of Number) IDs of the backup provider integrations assigned to this cloud. Morpheus
+defaults to the internal backup provider when none is supplied, so this
+attribute is server-defaulted: leave it unset to accept the default.
 - `cloud_type_code` (String) Cloud (zone) type code
 - `code` (String) Optional code for use with policies
 - `config` (Dynamic) Generic Cloud Configuration
@@ -216,6 +219,8 @@ resource "hpe_morpheus_cloud" "example" {
 ### Read-Only
 
 - `id` (Number) The ID of the cloud
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (config_vmware.password or config_azure.client_secret) was last
+sent to Morpheus. Changes whenever one of those values changes; not configurable.
 
 <a id="nestedatt--config_aws"></a>
 ### Nested Schema for `config_aws`
@@ -228,7 +233,10 @@ Optional:
 
 - `access_key` (String) AWS access key
 - `api_proxy` (String) The API proxy to use for API calls to the cloud.
-- `backup_provider` (String) The backup provider for the cloud
+- `backup_provider` (String, Deprecated) Deprecated. The per-cloud AWS backup mode (stored as config.backupMode)
+has no effect on Morpheus 9.x, which assigns backup providers at the
+cloud level. Use backup_provider_ids instead. The value is retained in
+Terraform state only and is no longer sent to the appliance.
 - `bypass_proxy` (Boolean) Whether to bypass the proxy for cloud API calls
 - `change_management_config` (String) The change management configuration for this cloud to use for syncing with the change management system.
 - `cmdb_config` (String) The CMDB configuration for this cloud to use for syncing with the CMDB.
@@ -273,7 +281,7 @@ Required:
 
 Optional:
 
-- `client_secret_version` (Number) Client secret version. Used to determine if client secret has been updated.
+- `client_secret_version` (Number, Deprecated) Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
 - `cloud_type` (String) The Azure cloud type (global, usgov, german, china)
 - `cmdb_discovery` (Boolean) Whether to enable CMDB discovery on the cloud
 - `import_existing` (String) Whether to import existing resources from the cloud (on, off)
@@ -310,7 +318,7 @@ Optional:
 - `enable_vnc` (Boolean) Enable VNC access to the console.
 - `hide_host_selection` (Boolean) Whether to hide the ability to select the vSphere host from the user during provisioning.
 - `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password to apply to the user
-- `password_version` (Number) Password version. Used to determine if password has been updated.
+- `password_version` (Number, Deprecated) Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
 - `resource_pool` (String) The name of the vSphere resource pool
 - `rpc_mode` (String) The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))
 - `username` (String) Username.
@@ -322,6 +330,22 @@ Clouds can be imported using the `id`, e.g.
 ```bash
 terraform import hpe_morpheus_cloud.example 123
 ```
+
+The write-only credentials `config_vmware.password` and `config_azure.client_secret` are not stored
+in state, so the import cannot tell whether the value in your configuration matches the appliance:
+it is taken as already applied, the plan after import is empty, and a later change to it is only
+detected once the cloud is next updated for another reason (Terraform warns about this on every
+plan until then). To have changes detected from the start, append the sha256 digest of the
+configured value to the import ID, naming the nested attribute by its dotted path:
+
+```shell
+terraform import hpe_morpheus_cloud.example "123#config_vmware.password=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
+`id = "123#config_vmware.password=${sha256(var.vcenter_password)}"`.
+
+~> Changes to `config_vmware.password` or `config_azure.client_secret` made outside Terraform (in the UI or by another tool) are detected on the next plan and the configured value is re-sent. This appliance-side detection begins only after the first apply that sends the value; the import digest above seeds the config-side comparison, not the appliance baseline (the import digest does not seed the appliance baseline).
 
 ## Notes
 

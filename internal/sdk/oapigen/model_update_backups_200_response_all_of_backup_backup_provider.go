@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -56,51 +56,6 @@ func (o UpdateBackups200ResponseAllOfBackupBackupProvider) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateBackups200ResponseAllOfBackupBackupProvider struct {
-	value *UpdateBackups200ResponseAllOfBackupBackupProvider
-	isSet bool
-}
-
-func (v NullableUpdateBackups200ResponseAllOfBackupBackupProvider) Get() *UpdateBackups200ResponseAllOfBackupBackupProvider {
-	return v.value
-}
-
-func (v *NullableUpdateBackups200ResponseAllOfBackupBackupProvider) Set(val *UpdateBackups200ResponseAllOfBackupBackupProvider) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateBackups200ResponseAllOfBackupBackupProvider) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateBackups200ResponseAllOfBackupBackupProvider) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateBackups200ResponseAllOfBackupBackupProvider(val *UpdateBackups200ResponseAllOfBackupBackupProvider) *NullableUpdateBackups200ResponseAllOfBackupBackupProvider {
-	return &NullableUpdateBackups200ResponseAllOfBackupBackupProvider{value: val, isSet: true}
-}
-
-func (v NullableUpdateBackups200ResponseAllOfBackupBackupProvider) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateBackups200ResponseAllOfBackupBackupProvider) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateBackups200ResponseAllOfBackupBackupProvider) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateBackups200ResponseAllOfBackupBackupProvider) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o UpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy struct {
-	value *UpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy
-	isSet bool
-}
-
-func (v NullableUpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy) Get() *UpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy {
-	return v.value
-}
-
-func (v *NullableUpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy) Set(val *UpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy(val *UpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy) *NullableUpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy {
-	return &NullableUpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy{value: val, isSet: true}
-}
-
-func (v NullableUpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateCheckGroups200ResponseAllOfCheckGroupCreatedBy) UnmarshalJSON(data []byte) (err error) {

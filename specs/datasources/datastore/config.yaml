@@ -1,5 +1,14 @@
 datastore:
   templates:
+    cluster_id:
+      int64:
+        computed_optional_required: optional
+        description: >-
+          Cluster whose datastores the lookup is limited to. Every HVM cluster has datastores of its own
+          — `local`, `morpheus-cloud-init`, `morpheus-images` — so with two clusters on an appliance a
+          lookup by `name` alone finds one of each and fails. Set `cluster_id` to look the name up among
+          that cluster's datastores only; with `id`, the datastore must be one of that cluster's. A filter
+          on the lookup, not an attribute of the datastore: it is never returned.
     config:
       dynamic:
         computed_optional_required: computed
@@ -96,6 +105,7 @@ datastore:
   moves:
     - datastore: "" # unnest datastore
     - account_id: tenant_id
+    - template-cluster_id: cluster_id
     - template-configNfsParent: config_nfs
     - template-configNfsSourceHostname: config_nfs.source_hostname
     - template-configNfsSourceDirPath: config_nfs.source_dir_path
@@ -139,7 +149,9 @@ datastore:
     name:
       string_length_at_least: 1
       computed_optional_required: computed_optional
-      description: The name of the datastore. Must not be empty.
+      description: >-
+        The name of the datastore. Must not be empty. Clusters' datastores share names (`local` on every
+        HVM cluster); see `cluster_id`.
     associated_resource_type:
       description: Type of the resource this datastore is associated with, can be 'Cloud' or 'Cluster'
       computed_optional_required: computed

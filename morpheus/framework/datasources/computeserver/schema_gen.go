@@ -72,6 +72,9 @@ func ComputeServerDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the group this compute server belongs to.",
 				MarkdownDescription: "The ID of the group this compute server belongs to.",
 			},
+			"guest_agent_status": schema.StringAttribute{
+				Computed: true,
+			},
 			"hostname": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The hostname of the compute server.",
@@ -193,6 +196,7 @@ type ComputeServerModel struct {
 	ExternalId               types.String `tfsdk:"external_id"`
 	ExternalIp               types.String `tfsdk:"external_ip"`
 	GroupId                  types.Int64  `tfsdk:"group_id"`
+	GuestAgentStatus         types.String `tfsdk:"guest_agent_status"`
 	Hostname                 types.String `tfsdk:"hostname"`
 	Id                       types.Int64  `tfsdk:"id"`
 	InstanceId               types.Int64  `tfsdk:"instance_id"`

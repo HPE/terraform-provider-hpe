@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) ToM
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration struct {
-	value *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration
-	isSet bool
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) Get() *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration {
-	return v.value
-}
-
-func (v *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) Set(val *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration(val *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration {
-	return &NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) UnmarshalJSON(data []byte) (err error) {

@@ -69,8 +69,9 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"linux_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Linux password version. Used to determine if linux_password_wo has been updated.",
-				MarkdownDescription: "Linux password version. Used to determine if linux_password_wo has been updated.",
+				Description:         "Deprecated. Changes to linux_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends linux_password_wo.",
+				MarkdownDescription: "Deprecated. Changes to linux_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends linux_password_wo.",
+				DeprecationMessage:  "No longer needed: changes to linux_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"linux_username": schema.StringAttribute{
 				Optional:            true,
@@ -82,7 +83,9 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"password_expired": schema.BoolAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Whether the user must change their password at their next sign-in to the Morpheus UI:\ntrue after a create or password change with require_password_change set, false once the\nuser has chosen a new password.",
+				MarkdownDescription: "Whether the user must change their password at their next sign-in to the Morpheus UI:\ntrue after a create or password change with require_password_change set, false once the\nuser has chosen a new password.",
 			},
 			"password_wo": schema.StringAttribute{
 				Optional:            true,
@@ -96,8 +99,9 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Password version. Used to determine if password_wo has been updated.",
-				MarkdownDescription: "Password version. Used to determine if password_wo has been updated.",
+				Description:         "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends password_wo.",
+				MarkdownDescription: "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends password_wo.",
+				DeprecationMessage:  "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"receive_notifications": schema.BoolAttribute{
 				Optional:            true,
@@ -105,6 +109,11 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Receive Notifications?",
 				MarkdownDescription: "Receive Notifications?",
 				Default:             booldefault.StaticBool(true),
+			},
+			"require_password_change": schema.BoolAttribute{
+				Optional:            true,
+				Description:         "Require the user to choose a new password at their next sign-in to the Morpheus UI. While\ntrue, the password is marked as expired whenever the provider sets or re-sets it: on\ncreate, when the attribute is turned on for an existing user (their current password\nexpires), and whenever password_wo changes. The next UI sign-in then redirects the user to\nthe change-password page (signing in to the API with the password is not affected). The\nuser's own change clears the flag, which the read-only password_expired reflects; this\nattribute is not read back, so it never fights with the user's change. False, or leaving\nit out, sends nothing: an expiry already set stays until the user changes the password\n(clear it in the UI if it is no longer wanted).",
+				MarkdownDescription: "Require the user to choose a new password at their next sign-in to the Morpheus UI. While\ntrue, the password is marked as expired whenever the provider sets or re-sets it: on\ncreate, when the attribute is turned on for an existing user (their current password\nexpires), and whenever password_wo changes. The next UI sign-in then redirects the user to\nthe change-password page (signing in to the API with the password is not affected). The\nuser's own change clears the flag, which the read-only password_expired reflects; this\nattribute is not read back, so it never fights with the user's change. False, or leaving\nit out, sends nothing: an expiry already set stays until the user changes the password\n(clear it in the UI if it is no longer wanted).",
 			},
 			"role_ids": schema.SetAttribute{
 				ElementType: types.Int64Type,
@@ -137,8 +146,9 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"windows_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Windows password version. Used to determine if windows_password_wo has been updated.",
-				MarkdownDescription: "Windows password version. Used to determine if windows_password_wo has been updated.",
+				Description:         "Deprecated. Changes to windows_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends windows_password_wo.",
+				MarkdownDescription: "Deprecated. Changes to windows_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends windows_password_wo.",
+				DeprecationMessage:  "No longer needed: changes to windows_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"windows_username": schema.StringAttribute{
 				Optional:            true,
@@ -147,6 +157,14 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Windows username",
 				PlanModifiers: []planmodifier.String{
 					modifiers.NullableStringUpdateModifier{},
+				},
+			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which a write-only value (password_wo,\nlinux_password_wo or windows_password_wo) was last sent to Morpheus. Changes whenever one\nof those values changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which a write-only value (password_wo,\nlinux_password_wo or windows_password_wo) was last sent to Morpheus. Changes whenever one\nof those values changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 		},
@@ -166,10 +184,12 @@ type UserModel struct {
 	PasswordWo               types.String `tfsdk:"password_wo"`
 	PasswordWoVersion        types.Int64  `tfsdk:"password_wo_version"`
 	ReceiveNotifications     types.Bool   `tfsdk:"receive_notifications"`
+	RequirePasswordChange    types.Bool   `tfsdk:"require_password_change"`
 	RoleIds                  types.Set    `tfsdk:"role_ids"`
 	TenantId                 types.Int64  `tfsdk:"tenant_id"`
 	Username                 types.String `tfsdk:"username"`
 	WindowsPasswordWo        types.String `tfsdk:"windows_password_wo"`
 	WindowsPasswordWoVersion types.Int64  `tfsdk:"windows_password_wo_version"`
 	WindowsUsername          types.String `tfsdk:"windows_username"`
+	WriteOnlyRevision        types.Int64  `tfsdk:"write_only_revision"`
 }

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionP
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner struct {
-	value *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner
-	isSet bool
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner) Get() *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner {
-	return v.value
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner) Set(val *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner(val *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner) *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner {
-	return &NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner{value: val, isSet: true}
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner) UnmarshalJSON(data []byte) (err error) {

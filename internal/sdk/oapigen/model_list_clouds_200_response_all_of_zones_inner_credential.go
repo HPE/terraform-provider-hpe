@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -108,49 +108,4 @@ func (src ListClouds200ResponseAllOfZonesInnerCredential) MarshalJSON() ([]byte,
 	}
 
 	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
-}
-
-type NullableListClouds200ResponseAllOfZonesInnerCredential struct {
-	value *ListClouds200ResponseAllOfZonesInnerCredential
-	isSet bool
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerCredential) Get() *ListClouds200ResponseAllOfZonesInnerCredential {
-	return v.value
-}
-
-func (v *NullableListClouds200ResponseAllOfZonesInnerCredential) Set(val *ListClouds200ResponseAllOfZonesInnerCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClouds200ResponseAllOfZonesInnerCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClouds200ResponseAllOfZonesInnerCredential(val *ListClouds200ResponseAllOfZonesInnerCredential) *NullableListClouds200ResponseAllOfZonesInnerCredential {
-	return &NullableListClouds200ResponseAllOfZonesInnerCredential{value: val, isSet: true}
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClouds200ResponseAllOfZonesInnerCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

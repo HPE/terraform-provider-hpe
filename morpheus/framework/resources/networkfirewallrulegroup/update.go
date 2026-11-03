@@ -11,6 +11,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
@@ -39,16 +40,19 @@ func (r *Resource) Update(
 	serverID := currentState.NetworkIntegrationId.ValueInt64()
 
 	name := plan.Name.ValueString()
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	ruleGroup := &sdk.UpdateNetworkFirewallRuleGroupRequestRuleGroup{
 		Name: &name,
 	}
 
-	if plan.Description.IsNull() {
-		ruleGroup.Description.Set(nil)
-	} else if !plan.Description.IsUnknown() {
-		desc := plan.Description.ValueString()
-		ruleGroup.Description.Set(&desc)
-	}
+	clearable.NullableString(pending, "description", plan.Description, &ruleGroup.Description)
 
 	if plan.Priority.IsNull() {
 		ruleGroup.Priority.Set(nil)
@@ -61,9 +65,9 @@ func (r *Resource) Update(
 		ruleGroup.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var ids []int64
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+	// tenant_ids: the planned list, or an empty list when being cleared
+	if ids, ok, ldiags := pending.Int64s(ctx, "tenant_ids", plan.TenantIds); ok {
+		resp.Diagnostics.Append(ldiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -125,6 +129,7 @@ func (r *Resource) Update(
 		state.TenantIds = plan.TenantIds
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(

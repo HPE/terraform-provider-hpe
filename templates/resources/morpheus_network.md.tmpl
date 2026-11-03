@@ -12,6 +12,154 @@ description: |-
 
 For most network types in Morpheus, the network itself is the deployable unit -- there is no separate subnet creation step. Only Azure and Google support a two-level model where subnets can be created independently within a network using the [`hpe_morpheus_subnet`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_subnet) resource. For all other types (NSX-T, OpenStack, Amazon, OVS, VCD, ACI, etc.), use this resource to create the full network object including its addressing configuration.
 
+### Choosing the network type
+
+Name the type with `type_code` (for example `ovsPortGroup`, `nsxtLogicalSwitch`, `azureNetwork`) or
+with `type_id`; set one and the other is computed. Codes are the same on every appliance, where ids
+are not, so `type_code` travels between environments. The
+[`hpe_morpheus_network_type`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_network_type)
+data source lists a type's details, and `GET /api/network-types` lists them all. Changing the type
+replaces the network.
+
+### Type-specific configuration
+
+A Morpheus network type declares its fields in two places, and this resource follows that split:
+
+- **Fields of the network itself** — `cidr`, `gateway`, `vlan_id`, `switch_id`, `zone_pool_id`,
+  `pool_id`, `network_domain_id`, `assign_public_ip`, `availability_zone`, the IPv6 set — are
+  ordinary top-level attributes, sent and read back like any other.
+- **Fields of the type's configuration map** are carried by a **typed block** named after the type
+  family, `config_<type>`, or, for a type without a block, by the free-form `config` map. These are
+  **write-only**: Terraform sends them to Morpheus on create and update and never stores them in
+  state, so they can hold values Morpheus masks (secrets) and the configuration can be changed
+  without a diff appearing in state. What Morpheus holds is readable in the computed
+  `config_from_api`, including keys the server adds itself and secrets it masks.
+
+Write-only attributes need **Terraform 1.11 or later, or OpenTofu 1.11 or later**.
+
+A network takes **at most one** typed block, and it must be the block for the network's type; a
+mismatch is reported when the configuration is validated (with `type_code`) or planned (with
+`type_id`). The free-form `config` is for types that have no block — types a network plugin adds,
+for instance — and cannot be combined with a typed block.
+
+| Block | Network types | Attributes (those that **replace** the network when changed are marked) |
+|---|---|---|
+| `config_ovs_port_group` | `ovsPortGroup` | `vlan_trunks`, `trunk_only` |
+| `config_hvm_data` | `hvmPortGroupDataNetwork` | `cluster_network_layout` ⟳, `host_network_interface` ⟳, `virtual_switch_segment_id` ⟳, `mtu` |
+| `config_hvm_overlay` ¹ | `hvmPortGroupOverlayNetwork` | `overlay_network_interface` ⟳, `overlay_port` ⟳, `overlay_id` ⟳ |
+| `config_hvm_private` ¹ | `hvmPortGroupPrivateNetwork` | `cluster_network_layout` ⟳, `host_network_interface` ⟳, `virtual_switch_id` ⟳ |
+| `config_hvm_sriov` ¹ | `hvmPortGroupSriovNetwork` | `physical_function` ⟳ |
+| `config_nsxt` | `nsxtLogicalSwitch` | `connected_gateway`, `vlan_ids`, `subnet_ip_management_type`, `subnet_ip_server_id`, `subnet_dhcp_server_address`, `dhcp_range`, `subnet_dhcp_lease_time`, and the IPv6 DHCP set (`subnet_dhcp_server_address_ipv6`, `dhcp_range_ipv6`, `dhcp_excluded_ranges_ipv6`, `subnet_dhcp_lease_time_ipv6`, `dhcp_domain_names_ipv6`, `dhcp_preferred_time_ipv6`, `dhcp_sntp_servers_ipv6`) |
+| `config_nsx_cloud` ¹ | `nsxCloudLogicalSwitch` | `connected_gateway`, `vlan_ids`, `subnet_ip_management_type`, `subnet_ip_server_id`, `subnet_dhcp_server_address`, `dhcp_range`, `subnet_dhcp_lease_time` |
+| `config_azure` | `azureNetwork` | `resource_group_id` ⟳, `subnet_name` ⟳, `subnet_cidr` ⟳ |
+| `config_gcp` | `googleNetwork` | `auto_create` ⟳, `mtu` |
+| `config_openstack` | `openstackPrivate`, `huaweiPrivate`, `opentelekomPrivate` | `dhcp_range`, `host_routes` ⟳ |
+
+⟳ — Morpheus does not apply a new value to this field after the network is created, so a change is
+planned as a replacement rather than accepted and silently ignored.
+¹ — generated from the network type's definition and checked against it, but not exercised against
+a live cloud by this provider's tests; reports welcome.
+
+#### Which attributes an appliance supports
+
+The blocks describe the network types as Morpheus 9.1.0 declares them. Everything in them is also
+declared by Morpheus 9.0.1 **except** the virtual-switch layout fields, which arrived with the HVM
+2.0 cluster layout in 9.1: `config_hvm_data.cluster_network_layout` and `.virtual_switch_segment_id`,
+`config_hvm_private.cluster_network_layout` and `.virtual_switch_id`. Because a network type's
+fields also depend on the plugin that provides it, the provider does not gate on a version number:
+at plan time it reads the type's definition from the appliance and **rejects a block attribute the
+appliance's type does not declare**, naming the field and the appliance's version — Morpheus would
+otherwise accept the value and silently ignore it. A key of the free-form `config` that the type does
+not declare is a warning. The check needs the appliance at plan time; when it cannot be reached the
+check runs at apply instead.
+
+Some types have no configuration map at all, and so no block: an Amazon subnet's fields
+(`zone_pool_id`, `availability_zone`, `cidr`, `assign_public_ip`) and a custom child network's
+(`parent_network_id`, `cidr`, `gateway`, DNS) are all top-level attributes; an OVS overlay's are
+`zone_pool_id`, `switch_id` and `vxlan_id`.
+
+~> **Deprecated** The top-level `connected_gateway` is superseded by `connected_gateway` inside
+`config_nsxt` and `config_nsx_cloud`. It still works, and is read back from the network's
+configuration, so existing configurations need not change immediately.
+
+#### How changes to write-only configuration are detected
+
+A write-only value is never in state, so Terraform cannot compare it with anything. Following
+HashiCorp's guidance for write-only arguments, the provider keeps a secure hash of the configuration
+it last applied in the resource's private state and compares the configuration against it at plan
+time: a change to a field Morpheus edits in place is applied by an update — shown in the plan as a
+change to `config_from_api` — and a change to a field marked ⟳ above replaces the network. No
+version or "keepers" attribute is needed. This detects changes you make in the configuration; a
+change made to the configuration on the appliance is visible in `config_from_api` but is not undone.
+
+#### What an update applies, per type
+
+Whether Morpheus applies a change to `name`, `cidr`, `gateway`, `vlan_id`, `dhcp_server` or the DNS
+attributes depends on the network type: each type carries flags saying which of them it edits after
+create, and a change to a field whose flag is off is accepted by the API and ignored. At plan time
+the provider reads the network type from the appliance and plans a **replacement** for such a
+change, so it never plans an update that would do nothing; `name` on an HVM port group or `cidr` on
+an Azure virtual network are examples. A change to a field the type does edit — `vlan_id` on an OVS
+port group, `name` on an NSX-T segment — is an in-place update. The type is read once per type per
+run; when the appliance cannot be reached at plan time, a table of the network types of a recent
+Morpheus release built into the provider is used instead, and a type in neither is treated
+generically.
+
+### Removing an attribute clears it
+
+Removing an optional attribute from the configuration **clears it on the network**: `description`,
+`display_name`, `gateway`, the DNS servers, `search_domains`, `switch_id`, `vlan_id`, the IPv6
+addressing (`cidr_ipv6`, `gateway_ipv6`, `netmask_ipv6`, `dns_primary_ipv6`, `dns_secondary_ipv6`),
+`pool_id`, `pool_ipv6_id`, `network_domain_id`, `network_proxy_id`, `zone_pool_id`, `no_proxy`,
+`labels` and `cidr` are planned to `null` and read back empty after the apply. Removing
+`tenant_ids` revokes every tenant's access but the owner's — Morpheus always keeps the owning
+tenant — so it is planned as `(known after apply)` and reads back as the owner alone. Whether the
+clear is applied in place or by replacement follows the type's flags exactly as a change does:
+removing `gateway` from a network whose type does not edit the gateway after create replaces the
+network.
+
+Three things are not cleared. A boolean keeps its value when it is removed (there is no empty
+boolean). A value the user never set — the display name Morpheus fills in from the name, or a
+gateway a cloud sync reported — is not the provider's to remove, so it stays: the provider records,
+at every apply, which of these attributes the configuration set, and only a recorded attribute is
+cleared when it goes. And `zone_pool_id` cannot be removed from a network of the HVM port group
+types, whose pool is the cluster the network lives on; the plan refuses it.
+
+~> **Note** The record is written by the first apply made with this provider version. A network
+last applied by an earlier version has none yet, so an attribute removed from its configuration
+*before* that apply is kept, as before; apply once, then remove it. An imported network behaves the
+same way until its first apply.
+
+### Network server
+
+Network types managed by a network plugin — the HVM port group types among them — belong to a
+**network server**, and Morpheus 9.1 requires it on create: `network_server_id`. For an HVM cluster
+the network server is the cluster's own, hidden from the ordinary listing; find it with
+`GET /api/networks/servers?showHidden=true` (it is named after the cluster, `<cluster> HVM Network
+Server`). Morpheus does not return it on a network, so the configured value is kept in state.
+
+### Visibility and tenants
+
+Morpheus creates a network as `private` unless its tenant permissions include the master tenant, so
+`visibility = "public"` requires `tenant_ids` to include the master tenant's id; the provider reports
+this at plan time rather than letting the apply fail with an inconsistent result. A sub-tenant cannot
+create a public network at all.
+
+### Timing
+
+Morpheus answers a create as soon as the network record exists and finishes provisioning — on a
+cloud, or on an HVM cluster's hosts — afterwards, so the provider waits for the network to leave the
+`provisioning` state before reading it back (a failed provisioning is an error at apply, with the
+network left for inspection). On destroy it waits until the network is gone, and reports Morpheus's
+own message if the delete is refused.
+
+Morpheus keeps one network record **per cloud**. When two clouds cover the same account, the network
+you create through one is discovered by the other on its next refresh as a separate record under the
+same name, and that record disappears on the refresh after you destroy yours. This does not affect
+the resource, which works by id, but it does affect lookups by name — see the
+[`hpe_morpheus_network` data source](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_network)
+and its `cloud_id`.
+
 ~> **Note** Some network types (for example, Amazon) update the network `name`
 and some other attributes a few minutes after creation. This requires using a
 `lifecycle` block as shown below. If this `lifecycle` block is missing, then
@@ -35,23 +183,36 @@ resource "hpe_morpheus_network" "a" {
 }
 ```
 
+### Import
+
+Import by network id. The write-only configuration cannot be read from the appliance, so after an
+import the first plan shows one update that sends the configured `config_*` block or `config` map
+and records it; `config_from_api` is populated from the start. The never-returned attributes
+(`network_server_id`, `scope_id`, `vxlan_id`, `parent_network_id`) take the configured values on that
+first apply.
+
+### Upgrading from 2.1
+
+- `config` is no longer stored in state. A reference to `hpe_morpheus_network.x.config` elsewhere in
+  a configuration must become `hpe_morpheus_network.x.config_from_api`. Existing state is upgraded
+  automatically and the first plan after upgrading shows no change to the network.
+- `type_id` is no longer required; either it or `type_code` is.
+- A change to `tenant_ids` is applied in place; it used to replace the network.
+- `name`, `cidr` and `cidr_ipv6` no longer always replace the network: they do so on the types that
+  cannot edit them, and are updated in place on the types that can.
+
 ## Example Usage
 
 ### AWS Network
+
+An Amazon subnet has no configuration block: its fields are attributes of the network.
 
 {{ tffile "examples/resources/morpheus_network/example_aws.tf" }}
 
 ### Azure Network
 
-The `config` block for Azure networks (VNets) accepts the following properties:
-
-| Config Key | Required | Description |
-|---|---|---|
-| `resourceGroupId` | Yes | The ID of the Azure Resource Group to deploy the VNet into |
-| `subnetName` | Yes | Name of the default subnet created with the VNet |
-| `subnetCidr` | Yes | CIDR for the default subnet (e.g. `192.168.1.0/24`). Must be contained within the VNet's `cidr` address space |
-
-~> **Note** The Azure region is automatically derived from the Cloud zone or Resource Group — it is not specified in the config block.
+The Azure region is derived from the cloud or the resource group; it is not configured on the
+network. All three attributes of `config_azure` replace the network when changed.
 
 {{ tffile "examples/resources/morpheus_network/example_azure.tf" }}
 
@@ -61,19 +222,14 @@ The `config` block for Azure networks (VNets) accepts the following properties:
 
 ### NSX-T Segment
 
-NSX-T segments are created as networks in Morpheus (type code `nsxtLogicalSwitch`). The `config` block accepts the following properties:
-
-| Config Key | Required | Description |
-|---|---|---|
-| `connectedGateway` | Yes | Connectivity path to the Tier-1 gateway (e.g. `/infra/tier-1s/my-gw`) |
-| `vlanIDs` | No | Comma-separated VLAN IDs for VLAN-backed segments. Leave empty for overlay segments |
-| `subnetIpManagementType` | No | DHCP type: `dhcpLocal`, `gatewayDhcp`, `dhcpRelay`, or empty for no DHCP |
-| `subnetIpServerId` | No | Path to the DHCP server or relay (required when `subnetIpManagementType` is set) |
-| `subnetDhcpServerAddress` | No | DHCP server address in CIDR format (e.g. `172.16.10.2/24`). Required for `dhcpLocal` |
-| `dhcpRange` | No | DHCP IP range (e.g. `172.16.10.100-172.16.10.200`) |
-| `subnetDhcpLeaseTime` | No | DHCP lease time in seconds (default `86400`) |
-
-~> **Note** The top-level `cidr` and `gateway` fields define the segment's subnet addressing. NSX-T subnets are not created separately -- the segment itself is the network object in Morpheus.
+NSX-T segments are networks of type `nsxtLogicalSwitch`. The segment's own addressing is the
+top-level `cidr` and `gateway`; NSX-T subnets are not created separately. `connected_gateway` is
+the path of the Tier-0 or Tier-1 gateway (`/infra/tier-1s/<id>`), `vlan_ids` is set for a
+VLAN-backed segment and left empty for an overlay segment, and `subnet_ip_management_type` selects
+the DHCP mode (`dhcpLocal`, `gatewayDhcp`, `dhcpRelay`) with `subnet_ip_server_id` naming the server
+or relay, `subnet_dhcp_server_address` the server's address in CIDR form (required for `dhcpLocal`),
+`dhcp_range` the range (`172.16.10.100-172.16.10.200`) and `subnet_dhcp_lease_time` the lease in
+seconds (NSX-T's default is 86400).
 
 {{ tffile "examples/resources/morpheus_network/example_nsxt.tf" }}
 
@@ -81,8 +237,31 @@ NSX-T segments are created as networks in Morpheus (type code `nsxtLogicalSwitch
 
 {{ tffile "examples/resources/morpheus_network/example_host.tf" }}
 
-### OVS Port Group Network
+### OVS Port Group Network (HVM standard network)
+
+The port group's virtual switch, VLAN and resource pool are the top-level `switch_id`, `vlan_id`
+and `zone_pool_id`; `switch_id` replaces the network when changed, `vlan_id` is updated in place.
 
 {{ tffile "examples/resources/morpheus_network/example_ovs_port_group.tf" }}
+
+### HVM Data Network
+
+The `HOST_INTERFACE` layout shown attaches a VLAN on a host interface; on an HVM 2.0 cluster the
+layout is `VSWITCH` and the network takes a data-traffic virtual switch segment instead
+(`cluster_network_layout = "VSWITCH"`, `virtual_switch_segment_id`), with the segment deciding the
+VLAN and MTU.
+
+{{ tffile "examples/resources/morpheus_network/example_hvm_data.tf" }}
+
+### OpenStack Private Network
+
+{{ tffile "examples/resources/morpheus_network/example_openstack.tf" }}
+
+### Custom Child Network
+
+A child network carves a subnet out of an existing (typically vSphere) network; it has no
+configuration block.
+
+{{ tffile "examples/resources/morpheus_network/example_child.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}

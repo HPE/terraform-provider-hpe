@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -46,51 +46,6 @@ func (o CreateNetworks200ResponseAllOfNetworkNetworkProxy) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateNetworks200ResponseAllOfNetworkNetworkProxy struct {
-	value *CreateNetworks200ResponseAllOfNetworkNetworkProxy
-	isSet bool
-}
-
-func (v NullableCreateNetworks200ResponseAllOfNetworkNetworkProxy) Get() *CreateNetworks200ResponseAllOfNetworkNetworkProxy {
-	return v.value
-}
-
-func (v *NullableCreateNetworks200ResponseAllOfNetworkNetworkProxy) Set(val *CreateNetworks200ResponseAllOfNetworkNetworkProxy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworks200ResponseAllOfNetworkNetworkProxy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworks200ResponseAllOfNetworkNetworkProxy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworks200ResponseAllOfNetworkNetworkProxy(val *CreateNetworks200ResponseAllOfNetworkNetworkProxy) *NullableCreateNetworks200ResponseAllOfNetworkNetworkProxy {
-	return &NullableCreateNetworks200ResponseAllOfNetworkNetworkProxy{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworks200ResponseAllOfNetworkNetworkProxy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworks200ResponseAllOfNetworkNetworkProxy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworks200ResponseAllOfNetworkNetworkProxy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateNetworks200ResponseAllOfNetworkNetworkProxy) UnmarshalJSON(data []byte) (err error) {

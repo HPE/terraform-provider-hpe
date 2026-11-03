@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -205,51 +205,6 @@ func (o GetPlugin200ResponseAllOfPluginOptionTypesInner) ToMap() (map[string]int
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetPlugin200ResponseAllOfPluginOptionTypesInner struct {
-	value *GetPlugin200ResponseAllOfPluginOptionTypesInner
-	isSet bool
-}
-
-func (v NullableGetPlugin200ResponseAllOfPluginOptionTypesInner) Get() *GetPlugin200ResponseAllOfPluginOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableGetPlugin200ResponseAllOfPluginOptionTypesInner) Set(val *GetPlugin200ResponseAllOfPluginOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetPlugin200ResponseAllOfPluginOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetPlugin200ResponseAllOfPluginOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetPlugin200ResponseAllOfPluginOptionTypesInner(val *GetPlugin200ResponseAllOfPluginOptionTypesInner) *NullableGetPlugin200ResponseAllOfPluginOptionTypesInner {
-	return &NullableGetPlugin200ResponseAllOfPluginOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetPlugin200ResponseAllOfPluginOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetPlugin200ResponseAllOfPluginOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetPlugin200ResponseAllOfPluginOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetPlugin200ResponseAllOfPluginOptionTypesInner) UnmarshalJSON(data []byte) (err error) {

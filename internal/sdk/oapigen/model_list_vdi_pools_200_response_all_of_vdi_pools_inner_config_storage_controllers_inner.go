@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -93,51 +93,6 @@ func (o ListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner) 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner struct {
-	value *ListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner
-	isSet bool
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner) Get() *ListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner {
-	return v.value
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner) Set(val *ListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner(val *ListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner) *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner {
-	return &NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner{value: val, isSet: true}
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListVDIPools200ResponseAllOfVdiPoolsInnerConfigStorageControllersInner) UnmarshalJSON(data []byte) (err error) {

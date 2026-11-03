@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o ListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrat
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType struct {
-	value *ListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType
-	isSet bool
-}
-
-func (v NullableListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType) Get() *ListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType {
-	return v.value
-}
-
-func (v *NullableListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType) Set(val *ListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType(val *ListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType) *NullableListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType {
-	return &NullableListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType{value: val, isSet: true}
-}
-
-func (v NullableListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListNetworkServers200ResponseAllOfNetworkServersInnerIntegrationIntegrationType) UnmarshalJSON(data []byte) (err error) {

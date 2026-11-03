@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o UploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList) ToMap() (m
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList struct {
-	value *UploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList
-	isSet bool
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList) Get() *UploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList {
-	return v.value
-}
-
-func (v *NullableUploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList) Set(val *UploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList(val *UploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList) *NullableUploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList {
-	return &NullableUploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList{value: val, isSet: true}
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UploadPlugin200ResponseAllOfPluginOptionTypesInnerOptionList) UnmarshalJSON(data []byte) (err error) {

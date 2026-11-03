@@ -12,13 +12,13 @@ import (
 )
 
 //go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_domain/example-id.tf example-id.tf.tmpl Id 99
-//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_domain/example-name.tf example-name.tf.tmpl Name "Example name"
+//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_domain/example-name.tf example-name.tf.tmpl Name "\"Example name\""
 
 func RenderNetworkDomainByNameConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "acceptance test.localdomain",
+		"Name": "\"acceptance test.localdomain\"",
 	}
 
 	for key, value := range overrides {

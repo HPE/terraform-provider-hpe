@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,9 +21,8 @@ var _ MappedNullable = &AddProvisioningLicenseRequestLicense{}
 // AddProvisioningLicenseRequestLicense struct for AddProvisioningLicenseRequestLicense
 type AddProvisioningLicenseRequestLicense struct {
 	// Name
-	Name string `json:"name"`
-	// License Type - The license type code.
-	LicenseType string `json:"licenseType"`
+	Name        string                                          `json:"name"`
+	LicenseType AddProvisioningLicenseRequestLicenseLicenseType `json:"licenseType"`
 	// License Key - The license key, to be kept a secret.
 	LicenseKey string `json:"licenseKey"`
 	// Org Name - The Organization Name (if applicable) related to the license key
@@ -36,8 +35,8 @@ type AddProvisioningLicenseRequestLicense struct {
 	Copies *int64 `json:"copies,omitempty"`
 	// Description
 	Description *string `json:"description,omitempty"`
-	// Virtual Images - Array of Virtual Image IDs to associate with license.
-	VirtualImages []int64 `json:"virtualImages,omitempty"`
+	// Virtual image ids, or objects with `id`.
+	VirtualImages []AddProvisioningLicenseRequestLicenseVirtualImagesInner `json:"virtualImages,omitempty"`
 	// Tenants - Array of tenants that are allowed to use the key.
 	Tenants              []int64                `json:"tenants,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -85,51 +84,6 @@ func (o AddProvisioningLicenseRequestLicense) ToMap() (map[string]interface{}, e
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddProvisioningLicenseRequestLicense struct {
-	value *AddProvisioningLicenseRequestLicense
-	isSet bool
-}
-
-func (v NullableAddProvisioningLicenseRequestLicense) Get() *AddProvisioningLicenseRequestLicense {
-	return v.value
-}
-
-func (v *NullableAddProvisioningLicenseRequestLicense) Set(val *AddProvisioningLicenseRequestLicense) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddProvisioningLicenseRequestLicense) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddProvisioningLicenseRequestLicense) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddProvisioningLicenseRequestLicense(val *AddProvisioningLicenseRequestLicense) *NullableAddProvisioningLicenseRequestLicense {
-	return &NullableAddProvisioningLicenseRequestLicense{value: val, isSet: true}
-}
-
-func (v NullableAddProvisioningLicenseRequestLicense) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddProvisioningLicenseRequestLicense) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddProvisioningLicenseRequestLicense) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddProvisioningLicenseRequestLicense) UnmarshalJSON(data []byte) (err error) {

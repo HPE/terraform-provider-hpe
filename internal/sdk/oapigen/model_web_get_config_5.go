@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -72,51 +72,6 @@ func (o WebGetConfig5) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableWebGetConfig5 struct {
-	value *WebGetConfig5
-	isSet bool
-}
-
-func (v NullableWebGetConfig5) Get() *WebGetConfig5 {
-	return v.value
-}
-
-func (v *NullableWebGetConfig5) Set(val *WebGetConfig5) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableWebGetConfig5) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableWebGetConfig5) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableWebGetConfig5(val *WebGetConfig5) *NullableWebGetConfig5 {
-	return &NullableWebGetConfig5{value: val, isSet: true}
-}
-
-func (v NullableWebGetConfig5) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableWebGetConfig5) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableWebGetConfig5) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *WebGetConfig5) UnmarshalJSON(data []byte) (err error) {

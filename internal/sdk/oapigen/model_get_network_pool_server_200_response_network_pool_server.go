@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -162,51 +162,6 @@ func (o GetNetworkPoolServer200ResponseNetworkPoolServer) ToMap() (map[string]in
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkPoolServer200ResponseNetworkPoolServer struct {
-	value *GetNetworkPoolServer200ResponseNetworkPoolServer
-	isSet bool
-}
-
-func (v NullableGetNetworkPoolServer200ResponseNetworkPoolServer) Get() *GetNetworkPoolServer200ResponseNetworkPoolServer {
-	return v.value
-}
-
-func (v *NullableGetNetworkPoolServer200ResponseNetworkPoolServer) Set(val *GetNetworkPoolServer200ResponseNetworkPoolServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkPoolServer200ResponseNetworkPoolServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkPoolServer200ResponseNetworkPoolServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkPoolServer200ResponseNetworkPoolServer(val *GetNetworkPoolServer200ResponseNetworkPoolServer) *NullableGetNetworkPoolServer200ResponseNetworkPoolServer {
-	return &NullableGetNetworkPoolServer200ResponseNetworkPoolServer{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkPoolServer200ResponseNetworkPoolServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkPoolServer200ResponseNetworkPoolServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkPoolServer200ResponseNetworkPoolServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkPoolServer200ResponseNetworkPoolServer) UnmarshalJSON(data []byte) (err error) {

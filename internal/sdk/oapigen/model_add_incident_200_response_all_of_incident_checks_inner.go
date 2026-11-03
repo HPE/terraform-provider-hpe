@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -190,51 +190,6 @@ func (o AddIncident200ResponseAllOfIncidentChecksInner) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddIncident200ResponseAllOfIncidentChecksInner struct {
-	value *AddIncident200ResponseAllOfIncidentChecksInner
-	isSet bool
-}
-
-func (v NullableAddIncident200ResponseAllOfIncidentChecksInner) Get() *AddIncident200ResponseAllOfIncidentChecksInner {
-	return v.value
-}
-
-func (v *NullableAddIncident200ResponseAllOfIncidentChecksInner) Set(val *AddIncident200ResponseAllOfIncidentChecksInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddIncident200ResponseAllOfIncidentChecksInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddIncident200ResponseAllOfIncidentChecksInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddIncident200ResponseAllOfIncidentChecksInner(val *AddIncident200ResponseAllOfIncidentChecksInner) *NullableAddIncident200ResponseAllOfIncidentChecksInner {
-	return &NullableAddIncident200ResponseAllOfIncidentChecksInner{value: val, isSet: true}
-}
-
-func (v NullableAddIncident200ResponseAllOfIncidentChecksInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddIncident200ResponseAllOfIncidentChecksInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddIncident200ResponseAllOfIncidentChecksInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddIncident200ResponseAllOfIncidentChecksInner) UnmarshalJSON(data []byte) (err error) {

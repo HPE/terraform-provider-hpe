@@ -94,6 +94,42 @@ func affinityGroupAsState(
 		state.Pool = NewPoolValueNull()
 	}
 
+	// host_group / vm_group / owner — read-only rule-shape state (MORPH-12801).
+	if ag.HostGroup != nil {
+		state.HostGroup = NewHostGroupValueMust(
+			HostGroupValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"id":   convert.Int64ToType(ag.HostGroup.Id),
+				"name": convert.StrToType(ag.HostGroup.Name),
+			},
+		)
+	} else {
+		state.HostGroup = NewHostGroupValueNull()
+	}
+
+	if ag.VmGroup != nil {
+		state.VmGroup = NewVmGroupValueMust(
+			VmGroupValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"id":   convert.Int64ToType(ag.VmGroup.Id),
+				"name": convert.StrToType(ag.VmGroup.Name),
+			},
+		)
+	} else {
+		state.VmGroup = NewVmGroupValueNull()
+	}
+
+	if ag.Owner != nil {
+		state.Owner = NewOwnerValueMust(
+			OwnerValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"id": convert.Int64ToType(ag.Owner.Id),
+			},
+		)
+	} else {
+		state.Owner = NewOwnerValueNull()
+	}
+
 	// Servers — [{id, name}] → Set of Int64 (extract IDs only)
 	if len(ag.Servers) > 0 {
 		serverVals := make([]attr.Value, 0, len(ag.Servers))

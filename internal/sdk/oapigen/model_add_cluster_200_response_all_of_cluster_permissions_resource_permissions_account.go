@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o AddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount) 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount struct {
-	value *AddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount
-	isSet bool
-}
-
-func (v NullableAddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount) Get() *AddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount {
-	return v.value
-}
-
-func (v *NullableAddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount) Set(val *AddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount(val *AddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount) *NullableAddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount {
-	return &NullableAddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount{value: val, isSet: true}
-}
-
-func (v NullableAddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddCluster200ResponseAllOfClusterPermissionsResourcePermissionsAccount) UnmarshalJSON(data []byte) (err error) {

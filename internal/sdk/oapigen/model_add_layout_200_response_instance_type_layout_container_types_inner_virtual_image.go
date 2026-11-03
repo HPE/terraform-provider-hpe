@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage) T
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage struct {
-	value *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage
-	isSet bool
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage) Get() *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage {
-	return v.value
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage) Set(val *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage(val *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage) *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage {
-	return &NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage{value: val, isSet: true}
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerVirtualImage) UnmarshalJSON(data []byte) (err error) {

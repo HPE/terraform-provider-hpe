@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetCertificate200ResponseCertificateType) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetCertificate200ResponseCertificateType struct {
-	value *GetCertificate200ResponseCertificateType
-	isSet bool
-}
-
-func (v NullableGetCertificate200ResponseCertificateType) Get() *GetCertificate200ResponseCertificateType {
-	return v.value
-}
-
-func (v *NullableGetCertificate200ResponseCertificateType) Set(val *GetCertificate200ResponseCertificateType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCertificate200ResponseCertificateType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCertificate200ResponseCertificateType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCertificate200ResponseCertificateType(val *GetCertificate200ResponseCertificateType) *NullableGetCertificate200ResponseCertificateType {
-	return &NullableGetCertificate200ResponseCertificateType{value: val, isSet: true}
-}
-
-func (v NullableGetCertificate200ResponseCertificateType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCertificate200ResponseCertificateType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCertificate200ResponseCertificateType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetCertificate200ResponseCertificateType) UnmarshalJSON(data []byte) (err error) {

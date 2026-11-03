@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,23 +21,23 @@ var _ MappedNullable = &ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTempla
 
 // ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner struct for ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner
 type ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner struct {
-	Id                   *int64                                                                `json:"id,omitempty"`
-	Account              NullableString                                                        `json:"account,omitempty"`
-	Name                 *string                                                               `json:"name,omitempty"`
-	Labels               []string                                                              `json:"labels,omitempty"`
-	Code                 *string                                                               `json:"code,omitempty"`
-	Type                 *ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInnerType `json:"type,omitempty"`
-	ExternalId           NullableString                                                        `json:"externalId,omitempty"`
-	ExternalType         NullableString                                                        `json:"externalType,omitempty"`
-	DeploymentId         NullableString                                                        `json:"deploymentId,omitempty"`
-	Status               NullableString                                                        `json:"status,omitempty"`
-	File                 *ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInnerFile `json:"file,omitempty"`
-	Config               map[string]interface{}                                                `json:"config,omitempty"`
-	CreatedBy            NullableString                                                        `json:"createdBy,omitempty"`
-	UpdatedBy            NullableString                                                        `json:"updatedBy,omitempty"`
-	DateCreated          *time.Time                                                            `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time                                                            `json:"lastUpdated,omitempty"`
-	AdditionalProperties map[string]interface{}                                                `json:",remain"`
+	Id                   *int64                                                                       `json:"id,omitempty"`
+	Account              NullableString                                                               `json:"account,omitempty"`
+	Name                 *string                                                                      `json:"name,omitempty"`
+	Labels               []string                                                                     `json:"labels,omitempty"`
+	Code                 *string                                                                      `json:"code,omitempty"`
+	Type                 NullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInnerType `json:"type,omitempty"`
+	ExternalId           NullableString                                                               `json:"externalId,omitempty"`
+	ExternalType         NullableString                                                               `json:"externalType,omitempty"`
+	DeploymentId         NullableString                                                               `json:"deploymentId,omitempty"`
+	Status               NullableString                                                               `json:"status,omitempty"`
+	File                 *ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInnerFile        `json:"file,omitempty"`
+	Config               map[string]interface{}                                                       `json:"config,omitempty"`
+	CreatedBy            NullableString                                                               `json:"createdBy,omitempty"`
+	UpdatedBy            NullableString                                                               `json:"updatedBy,omitempty"`
+	DateCreated          *time.Time                                                                   `json:"dateCreated,omitempty"`
+	LastUpdated          *time.Time                                                                   `json:"lastUpdated,omitempty"`
+	AdditionalProperties map[string]interface{}                                                       `json:",remain"`
 }
 
 type _ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner
@@ -67,8 +67,8 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) ToMap(
 	if !IsNil(o.Code) {
 		toSerialize["code"] = o.Code
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if o.ExternalId.IsSet() {
 		toSerialize["externalId"] = o.ExternalId.Get()
@@ -106,51 +106,6 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) ToMap(
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner struct {
-	value *ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner
-	isSet bool
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) Get() *ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner {
-	return v.value
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) Set(val *ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner(val *ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) *NullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner {
-	return &NullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner{value: val, isSet: true}
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListClusterLayouts200ResponseAllOfLayoutsInnerSpecTemplatesInner) UnmarshalJSON(data []byte) (err error) {

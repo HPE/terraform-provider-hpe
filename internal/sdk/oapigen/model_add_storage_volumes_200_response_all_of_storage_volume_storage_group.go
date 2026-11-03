@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup) ToMap() (map
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup struct {
-	value *AddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup
-	isSet bool
-}
-
-func (v NullableAddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup) Get() *AddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup {
-	return v.value
-}
-
-func (v *NullableAddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup) Set(val *AddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup(val *AddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup) *NullableAddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup {
-	return &NullableAddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup{value: val, isSet: true}
-}
-
-func (v NullableAddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddStorageVolumes200ResponseAllOfStorageVolumeStorageGroup) UnmarshalJSON(data []byte) (err error) {

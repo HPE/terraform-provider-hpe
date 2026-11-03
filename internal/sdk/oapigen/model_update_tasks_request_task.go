@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,8 +24,8 @@ type UpdateTasksRequestTask struct {
 	AllowCustomConfig *bool `json:"allowCustomConfig,omitempty"`
 	// A unique name for the task
 	Name *string `json:"name,omitempty"`
-	// A unique code for the task
-	Code *string `json:"code,omitempty"`
+	// A unique code for the task; null clears it
+	Code NullableString `json:"code,omitempty"`
 	// Visibility
 	Visibility *string                         `json:"visibility,omitempty"`
 	TaskType   *UpdateTasksRequestTaskTaskType `json:"taskType,omitempty"`
@@ -37,10 +37,10 @@ type UpdateTasksRequestTask struct {
 	ExecuteTarget *string `json:"executeTarget,omitempty"`
 	// If the task should be retried or not.
 	Retryable *bool `json:"retryable,omitempty"`
-	// The number of times to retry.
-	RetryCount *int64 `json:"retryCount,omitempty"`
-	// The delay, between retries.
-	RetryDelaySeconds    *int64                            `json:"retryDelaySeconds,omitempty"`
+	// The number of times to retry; null clears it
+	RetryCount NullableInt64 `json:"retryCount,omitempty"`
+	// The delay, between retries; null clears it
+	RetryDelaySeconds    NullableInt64                     `json:"retryDelaySeconds,omitempty"`
 	File                 *UpdateTasksRequestTaskFile       `json:"file,omitempty"`
 	Credential           *UpdateTasksRequestTaskCredential `json:"credential,omitempty"`
 	AdditionalProperties map[string]interface{}            `json:",remain"`
@@ -64,8 +64,8 @@ func (o UpdateTasksRequestTask) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Code) {
-		toSerialize["code"] = o.Code
+	if o.Code.IsSet() {
+		toSerialize["code"] = o.Code.Get()
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
@@ -88,11 +88,11 @@ func (o UpdateTasksRequestTask) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Retryable) {
 		toSerialize["retryable"] = o.Retryable
 	}
-	if !IsNil(o.RetryCount) {
-		toSerialize["retryCount"] = o.RetryCount
+	if o.RetryCount.IsSet() {
+		toSerialize["retryCount"] = o.RetryCount.Get()
 	}
-	if !IsNil(o.RetryDelaySeconds) {
-		toSerialize["retryDelaySeconds"] = o.RetryDelaySeconds
+	if o.RetryDelaySeconds.IsSet() {
+		toSerialize["retryDelaySeconds"] = o.RetryDelaySeconds.Get()
 	}
 	if !IsNil(o.File) {
 		toSerialize["file"] = o.File
@@ -106,51 +106,6 @@ func (o UpdateTasksRequestTask) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateTasksRequestTask struct {
-	value *UpdateTasksRequestTask
-	isSet bool
-}
-
-func (v NullableUpdateTasksRequestTask) Get() *UpdateTasksRequestTask {
-	return v.value
-}
-
-func (v *NullableUpdateTasksRequestTask) Set(val *UpdateTasksRequestTask) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateTasksRequestTask) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateTasksRequestTask) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateTasksRequestTask(val *UpdateTasksRequestTask) *NullableUpdateTasksRequestTask {
-	return &NullableUpdateTasksRequestTask{value: val, isSet: true}
-}
-
-func (v NullableUpdateTasksRequestTask) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateTasksRequestTask) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateTasksRequestTask) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateTasksRequestTask) UnmarshalJSON(data []byte) (err error) {

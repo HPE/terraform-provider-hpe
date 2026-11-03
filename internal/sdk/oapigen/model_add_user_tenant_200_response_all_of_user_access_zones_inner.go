@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o AddUserTenant200ResponseAllOfUserAccessZonesInner) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddUserTenant200ResponseAllOfUserAccessZonesInner struct {
-	value *AddUserTenant200ResponseAllOfUserAccessZonesInner
-	isSet bool
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserAccessZonesInner) Get() *AddUserTenant200ResponseAllOfUserAccessZonesInner {
-	return v.value
-}
-
-func (v *NullableAddUserTenant200ResponseAllOfUserAccessZonesInner) Set(val *AddUserTenant200ResponseAllOfUserAccessZonesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserAccessZonesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddUserTenant200ResponseAllOfUserAccessZonesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddUserTenant200ResponseAllOfUserAccessZonesInner(val *AddUserTenant200ResponseAllOfUserAccessZonesInner) *NullableAddUserTenant200ResponseAllOfUserAccessZonesInner {
-	return &NullableAddUserTenant200ResponseAllOfUserAccessZonesInner{value: val, isSet: true}
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserAccessZonesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddUserTenant200ResponseAllOfUserAccessZonesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserAccessZonesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddUserTenant200ResponseAllOfUserAccessZonesInner) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -233,51 +233,6 @@ func (o GetLayout200ResponseInstanceTypeLayoutProvisionType) ToMap() (map[string
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetLayout200ResponseInstanceTypeLayoutProvisionType struct {
-	value *GetLayout200ResponseInstanceTypeLayoutProvisionType
-	isSet bool
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionType) Get() *GetLayout200ResponseInstanceTypeLayoutProvisionType {
-	return v.value
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionType) Set(val *GetLayout200ResponseInstanceTypeLayoutProvisionType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLayout200ResponseInstanceTypeLayoutProvisionType(val *GetLayout200ResponseInstanceTypeLayoutProvisionType) *NullableGetLayout200ResponseInstanceTypeLayoutProvisionType {
-	return &NullableGetLayout200ResponseInstanceTypeLayoutProvisionType{value: val, isSet: true}
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetLayout200ResponseInstanceTypeLayoutProvisionType) UnmarshalJSON(data []byte) (err error) {

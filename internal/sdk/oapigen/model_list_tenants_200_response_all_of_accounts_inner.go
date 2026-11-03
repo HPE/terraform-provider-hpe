@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -29,7 +29,7 @@ type ListTenants200ResponseAllOfAccountsInner struct {
 	ExternalId           NullableString                                  `json:"externalId,omitempty"`
 	CustomerNumber       NullableString                                  `json:"customerNumber,omitempty"`
 	AccountNumber        NullableString                                  `json:"accountNumber,omitempty"`
-	AccountName          *string                                         `json:"accountName,omitempty"`
+	AccountName          NullableString                                  `json:"accountName,omitempty"`
 	Active               *bool                                           `json:"active,omitempty"`
 	Master               *bool                                           `json:"master,omitempty"`
 	Parent               *ListTenants200ResponseAllOfAccountsInnerParent `json:"parent,omitempty"`
@@ -76,8 +76,8 @@ func (o ListTenants200ResponseAllOfAccountsInner) ToMap() (map[string]interface{
 	if o.AccountNumber.IsSet() {
 		toSerialize["accountNumber"] = o.AccountNumber.Get()
 	}
-	if !IsNil(o.AccountName) {
-		toSerialize["accountName"] = o.AccountName
+	if o.AccountName.IsSet() {
+		toSerialize["accountName"] = o.AccountName.Get()
 	}
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active
@@ -106,51 +106,6 @@ func (o ListTenants200ResponseAllOfAccountsInner) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListTenants200ResponseAllOfAccountsInner struct {
-	value *ListTenants200ResponseAllOfAccountsInner
-	isSet bool
-}
-
-func (v NullableListTenants200ResponseAllOfAccountsInner) Get() *ListTenants200ResponseAllOfAccountsInner {
-	return v.value
-}
-
-func (v *NullableListTenants200ResponseAllOfAccountsInner) Set(val *ListTenants200ResponseAllOfAccountsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListTenants200ResponseAllOfAccountsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListTenants200ResponseAllOfAccountsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListTenants200ResponseAllOfAccountsInner(val *ListTenants200ResponseAllOfAccountsInner) *NullableListTenants200ResponseAllOfAccountsInner {
-	return &NullableListTenants200ResponseAllOfAccountsInner{value: val, isSet: true}
-}
-
-func (v NullableListTenants200ResponseAllOfAccountsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListTenants200ResponseAllOfAccountsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListTenants200ResponseAllOfAccountsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListTenants200ResponseAllOfAccountsInner) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -205,51 +205,6 @@ func (o GetSubnetType200ResponseSubnetTypeOptionTypesInner) ToMap() (map[string]
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetSubnetType200ResponseSubnetTypeOptionTypesInner struct {
-	value *GetSubnetType200ResponseSubnetTypeOptionTypesInner
-	isSet bool
-}
-
-func (v NullableGetSubnetType200ResponseSubnetTypeOptionTypesInner) Get() *GetSubnetType200ResponseSubnetTypeOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableGetSubnetType200ResponseSubnetTypeOptionTypesInner) Set(val *GetSubnetType200ResponseSubnetTypeOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetSubnetType200ResponseSubnetTypeOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetSubnetType200ResponseSubnetTypeOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetSubnetType200ResponseSubnetTypeOptionTypesInner(val *GetSubnetType200ResponseSubnetTypeOptionTypesInner) *NullableGetSubnetType200ResponseSubnetTypeOptionTypesInner {
-	return &NullableGetSubnetType200ResponseSubnetTypeOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetSubnetType200ResponseSubnetTypeOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetSubnetType200ResponseSubnetTypeOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetSubnetType200ResponseSubnetTypeOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetSubnetType200ResponseSubnetTypeOptionTypesInner) UnmarshalJSON(data []byte) (err error) {

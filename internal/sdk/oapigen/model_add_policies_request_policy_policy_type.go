@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -18,8 +18,10 @@ import (
 // checks if the AddPoliciesRequestPolicyPolicyType type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &AddPoliciesRequestPolicyPolicyType{}
 
-// AddPoliciesRequestPolicyPolicyType struct for AddPoliciesRequestPolicyPolicyType
+// AddPoliciesRequestPolicyPolicyType Policy type. Accepts `{ id }` or `{ code }`.
 type AddPoliciesRequestPolicyPolicyType struct {
+	// Policy type ID
+	Id *int64 `json:"id,omitempty"`
 	// The policy type code. See `Retrieves all Policy Types` endpoint for listing.
 	Code                 *string                `json:"code,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -37,6 +39,9 @@ func (o AddPoliciesRequestPolicyPolicyType) MarshalJSON() ([]byte, error) {
 
 func (o AddPoliciesRequestPolicyPolicyType) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if !IsNil(o.Id) {
+		toSerialize["id"] = o.Id
+	}
 	if !IsNil(o.Code) {
 		toSerialize["code"] = o.Code
 	}
@@ -46,51 +51,6 @@ func (o AddPoliciesRequestPolicyPolicyType) ToMap() (map[string]interface{}, err
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddPoliciesRequestPolicyPolicyType struct {
-	value *AddPoliciesRequestPolicyPolicyType
-	isSet bool
-}
-
-func (v NullableAddPoliciesRequestPolicyPolicyType) Get() *AddPoliciesRequestPolicyPolicyType {
-	return v.value
-}
-
-func (v *NullableAddPoliciesRequestPolicyPolicyType) Set(val *AddPoliciesRequestPolicyPolicyType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddPoliciesRequestPolicyPolicyType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddPoliciesRequestPolicyPolicyType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddPoliciesRequestPolicyPolicyType(val *AddPoliciesRequestPolicyPolicyType) *NullableAddPoliciesRequestPolicyPolicyType {
-	return &NullableAddPoliciesRequestPolicyPolicyType{value: val, isSet: true}
-}
-
-func (v NullableAddPoliciesRequestPolicyPolicyType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddPoliciesRequestPolicyPolicyType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddPoliciesRequestPolicyPolicyType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddPoliciesRequestPolicyPolicyType) UnmarshalJSON(data []byte) (err error) {

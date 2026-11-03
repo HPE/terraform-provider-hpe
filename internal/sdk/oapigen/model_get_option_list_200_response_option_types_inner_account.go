@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetOptionList200ResponseOptionTypesInnerAccount) ToMap() (map[string]int
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetOptionList200ResponseOptionTypesInnerAccount struct {
-	value *GetOptionList200ResponseOptionTypesInnerAccount
-	isSet bool
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInnerAccount) Get() *GetOptionList200ResponseOptionTypesInnerAccount {
-	return v.value
-}
-
-func (v *NullableGetOptionList200ResponseOptionTypesInnerAccount) Set(val *GetOptionList200ResponseOptionTypesInnerAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInnerAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetOptionList200ResponseOptionTypesInnerAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetOptionList200ResponseOptionTypesInnerAccount(val *GetOptionList200ResponseOptionTypesInnerAccount) *NullableGetOptionList200ResponseOptionTypesInnerAccount {
-	return &NullableGetOptionList200ResponseOptionTypesInnerAccount{value: val, isSet: true}
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInnerAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetOptionList200ResponseOptionTypesInnerAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInnerAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetOptionList200ResponseOptionTypesInnerAccount) UnmarshalJSON(data []byte) (err error) {

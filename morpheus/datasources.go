@@ -46,8 +46,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networktransportzone"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networktype"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/optionsourcevalue"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/optionsourcevalues"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostypeimage"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/plugin"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/policy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/role"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygroup"
@@ -150,6 +153,8 @@ func (p *MorpheusProvider) DataSources(
 		networktransportzone.NewDataSource,
 		networkpool.NewDataSource,
 		networktype.NewDataSource,
+		optionsourcevalue.NewDataSource,
+		optionsourcevalues.NewDataSource,
 		instancesnapshot.NewDataSource,
 		// resource-reference lookup data sources (avoid hard-coded IDs)
 		backupjob.NewDataSource,
@@ -192,5 +197,7 @@ func (p *MorpheusProvider) DataSources(
 		networkinterfacetype.NewDataSource,
 		instancestoragecontroller.NewDataSource,
 		instancedisktype.NewDataSource,
+		// Plugin lifecycle data source (Plugin Framework)
+		plugin.NewDataSource,
 	}
 }

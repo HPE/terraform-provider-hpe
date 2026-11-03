@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ListNetworks200ResponseAllOfNetworksInnerZonePool) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListNetworks200ResponseAllOfNetworksInnerZonePool struct {
-	value *ListNetworks200ResponseAllOfNetworksInnerZonePool
-	isSet bool
-}
-
-func (v NullableListNetworks200ResponseAllOfNetworksInnerZonePool) Get() *ListNetworks200ResponseAllOfNetworksInnerZonePool {
-	return v.value
-}
-
-func (v *NullableListNetworks200ResponseAllOfNetworksInnerZonePool) Set(val *ListNetworks200ResponseAllOfNetworksInnerZonePool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListNetworks200ResponseAllOfNetworksInnerZonePool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListNetworks200ResponseAllOfNetworksInnerZonePool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListNetworks200ResponseAllOfNetworksInnerZonePool(val *ListNetworks200ResponseAllOfNetworksInnerZonePool) *NullableListNetworks200ResponseAllOfNetworksInnerZonePool {
-	return &NullableListNetworks200ResponseAllOfNetworksInnerZonePool{value: val, isSet: true}
-}
-
-func (v NullableListNetworks200ResponseAllOfNetworksInnerZonePool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListNetworks200ResponseAllOfNetworksInnerZonePool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListNetworks200ResponseAllOfNetworksInnerZonePool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListNetworks200ResponseAllOfNetworksInnerZonePool) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetVDIPools200ResponseVdiPoolConfigCloud) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetVDIPools200ResponseVdiPoolConfigCloud struct {
-	value *GetVDIPools200ResponseVdiPoolConfigCloud
-	isSet bool
-}
-
-func (v NullableGetVDIPools200ResponseVdiPoolConfigCloud) Get() *GetVDIPools200ResponseVdiPoolConfigCloud {
-	return v.value
-}
-
-func (v *NullableGetVDIPools200ResponseVdiPoolConfigCloud) Set(val *GetVDIPools200ResponseVdiPoolConfigCloud) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetVDIPools200ResponseVdiPoolConfigCloud) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetVDIPools200ResponseVdiPoolConfigCloud) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetVDIPools200ResponseVdiPoolConfigCloud(val *GetVDIPools200ResponseVdiPoolConfigCloud) *NullableGetVDIPools200ResponseVdiPoolConfigCloud {
-	return &NullableGetVDIPools200ResponseVdiPoolConfigCloud{value: val, isSet: true}
-}
-
-func (v NullableGetVDIPools200ResponseVdiPoolConfigCloud) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetVDIPools200ResponseVdiPoolConfigCloud) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetVDIPools200ResponseVdiPoolConfigCloud) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetVDIPools200ResponseVdiPoolConfigCloud) UnmarshalJSON(data []byte) (err error) {

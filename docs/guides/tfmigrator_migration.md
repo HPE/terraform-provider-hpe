@@ -133,6 +133,14 @@ The following examples use PowerShell on Windows (x64).
 
 ---
 
+## Version check
+
+On startup `tfmigrator` checks whether a newer release is available on the [releases page](https://github.com/HPE/terraform-provider-hpe/releases) and, if so, prints a notice (to standard error) at the end of its output. The check runs alongside the command and never changes its result.
+
+The check uses a single HTTPS request with a short timeout and honors the standard `HTTPS_PROXY`/`HTTP_PROXY` environment variables. It is skipped for `--version`, `--help`, and the `help` command. To disable it entirely, set the `HPE_IGNORE_VERSION_CHECK` environment variable (the same variable the HPE Terraform provider honors).
+
+---
+
 ## What tfmigrator Preserves
 
 - Variable references (`var.*`)

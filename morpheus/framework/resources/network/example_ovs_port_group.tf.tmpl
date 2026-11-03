@@ -16,9 +16,15 @@ resource "hpe_morpheus_network" "ovs_port_group" {
   cloud_id                   = data.hpe_morpheus_cloud.example.id
   pool_id                    = {{.PoolId}}
   group_id                   = data.hpe_morpheus_group.example.id
-  type_id                    = {{.TypeId}}
-  switch_id                  = {{.SwitchId}}
-  config                     = {}
+  type_code                  = "ovsPortGroup"
+  switch_id                  = "{{.SwitchId}}"
+  # The cluster's HVM network server; list them with
+  # GET /api/networks/servers?showHidden=true.
+  network_server_id          = {{.NetworkServerId}}
+  config_ovs_port_group = {
+    vlan_trunks = "{{.VlanTrunks}}"
+    trunk_only  = false
+  }
   active                     = {{.Active}}
   dhcp_server                = {{.DHCPServer}}
   appliance_url_proxy_bypass = {{.ApplianceURLProxyBypass}}

@@ -63,11 +63,9 @@ func SubnetResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Config version. Increment this value to trigger replacement of the subnet with updated config.",
-				MarkdownDescription: "Config version. Increment this value to trigger replacement of the subnet with updated config.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
+				Description:         "Deprecated. Changes to config are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				MarkdownDescription: "Deprecated. Changes to config are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				DeprecationMessage:  "No longer needed: changes to config are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -179,6 +177,14 @@ func SubnetResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The visibility of the subnet.",
 				Default:             stringdefault.StaticString("private"),
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which the write-only config was last\nsent to Morpheus. Changes when the subnet is created; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which the write-only config was last\nsent to Morpheus. Changes when the subnet is created; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 		Description:         "Manages a Morpheus Subnet resource.",
 		MarkdownDescription: "Manages a Morpheus Subnet resource.",
@@ -207,4 +213,5 @@ type SubnetModel struct {
 	TenantIds                   types.Set     `tfsdk:"tenant_ids"`
 	TypeId                      types.Int64   `tfsdk:"type_id"`
 	Visibility                  types.String  `tfsdk:"visibility"`
+	WriteOnlyRevision           types.Int64   `tfsdk:"write_only_revision"`
 }

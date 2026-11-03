@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -28,13 +28,13 @@ type UpdateRole200ResponseAllOfRole struct {
 	Authority   *string        `json:"authority,omitempty"`
 	Description NullableString `json:"description,omitempty"`
 	// An optional override for the default landing page after login for a user.
-	LandingUrl        NullableString `json:"landingUrl,omitempty"`
-	Scope             *string        `json:"scope,omitempty"`
-	RoleType          *string        `json:"roleType,omitempty"`
-	Multitenant       *bool          `json:"multitenant,omitempty"`
-	MultitenantLocked *bool          `json:"multitenantLocked,omitempty"`
-	ParentRoleId      NullableString `json:"parentRoleId,omitempty"`
-	Diverged          *bool          `json:"diverged,omitempty"`
+	LandingUrl        NullableString                                     `json:"landingUrl,omitempty"`
+	Scope             *string                                            `json:"scope,omitempty"`
+	RoleType          *string                                            `json:"roleType,omitempty"`
+	Multitenant       *bool                                              `json:"multitenant,omitempty"`
+	MultitenantLocked *bool                                              `json:"multitenantLocked,omitempty"`
+	ParentRoleId      NullableUpdateRole200ResponseAllOfRoleParentRoleId `json:"parentRoleId,omitempty"`
+	Diverged          *bool                                              `json:"diverged,omitempty"`
 	// The per-tenant copies of a multitenant master role, each identifying a subtenant and the id of the role copy propagated into it. Populated only for multitenant=true master roles on Morpheus 9.0.2 and later; empty or absent otherwise.
 	TenantCopies         []UpdateRole200ResponseAllOfRoleTenantCopiesInner `json:"tenantCopies,omitempty"`
 	OwnerId              *int64                                            `json:"ownerId,omitempty"`
@@ -114,51 +114,6 @@ func (o UpdateRole200ResponseAllOfRole) ToMap() (map[string]interface{}, error) 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateRole200ResponseAllOfRole struct {
-	value *UpdateRole200ResponseAllOfRole
-	isSet bool
-}
-
-func (v NullableUpdateRole200ResponseAllOfRole) Get() *UpdateRole200ResponseAllOfRole {
-	return v.value
-}
-
-func (v *NullableUpdateRole200ResponseAllOfRole) Set(val *UpdateRole200ResponseAllOfRole) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateRole200ResponseAllOfRole) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateRole200ResponseAllOfRole) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateRole200ResponseAllOfRole(val *UpdateRole200ResponseAllOfRole) *NullableUpdateRole200ResponseAllOfRole {
-	return &NullableUpdateRole200ResponseAllOfRole{value: val, isSet: true}
-}
-
-func (v NullableUpdateRole200ResponseAllOfRole) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateRole200ResponseAllOfRole) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateRole200ResponseAllOfRole) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateRole200ResponseAllOfRole) UnmarshalJSON(data []byte) (err error) {

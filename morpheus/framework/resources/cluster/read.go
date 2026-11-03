@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -51,9 +52,65 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	state, diag := getClusterAsState(ctx, data.Id.ValueInt64(), client, data)
+	state, found, diag := getClusterAsState(ctx, data.Id.ValueInt64(), client, data)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
+	}
+
+	// The cluster was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("cluster %d not found, removing from state", data.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
+		return
+	}
+
+	// Appliance-side drift detection: compare the current per-host
+	// sshPasswordHash map of the cluster's hosts with the baseline recorded
+	// after the provider last set the password. Any drift is recorded in
+	// private state for ModifyPlan to act on (a warning only, since the
+	// attribute is immutable); it is logged, not surfaced as an error, so a
+	// read is never blocked by it.
+	//
+	// Three cases are distinguished, to avoid the 1+N host GETs when they can
+	// teach nothing and to avoid reporting a host-set change as secret drift:
+	//
+	//   - No baseline recorded yet: nothing to compare against, so skip the
+	//     per-host reads entirely. (A baseline is seeded no earlier than a
+	//     successful Create/Update read-back; import never seeds one.)
+	//   - The current server-id set differs from the id set in the baseline (a
+	//     host was added or removed): re-baseline (wo.Observe) instead of
+	//     comparing, since the map would differ for a reason that is not a
+	//     secret change. Logged so the host-set change is visible.
+	//   - The baseline does not parse as a per-host map: it can never be
+	//     compared, so re-baseline it rather than warn on every read.
+	//   - Otherwise: compare (wo.CheckDrift).
+	observedIDs, haveBaseline, unknownIDs := observedHostIDs(ctx, resp.Private)
+	if haveBaseline {
+		digest := clusterHostHashes(ctx, client, data.Id.ValueInt64())
+
+		switch {
+		case digest.present && unknownIDs:
+			tflog.Warn(ctx, "cluster: unreadable write-only drift baseline, re-baselining",
+				map[string]any{"cluster": data.Id.ValueInt64()})
+			resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, digest)...)
+		case digest.present && !sameIDs(observedIDs, digestHostIDs(digest)):
+			// Host set changed: re-baseline rather than report spurious drift.
+			tflog.Info(ctx, "cluster: host set changed, re-baselining write-only drift detection",
+				map[string]any{
+					"cluster": data.Id.ValueInt64(),
+					"was":     observedIDs, "now": digestHostIDs(digest),
+				})
+			resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, digest)...)
+		default:
+			drifted, ddiags := wo.CheckDrift(ctx, resp.Private, digest)
+			resp.Diagnostics.Append(ddiags...)
+			if len(drifted) > 0 {
+				tflog.Info(ctx, "cluster: write-only secret changed on the appliance",
+					map[string]any{"cluster": data.Id.ValueInt64(), "attributes": drifted})
+			}
+		}
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -73,20 +130,23 @@ func getClusterAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan ClusterModel,
-) (ClusterModel, diag.Diagnostics) {
+) (ClusterModel, bool, diag.Diagnostics) {
 	var state ClusterModel
 	var diags diag.Diagnostics
 
 	importing := plan.Name.IsNull()
 
 	clusterResp, httpResp, err := client.ClustersAPI.GetCluster(ctx, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return state, false, diags
+	}
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("cluster %d GET failed: ", id)+errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	cluster := clusterResp.Cluster
@@ -96,7 +156,7 @@ func getClusterAsState(
 			fmt.Sprintf("cluster %d missing cluster in response", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// top-level fields
@@ -172,6 +232,52 @@ func getClusterAsState(
 				computeVlansVal = v
 			}
 
+			// HVM 2.0 network configuration, echoed back in the config map.
+			var virtSwitchNameVal string
+			if v, ok := cluster.Config["virtSwitchName"].(string); ok {
+				virtSwitchNameVal = v
+			}
+
+			var dns1Val string
+			if v, ok := cluster.Config["dns1"].(string); ok {
+				dns1Val = v
+			}
+
+			var dns2Val string
+			if v, ok := cluster.Config["dns2"].(string); ok {
+				dns2Val = v
+			}
+
+			var dns3Val string
+			if v, ok := cluster.Config["dns3"].(string); ok {
+				dns3Val = v
+			}
+
+			var searchDomainVal string
+			if v, ok := cluster.Config["searchDomain"].(string); ok {
+				searchDomainVal = v
+			}
+
+			var ntp1Val string
+			if v, ok := cluster.Config["ntp1"].(string); ok {
+				ntp1Val = v
+			}
+
+			var ntp2Val string
+			if v, ok := cluster.Config["ntp2"].(string); ok {
+				ntp2Val = v
+			}
+
+			var proxyVal string
+			if v, ok := cluster.Config["proxy"].(string); ok {
+				proxyVal = v
+			}
+
+			var noProxyVal string
+			if v, ok := cluster.Config["noProxy"].(string); ok {
+				noProxyVal = v
+			}
+
 			// read as many values as possible from API
 			configHvmVal, diags = NewConfigHvmValue(ConfigHvmValue{}.AttributeTypes(ctx), map[string]attr.Value{
 				// can't read createUser from config GET
@@ -184,9 +290,27 @@ func getClusterAsState(
 				"cpu_arch":          convert.StrToType(&cpuArchVal),
 				"cpu_model":         convert.StrToType(&cpuModelVal),
 				"power_policy":      convert.StrToType(&powerPolicyVal),
+				"virt_switch_name":  convert.StrToType(&virtSwitchNameVal),
+				"dns1":              convert.StrToType(&dns1Val),
+				"dns2":              convert.StrToType(&dns2Val),
+				"dns3":              convert.StrToType(&dns3Val),
+				"search_domain":     convert.StrToType(&searchDomainVal),
+				"ntp1":              convert.StrToType(&ntp1Val),
+				"ntp2":              convert.StrToType(&ntp2Val),
+				"proxy":             convert.StrToType(&proxyVal),
+				"no_proxy":          convert.StrToType(&noProxyVal),
 			})
 
 		} else {
+			// Normal (non-import) read. Fields that the config GET does not
+			// echo back reliably -- create_user and vcpu_placement_mode are
+			// never returned, and the HVM 2.0 network fields are
+			// requires_replace so the planned value is authoritative -- are
+			// carried over from plan rather than re-derived from the API map.
+			// Only the import branch above, where there is no prior plan to
+			// trust, sources every field from the config map. Import is
+			// currently unsupported for this resource, so that branch is the
+			// exceptional path.
 			configHvmVal, diags = NewConfigHvmValue(ConfigHvmValue{}.AttributeTypes(ctx), map[string]attr.Value{
 				"create_user":            plan.ConfigHvm.CreateUser,
 				"compute_interface_name": plan.ConfigHvm.ComputeInterfaceName,
@@ -198,11 +322,20 @@ func getClusterAsState(
 				"cpu_arch":               convert.StrToType(&cpuArchVal),
 				"cpu_model":              convert.StrToType(&cpuModelVal),
 				"power_policy":           convert.StrToType(&powerPolicyVal),
+				"virt_switch_name":       plan.ConfigHvm.VirtSwitchName,
+				"dns1":                   plan.ConfigHvm.Dns1,
+				"dns2":                   plan.ConfigHvm.Dns2,
+				"dns3":                   plan.ConfigHvm.Dns3,
+				"search_domain":          plan.ConfigHvm.SearchDomain,
+				"ntp1":                   plan.ConfigHvm.Ntp1,
+				"ntp2":                   plan.ConfigHvm.Ntp2,
+				"proxy":                  plan.ConfigHvm.Proxy,
+				"no_proxy":               plan.ConfigHvm.NoProxy,
 			})
 		}
 
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 
 		state.ConfigHvm = configHvmVal
@@ -217,7 +350,7 @@ func getClusterAsState(
 				"cluster: generic config missing from API response",
 			)
 
-			return state, diags
+			return state, false, diags
 		}
 
 		// Set plan config to state if it's not null.
@@ -242,7 +375,7 @@ func getClusterAsState(
 	if diags != nil {
 		diags.Append(diags...)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Server = server
@@ -256,7 +389,7 @@ func getClusterAsState(
 			"could not parse a slice of labels",
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// Morpheus API may change the casing of the labels, to avoid Terraform
@@ -274,7 +407,10 @@ func getClusterAsState(
 
 	state.Labels = convert.StrSliceToSet(respLabels)
 
-	return state, diags
+	// write_only_revision is not in the API; carried from prior state.
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
+
+	return state, true, diags
 }
 
 func buildReadClusterServer(

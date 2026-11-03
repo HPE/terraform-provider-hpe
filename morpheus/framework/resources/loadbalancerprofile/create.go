@@ -37,7 +37,7 @@ func (r *Resource) Create(
 	profile.Name = sdk.PtrString(plan.Name.ValueString())
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		profile.Description = sdk.PtrString(plan.Description.ValueString())
+		profile.Description.Set(plan.Description.ValueStringPointer())
 	}
 
 	profile.ServiceType = sdk.PtrString(plan.ServiceType.ValueString())
@@ -79,7 +79,10 @@ func (r *Resource) Create(
 		return
 	}
 
-	state, stateDiags := getLoadBalancerProfileAsState(ctx, loadBalancerID, *created.Id, client, plan)
+	state, found, stateDiags := getLoadBalancerProfileAsState(ctx, loadBalancerID, *created.Id, client, plan)
+	if !found && !stateDiags.HasError() {
+		stateDiags.AddError("read load balancer profile", "profile not found immediately after create")
+	}
 	if stateDiags.HasError() {
 		resp.Diagnostics.Append(stateDiags...)
 

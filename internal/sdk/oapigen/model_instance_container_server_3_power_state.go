@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -108,49 +108,4 @@ func (src InstanceContainerServer3PowerState) MarshalJSON() ([]byte, error) {
 	}
 
 	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
-}
-
-type NullableInstanceContainerServer3PowerState struct {
-	value *InstanceContainerServer3PowerState
-	isSet bool
-}
-
-func (v NullableInstanceContainerServer3PowerState) Get() *InstanceContainerServer3PowerState {
-	return v.value
-}
-
-func (v *NullableInstanceContainerServer3PowerState) Set(val *InstanceContainerServer3PowerState) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceContainerServer3PowerState) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceContainerServer3PowerState) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceContainerServer3PowerState(val *InstanceContainerServer3PowerState) *NullableInstanceContainerServer3PowerState {
-	return &NullableInstanceContainerServer3PowerState{value: val, isSet: true}
-}
-
-func (v NullableInstanceContainerServer3PowerState) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceContainerServer3PowerState) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceContainerServer3PowerState) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

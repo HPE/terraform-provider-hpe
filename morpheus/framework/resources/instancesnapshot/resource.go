@@ -282,6 +282,7 @@ func (r *Resource) Create(
 	plan.ParentSnapshot = convert.StrToType(snap.ParentSnapshot.Get())
 	plan.CurrentlyActive = convert.BoolToType(snap.CurrentlyActive)
 	plan.ForBackup = convert.BoolToType(snap.ForBackup)
+	plan.MaxStorage = convert.Int64ToType(snap.MaxStorage.Get())
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -377,6 +378,9 @@ func (r *Resource) Read(
 	state.MemorySnapshot = convert.BoolToType(snap.MemorySnapshot)
 	state.ForExport = convert.BoolToType(snap.ForExport)
 
+	// max_storage: total snapshot size in bytes, as reported by the platform.
+	state.MaxStorage = convert.Int64ToType(snap.MaxStorage.Get())
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
 	// Fill any schema-declared default the API omitted (null in state) so an
@@ -465,17 +469,11 @@ func (r *Resource) Delete(
 
 	snapshotID := state.Id.ValueInt64()
 
-	_, hresp, err := client.InstancesAPI.DeleteSnapshotInstance(ctx, snapshotID).Execute()
-	if err != nil {
-		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-			tflog.Warn(ctx, fmt.Sprintf("Snapshot %d already gone", snapshotID))
-
-			return
-		}
-
+	result, hresp, err := client.InstancesAPI.DeleteSnapshotInstance(ctx, snapshotID).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete instance snapshot",
-			fmt.Sprintf("snapshot %d DELETE failed: %s", snapshotID, errfmt.ErrMsg(err, hresp)),
+			fmt.Sprintf("snapshot %d DELETE failed: %s", snapshotID, err.Error()),
 		)
 
 		return

@@ -19,6 +19,7 @@ resource "hpe_morpheus_setting_appliance" "example" {
   proxy_password            = "{{.ProxyPassword}}"
   proxy_domain              = "{{.ProxyDomain}}"
   proxy_workstation         = "{{.ProxyWorkstation}}"
+  no_proxy                  = "{{.NoProxy}}"
   currency_provider         = "{{.CurrencyProvider}}"
   currency_provider_api_key = "{{.CurrencyProviderApiKey}}"
 }

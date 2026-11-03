@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -108,49 +108,4 @@ func (src GetEnvVariables200ResponseReadOnlyEnvsValueValue) MarshalJSON() ([]byt
 	}
 
 	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
-}
-
-type NullableGetEnvVariables200ResponseReadOnlyEnvsValueValue struct {
-	value *GetEnvVariables200ResponseReadOnlyEnvsValueValue
-	isSet bool
-}
-
-func (v NullableGetEnvVariables200ResponseReadOnlyEnvsValueValue) Get() *GetEnvVariables200ResponseReadOnlyEnvsValueValue {
-	return v.value
-}
-
-func (v *NullableGetEnvVariables200ResponseReadOnlyEnvsValueValue) Set(val *GetEnvVariables200ResponseReadOnlyEnvsValueValue) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetEnvVariables200ResponseReadOnlyEnvsValueValue) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetEnvVariables200ResponseReadOnlyEnvsValueValue) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetEnvVariables200ResponseReadOnlyEnvsValueValue(val *GetEnvVariables200ResponseReadOnlyEnvsValueValue) *NullableGetEnvVariables200ResponseReadOnlyEnvsValueValue {
-	return &NullableGetEnvVariables200ResponseReadOnlyEnvsValueValue{value: val, isSet: true}
-}
-
-func (v NullableGetEnvVariables200ResponseReadOnlyEnvsValueValue) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetEnvVariables200ResponseReadOnlyEnvsValueValue) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetEnvVariables200ResponseReadOnlyEnvsValueValue) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

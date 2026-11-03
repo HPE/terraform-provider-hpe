@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalanc
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType struct {
-	value *CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType
-	isSet bool
-}
-
-func (v NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) Get() *CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType {
-	return v.value
-}
-
-func (v *NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) Set(val *CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType(val *CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) *NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType {
-	return &NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType{value: val, isSet: true}
-}
-
-func (v NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) UnmarshalJSON(data []byte) (err error) {

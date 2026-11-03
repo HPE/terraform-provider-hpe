@@ -120,10 +120,10 @@ func CreateInstance(t *testing.T) (int64, error) {
 		shape.layoutID = *inst.Layout.Id
 
 		// Plan
-		if inst.Plan == nil || inst.Plan.Id == nil {
+		if inst.Plan.Get() == nil || inst.Plan.Get().Id == nil {
 			continue
 		}
-		shape.planID = *inst.Plan.Id
+		shape.planID = *inst.Plan.Get().Id
 
 		// Network — from the first interface
 		if len(inst.Interfaces) > 0 {

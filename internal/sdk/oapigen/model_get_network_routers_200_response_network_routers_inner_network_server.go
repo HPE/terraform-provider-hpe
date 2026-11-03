@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer) ToMap() (m
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer struct {
-	value *GetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer
-	isSet bool
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer) Get() *GetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer {
-	return v.value
-}
-
-func (v *NullableGetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer) Set(val *GetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer(val *GetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer) *NullableGetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer {
-	return &NullableGetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer) UnmarshalJSON(data []byte) (err error) {

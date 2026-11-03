@@ -76,7 +76,9 @@ func dataSourceStorageBucketRead(ctx context.Context, d *schema.ResourceData, me
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %v", resp, err)
 
-			return nil
+			// MORPH-17619: a non-existent id/name must surface an error
+			// rather than silently returning an all-null record.
+			return diag.Errorf("storage bucket not found (id=%d, name=%q)", id, name)
 		}
 
 		log.Printf("API FAILURE: %s - %v", resp, err)

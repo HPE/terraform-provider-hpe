@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -54,51 +54,6 @@ func (o UpdateStorageServers200ResponseAllOfStorageServerCredential) ToMap() (ma
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateStorageServers200ResponseAllOfStorageServerCredential struct {
-	value *UpdateStorageServers200ResponseAllOfStorageServerCredential
-	isSet bool
-}
-
-func (v NullableUpdateStorageServers200ResponseAllOfStorageServerCredential) Get() *UpdateStorageServers200ResponseAllOfStorageServerCredential {
-	return v.value
-}
-
-func (v *NullableUpdateStorageServers200ResponseAllOfStorageServerCredential) Set(val *UpdateStorageServers200ResponseAllOfStorageServerCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateStorageServers200ResponseAllOfStorageServerCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateStorageServers200ResponseAllOfStorageServerCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateStorageServers200ResponseAllOfStorageServerCredential(val *UpdateStorageServers200ResponseAllOfStorageServerCredential) *NullableUpdateStorageServers200ResponseAllOfStorageServerCredential {
-	return &NullableUpdateStorageServers200ResponseAllOfStorageServerCredential{value: val, isSet: true}
-}
-
-func (v NullableUpdateStorageServers200ResponseAllOfStorageServerCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateStorageServers200ResponseAllOfStorageServerCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateStorageServers200ResponseAllOfStorageServerCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateStorageServers200ResponseAllOfStorageServerCredential) UnmarshalJSON(data []byte) (err error) {

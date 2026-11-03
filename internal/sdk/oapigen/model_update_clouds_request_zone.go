@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,12 +24,12 @@ type UpdateCloudsRequestZone struct {
 	Name string `json:"name"`
 	// Optional description field if you want to put more info there
 	Description *string `json:"description,omitempty"`
-	// Optional code for use with policies
-	Code *string `json:"code,omitempty"`
+	// Optional code for use with policies; null clears it
+	Code NullableString `json:"code,omitempty"`
 	// Array of label strings, can be used for filtering.
 	Labels []string `json:"labels,omitempty"`
-	// Optional location for your cloud
-	Location *string `json:"location,omitempty"`
+	// Optional location for your cloud; null clears it
+	Location NullableString `json:"location,omitempty"`
 	// private or public
 	Visibility *string `json:"visibility,omitempty"`
 	// Map containing code or id of the cloud type
@@ -85,14 +85,14 @@ func (o UpdateCloudsRequestZone) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
-	if !IsNil(o.Code) {
-		toSerialize["code"] = o.Code
+	if o.Code.IsSet() {
+		toSerialize["code"] = o.Code.Get()
 	}
 	if !IsNil(o.Labels) {
 		toSerialize["labels"] = o.Labels
 	}
-	if !IsNil(o.Location) {
-		toSerialize["location"] = o.Location
+	if o.Location.IsSet() {
+		toSerialize["location"] = o.Location.Get()
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
@@ -148,51 +148,6 @@ func (o UpdateCloudsRequestZone) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateCloudsRequestZone struct {
-	value *UpdateCloudsRequestZone
-	isSet bool
-}
-
-func (v NullableUpdateCloudsRequestZone) Get() *UpdateCloudsRequestZone {
-	return v.value
-}
-
-func (v *NullableUpdateCloudsRequestZone) Set(val *UpdateCloudsRequestZone) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateCloudsRequestZone) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateCloudsRequestZone) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateCloudsRequestZone(val *UpdateCloudsRequestZone) *NullableUpdateCloudsRequestZone {
-	return &NullableUpdateCloudsRequestZone{value: val, isSet: true}
-}
-
-func (v NullableUpdateCloudsRequestZone) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateCloudsRequestZone) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateCloudsRequestZone) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateCloudsRequestZone) UnmarshalJSON(data []byte) (err error) {

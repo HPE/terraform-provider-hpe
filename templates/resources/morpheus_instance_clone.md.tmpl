@@ -37,6 +37,18 @@ comes from the source.
   ignored. Where a platform only resizes the root disk during the clone (e.g.
   VMware), the provider automatically issues a follow-up resize so data disks
   reach the size you requested.
+- A volume's `name` is fixed once the clone exists: Morpheus never renames a
+  disk, so a rename is refused at plan time. Keep the name, or replace the clone
+  (`terraform apply -replace=...`) to re-clone with the new one. The list's
+  **order** is fixed too: the volumes are matched to the clone's disks by
+  position, so a reordered list is refused as well -- list them in the clone's
+  order (as in state), and put a new disk last.
+- The virtual CD/DVD drive Morpheus attaches to a clone that boots from an ISO or
+  takes its cloud-init data from one is **not** one of its volumes and never
+  appears in `volumes`. A clone created with an earlier provider release may hold
+  that drive in state as an extra volume (every plan then proposed removing it);
+  the first refresh drops it. If the configuration lists it -- added to silence
+  that plan -- remove it, or Terraform will plan a new disk by that name.
 
 How disks are matched to the source — and how sizing behaves — varies by platform:
 
@@ -337,6 +349,18 @@ Import is supported using the cloned instance ID:
 ```shell
 terraform import hpe_morpheus_instance_clone.example 42
 ```
+
+The write-only value `source_instance_id` is not stored in state, so the import cannot tell whether
+the value in your configuration matches the appliance: it is taken as already applied, the plan
+after import is empty, and a later change is only detected once the resource is next updated for
+another reason (Terraform warns about this on every plan until then). To have changes detected from
+the start, append the sha256 digest of each configured write-only value to the import ID:
+
+```shell
+terraform import hpe_morpheus_instance_clone.example "42#source_instance_id=<sha256 hex>"
+```
+
+The digest is sha256 of the value's text (Terraform's `sha256()` function, with numbers as `tostring(v)`). A change to this value plans a **replacement**: Morpheus takes it only at creation.
 
 On import, Terraform recovers `source_instance_id` from the clone's
 `cloneInstanceId` configuration value, which Morpheus records during cloning.

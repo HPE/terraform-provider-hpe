@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,10 +23,12 @@ type ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner struct {
 	Id *int64 `json:"id,omitempty"`
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Affinity Type
+	// Affinity Type. KEEP_TOGETHER / KEEP_SEPARATE express a preferred (SHOULD) placement, while the KEEP_TOGETHER_MUST / KEEP_SEPARATE_MUST variants express a mandatory (MUST) placement constraint.
 	AffinityType *string `json:"affinityType,omitempty"`
 	// Source
 	Source *string `json:"source,omitempty"`
+	// Identifier of the corresponding rule on the underlying platform
+	ExternalId *string `json:"externalId,omitempty"`
 	// Reference Type for the Affinity Group. Can be ComputeZone or ComputeServerGroup for cloud or cluster respectively
 	RefType *string `json:"refType,omitempty"`
 	// Reference ID for the Affinity Group. The ID of the Cloud or Clusterfor cloud or cluster respectively
@@ -34,8 +36,11 @@ type ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner struct {
 	// Active
 	Active *bool                                                           `json:"active,omitempty"`
 	Pool   *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerPool `json:"pool,omitempty"`
-	// List of Servers in the Affinity Group
+	// List of Servers in the Affinity Group. Populated only for a legacy VM-to-VM rule; always empty for a combined VM-to-Host rule.
 	Servers    []ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner `json:"servers,omitempty"`
+	Owner      *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerOwner         `json:"owner,omitempty"`
+	VmGroup    *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerVmGroup       `json:"vmGroup,omitempty"`
+	HostGroup  *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerHostGroup     `json:"hostGroup,omitempty"`
 	Visibility *string                                                                  `json:"visibility,omitempty"`
 	// Array of tenant account ids that are allowed access
 	Tenants              []ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerTenantsInner       `json:"tenants,omitempty"`
@@ -67,6 +72,9 @@ func (o ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) ToMap() (map
 	if !IsNil(o.Source) {
 		toSerialize["source"] = o.Source
 	}
+	if !IsNil(o.ExternalId) {
+		toSerialize["externalId"] = o.ExternalId
+	}
 	if !IsNil(o.RefType) {
 		toSerialize["refType"] = o.RefType
 	}
@@ -81,6 +89,15 @@ func (o ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) ToMap() (map
 	}
 	if !IsNil(o.Servers) {
 		toSerialize["servers"] = o.Servers
+	}
+	if !IsNil(o.Owner) {
+		toSerialize["owner"] = o.Owner
+	}
+	if !IsNil(o.VmGroup) {
+		toSerialize["vmGroup"] = o.VmGroup
+	}
+	if !IsNil(o.HostGroup) {
+		toSerialize["hostGroup"] = o.HostGroup
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
@@ -97,51 +114,6 @@ func (o ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) ToMap() (map
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner struct {
-	value *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner
-	isSet bool
-}
-
-func (v NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) Get() *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner {
-	return v.value
-}
-
-func (v *NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) Set(val *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner(val *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) *NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner {
-	return &NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner{value: val, isSet: true}
-}
-
-func (v NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) UnmarshalJSON(data []byte) (err error) {

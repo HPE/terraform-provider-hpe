@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,14 +21,15 @@ var _ MappedNullable = &UpdateBudgetsRequestBudget{}
 
 // UpdateBudgetsRequestBudget struct for UpdateBudgetsRequestBudget
 type UpdateBudgetsRequestBudget struct {
-	Name        string     `json:"name"`
-	Description *string    `json:"description,omitempty"`
-	Scope       *string    `json:"scope,omitempty"`
-	Period      *string    `json:"period,omitempty"`
-	Year        *int64     `json:"year,omitempty"`
-	StartDate   *time.Time `json:"startDate,omitempty"`
-	EndDate     *time.Time `json:"endDate,omitempty"`
-	Interval    *string    `json:"interval,omitempty"`
+	Name string `json:"name"`
+	// null clears it
+	Description NullableString `json:"description,omitempty"`
+	Scope       *string        `json:"scope,omitempty"`
+	Period      *string        `json:"period,omitempty"`
+	Year        *int64         `json:"year,omitempty"`
+	StartDate   *time.Time     `json:"startDate,omitempty"`
+	EndDate     *time.Time     `json:"endDate,omitempty"`
+	Interval    *string        `json:"interval,omitempty"`
 	// The Tenant ID to scope to, for use with ``scope``=tenant
 	ScopeTenantId *int64 `json:"scopeTenantId,omitempty"`
 	// The Tenant ID to scope to, for use with ``scope``=group
@@ -56,8 +57,8 @@ func (o UpdateBudgetsRequestBudget) MarshalJSON() ([]byte, error) {
 func (o UpdateBudgetsRequestBudget) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["name"] = o.Name
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Scope) {
 		toSerialize["scope"] = o.Scope
@@ -104,51 +105,6 @@ func (o UpdateBudgetsRequestBudget) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateBudgetsRequestBudget struct {
-	value *UpdateBudgetsRequestBudget
-	isSet bool
-}
-
-func (v NullableUpdateBudgetsRequestBudget) Get() *UpdateBudgetsRequestBudget {
-	return v.value
-}
-
-func (v *NullableUpdateBudgetsRequestBudget) Set(val *UpdateBudgetsRequestBudget) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateBudgetsRequestBudget) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateBudgetsRequestBudget) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateBudgetsRequestBudget(val *UpdateBudgetsRequestBudget) *NullableUpdateBudgetsRequestBudget {
-	return &NullableUpdateBudgetsRequestBudget{value: val, isSet: true}
-}
-
-func (v NullableUpdateBudgetsRequestBudget) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateBudgetsRequestBudget) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateBudgetsRequestBudget) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateBudgetsRequestBudget) UnmarshalJSON(data []byte) (err error) {

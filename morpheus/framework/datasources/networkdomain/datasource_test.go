@@ -5,11 +5,14 @@ package networkdomain_test
 import (
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdomain"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
@@ -31,6 +34,26 @@ provider "hpe" {
 }
 `
 
+// networkDomainResourceConfig returns HCL for a private network domain to use
+// as a per-run dependency.
+//
+// MORPH-16523: the data source tests previously looked up a static
+// master-tenant domain (id 193 / "acceptance test.localdomain") that does not
+// exist as a sub-tenant. Create the domain per-run instead. visibility MUST be
+// "private" (public triggers MORPH-16419 churn) and no tenant_id is set
+// (a hardcoded tenant_id is MORPH-16416's defect).
+func networkDomainResourceConfig(name string) string {
+	return `
+resource "hpe_morpheus_network_domain" "example" {
+  name        = "` + name + `"
+  description = "Terraform acceptance test network domain"
+  public_zone = false
+  visibility  = "private"
+  active      = true
+}
+`
+}
+
 func TestAccMorpheusFindNetworkDomainByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -44,7 +67,16 @@ func TestAccMorpheusFindNetworkDomainByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := networkdomain.RenderNetworkDomainByNameConfig(t, nil)
+	// The server lower-cases the domain name; use a lower-case fixture name so
+	// there is no perpetual plan diff (avoids the MORPH-16419 churn).
+	name := strings.ToLower(acctest.RandomWithPrefix(t.Name()))
+	dependenciesConfig := networkDomainResourceConfig(name)
+
+	dataSourceConfig, err := networkdomain.RenderNetworkDomainByNameConfig(t,
+		map[string]string{
+			"Name": "hpe_morpheus_network_domain.example.name",
+		},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,10 +85,10 @@ func TestAccMorpheusFindNetworkDomainByName(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + dependenciesConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -76,18 +108,31 @@ func TestAccMorpheusFindNetworkDomainById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := networkdomain.RenderNetworkDomainByIdConfig(t, nil)
+	// The server lower-cases the domain name; use a lower-case fixture name so
+	// there is no perpetual plan diff (avoids the MORPH-16419 churn).
+	name := strings.ToLower(acctest.RandomWithPrefix(t.Name()))
+	dependenciesConfig := networkDomainResourceConfig(name)
+
+	dataSourceConfig, err := networkdomain.RenderNetworkDomainByIdConfig(t,
+		map[string]string{
+			"Id": "hpe_morpheus_network_domain.example.id",
+		},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttrSet(
+		resource.TestCheckResourceAttrPair(
 			"data.hpe_morpheus_network_domain.example",
 			"id",
+			"hpe_morpheus_network_domain.example",
+			"id",
 		),
-		resource.TestCheckResourceAttrSet(
+		resource.TestCheckResourceAttrPair(
 			"data.hpe_morpheus_network_domain.example",
+			"name",
+			"hpe_morpheus_network_domain.example",
 			"name",
 		),
 	}
@@ -95,10 +140,10 @@ func TestAccMorpheusFindNetworkDomainById(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + dependenciesConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -120,7 +165,7 @@ func TestAccMorpheusFindNetworkDomainNotFound(t *testing.T) {
 
 	dataSourceConfig, err := networkdomain.RenderNetworkDomainByNameConfig(t,
 		map[string]string{
-			"Name": "______",
+			"Name": "\"______\"",
 		},
 	)
 	if err != nil {
@@ -199,7 +244,12 @@ func networkDomainChecks() []resource.TestCheckFunc {
 
 	return []resource.TestCheckFunc{
 		resource.TestCheckResourceAttrSet(ds, "id"),
-		resource.TestCheckResourceAttr(ds, "name", "acceptance test.localdomain"),
+		// The server normalises the domain name (e.g. lower-cases it), so
+		// compare against the resource's stored name rather than the config.
+		resource.TestCheckResourceAttrPair(
+			ds, "name",
+			"hpe_morpheus_network_domain.example", "name",
+		),
 		resource.TestCheckResourceAttrSet(ds, "visibility"),
 	}
 }

@@ -1,0 +1,109 @@
+network_domain:
+  description: Manages a Morpheus network domain.
+  templates:
+    domain_password_wo:
+      string:
+        computed_optional_required: optional
+        description: |-
+          Domain password (write-only; never stored in state). Changes are detected through a private-state
+          digest; see write_only_revision.
+        sensitive: true
+        write_only: true
+    domain_password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: |-
+          Deprecated. Changes to domain_password_wo are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.6 release. Changing it still re-sends domain_password_wo.
+        deprecation_message: "No longer needed: changes to domain_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
+    auto_join_domain:
+      bool:
+        computed_optional_required: computed_optional
+        default:
+          static: false
+        description: |-
+          Deprecated. Has no effect; accepted for compatibility with existing configurations. Use
+          domain_controller. Will be removed in the 2.6 release.
+        deprecation_message: "Has no effect. Use domain_controller instead; this attribute will be removed in the 2.6 release."
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which a write-only value (domain_password_wo) was last
+          sent to Morpheus. Changes whenever that value changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
+
+  moves:
+    - network_domain: ""                               # unnest wrapper (components/schemas/networkDomainCreate.yaml)
+    - account.id: tenant_id                            # (components/schemas/networkDomainCreate.yaml)
+    - template-domain_password_wo: domain_password_wo
+    - template-auto_join_domain: auto_join_domain
+    - template-domain_password_wo_version: domain_password_wo_version
+    - template-write_only_revision: write_only_revision
+
+  removes:
+    # now-empty wrapper after account.id -> tenant_id (components/schemas/networkDomainCreate.yaml)
+    - account
+    # excluded create-only fields for 2.2 parity (components/schemas/networkDomainCreate.yaml)
+    - display_name
+    - task_set_id
+    - dc_server
+    - ou_path
+    - guest_username
+    - guest_password
+    # read-only response fields excluded for this release (components/schemas/networkDomain.yaml)
+    - fqdn
+    - ref_type
+    - ref_id
+    - ref_source
+    - internal_id
+    - zone_type
+    - dnssec
+    - domain_serial
+    - owner
+
+  overrides:
+    domain_password:
+      description: |-
+        Deprecated. Use domain_password_wo, which is never stored in state. When set, the value is sent on
+        create and on every update, as before. Will be removed in the 2.6 release.
+      computed_optional_required: optional
+      sensitive: true
+      deprecation_message: "Use domain_password_wo instead; this attribute stores the password in state and will be removed in the 2.6 release."
+      conflicts_with: ["domain_password_wo"]
+    id:
+      description: Morpheus ID of the network domain
+      state_for_unknown: true
+    name:
+      description: The name of the network domain
+      computed_optional_required: required
+    description:
+      description: A description of the network domain
+      computed_optional_required: optional
+    public_zone:
+      description: Whether the domain is a public (shared) zone. Defaults to false.
+      computed_optional_required: computed_optional
+    domain_controller:
+      description: Whether this domain is a domain controller (joins hosts to the domain). Defaults to false.
+      computed_optional_required: computed_optional
+      # The spec default is true, but the SDKv2 resource this replaces defaulted to false and sent it
+      # explicitly; keeping false avoids a false -> true update on every upgraded resource.
+      default: false
+    domain_username:
+      description: The username used to join hosts to the domain.
+      computed_optional_required: optional
+    active:
+      description: Whether the network domain is active. Defaults to true.
+      computed_optional_required: computed_optional
+      default: true   # as the SDKv2 resource this replaces
+    visibility:
+      description: Visibility of the network domain (private or public). Defaults to private.
+      computed_optional_required: computed_optional
+      one_of: [private, public]
+    tenant_id:
+      description: The ID of the tenant that owns the network domain.
+      computed_optional_required: computed_optional

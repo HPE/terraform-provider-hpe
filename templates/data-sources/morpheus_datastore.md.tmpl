@@ -22,4 +22,16 @@ is being investigated.
 
 {{ tffile "examples/data-sources/morpheus_datastore/example-name.tf" }}
 
+### One datastore name, several clusters
+
+Every HVM cluster has datastores of its own — `local`, `morpheus-cloud-init`,
+`morpheus-images` — so on an appliance with more than one cluster a lookup by `name`
+alone finds one per cluster and fails. Set `cluster_id` to look the name up among
+that cluster's datastores only (`GET /api/clusters/{id}/datastores`); with `id`, the
+datastore must be one the cluster has. `cluster_id` is a filter on the lookup rather
+than a property of the datastore, so it is carried through as configured and never
+read back.
+
+{{ tffile "examples/data-sources/morpheus_datastore/example-name-cluster.tf" }}
+
 {{ .SchemaMarkdown | trimspace }}

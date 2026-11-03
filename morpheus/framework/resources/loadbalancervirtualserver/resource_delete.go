@@ -5,7 +5,6 @@ package loadbalancervirtualserver
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
@@ -40,19 +39,14 @@ func (r *Resource) Delete(
 
 	id := data.Id.ValueInt64()
 
-	_, hresp, err := client.LoadBalancersAPI.
+	result, hresp, err := client.LoadBalancersAPI.
 		DeleteLoadBalancerVirtualServer(ctx, lbID, id).
 		Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		// 404 means the resource is already gone — treat as success.
-		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-			return
-		}
-
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"error deleting load balancer virtual server",
 			fmt.Sprintf("load balancer %d virtual server %d DELETE failed: %s",
-				lbID, id, errfmt.ErrMsg(err, hresp)),
+				lbID, id, err.Error()),
 		)
 	}
 }

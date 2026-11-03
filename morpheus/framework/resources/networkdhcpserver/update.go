@@ -129,9 +129,12 @@ func (r *Resource) Update(
 		return
 	}
 
-	newState, diags := getNetworkDhcpServerAsState(
+	newState, found, diags := getNetworkDhcpServerAsState(
 		ctx, id, serverID, client, plan,
 	)
+	if !found && !diags.HasError() {
+		diags.AddError("update network dhcp server resource", fmt.Sprintf("network dhcp server %d not found after update", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(

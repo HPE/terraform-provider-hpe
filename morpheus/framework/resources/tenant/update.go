@@ -11,6 +11,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -75,29 +76,31 @@ func (r *Resource) Update(
 	// description. Omitting the key instead would leave the previous value in
 	// place and the read-back would disagree with the plan.
 	account.Description.Set(plan.Description.ValueStringPointer())
+
+	// The Optional+Computed fields: sent when known, null when being cleared
+	// (removed from the configuration since an apply recorded them), not sent
+	// otherwise. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		account.Active = plan.Enabled.ValueBoolPointer()
 	}
-	if !plan.Subdomain.IsNull() && !plan.Subdomain.IsUnknown() {
-		account.Subdomain.Set(plan.Subdomain.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "subdomain", plan.Subdomain, &account.Subdomain)
 	if !plan.Currency.IsNull() && !plan.Currency.IsUnknown() {
 		account.Currency = plan.Currency.ValueStringPointer()
 	}
 	if !plan.BaseRoleId.IsNull() && !plan.BaseRoleId.IsUnknown() {
 		account.Role = &sdk.UpdateTenantRequestAccountRole{
-			Id: plan.BaseRoleId.ValueInt64Pointer(),
+			Id: &sdk.UpdateTenantRequestAccountRoleId{Int64: plan.BaseRoleId.ValueInt64Pointer()},
 		}
 	}
-	if !plan.AccountNumber.IsNull() && !plan.AccountNumber.IsUnknown() {
-		account.AccountNumber.Set(plan.AccountNumber.ValueStringPointer())
-	}
-	if !plan.AccountName.IsNull() && !plan.AccountName.IsUnknown() {
-		account.AccountName.Set(plan.AccountName.ValueStringPointer())
-	}
-	if !plan.CustomerNumber.IsNull() && !plan.CustomerNumber.IsUnknown() {
-		account.CustomerNumber.Set(plan.CustomerNumber.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "account_number", plan.AccountNumber, &account.AccountNumber)
+	clearable.NullableString(pending, "account_name", plan.AccountName, &account.AccountName)
+	clearable.NullableString(pending, "customer_number", plan.CustomerNumber, &account.CustomerNumber)
 
 	updateReq := sdk.UpdateTenantRequest{Account: account}
 
@@ -138,5 +141,6 @@ func (r *Resource) Update(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

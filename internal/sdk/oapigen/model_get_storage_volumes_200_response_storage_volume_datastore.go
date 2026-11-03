@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetStorageVolumes200ResponseStorageVolumeDatastore) ToMap() (map[string]
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetStorageVolumes200ResponseStorageVolumeDatastore struct {
-	value *GetStorageVolumes200ResponseStorageVolumeDatastore
-	isSet bool
-}
-
-func (v NullableGetStorageVolumes200ResponseStorageVolumeDatastore) Get() *GetStorageVolumes200ResponseStorageVolumeDatastore {
-	return v.value
-}
-
-func (v *NullableGetStorageVolumes200ResponseStorageVolumeDatastore) Set(val *GetStorageVolumes200ResponseStorageVolumeDatastore) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetStorageVolumes200ResponseStorageVolumeDatastore) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetStorageVolumes200ResponseStorageVolumeDatastore) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetStorageVolumes200ResponseStorageVolumeDatastore(val *GetStorageVolumes200ResponseStorageVolumeDatastore) *NullableGetStorageVolumes200ResponseStorageVolumeDatastore {
-	return &NullableGetStorageVolumes200ResponseStorageVolumeDatastore{value: val, isSet: true}
-}
-
-func (v NullableGetStorageVolumes200ResponseStorageVolumeDatastore) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetStorageVolumes200ResponseStorageVolumeDatastore) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetStorageVolumes200ResponseStorageVolumeDatastore) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetStorageVolumes200ResponseStorageVolumeDatastore) UnmarshalJSON(data []byte) (err error) {

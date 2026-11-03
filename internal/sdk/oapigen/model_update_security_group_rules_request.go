@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -43,51 +43,6 @@ func (o UpdateSecurityGroupRulesRequest) ToMap() (map[string]interface{}, error)
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateSecurityGroupRulesRequest struct {
-	value *UpdateSecurityGroupRulesRequest
-	isSet bool
-}
-
-func (v NullableUpdateSecurityGroupRulesRequest) Get() *UpdateSecurityGroupRulesRequest {
-	return v.value
-}
-
-func (v *NullableUpdateSecurityGroupRulesRequest) Set(val *UpdateSecurityGroupRulesRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateSecurityGroupRulesRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateSecurityGroupRulesRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateSecurityGroupRulesRequest(val *UpdateSecurityGroupRulesRequest) *NullableUpdateSecurityGroupRulesRequest {
-	return &NullableUpdateSecurityGroupRulesRequest{value: val, isSet: true}
-}
-
-func (v NullableUpdateSecurityGroupRulesRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateSecurityGroupRulesRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateSecurityGroupRulesRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateSecurityGroupRulesRequest) UnmarshalJSON(data []byte) (err error) {

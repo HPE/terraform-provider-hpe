@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,8 +21,8 @@ var _ MappedNullable = &GetRole200ResponseRoleDefaultPersona{}
 // GetRole200ResponseRoleDefaultPersona struct for GetRole200ResponseRoleDefaultPersona
 type GetRole200ResponseRoleDefaultPersona struct {
 	Id                   *int64                 `json:"id,omitempty"`
-	Code                 *string                `json:"code,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
+	Code                 *string                `json:"code,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -41,11 +41,11 @@ func (o GetRole200ResponseRoleDefaultPersona) ToMap() (map[string]interface{}, e
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
-	if !IsNil(o.Code) {
-		toSerialize["code"] = o.Code
-	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.Code) {
+		toSerialize["code"] = o.Code
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -53,51 +53,6 @@ func (o GetRole200ResponseRoleDefaultPersona) ToMap() (map[string]interface{}, e
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetRole200ResponseRoleDefaultPersona struct {
-	value *GetRole200ResponseRoleDefaultPersona
-	isSet bool
-}
-
-func (v NullableGetRole200ResponseRoleDefaultPersona) Get() *GetRole200ResponseRoleDefaultPersona {
-	return v.value
-}
-
-func (v *NullableGetRole200ResponseRoleDefaultPersona) Set(val *GetRole200ResponseRoleDefaultPersona) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetRole200ResponseRoleDefaultPersona) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetRole200ResponseRoleDefaultPersona) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetRole200ResponseRoleDefaultPersona(val *GetRole200ResponseRoleDefaultPersona) *NullableGetRole200ResponseRoleDefaultPersona {
-	return &NullableGetRole200ResponseRoleDefaultPersona{value: val, isSet: true}
-}
-
-func (v NullableGetRole200ResponseRoleDefaultPersona) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetRole200ResponseRoleDefaultPersona) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetRole200ResponseRoleDefaultPersona) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetRole200ResponseRoleDefaultPersona) UnmarshalJSON(data []byte) (err error) {

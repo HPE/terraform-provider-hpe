@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ListCheckGroups200ResponseAllOfCheckGroupsInnerInstance) ToMap() (map[st
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListCheckGroups200ResponseAllOfCheckGroupsInnerInstance struct {
-	value *ListCheckGroups200ResponseAllOfCheckGroupsInnerInstance
-	isSet bool
-}
-
-func (v NullableListCheckGroups200ResponseAllOfCheckGroupsInnerInstance) Get() *ListCheckGroups200ResponseAllOfCheckGroupsInnerInstance {
-	return v.value
-}
-
-func (v *NullableListCheckGroups200ResponseAllOfCheckGroupsInnerInstance) Set(val *ListCheckGroups200ResponseAllOfCheckGroupsInnerInstance) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListCheckGroups200ResponseAllOfCheckGroupsInnerInstance) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListCheckGroups200ResponseAllOfCheckGroupsInnerInstance) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListCheckGroups200ResponseAllOfCheckGroupsInnerInstance(val *ListCheckGroups200ResponseAllOfCheckGroupsInnerInstance) *NullableListCheckGroups200ResponseAllOfCheckGroupsInnerInstance {
-	return &NullableListCheckGroups200ResponseAllOfCheckGroupsInnerInstance{value: val, isSet: true}
-}
-
-func (v NullableListCheckGroups200ResponseAllOfCheckGroupsInnerInstance) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListCheckGroups200ResponseAllOfCheckGroupsInnerInstance) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListCheckGroups200ResponseAllOfCheckGroupsInnerInstance) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListCheckGroups200ResponseAllOfCheckGroupsInnerInstance) UnmarshalJSON(data []byte) (err error) {

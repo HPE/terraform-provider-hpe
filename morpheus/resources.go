@@ -29,6 +29,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancenode"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancepowerstate"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancesnapshot"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/license"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancermonitor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancerpool"
@@ -39,6 +40,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoringgroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdomain"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkgroup"
@@ -53,6 +55,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/optionlist"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/plugin"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/powerschedule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/provisioninglicense"
@@ -66,6 +69,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storagevolume"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/subnet"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/task"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/taskpowershellscript"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/taskshellscript"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/tenant"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdiapp"
@@ -88,6 +93,7 @@ func (p *MorpheusProvider) Resources(
 		loadbalancerprofile.NewResource,
 		loadbalancervirtualserver.NewResource,
 		network.NewResource,
+		networkdomain.NewResource,
 		networkfirewallrule.NewResource,
 		networkfirewallrulegroup.NewResource,
 		networkdhcpserver.NewResource,
@@ -100,6 +106,8 @@ func (p *MorpheusProvider) Resources(
 		role.NewResource,
 		serviceplan.NewResource,
 		task.NewResource,
+		taskshellscript.NewResource,
+		taskpowershellscript.NewResource,
 		instance.NewResource,
 		instancepowerstate.NewResource,
 		instancenode.NewResource,
@@ -158,6 +166,13 @@ func (p *MorpheusProvider) Resources(
 
 		// Multitenancy: ported from SDKv2 to the plugin framework (MORPH-16404)
 		tenant.NewResource,
+
+		// Appliance licence: ported from SDKv2 to the plugin framework so the
+		// key can be write-only, with its digest kept in private state.
+		license.NewResource,
+
+		// Plugin lifecycle management (Plugin Framework)
+		plugin.NewResource,
 	}
 
 	return resources

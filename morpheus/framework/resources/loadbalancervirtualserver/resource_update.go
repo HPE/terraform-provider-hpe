@@ -12,6 +12,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -67,13 +68,20 @@ func (r *Resource) Update(
 
 	instance := &sdk.UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance{}
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if !plan.VipName.IsNull() && !plan.VipName.IsUnknown() {
 		instance.VipName = plan.VipName.ValueStringPointer()
 	}
 
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		instance.Description = plan.Description.ValueStringPointer()
-	}
+	// Sent when known, null when being cleared, not sent otherwise.
+	clearable.NullableString(pending, "description", plan.Description, &instance.Description)
 
 	if !plan.VipAddress.IsNull() && !plan.VipAddress.IsUnknown() {
 		instance.VipAddress = plan.VipAddress.ValueStringPointer()
@@ -87,27 +95,16 @@ func (r *Resource) Update(
 		instance.VipProtocol = plan.VipProtocol.ValueStringPointer()
 	}
 
-	if !plan.VipHostname.IsUnknown() {
-		if plan.VipHostname.IsNull() {
-			instance.VipHostname = sdk.PtrString("")
-		} else {
-			instance.VipHostname = plan.VipHostname.ValueStringPointer()
-		}
-	}
-
+	clearable.NullableString(pending, "vip_hostname", plan.VipHostname, &instance.VipHostname)
+	// vip_pool is not clearable: Morpheus reads it only when the virtual
+	// server is created, so it is only ever sent when known.
 	if !plan.VipPool.IsNull() && !plan.VipPool.IsUnknown() {
 		instance.VipPool.Set(plan.VipPool.ValueInt64Pointer())
 	}
+	clearable.NullableInt64(pending, "ssl_cert", plan.SslCert, &instance.SslCert)
+	clearable.NullableInt64(pending, "ssl_server_cert", plan.SslServerCert, &instance.SslServerCert)
 
-	if !plan.SslCert.IsNull() && !plan.SslCert.IsUnknown() {
-		instance.SslCert = plan.SslCert.ValueInt64Pointer()
-	}
-
-	if !plan.SslServerCert.IsNull() && !plan.SslServerCert.IsUnknown() {
-		instance.SslServerCert = plan.SslServerCert.ValueInt64Pointer()
-	}
-
-	if err := setUpdateConfig(ctx, instance, plan); err != nil {
+	if err := setUpdateConfig(ctx, instance, plan, pending); err != nil {
 		resp.Diagnostics.AddError("update load balancer virtual server", err.Error())
 
 		return
@@ -152,11 +149,15 @@ func setUpdateConfig(
 	ctx context.Context,
 	instance *sdk.UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance,
 	plan LoadBalancerVirtualServerModel,
+	pending clearable.Pending,
 ) error {
 	if !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown() {
 		nsxConfig := &sdk.NSXVirtualServerConfigObject1{}
 
-		if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
+		switch {
+		case pending.Clears("pool_id"):
+			nsxConfig.Pool.Set(nil)
+		case !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown():
 			nsxConfig.Pool.Set(sdk.PtrString(strconv.FormatInt(plan.PoolId.ValueInt64(), 10)))
 		}
 

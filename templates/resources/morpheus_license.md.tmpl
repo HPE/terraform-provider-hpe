@@ -10,12 +10,22 @@ description: |-
 
 ## Example Usage
 
-{{tffile "examples/resources/morpheus_license/resource.tf"}}
+{{ tffile "examples/resources/morpheus_license/example.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import
 
-Import is supported using the following syntax:
+Import is supported using the licence key id: the first eight characters of the
+key, which is how Morpheus identifies an installed licence.
 
-{{codefile "shell" "examples/resources/morpheus_license/import.sh" }}
+```shell
+terraform import hpe_morpheus_license.example 22324FEF
+```
+
+The licence key is write-only and never stored in state, so it is not needed to
+import. After the import, the first refresh records a digest of the installed
+licence (from the appliance's own licence hash), so the key in your
+configuration is recognised and the plan after import is empty -- no
+`#key=<sha256>` import form is required. A later change to the key is detected
+from that digest and plans an in-place update that installs the new key.

@@ -113,19 +113,15 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_alletramp_bmaas_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Version trigger for the write-only config_alletramp_bmaas attribute. Increment whenever config_alletramp_bmaas changes to recreate the volume with the new configuration.",
-				MarkdownDescription: "Version trigger for the write-only config_alletramp_bmaas attribute. Increment whenever config_alletramp_bmaas changes to recreate the volume with the new configuration.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
+				Description:         "Deprecated. Changes to config_alletramp_bmaas are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated. Changes to config_alletramp_bmaas are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				DeprecationMessage:  "No longer needed: changes to config_alletramp_bmaas are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"config_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Version trigger for the write-only config attribute. Increment whenever config changes to recreate the volume with the new configuration.",
-				MarkdownDescription: "Version trigger for the write-only config attribute. Increment whenever config changes to recreate the volume with the new configuration.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
+				Description:         "Deprecated. Changes to config are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated. Changes to config are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				DeprecationMessage:  "No longer needed: changes to config are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
@@ -146,8 +142,11 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "The name of the storage volume.",
-				MarkdownDescription: "The name of the storage volume.",
+				Description:         "The name of the storage volume. It cannot be changed after the volume is created; a change replaces the volume.",
+				MarkdownDescription: "The name of the storage volume. It cannot be changed after the volume is created; a change replaces the volume.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"provision_type": schema.StringAttribute{
 				Optional:            true,
@@ -155,6 +154,7 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Provision type for storage volume types that support it.",
 				MarkdownDescription: "Provision type for storage volume types that support it.",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
@@ -194,6 +194,7 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The storage volume type code, which is more stable across environments than type_id (e.g. \"3par\", \"hpealletraMPLUN\", \"hpealletraMPLUN-active-pp\", \"hpealletraMPLUN-classic-pp\"). Mutually exclusive with type_id.",
 				MarkdownDescription: "The storage volume type code, which is more stable across environments than type_id (e.g. \"3par\", \"hpealletraMPLUN\", \"hpealletraMPLUN-active-pp\", \"hpealletraMPLUN-classic-pp\"). Mutually exclusive with type_id.",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
@@ -206,11 +207,20 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the storage volume type. Mutually exclusive with type_code.",
 				MarkdownDescription: "The ID of the storage volume type. Mutually exclusive with type_code.",
 				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 					int64planmodifier.RequiresReplace(),
 				},
 				Validators: []validator.Int64{
 					int64validator.AtLeastOneOf(path.Expressions{path.MatchRoot("type_id"), path.MatchRoot("type_code")}...),
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("type_code")}...),
+				},
+			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which config or config_alletramp_bmaas were last\nsent to Morpheus. Changes when the volume is created; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which config or config_alletramp_bmaas were last\nsent to Morpheus. Changes when the volume is created; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"wwn": schema.StringAttribute{
@@ -236,6 +246,7 @@ type StorageVolumeModel struct {
 	StorageServerId               types.Int64               `tfsdk:"storage_server_id"`
 	TypeCode                      types.String              `tfsdk:"type_code"`
 	TypeId                        types.Int64               `tfsdk:"type_id"`
+	WriteOnlyRevision             types.Int64               `tfsdk:"write_only_revision"`
 	Wwn                           types.String              `tfsdk:"wwn"`
 }
 

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj ListInstances200ResponseAllOfInstancesInnerEvarsInnerValue) GetActualI
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableListInstances200ResponseAllOfInstancesInnerEvarsInnerValue struct {
-	value *ListInstances200ResponseAllOfInstancesInnerEvarsInnerValue
-	isSet bool
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerEvarsInnerValue) Get() *ListInstances200ResponseAllOfInstancesInnerEvarsInnerValue {
-	return v.value
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerEvarsInnerValue) Set(val *ListInstances200ResponseAllOfInstancesInnerEvarsInnerValue) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerEvarsInnerValue) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerEvarsInnerValue) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListInstances200ResponseAllOfInstancesInnerEvarsInnerValue(val *ListInstances200ResponseAllOfInstancesInnerEvarsInnerValue) *NullableListInstances200ResponseAllOfInstancesInnerEvarsInnerValue {
-	return &NullableListInstances200ResponseAllOfInstancesInnerEvarsInnerValue{value: val, isSet: true}
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerEvarsInnerValue) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerEvarsInnerValue) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerEvarsInnerValue) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

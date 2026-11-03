@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -77,51 +77,6 @@ func (o ElasticCheck) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableElasticCheck struct {
-	value *ElasticCheck
-	isSet bool
-}
-
-func (v NullableElasticCheck) Get() *ElasticCheck {
-	return v.value
-}
-
-func (v *NullableElasticCheck) Set(val *ElasticCheck) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableElasticCheck) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableElasticCheck) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableElasticCheck(val *ElasticCheck) *NullableElasticCheck {
-	return &NullableElasticCheck{value: val, isSet: true}
-}
-
-func (v NullableElasticCheck) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableElasticCheck) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableElasticCheck) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ElasticCheck) UnmarshalJSON(data []byte) (err error) {

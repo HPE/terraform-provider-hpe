@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,8 @@ var _ MappedNullable = &UpdateLoadBalancerProfileRequestLoadBalancerProfile{}
 type UpdateLoadBalancerProfileRequestLoadBalancerProfile struct {
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Description
-	Description *string `json:"description,omitempty"`
+	// Description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Service Type
 	ServiceType          *string                                                    `json:"serviceType,omitempty"`
 	Config               *UpdateLoadBalancerProfileRequestLoadBalancerProfileConfig `json:"config,omitempty"`
@@ -45,8 +45,8 @@ func (o UpdateLoadBalancerProfileRequestLoadBalancerProfile) ToMap() (map[string
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.ServiceType) {
 		toSerialize["serviceType"] = o.ServiceType
@@ -60,51 +60,6 @@ func (o UpdateLoadBalancerProfileRequestLoadBalancerProfile) ToMap() (map[string
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateLoadBalancerProfileRequestLoadBalancerProfile struct {
-	value *UpdateLoadBalancerProfileRequestLoadBalancerProfile
-	isSet bool
-}
-
-func (v NullableUpdateLoadBalancerProfileRequestLoadBalancerProfile) Get() *UpdateLoadBalancerProfileRequestLoadBalancerProfile {
-	return v.value
-}
-
-func (v *NullableUpdateLoadBalancerProfileRequestLoadBalancerProfile) Set(val *UpdateLoadBalancerProfileRequestLoadBalancerProfile) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateLoadBalancerProfileRequestLoadBalancerProfile) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateLoadBalancerProfileRequestLoadBalancerProfile) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateLoadBalancerProfileRequestLoadBalancerProfile(val *UpdateLoadBalancerProfileRequestLoadBalancerProfile) *NullableUpdateLoadBalancerProfileRequestLoadBalancerProfile {
-	return &NullableUpdateLoadBalancerProfileRequestLoadBalancerProfile{value: val, isSet: true}
-}
-
-func (v NullableUpdateLoadBalancerProfileRequestLoadBalancerProfile) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateLoadBalancerProfileRequestLoadBalancerProfile) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateLoadBalancerProfileRequestLoadBalancerProfile) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateLoadBalancerProfileRequestLoadBalancerProfile) UnmarshalJSON(data []byte) (err error) {

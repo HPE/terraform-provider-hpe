@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -117,51 +117,6 @@ func (o UpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner) ToMap() (ma
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner struct {
-	value *UpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner
-	isSet bool
-}
-
-func (v NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner) Get() *UpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner {
-	return v.value
-}
-
-func (v *NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner) Set(val *UpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner(val *UpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner) *NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner {
-	return &NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateSecurityGroups200ResponseSecurityGroupAllOfRulesInner) UnmarshalJSON(data []byte) (err error) {

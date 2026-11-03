@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,8 +24,8 @@ type UpdateScriptRequestContainerScript struct {
 	Name *string `json:"name,omitempty"`
 	// Array of label strings, can be used for filtering.
 	Labels []string `json:"labels,omitempty"`
-	// Script category
-	Category *string `json:"category,omitempty"`
+	// Script category; null clears it
+	Category NullableString `json:"category,omitempty"`
 	// Version of the script
 	ScriptVersion *string `json:"scriptVersion,omitempty"`
 	// Phase for the script, provision, start, etc.
@@ -34,8 +34,8 @@ type UpdateScriptRequestContainerScript struct {
 	ScriptType *string `json:"scriptType,omitempty"`
 	// Script content, that is, the code itself.
 	Script *string `json:"script,omitempty"`
-	// Run as a specific user.
-	RunAsUser *string `json:"runAsUser,omitempty"`
+	// Run as a specific user; null clears it
+	RunAsUser NullableString `json:"runAsUser,omitempty"`
 	// Sudo, whether or not to run with sudo.
 	SudoUser             *bool                  `json:"sudoUser,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -59,8 +59,8 @@ func (o UpdateScriptRequestContainerScript) ToMap() (map[string]interface{}, err
 	if o.Labels != nil {
 		toSerialize["labels"] = o.Labels
 	}
-	if !IsNil(o.Category) {
-		toSerialize["category"] = o.Category
+	if o.Category.IsSet() {
+		toSerialize["category"] = o.Category.Get()
 	}
 	if !IsNil(o.ScriptVersion) {
 		toSerialize["scriptVersion"] = o.ScriptVersion
@@ -74,8 +74,8 @@ func (o UpdateScriptRequestContainerScript) ToMap() (map[string]interface{}, err
 	if !IsNil(o.Script) {
 		toSerialize["script"] = o.Script
 	}
-	if !IsNil(o.RunAsUser) {
-		toSerialize["runAsUser"] = o.RunAsUser
+	if o.RunAsUser.IsSet() {
+		toSerialize["runAsUser"] = o.RunAsUser.Get()
 	}
 	if !IsNil(o.SudoUser) {
 		toSerialize["sudoUser"] = o.SudoUser
@@ -86,51 +86,6 @@ func (o UpdateScriptRequestContainerScript) ToMap() (map[string]interface{}, err
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateScriptRequestContainerScript struct {
-	value *UpdateScriptRequestContainerScript
-	isSet bool
-}
-
-func (v NullableUpdateScriptRequestContainerScript) Get() *UpdateScriptRequestContainerScript {
-	return v.value
-}
-
-func (v *NullableUpdateScriptRequestContainerScript) Set(val *UpdateScriptRequestContainerScript) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateScriptRequestContainerScript) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateScriptRequestContainerScript) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateScriptRequestContainerScript(val *UpdateScriptRequestContainerScript) *NullableUpdateScriptRequestContainerScript {
-	return &NullableUpdateScriptRequestContainerScript{value: val, isSet: true}
-}
-
-func (v NullableUpdateScriptRequestContainerScript) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateScriptRequestContainerScript) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateScriptRequestContainerScript) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateScriptRequestContainerScript) UnmarshalJSON(data []byte) (err error) {

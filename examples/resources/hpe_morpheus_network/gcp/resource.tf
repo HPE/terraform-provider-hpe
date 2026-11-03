@@ -13,7 +13,7 @@ variable "description" {
 variable "cloud_id" {
   description = "Cloud (zone) id"
   type        = number
-  default     = 6
+  default     = 24430
 }
 
 variable "pool_id" {
@@ -43,13 +43,13 @@ variable "cidr" {
 variable "zone_pool_id" {
   description = "Zone pool id"
   type        = number
-  default     = 85990
+  default     = 159651
 }
 
 variable "config_mtu" {
   description = "MTU setting for network config"
-  type        = string
-  default     = "1460"
+  type        = number
+  default     = 1460
 }
 
 variable "config_auto_create" {
@@ -88,10 +88,10 @@ resource "hpe_morpheus_network" "gcp" {
   cloud_id    = var.cloud_id
   pool_id     = var.pool_id
   group_id    = var.group_id
-  type_id     = var.type_id
-  config = {
-    mtu        = var.config_mtu
-    autoCreate = var.config_auto_create
+  type_code   = "googleNetwork"
+  config_gcp = {
+    mtu         = var.config_mtu
+    auto_create = var.config_auto_create
   }
   active                     = var.active
   dhcp_server                = var.dhcp_server

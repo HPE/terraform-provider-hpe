@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -69,51 +69,6 @@ func (o AddClouds200ResponseAllOfZoneStatsServerCounts) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddClouds200ResponseAllOfZoneStatsServerCounts struct {
-	value *AddClouds200ResponseAllOfZoneStatsServerCounts
-	isSet bool
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneStatsServerCounts) Get() *AddClouds200ResponseAllOfZoneStatsServerCounts {
-	return v.value
-}
-
-func (v *NullableAddClouds200ResponseAllOfZoneStatsServerCounts) Set(val *AddClouds200ResponseAllOfZoneStatsServerCounts) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneStatsServerCounts) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClouds200ResponseAllOfZoneStatsServerCounts) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClouds200ResponseAllOfZoneStatsServerCounts(val *AddClouds200ResponseAllOfZoneStatsServerCounts) *NullableAddClouds200ResponseAllOfZoneStatsServerCounts {
-	return &NullableAddClouds200ResponseAllOfZoneStatsServerCounts{value: val, isSet: true}
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneStatsServerCounts) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClouds200ResponseAllOfZoneStatsServerCounts) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneStatsServerCounts) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddClouds200ResponseAllOfZoneStatsServerCounts) UnmarshalJSON(data []byte) (err error) {

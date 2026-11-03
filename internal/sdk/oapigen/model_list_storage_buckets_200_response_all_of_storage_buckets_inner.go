@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -105,51 +105,6 @@ func (o ListStorageBuckets200ResponseAllOfStorageBucketsInner) ToMap() (map[stri
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListStorageBuckets200ResponseAllOfStorageBucketsInner struct {
-	value *ListStorageBuckets200ResponseAllOfStorageBucketsInner
-	isSet bool
-}
-
-func (v NullableListStorageBuckets200ResponseAllOfStorageBucketsInner) Get() *ListStorageBuckets200ResponseAllOfStorageBucketsInner {
-	return v.value
-}
-
-func (v *NullableListStorageBuckets200ResponseAllOfStorageBucketsInner) Set(val *ListStorageBuckets200ResponseAllOfStorageBucketsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListStorageBuckets200ResponseAllOfStorageBucketsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListStorageBuckets200ResponseAllOfStorageBucketsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListStorageBuckets200ResponseAllOfStorageBucketsInner(val *ListStorageBuckets200ResponseAllOfStorageBucketsInner) *NullableListStorageBuckets200ResponseAllOfStorageBucketsInner {
-	return &NullableListStorageBuckets200ResponseAllOfStorageBucketsInner{value: val, isSet: true}
-}
-
-func (v NullableListStorageBuckets200ResponseAllOfStorageBucketsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListStorageBuckets200ResponseAllOfStorageBucketsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListStorageBuckets200ResponseAllOfStorageBucketsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListStorageBuckets200ResponseAllOfStorageBucketsInner) UnmarshalJSON(data []byte) (err error) {

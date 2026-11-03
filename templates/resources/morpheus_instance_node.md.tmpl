@@ -30,6 +30,8 @@ When this resource is destroyed:
 
 {{ .SchemaMarkdown | trimspace }}
 
+~> A change to `ssh_password` made outside Terraform (in the UI or by another tool) is reported as a warning on the next plan; because the attribute cannot be changed after the node is provisioned, set it to the appliance's value or replace the node.
+
 ## Import
 
 Instance nodes cannot be imported. They are managed exclusively through the add-node / remove-node lifecycle.

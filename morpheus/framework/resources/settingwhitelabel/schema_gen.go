@@ -4,13 +4,19 @@ package settingwhitelabel
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/utils/validators"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -18,6 +24,24 @@ import (
 func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"account": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: AccountType{
+					ObjectType: types.ObjectType{
+						AttrTypes: AccountValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "The tenant (account) that owns these whitelabel settings.",
+				MarkdownDescription: "The tenant (account) that owns these whitelabel settings.",
+			},
 			"appliance_name": schema.StringAttribute{
 				Optional:            true,
 				Description:         "The appliance name. Master account only.",
@@ -31,6 +55,12 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
+			},
+			"external_legal_text": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "External legal text shown on the login page.",
+				MarkdownDescription: "External legal text shown on the login page.",
 			},
 			"favicon": schema.StringAttribute{
 				Optional:            true,
@@ -76,10 +106,22 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 					validators.HexColor(),
 				},
 			},
+			"security_banner": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Security banner text shown to users at login.",
+				MarkdownDescription: "Security banner text shown to users at login.",
+			},
 			"support_menu_links": schema.StringAttribute{
 				Optional:            true,
 				Description:         "Support menu links as a JSON string.",
 				MarkdownDescription: "Support menu links as a JSON string.",
+			},
+			"supports_themes": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Whether the appliance theme selector is offered to users.",
+				MarkdownDescription: "Whether the appliance theme selector is offered to users.",
 			},
 		},
 		Description:         "Manages Morpheus Whitelabel Settings. This is a singleton resource — only one instance should exist. On destroy, all whitelabel settings will be reset to their zero values.",
@@ -88,14 +130,401 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type SettingWhitelabelModel struct {
-	ApplianceName    types.String `tfsdk:"appliance_name"`
-	Enabled          types.Bool   `tfsdk:"enabled"`
-	Favicon          types.String `tfsdk:"favicon"`
-	FooterLogo       types.String `tfsdk:"footer_logo"`
-	HeaderLogo       types.String `tfsdk:"header_logo"`
-	Id               types.String `tfsdk:"id"`
-	LoginLogo        types.String `tfsdk:"login_logo"`
-	PrimaryColor     types.String `tfsdk:"primary_color"`
-	SecondaryColor   types.String `tfsdk:"secondary_color"`
-	SupportMenuLinks types.String `tfsdk:"support_menu_links"`
+	Account           AccountValue `tfsdk:"account"`
+	ApplianceName     types.String `tfsdk:"appliance_name"`
+	Enabled           types.Bool   `tfsdk:"enabled"`
+	ExternalLegalText types.String `tfsdk:"external_legal_text"`
+	Favicon           types.String `tfsdk:"favicon"`
+	FooterLogo        types.String `tfsdk:"footer_logo"`
+	HeaderLogo        types.String `tfsdk:"header_logo"`
+	Id                types.String `tfsdk:"id"`
+	LoginLogo         types.String `tfsdk:"login_logo"`
+	PrimaryColor      types.String `tfsdk:"primary_color"`
+	SecondaryColor    types.String `tfsdk:"secondary_color"`
+	SecurityBanner    types.String `tfsdk:"security_banner"`
+	SupportMenuLinks  types.String `tfsdk:"support_menu_links"`
+	SupportsThemes    types.Bool   `tfsdk:"supports_themes"`
+}
+
+var _ basetypes.ObjectTypable = AccountType{}
+
+type AccountType struct {
+	basetypes.ObjectType
+}
+
+func (t AccountType) Equal(o attr.Type) bool {
+	other, ok := o.(AccountType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t AccountType) String() string {
+	return "AccountType"
+}
+
+func (t AccountType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewAccountValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewAccountValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return AccountValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewAccountValueNull() AccountValue {
+	return AccountValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewAccountValueUnknown() AccountValue {
+	return AccountValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewAccountValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (AccountValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing AccountValue Attribute Value",
+				"While creating a AccountValue value, a missing attribute value was detected. "+
+					"A AccountValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("AccountValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid AccountValue Attribute Type",
+				"While creating a AccountValue value, an invalid attribute value was detected. "+
+					"A AccountValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("AccountValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("AccountValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra AccountValue Attribute Value",
+				"While creating a AccountValue value, an extra attribute value was detected. "+
+					"A AccountValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra AccountValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewAccountValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewAccountValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewAccountValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewAccountValueUnknown(), diags
+	}
+
+	return AccountValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewAccountValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) AccountValue {
+	object, diags := NewAccountValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewAccountValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t AccountType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewAccountValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewAccountValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewAccountValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewAccountValueMust(AccountValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t AccountType) ValueType(ctx context.Context) attr.Value {
+	return AccountValue{}
+}
+
+var _ basetypes.ObjectValuable = AccountValue{}
+
+type AccountValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v AccountValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v AccountValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v AccountValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v AccountValue) String() string {
+	return "AccountValue"
+}
+
+func (v AccountValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v AccountValue) Equal(o attr.Value) bool {
+	other, ok := o.(AccountValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v AccountValue) Type(ctx context.Context) attr.Type {
+	return AccountType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v AccountValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
 }

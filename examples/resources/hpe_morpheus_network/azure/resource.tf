@@ -67,7 +67,7 @@ variable "appliance_url_proxy_bypass" {
 variable "config_resource_group_id" {
   description = "Resource Group ID for network config"
   type        = string
-  default     = "all-attrs-resource-group"
+  default     = "morph-qa"
 }
 
 variable "config_subnet_name" {

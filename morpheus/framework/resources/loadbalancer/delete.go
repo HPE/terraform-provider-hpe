@@ -5,7 +5,6 @@ package loadbalancer
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -38,18 +37,13 @@ func (r *Resource) Delete(
 	id := state.Id.ValueInt64()
 
 	tflog.Debug(ctx, fmt.Sprintf("Deleting load balancer %d", id))
-	_, hresp, err := client.LoadBalancersAPI.DeleteLoadBalancer(ctx, id).
+	result, hresp, err := client.LoadBalancersAPI.DeleteLoadBalancer(ctx, id).
 		Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		// 404 means the resource is already gone — treat as success
-		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-			return
-		}
-
+	// A 404 is already gone; a 200 with success:false is a refusal.
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete load balancer resource",
-			fmt.Sprintf("load balancer %d DELETE failed: %s",
-				id, errfmt.ErrMsg(err, hresp)),
+			fmt.Sprintf("load balancer %d DELETE failed: %s", id, err),
 		)
 	}
 }

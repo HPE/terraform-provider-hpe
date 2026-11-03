@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,7 @@ var _ MappedNullable = &ListStorageServers200ResponseAllOfStorageServersInner{}
 type ListStorageServers200ResponseAllOfStorageServersInner struct {
 	Id                   *int64                                                                 `json:"id,omitempty"`
 	Name                 *string                                                                `json:"name,omitempty"`
-	Type                 *ListStorageServers200ResponseAllOfStorageServersInnerType             `json:"type,omitempty"`
+	Type                 NullableListStorageServers200ResponseAllOfStorageServersInnerType      `json:"type,omitempty"`
 	Chassis              *ListStorageServers200ResponseAllOfStorageServersInnerChassis          `json:"chassis,omitempty"`
 	Visibility           *string                                                                `json:"visibility,omitempty"`
 	Description          NullableString                                                         `json:"description,omitempty"`
@@ -86,8 +86,8 @@ func (o ListStorageServers200ResponseAllOfStorageServersInner) ToMap() (map[stri
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if !IsNil(o.Chassis) {
 		toSerialize["chassis"] = o.Chassis
@@ -218,51 +218,6 @@ func (o ListStorageServers200ResponseAllOfStorageServersInner) ToMap() (map[stri
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListStorageServers200ResponseAllOfStorageServersInner struct {
-	value *ListStorageServers200ResponseAllOfStorageServersInner
-	isSet bool
-}
-
-func (v NullableListStorageServers200ResponseAllOfStorageServersInner) Get() *ListStorageServers200ResponseAllOfStorageServersInner {
-	return v.value
-}
-
-func (v *NullableListStorageServers200ResponseAllOfStorageServersInner) Set(val *ListStorageServers200ResponseAllOfStorageServersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListStorageServers200ResponseAllOfStorageServersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListStorageServers200ResponseAllOfStorageServersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListStorageServers200ResponseAllOfStorageServersInner(val *ListStorageServers200ResponseAllOfStorageServersInner) *NullableListStorageServers200ResponseAllOfStorageServersInner {
-	return &NullableListStorageServers200ResponseAllOfStorageServersInner{value: val, isSet: true}
-}
-
-func (v NullableListStorageServers200ResponseAllOfStorageServersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListStorageServers200ResponseAllOfStorageServersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListStorageServers200ResponseAllOfStorageServersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListStorageServers200ResponseAllOfStorageServersInner) UnmarshalJSON(data []byte) (err error) {

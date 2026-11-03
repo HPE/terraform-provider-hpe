@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddVDIPools200ResponseAnyOfVdiPoolAppsInner) ToMap() (map[string]interfa
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddVDIPools200ResponseAnyOfVdiPoolAppsInner struct {
-	value *AddVDIPools200ResponseAnyOfVdiPoolAppsInner
-	isSet bool
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolAppsInner) Get() *AddVDIPools200ResponseAnyOfVdiPoolAppsInner {
-	return v.value
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolAppsInner) Set(val *AddVDIPools200ResponseAnyOfVdiPoolAppsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolAppsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolAppsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVDIPools200ResponseAnyOfVdiPoolAppsInner(val *AddVDIPools200ResponseAnyOfVdiPoolAppsInner) *NullableAddVDIPools200ResponseAnyOfVdiPoolAppsInner {
-	return &NullableAddVDIPools200ResponseAnyOfVdiPoolAppsInner{value: val, isSet: true}
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolAppsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolAppsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolAppsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddVDIPools200ResponseAnyOfVdiPoolAppsInner) UnmarshalJSON(data []byte) (err error) {

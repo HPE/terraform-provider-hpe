@@ -102,6 +102,17 @@ func (c *OpsRampClient) SetAccessToken(token string) {
 }
 
 func (c *OpsRampClient) NewJsonRequest(method string, apiUrl string, payload []byte) ([]byte, error) {
+	return c.NewJsonRequestWithHeaders(method, apiUrl, payload, nil)
+}
+
+// NewJsonRequestWithHeaders behaves like NewJsonRequest but merges extraHeaders
+// into the request, overriding the default Content-Type/Accept if provided.
+func (c *OpsRampClient) NewJsonRequestWithHeaders(
+	method string,
+	apiUrl string,
+	payload []byte,
+	extraHeaders map[string]string,
+) ([]byte, error) {
 	validStatuses := map[int]struct{}{
 		http.StatusOK:       {},
 		http.StatusAccepted: {},
@@ -122,6 +133,10 @@ func (c *OpsRampClient) NewJsonRequest(method string, apiUrl string, payload []b
 		req.Header.Set("Authorization", "Bearer "+c.GetAccessToken())
 		req.Header.Add("Content-Type", "application/json")
 		req.Header.Add("Accept", "application/json")
+
+		for k, v := range extraHeaders {
+			req.Header.Set(k, v)
+		}
 
 		// Make the Request
 		res, err := c.Client.Do(req)

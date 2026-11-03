@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -50,51 +50,6 @@ func (o SaveClusterDatastoreRequestDatastoreDatastoreType) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableSaveClusterDatastoreRequestDatastoreDatastoreType struct {
-	value *SaveClusterDatastoreRequestDatastoreDatastoreType
-	isSet bool
-}
-
-func (v NullableSaveClusterDatastoreRequestDatastoreDatastoreType) Get() *SaveClusterDatastoreRequestDatastoreDatastoreType {
-	return v.value
-}
-
-func (v *NullableSaveClusterDatastoreRequestDatastoreDatastoreType) Set(val *SaveClusterDatastoreRequestDatastoreDatastoreType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveClusterDatastoreRequestDatastoreDatastoreType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveClusterDatastoreRequestDatastoreDatastoreType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveClusterDatastoreRequestDatastoreDatastoreType(val *SaveClusterDatastoreRequestDatastoreDatastoreType) *NullableSaveClusterDatastoreRequestDatastoreDatastoreType {
-	return &NullableSaveClusterDatastoreRequestDatastoreDatastoreType{value: val, isSet: true}
-}
-
-func (v NullableSaveClusterDatastoreRequestDatastoreDatastoreType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveClusterDatastoreRequestDatastoreDatastoreType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveClusterDatastoreRequestDatastoreDatastoreType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *SaveClusterDatastoreRequestDatastoreDatastoreType) UnmarshalJSON(data []byte) (err error) {

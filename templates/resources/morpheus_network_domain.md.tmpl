@@ -8,6 +8,17 @@ description: |-
 
 {{ .Description | trimspace }}
 
+## Write-only password
+
+The domain password is a write-only value: `domain_password_wo` is sent to Morpheus but never
+stored in Terraform state. Changes to it are detected through a private-state digest and surface
+as a change to the computed `write_only_revision` attribute, which plans an in-place update that
+re-sends the value. The deprecated `domain_password_wo_version` marker still forces a re-send when
+it changes, but is no longer required and will be removed in the 2.6 release.
+
+Morpheus also only honours `visibility` and `tenant_id` for the master tenant; a domain owned by a
+sub-tenant is always private, whatever the configuration asks for.
+
 ## Example Usage
 
 {{tffile "examples/resources/morpheus_network_domain/resource.tf"}}
@@ -19,3 +30,10 @@ description: |-
 Import is supported using the following syntax:
 
 {{codefile "shell" "examples/resources/morpheus_network_domain/import.sh" }}
+
+The write-only value `domain_password_wo` is not stored in state, so the import cannot tell whether
+the value in your configuration matches the appliance: it is taken as already applied, the plan
+after import is empty, and a later change to it is only detected once the resource is next updated
+for another reason (Terraform warns about this on every plan until then). To have changes detected
+from the start, append the sha256 digest of the configured write-only value to the import ID, as
+shown above.

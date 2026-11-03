@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -46,51 +46,6 @@ func (o InstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool) ToMap() (m
 	}
 
 	return toSerialize, nil
-}
-
-type NullableInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool struct {
-	value *InstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool
-	isSet bool
-}
-
-func (v NullableInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool) Get() *InstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool {
-	return v.value
-}
-
-func (v *NullableInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool) Set(val *InstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool(val *InstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool) *NullableInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool {
-	return &NullableInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool{value: val, isSet: true}
-}
-
-func (v NullableInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *InstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool) UnmarshalJSON(data []byte) (err error) {

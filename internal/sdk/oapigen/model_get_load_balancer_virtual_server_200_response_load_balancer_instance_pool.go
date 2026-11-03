@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) ToMap()
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool struct {
-	value *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool
-	isSet bool
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) Get() *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool {
-	return v.value
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) Set(val *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool(val *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool {
-	return &NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool{value: val, isSet: true}
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) UnmarshalJSON(data []byte) (err error) {

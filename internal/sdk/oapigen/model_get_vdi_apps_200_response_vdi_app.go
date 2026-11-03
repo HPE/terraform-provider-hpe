@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -74,51 +74,6 @@ func (o GetVDIApps200ResponseVdiApp) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetVDIApps200ResponseVdiApp struct {
-	value *GetVDIApps200ResponseVdiApp
-	isSet bool
-}
-
-func (v NullableGetVDIApps200ResponseVdiApp) Get() *GetVDIApps200ResponseVdiApp {
-	return v.value
-}
-
-func (v *NullableGetVDIApps200ResponseVdiApp) Set(val *GetVDIApps200ResponseVdiApp) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetVDIApps200ResponseVdiApp) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetVDIApps200ResponseVdiApp) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetVDIApps200ResponseVdiApp(val *GetVDIApps200ResponseVdiApp) *NullableGetVDIApps200ResponseVdiApp {
-	return &NullableGetVDIApps200ResponseVdiApp{value: val, isSet: true}
-}
-
-func (v NullableGetVDIApps200ResponseVdiApp) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetVDIApps200ResponseVdiApp) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetVDIApps200ResponseVdiApp) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetVDIApps200ResponseVdiApp) UnmarshalJSON(data []byte) (err error) {

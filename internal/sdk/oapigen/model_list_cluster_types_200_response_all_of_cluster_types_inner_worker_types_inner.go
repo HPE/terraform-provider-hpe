@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o ListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner) ToMap
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner struct {
-	value *ListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner
-	isSet bool
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner) Get() *ListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner {
-	return v.value
-}
-
-func (v *NullableListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner) Set(val *ListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner(val *ListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner) *NullableListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner {
-	return &NullableListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListClusterTypes200ResponseAllOfClusterTypesInnerWorkerTypesInner) UnmarshalJSON(data []byte) (err error) {

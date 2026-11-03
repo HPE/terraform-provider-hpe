@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -108,49 +108,4 @@ func (src UpdateClouds200ResponseAllOfZoneCredential) MarshalJSON() ([]byte, err
 	}
 
 	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
-}
-
-type NullableUpdateClouds200ResponseAllOfZoneCredential struct {
-	value *UpdateClouds200ResponseAllOfZoneCredential
-	isSet bool
-}
-
-func (v NullableUpdateClouds200ResponseAllOfZoneCredential) Get() *UpdateClouds200ResponseAllOfZoneCredential {
-	return v.value
-}
-
-func (v *NullableUpdateClouds200ResponseAllOfZoneCredential) Set(val *UpdateClouds200ResponseAllOfZoneCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateClouds200ResponseAllOfZoneCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateClouds200ResponseAllOfZoneCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateClouds200ResponseAllOfZoneCredential(val *UpdateClouds200ResponseAllOfZoneCredential) *NullableUpdateClouds200ResponseAllOfZoneCredential {
-	return &NullableUpdateClouds200ResponseAllOfZoneCredential{value: val, isSet: true}
-}
-
-func (v NullableUpdateClouds200ResponseAllOfZoneCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateClouds200ResponseAllOfZoneCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateClouds200ResponseAllOfZoneCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

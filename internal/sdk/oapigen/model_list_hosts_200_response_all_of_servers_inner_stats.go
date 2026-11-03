@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -29,9 +29,9 @@ type ListHosts200ResponseAllOfServersInnerStats struct {
 	CpuUserTime          *int64                 `json:"cpuUserTime,omitempty"`
 	CpuTotalTime         *int64                 `json:"cpuTotalTime,omitempty"`
 	MaxMemory            *int64                 `json:"maxMemory,omitempty"`
-	UsedMemory           *int64                 `json:"usedMemory,omitempty"`
+	UsedMemory           NullableInt64          `json:"usedMemory,omitempty"`
 	MaxStorage           *int64                 `json:"maxStorage,omitempty"`
-	UsedStorage          *int64                 `json:"usedStorage,omitempty"`
+	UsedStorage          NullableInt64          `json:"usedStorage,omitempty"`
 	ReservedStorage      *int64                 `json:"reservedStorage,omitempty"`
 	CpuUsage             *float32               `json:"cpuUsage,omitempty"`
 	FreeMemory           *int64                 `json:"freeMemory,omitempty"`
@@ -77,14 +77,14 @@ func (o ListHosts200ResponseAllOfServersInnerStats) ToMap() (map[string]interfac
 	if !IsNil(o.MaxMemory) {
 		toSerialize["maxMemory"] = o.MaxMemory
 	}
-	if !IsNil(o.UsedMemory) {
-		toSerialize["usedMemory"] = o.UsedMemory
+	if o.UsedMemory.IsSet() {
+		toSerialize["usedMemory"] = o.UsedMemory.Get()
 	}
 	if !IsNil(o.MaxStorage) {
 		toSerialize["maxStorage"] = o.MaxStorage
 	}
-	if !IsNil(o.UsedStorage) {
-		toSerialize["usedStorage"] = o.UsedStorage
+	if o.UsedStorage.IsSet() {
+		toSerialize["usedStorage"] = o.UsedStorage.Get()
 	}
 	if !IsNil(o.ReservedStorage) {
 		toSerialize["reservedStorage"] = o.ReservedStorage
@@ -110,51 +110,6 @@ func (o ListHosts200ResponseAllOfServersInnerStats) ToMap() (map[string]interfac
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListHosts200ResponseAllOfServersInnerStats struct {
-	value *ListHosts200ResponseAllOfServersInnerStats
-	isSet bool
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerStats) Get() *ListHosts200ResponseAllOfServersInnerStats {
-	return v.value
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerStats) Set(val *ListHosts200ResponseAllOfServersInnerStats) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerStats) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerStats) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListHosts200ResponseAllOfServersInnerStats(val *ListHosts200ResponseAllOfServersInnerStats) *NullableListHosts200ResponseAllOfServersInnerStats {
-	return &NullableListHosts200ResponseAllOfServersInnerStats{value: val, isSet: true}
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerStats) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerStats) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerStats) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListHosts200ResponseAllOfServersInnerStats) UnmarshalJSON(data []byte) (err error) {

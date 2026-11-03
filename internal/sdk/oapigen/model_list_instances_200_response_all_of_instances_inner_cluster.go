@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,10 +20,10 @@ var _ MappedNullable = &ListInstances200ResponseAllOfInstancesInnerCluster{}
 
 // ListInstances200ResponseAllOfInstancesInnerCluster struct for ListInstances200ResponseAllOfInstancesInnerCluster
 type ListInstances200ResponseAllOfInstancesInnerCluster struct {
-	Id                   *int64                                                  `json:"id,omitempty"`
-	Name                 *string                                                 `json:"name,omitempty"`
-	Type                 *ListInstances200ResponseAllOfInstancesInnerClusterType `json:"type,omitempty"`
-	AdditionalProperties map[string]interface{}                                  `json:",remain"`
+	Id                   *int64                                                         `json:"id,omitempty"`
+	Name                 *string                                                        `json:"name,omitempty"`
+	Type                 NullableListInstances200ResponseAllOfInstancesInnerClusterType `json:"type,omitempty"`
+	AdditionalProperties map[string]interface{}                                         `json:",remain"`
 }
 
 type _ListInstances200ResponseAllOfInstancesInnerCluster ListInstances200ResponseAllOfInstancesInnerCluster
@@ -44,8 +44,8 @@ func (o ListInstances200ResponseAllOfInstancesInnerCluster) ToMap() (map[string]
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -53,51 +53,6 @@ func (o ListInstances200ResponseAllOfInstancesInnerCluster) ToMap() (map[string]
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListInstances200ResponseAllOfInstancesInnerCluster struct {
-	value *ListInstances200ResponseAllOfInstancesInnerCluster
-	isSet bool
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerCluster) Get() *ListInstances200ResponseAllOfInstancesInnerCluster {
-	return v.value
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerCluster) Set(val *ListInstances200ResponseAllOfInstancesInnerCluster) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerCluster) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerCluster) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListInstances200ResponseAllOfInstancesInnerCluster(val *ListInstances200ResponseAllOfInstancesInnerCluster) *NullableListInstances200ResponseAllOfInstancesInnerCluster {
-	return &NullableListInstances200ResponseAllOfInstancesInnerCluster{value: val, isSet: true}
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerCluster) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerCluster) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerCluster) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListInstances200ResponseAllOfInstancesInnerCluster) UnmarshalJSON(data []byte) (err error) {

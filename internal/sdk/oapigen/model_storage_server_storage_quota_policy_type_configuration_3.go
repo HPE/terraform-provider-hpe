@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -47,51 +47,6 @@ func (o StorageServerStorageQuotaPolicyTypeConfiguration3) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableStorageServerStorageQuotaPolicyTypeConfiguration3 struct {
-	value *StorageServerStorageQuotaPolicyTypeConfiguration3
-	isSet bool
-}
-
-func (v NullableStorageServerStorageQuotaPolicyTypeConfiguration3) Get() *StorageServerStorageQuotaPolicyTypeConfiguration3 {
-	return v.value
-}
-
-func (v *NullableStorageServerStorageQuotaPolicyTypeConfiguration3) Set(val *StorageServerStorageQuotaPolicyTypeConfiguration3) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableStorageServerStorageQuotaPolicyTypeConfiguration3) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableStorageServerStorageQuotaPolicyTypeConfiguration3) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableStorageServerStorageQuotaPolicyTypeConfiguration3(val *StorageServerStorageQuotaPolicyTypeConfiguration3) *NullableStorageServerStorageQuotaPolicyTypeConfiguration3 {
-	return &NullableStorageServerStorageQuotaPolicyTypeConfiguration3{value: val, isSet: true}
-}
-
-func (v NullableStorageServerStorageQuotaPolicyTypeConfiguration3) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableStorageServerStorageQuotaPolicyTypeConfiguration3) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableStorageServerStorageQuotaPolicyTypeConfiguration3) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *StorageServerStorageQuotaPolicyTypeConfiguration3) UnmarshalJSON(data []byte) (err error) {

@@ -12,6 +12,8 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
@@ -57,6 +59,17 @@ func init() {
 			serverIDs, err := getServerIDs(instance)
 			if err != nil {
 				return nil, err
+			}
+
+			// Instance API first, as the resource does (MORPH-18513): it tears the VM
+			// down through the provisioning service. The server path below is the
+			// fallback for an instance Morpheus refuses to delete.
+			if id, ok := getsafe.GetOk(instance.Id); ok && id != nil {
+				result, hresp, err := client.InstancesAPI.DeleteInstance(ctx, *id).Force("on").
+					RemoveVolumes("on").ReleaseEIPs("on").ReleaseFloatingIps("on").Execute()
+				if errfmt.CheckDeleted(result, err, hresp) == nil {
+					return &http.Response{StatusCode: http.StatusOK}, nil
+				}
 			}
 
 			for _, serverID := range serverIDs {

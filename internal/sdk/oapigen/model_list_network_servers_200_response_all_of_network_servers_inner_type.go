@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o ListNetworkServers200ResponseAllOfNetworkServersInnerType) ToMap() (map[
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListNetworkServers200ResponseAllOfNetworkServersInnerType struct {
-	value *ListNetworkServers200ResponseAllOfNetworkServersInnerType
-	isSet bool
-}
-
-func (v NullableListNetworkServers200ResponseAllOfNetworkServersInnerType) Get() *ListNetworkServers200ResponseAllOfNetworkServersInnerType {
-	return v.value
-}
-
-func (v *NullableListNetworkServers200ResponseAllOfNetworkServersInnerType) Set(val *ListNetworkServers200ResponseAllOfNetworkServersInnerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListNetworkServers200ResponseAllOfNetworkServersInnerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListNetworkServers200ResponseAllOfNetworkServersInnerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListNetworkServers200ResponseAllOfNetworkServersInnerType(val *ListNetworkServers200ResponseAllOfNetworkServersInnerType) *NullableListNetworkServers200ResponseAllOfNetworkServersInnerType {
-	return &NullableListNetworkServers200ResponseAllOfNetworkServersInnerType{value: val, isSet: true}
-}
-
-func (v NullableListNetworkServers200ResponseAllOfNetworkServersInnerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListNetworkServers200ResponseAllOfNetworkServersInnerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListNetworkServers200ResponseAllOfNetworkServersInnerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListNetworkServers200ResponseAllOfNetworkServersInnerType) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ListPolicies200ResponseAllOfPoliciesInnerRole) ToMap() (map[string]inter
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListPolicies200ResponseAllOfPoliciesInnerRole struct {
-	value *ListPolicies200ResponseAllOfPoliciesInnerRole
-	isSet bool
-}
-
-func (v NullableListPolicies200ResponseAllOfPoliciesInnerRole) Get() *ListPolicies200ResponseAllOfPoliciesInnerRole {
-	return v.value
-}
-
-func (v *NullableListPolicies200ResponseAllOfPoliciesInnerRole) Set(val *ListPolicies200ResponseAllOfPoliciesInnerRole) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListPolicies200ResponseAllOfPoliciesInnerRole) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListPolicies200ResponseAllOfPoliciesInnerRole) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListPolicies200ResponseAllOfPoliciesInnerRole(val *ListPolicies200ResponseAllOfPoliciesInnerRole) *NullableListPolicies200ResponseAllOfPoliciesInnerRole {
-	return &NullableListPolicies200ResponseAllOfPoliciesInnerRole{value: val, isSet: true}
-}
-
-func (v NullableListPolicies200ResponseAllOfPoliciesInnerRole) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListPolicies200ResponseAllOfPoliciesInnerRole) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListPolicies200ResponseAllOfPoliciesInnerRole) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListPolicies200ResponseAllOfPoliciesInnerRole) UnmarshalJSON(data []byte) (err error) {

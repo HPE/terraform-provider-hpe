@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o ListClusterDatastores200ResponseAllOfDatastoresInnerZone) ToMap() (map[s
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListClusterDatastores200ResponseAllOfDatastoresInnerZone struct {
-	value *ListClusterDatastores200ResponseAllOfDatastoresInnerZone
-	isSet bool
-}
-
-func (v NullableListClusterDatastores200ResponseAllOfDatastoresInnerZone) Get() *ListClusterDatastores200ResponseAllOfDatastoresInnerZone {
-	return v.value
-}
-
-func (v *NullableListClusterDatastores200ResponseAllOfDatastoresInnerZone) Set(val *ListClusterDatastores200ResponseAllOfDatastoresInnerZone) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterDatastores200ResponseAllOfDatastoresInnerZone) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterDatastores200ResponseAllOfDatastoresInnerZone) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterDatastores200ResponseAllOfDatastoresInnerZone(val *ListClusterDatastores200ResponseAllOfDatastoresInnerZone) *NullableListClusterDatastores200ResponseAllOfDatastoresInnerZone {
-	return &NullableListClusterDatastores200ResponseAllOfDatastoresInnerZone{value: val, isSet: true}
-}
-
-func (v NullableListClusterDatastores200ResponseAllOfDatastoresInnerZone) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterDatastores200ResponseAllOfDatastoresInnerZone) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterDatastores200ResponseAllOfDatastoresInnerZone) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListClusterDatastores200ResponseAllOfDatastoresInnerZone) UnmarshalJSON(data []byte) (err error) {

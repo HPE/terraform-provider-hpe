@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddJobs200ResponseAllOfJobSecurityPackage) ToMap() (map[string]interface
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddJobs200ResponseAllOfJobSecurityPackage struct {
-	value *AddJobs200ResponseAllOfJobSecurityPackage
-	isSet bool
-}
-
-func (v NullableAddJobs200ResponseAllOfJobSecurityPackage) Get() *AddJobs200ResponseAllOfJobSecurityPackage {
-	return v.value
-}
-
-func (v *NullableAddJobs200ResponseAllOfJobSecurityPackage) Set(val *AddJobs200ResponseAllOfJobSecurityPackage) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddJobs200ResponseAllOfJobSecurityPackage) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddJobs200ResponseAllOfJobSecurityPackage) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddJobs200ResponseAllOfJobSecurityPackage(val *AddJobs200ResponseAllOfJobSecurityPackage) *NullableAddJobs200ResponseAllOfJobSecurityPackage {
-	return &NullableAddJobs200ResponseAllOfJobSecurityPackage{value: val, isSet: true}
-}
-
-func (v NullableAddJobs200ResponseAllOfJobSecurityPackage) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddJobs200ResponseAllOfJobSecurityPackage) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddJobs200ResponseAllOfJobSecurityPackage) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddJobs200ResponseAllOfJobSecurityPackage) UnmarshalJSON(data []byte) (err error) {

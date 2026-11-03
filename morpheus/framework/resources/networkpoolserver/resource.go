@@ -9,20 +9,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
 
 var (
-	_ resource.Resource                = &networkPoolServerResource{}
-	_ resource.ResourceWithConfigure   = &networkPoolServerResource{}
-	_ resource.ResourceWithImportState = &networkPoolServerResource{}
+	_ resource.Resource                   = &networkPoolServerResource{}
+	_ resource.ResourceWithConfigure      = &networkPoolServerResource{}
+	_ resource.ResourceWithImportState    = &networkPoolServerResource{}
+	_ resource.ResourceWithModifyPlan     = &networkPoolServerResource{}
+	_ resource.ResourceWithValidateConfig = &networkPoolServerResource{}
 )
 
 type networkPoolServerResource struct {
@@ -140,9 +145,8 @@ func (r *networkPoolServerResource) Create(
 		infoblox.Credential = cred
 	}
 
-	serverReq := sdk.CreateNetworkPoolServerRequestNetworkPoolServer{
-		InfobloxNetworkPoolServer: infoblox,
-	}
+	// Convert the superset to the typed variant for the type (see request.go).
+	serverReq := createRequest(typeCode, infoblox, appIDValue(plan.AppId))
 
 	result, httpResp, err := client.NetworksAPI.CreateNetworkPoolServer(ctx).
 		CreateNetworkPoolServerRequest(sdk.CreateNetworkPoolServerRequest{
@@ -161,6 +165,14 @@ func (r *networkPoolServerResource) Create(
 	}
 
 	id := *result.NetworkPoolServer.Id
+
+	// Store the configured-value digests now the create POST succeeded, before
+	// the read-back's early returns -- a read-back failure must not discard
+	// them and make the next apply see a spurious change.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	readResult, httpResp, err := client.NetworksAPI.GetNetworkPoolServer(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -181,6 +193,11 @@ func (r *networkPoolServerResource) Create(
 		return
 	}
 	mapReadResponseToModel(ctx, &plan, readResult.NetworkPoolServer)
+
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	// Record the appliance-side drift baseline now the read-back succeeded;
+	// the configured-value digests were already stored above after the POST.
+	resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, readResult.NetworkPoolServer)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -221,6 +238,16 @@ func (r *networkPoolServerResource) Read(ctx context.Context, req resource.ReadR
 	}
 	mapReadResponseToModel(ctx, &state, server)
 
+	// Compare the appliance's hash of the stored secret with the baseline
+	// recorded when the provider last sent it; an inequality means the secret
+	// was changed out of band and the next plan re-sends the configured value.
+	drifted, driftDiags := wo.CheckDrift(ctx, resp.Private, server)
+	resp.Diagnostics.Append(driftDiags...)
+	if len(drifted) > 0 {
+		tflog.Info(ctx, "write-only value changed on the appliance",
+			map[string]any{"attributes": drifted})
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
 	// Fill any schema-declared default the API omitted (null in state) so an
@@ -259,15 +286,21 @@ func (r *networkPoolServerResource) Update(
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	infobloxUpdate := &sdk.InfobloxNetworkPoolServerUpdate{}
 	infobloxUpdate.Name = plan.Name.ValueStringPointer()
-	if !plan.ServiceUrl.IsNull() {
-		infobloxUpdate.ServiceUrl = *sdk.NewNullableString(plan.ServiceUrl.ValueStringPointer())
-	}
-	if !plan.ServiceUsername.IsNull() {
-		infobloxUpdate.ServiceUsername = *sdk.NewNullableString(plan.ServiceUsername.ValueStringPointer())
-	}
-	if !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
+	clearable.NullableString(pending, "service_url", plan.ServiceUrl, &infobloxUpdate.ServiceUrl)
+	clearable.NullableString(pending, "service_username", plan.ServiceUsername, &infobloxUpdate.ServiceUsername)
+	// Re-sent when ModifyPlan marked write_only_revision unknown (its digest
+	// changed, or the deprecated marker did). See write_only.go.
+	if wodigest.Resend(ctx, req.Plan) && !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
 		infobloxUpdate.ServicePassword = *sdk.NewNullableString(servicePasswordWo.ValueStringPointer())
 	}
 	if !plan.IgnoreSsl.IsNull() {
@@ -276,15 +309,9 @@ func (r *networkPoolServerResource) Update(
 	if !plan.Enabled.IsNull() {
 		infobloxUpdate.Enabled = plan.Enabled.ValueBoolPointer()
 	}
-	if !plan.NetworkFilter.IsNull() {
-		infobloxUpdate.NetworkFilter = *sdk.NewNullableString(plan.NetworkFilter.ValueStringPointer())
-	}
-	if !plan.ZoneFilter.IsNull() {
-		infobloxUpdate.ZoneFilter = *sdk.NewNullableString(plan.ZoneFilter.ValueStringPointer())
-	}
-	if !plan.TenantMatch.IsNull() {
-		infobloxUpdate.TenantMatch = *sdk.NewNullableString(plan.TenantMatch.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "network_filter", plan.NetworkFilter, &infobloxUpdate.NetworkFilter)
+	clearable.NullableString(pending, "zone_filter", plan.ZoneFilter, &infobloxUpdate.ZoneFilter)
+	clearable.NullableString(pending, "tenant_match", plan.TenantMatch, &infobloxUpdate.TenantMatch)
 	if !plan.ServiceMode.IsNull() {
 		infobloxUpdate.ServiceMode = plan.ServiceMode.ValueStringPointer()
 	}
@@ -308,9 +335,8 @@ func (r *networkPoolServerResource) Update(
 		infobloxUpdate.Credential = cred
 	}
 
-	serverReq := sdk.UpdateNetworkPoolServerRequestNetworkPoolServer{
-		InfobloxNetworkPoolServerUpdate: infobloxUpdate,
-	}
+	// type_code replaces on change, so the state's code is the server's type.
+	serverReq := updateRequest(plan.TypeCode.ValueString(), infobloxUpdate, appIDValue(plan.AppId))
 
 	_, httpResp, err := client.NetworksAPI.UpdateNetworkPoolServer(ctx, id).
 		UpdateNetworkPoolServerRequest(sdk.UpdateNetworkPoolServerRequest{
@@ -338,6 +364,18 @@ func (r *networkPoolServerResource) Update(
 	}
 	mapReadResponseToModel(ctx, &plan, server)
 
+	// write_only_revision is not in the API. Keep the prior value unless a
+	// write-only value was re-sent (ModifyPlan marked it unknown); and always
+	// record the digests of the configured values. See write_only.go.
+	var priorState NetworkPoolServerModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
+	plan.WriteOnlyRevision = priorState.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	// Re-baseline the appliance-side drift hash from the read-back object.
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, server)...)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -361,8 +399,8 @@ func (r *networkPoolServerResource) Delete(
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.NetworksAPI.DeleteNetworkPoolServer(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.NetworksAPI.DeleteNetworkPoolServer(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "network_pool_server", "", err, httpResp)
 
 		return
@@ -374,9 +412,15 @@ func (r *networkPoolServerResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.ParseInt(req.ID, 10, 64)
+	// "<id>" or "<id>#service_password_wo=<sha256 hex>": see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.ParseInt(rawID, 10, 64)
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", rawID, err))
 
 		return
 	}
@@ -466,6 +510,15 @@ func mapReadResponseToModel(
 				model.InventoryExisting = types.BoolValue(convert.StringToBool(ctx, val).ValueBool())
 			}
 		}
+		// app_id (phpIPAM config.appId): mirror what the appliance holds, so a
+		// server-side change surfaces as drift. The appliance refuses an empty
+		// value on create and update, so an empty echo carries no information
+		// and the plan/state value is kept.
+		if isPhpIPAM(server) {
+			if str, ok := server.Config["appId"].(string); ok && str != "" {
+				model.AppId = types.StringValue(str)
+			}
+		}
 	}
 }
 
@@ -514,4 +567,18 @@ func resolveNetworkPoolServerTypeCode(
 	)
 
 	return "", diags
+}
+
+// appIDValue returns the planned app_id, or nil when it is not set.
+func appIDValue(v types.String) *string {
+	if v.IsNull() || v.IsUnknown() {
+		return nil
+	}
+
+	return v.ValueStringPointer()
+}
+
+// isPhpIPAM reports whether the read pool server is of the phpIPAM type.
+func isPhpIPAM(server *sdk.GetNetworkPoolServer200ResponseNetworkPoolServer) bool {
+	return server.Type != nil && server.Type.Code != nil && *server.Type.Code == typeCodePhpIPAM
 }

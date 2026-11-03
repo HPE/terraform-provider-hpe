@@ -64,11 +64,22 @@ func (d *DataSource) Read(
 		return
 	}
 
-	rs, hresp, err := apiClient.StorageAPI.ListStorageVolumes(ctx).
+	listReq := apiClient.StorageAPI.ListStorageVolumes(ctx).
 		Max(listMax).
 		Sort("id").
-		Direction("asc").
-		Execute()
+		Direction("asc")
+
+	// include_tenants / tenant_id are list-endpoint query parameters (master
+	// tenant only). Pass them through when configured; they are Optional+Computed
+	// inputs the API does not echo, so they are preserved as configured below.
+	if !config.IncludeTenants.IsNull() && !config.IncludeTenants.IsUnknown() {
+		listReq = listReq.IncludeTenants(config.IncludeTenants.ValueBool())
+	}
+	if !config.TenantId.IsNull() && !config.TenantId.IsUnknown() {
+		listReq = listReq.TenantId(config.TenantId.ValueInt64())
+	}
+
+	rs, hresp, err := listReq.Execute()
 	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(summary, fmt.Sprintf("LIST failed for storage volumes: %s",
 			providererrors.ErrMsg(err, hresp)))

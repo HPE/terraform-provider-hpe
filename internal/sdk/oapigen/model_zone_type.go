@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -28,6 +28,7 @@ type ZoneType struct {
 	AutoCapacity                  *bool                                              `json:"autoCapacity,omitempty"`
 	MigrationTarget               *bool                                              `json:"migrationTarget,omitempty"`
 	HasAffinityGroups             *bool                                              `json:"hasAffinityGroups,omitempty"`
+	HasHostVmGroups               *bool                                              `json:"hasHostVmGroups,omitempty"`
 	HasDatastores                 *bool                                              `json:"hasDatastores,omitempty"`
 	HasNetworks                   *bool                                              `json:"hasNetworks,omitempty"`
 	HasResourcePools              *bool                                              `json:"hasResourcePools,omitempty"`
@@ -92,6 +93,9 @@ func (o ZoneType) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.HasAffinityGroups) {
 		toSerialize["hasAffinityGroups"] = o.HasAffinityGroups
+	}
+	if !IsNil(o.HasHostVmGroups) {
+		toSerialize["hasHostVmGroups"] = o.HasHostVmGroups
 	}
 	if !IsNil(o.HasDatastores) {
 		toSerialize["hasDatastores"] = o.HasDatastores
@@ -177,51 +181,6 @@ func (o ZoneType) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableZoneType struct {
-	value *ZoneType
-	isSet bool
-}
-
-func (v NullableZoneType) Get() *ZoneType {
-	return v.value
-}
-
-func (v *NullableZoneType) Set(val *ZoneType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableZoneType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableZoneType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableZoneType(val *ZoneType) *NullableZoneType {
-	return &NullableZoneType{value: val, isSet: true}
-}
-
-func (v NullableZoneType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableZoneType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableZoneType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ZoneType) UnmarshalJSON(data []byte) (err error) {

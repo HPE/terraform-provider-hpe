@@ -31,17 +31,19 @@ resource "hpe_morpheus_storage_bucket" "example" {
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `access_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The access key for the storage bucket.
-- `access_key_version` (Number) Access key version. Used to determine if access_key has been updated.
+- `access_key_version` (Number, Deprecated) Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
 - `bucket_name` (String) The name of the bucket.
 - `default_backup_target` (Boolean) Whether this is the default backup target.
 - `endpoint` (String) The endpoint URL for the storage bucket.
 - `retention_days` (Number) The number of days to retain files before deletion.
 - `secret_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The secret key for the storage bucket.
-- `secret_key_version` (Number) Secret key version. Used to determine if secret_key has been updated.
+- `secret_key_version` (Number, Deprecated) Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
 
 ### Read-Only
 
 - `id` (Number) The ID of the storage bucket.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which one of the write-only values (access_key, secret_key) was last
+sent to Morpheus. Changes whenever one of those values changes; not configurable.
 
 ## Import
 
@@ -50,3 +52,17 @@ Import is supported using the resource ID.
 ```bash
 terraform import hpe_morpheus_storage_bucket.example 123
 ```
+
+The write-only values `access_key`, `secret_key` are not stored in state, so the import
+cannot tell whether the values in your configuration match the appliance: they are taken as already
+applied, the plan after import is empty, and a later change to them is only detected once the
+resource is next updated for another reason (Terraform warns about this on every plan until then).
+To have changes detected from the start, append the sha256 digest of each configured write-only
+value to the import ID:
+
+```shell
+terraform import hpe_morpheus_storage_bucket.example "123#access_key=<sha256 hex>&secret_key=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
+`id = "123#access_key=${sha256(var.access_key)}"`.

@@ -14,11 +14,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
@@ -48,6 +51,7 @@ var (
 	_ resource.Resource                = &storageServerResource{}
 	_ resource.ResourceWithConfigure   = &storageServerResource{}
 	_ resource.ResourceWithImportState = &storageServerResource{}
+	_ resource.ResourceWithModifyPlan  = &storageServerResource{}
 )
 
 type storageServerResource struct {
@@ -119,8 +123,11 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 	if !plan.ServiceUsername.IsNull() {
 		body.ServiceUsername = plan.ServiceUsername.ValueStringPointer()
 	}
-	if !plan.ServicePasswordWo.IsNull() && !plan.ServicePasswordWo.IsUnknown() {
-		body.ServicePassword = plan.ServicePasswordWo.ValueStringPointer()
+	// service_password_wo is write-only: its value is only in the configuration.
+	var servicePasswordWo types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("service_password_wo"), &servicePasswordWo)...)
+	if !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
+		body.ServicePassword = servicePasswordWo.ValueStringPointer()
 	}
 
 	// Credential: use credential_id for stored credentials
@@ -172,6 +179,14 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 	id := *ss.Id
 	plan.Id = types.Int64Value(id)
 
+	// Store the configured-value digests now the create POST succeeded, before
+	// the read-back's early returns -- a read-back failure must not discard
+	// them and make the next apply see a spurious change.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Helper to taint the resource state on an error after the POST request
 	taintResourceState := func(id int64) {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
@@ -205,6 +220,10 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 		return response, backoff.RetryAfter(5)
 	}
 
+	// observed captures the read-back object so the appliance-side drift
+	// baseline can be recorded after the create completes.
+	var observed *sdk.GetStorageServers200ResponseStorageServer
+
 	if r, err := backoff.Retry(
 		ctx,
 		waitForReady,
@@ -236,8 +255,16 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 		}
 
 		mapGetResponseToModel(ctx, &plan, storageServer, &resp.Diagnostics)
+
+		observed = storageServer
 	}
 
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	// Record the appliance-side drift baseline now the read-back succeeded;
+	// the configured-value digests were already stored above after the POST.
+	resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, observed)...)
+
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -278,6 +305,16 @@ func (r *storageServerResource) Read(ctx context.Context, req resource.ReadReque
 
 	mapGetResponseToModel(ctx, &state, ss, &resp.Diagnostics)
 
+	// Compare the appliance's hash of the stored secret with the baseline
+	// recorded when the provider last sent it; an inequality means the secret
+	// was changed out of band and the next plan re-sends the configured value.
+	drifted, driftDiags := wo.CheckDrift(ctx, resp.Private, ss)
+	resp.Diagnostics.Append(driftDiags...)
+	if len(drifted) > 0 {
+		tflog.Info(ctx, "write-only value changed on the appliance",
+			map[string]any{"attributes": drifted})
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
 	// Fill any schema-declared default the API omitted (null in state) so an
@@ -313,30 +350,35 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdateStorageServersRequestStorageServer{
 		Name: plan.Name.ValueStringPointer(),
 		Type: plan.Type.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "description", plan.Description, &body.Description)
 	if !plan.Enabled.IsNull() {
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 	if !plan.Visibility.IsNull() {
 		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
-	if !plan.ServiceHost.IsNull() {
-		body.ServiceHost = plan.ServiceHost.ValueStringPointer()
-	}
-	if !plan.ServiceUrl.IsNull() {
-		body.ServiceUrl = plan.ServiceUrl.ValueStringPointer()
-	}
-	if !plan.ServiceUsername.IsNull() {
-		body.ServiceUsername = plan.ServiceUsername.ValueStringPointer()
-	}
-	if !plan.ServicePasswordWo.IsNull() && !plan.ServicePasswordWo.IsUnknown() {
-		body.ServicePassword = plan.ServicePasswordWo.ValueStringPointer()
+	clearable.NullableString(pending, "service_host", plan.ServiceHost, &body.ServiceHost)
+	clearable.NullableString(pending, "service_url", plan.ServiceUrl, &body.ServiceUrl)
+	clearable.NullableString(pending, "service_username", plan.ServiceUsername, &body.ServiceUsername)
+	// service_password_wo is write-only: its value is only in the configuration.
+	// Re-sent when ModifyPlan marked write_only_revision unknown (its digest
+	// changed, or the deprecated marker did). See write_only.go.
+	var servicePasswordWo types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("service_password_wo"), &servicePasswordWo)...)
+	if wodigest.Resend(ctx, req.Plan) && !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
+		body.ServicePassword = servicePasswordWo.ValueStringPointer()
 	}
 
 	// Credential
@@ -347,10 +389,9 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 		}
 	}
 
-	// Tenants
-	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
-		var tenantIds []int64
-		resp.Diagnostics.Append(plan.Tenants.ElementsAs(ctx, &tenantIds, false)...)
+	// Tenants: the planned list, or an empty list when being cleared
+	if tenantIds, ok, ldiags := pending.Int64s(ctx, "tenants", plan.Tenants); ok {
+		resp.Diagnostics.Append(ldiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -396,6 +437,10 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 		return response, backoff.RetryAfter(5)
 	}
 
+	// observed captures the read-back object so the appliance-side drift
+	// baseline can be recorded after the update completes.
+	var observed *sdk.GetStorageServers200ResponseStorageServer
+
 	if r, err := backoff.Retry(
 		ctx,
 		waitForReady,
@@ -432,8 +477,23 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 		}
 
 		mapGetResponseToModel(ctx, &plan, storageServer, &resp.Diagnostics)
+
+		observed = storageServer
 	}
 
+	// write_only_revision is not in the API. Keep the prior value unless a
+	// write-only value was re-sent (ModifyPlan marked it unknown); and always
+	// record the digests of the configured values. See write_only.go.
+	var priorState StorageServerModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
+	plan.WriteOnlyRevision = priorState.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	// Re-baseline the appliance-side drift hash from the read-back object.
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, observed)...)
+
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -463,8 +523,8 @@ func (r *storageServerResource) Delete(ctx context.Context, req resource.DeleteR
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.StorageAPI.RemoveStorageServers(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.StorageAPI.RemoveStorageServers(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "storage_server", "", err, httpResp)
 
 		return
@@ -505,9 +565,15 @@ func (r *storageServerResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.ParseInt(req.ID, 10, 64)
+	// "<id>" or "<id>#service_password_wo=<sha256 hex>": see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.ParseInt(rawID, 10, 64)
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", rawID, err))
 
 		return
 	}

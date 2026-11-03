@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -65,51 +65,6 @@ func (o UpdateStorageBuckets200ResponseAllOfStorageBucketConfig) ToMap() (map[st
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateStorageBuckets200ResponseAllOfStorageBucketConfig struct {
-	value *UpdateStorageBuckets200ResponseAllOfStorageBucketConfig
-	isSet bool
-}
-
-func (v NullableUpdateStorageBuckets200ResponseAllOfStorageBucketConfig) Get() *UpdateStorageBuckets200ResponseAllOfStorageBucketConfig {
-	return v.value
-}
-
-func (v *NullableUpdateStorageBuckets200ResponseAllOfStorageBucketConfig) Set(val *UpdateStorageBuckets200ResponseAllOfStorageBucketConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateStorageBuckets200ResponseAllOfStorageBucketConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateStorageBuckets200ResponseAllOfStorageBucketConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateStorageBuckets200ResponseAllOfStorageBucketConfig(val *UpdateStorageBuckets200ResponseAllOfStorageBucketConfig) *NullableUpdateStorageBuckets200ResponseAllOfStorageBucketConfig {
-	return &NullableUpdateStorageBuckets200ResponseAllOfStorageBucketConfig{value: val, isSet: true}
-}
-
-func (v NullableUpdateStorageBuckets200ResponseAllOfStorageBucketConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateStorageBuckets200ResponseAllOfStorageBucketConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateStorageBuckets200ResponseAllOfStorageBucketConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateStorageBuckets200ResponseAllOfStorageBucketConfig) UnmarshalJSON(data []byte) (err error) {

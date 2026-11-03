@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -105,51 +105,6 @@ func (o GetStorageBuckets200ResponseStorageBucket) ToMap() (map[string]interface
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetStorageBuckets200ResponseStorageBucket struct {
-	value *GetStorageBuckets200ResponseStorageBucket
-	isSet bool
-}
-
-func (v NullableGetStorageBuckets200ResponseStorageBucket) Get() *GetStorageBuckets200ResponseStorageBucket {
-	return v.value
-}
-
-func (v *NullableGetStorageBuckets200ResponseStorageBucket) Set(val *GetStorageBuckets200ResponseStorageBucket) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetStorageBuckets200ResponseStorageBucket) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetStorageBuckets200ResponseStorageBucket) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetStorageBuckets200ResponseStorageBucket(val *GetStorageBuckets200ResponseStorageBucket) *NullableGetStorageBuckets200ResponseStorageBucket {
-	return &NullableGetStorageBuckets200ResponseStorageBucket{value: val, isSet: true}
-}
-
-func (v NullableGetStorageBuckets200ResponseStorageBucket) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetStorageBuckets200ResponseStorageBucket) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetStorageBuckets200ResponseStorageBucket) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetStorageBuckets200ResponseStorageBucket) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o UpdateNetworkRouterRequest) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateNetworkRouterRequest struct {
-	value *UpdateNetworkRouterRequest
-	isSet bool
-}
-
-func (v NullableUpdateNetworkRouterRequest) Get() *UpdateNetworkRouterRequest {
-	return v.value
-}
-
-func (v *NullableUpdateNetworkRouterRequest) Set(val *UpdateNetworkRouterRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetworkRouterRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetworkRouterRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetworkRouterRequest(val *UpdateNetworkRouterRequest) *NullableUpdateNetworkRouterRequest {
-	return &NullableUpdateNetworkRouterRequest{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetworkRouterRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetworkRouterRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetworkRouterRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateNetworkRouterRequest) UnmarshalJSON(data []byte) (err error) {

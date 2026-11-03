@@ -36,6 +36,19 @@ resource "hpe_morpheus_cluster" "example_hvm" {
     cpu_arch          = "x86_64"
     cpu_model         = "host-model"
     power_policy      = "balanced"
+
+    # HVM 2.0 network configuration. Only honoured when the selected cluster
+    # layout has clusterVersion 2.0 or greater; otherwise Morpheus silently
+    # drops these fields.
+    virt_switch_name = "vSwitch0"
+    dns1             = "8.8.8.8"
+    dns2             = "8.8.4.4"
+    dns3             = "1.1.1.1"
+    search_domain    = "example.com"
+    ntp1             = "0.pool.ntp.org"
+    ntp2             = "1.pool.ntp.org"
+    proxy            = "http://proxy.example.com:3128"
+    no_proxy         = "localhost,127.0.0.1,.example.com"
   }
 
   server = {
@@ -76,6 +89,16 @@ resource "hpe_morpheus_cluster" "example_hvm" {
   }
 }
 ```
+
+!> **Set `config_hvm.overlay_interface_name` on HVM 1.x layouts.** It names the host network
+interface used for the overlay (VXLAN) Open vSwitch bridge, for example `ens193`. Morpheus treats it
+as optional — the overlay bridge is created only when it is set, and Morpheus recommends it whenever
+overlay networks will be used — and HVM 2.0 (virtual switch) layouts do not use it at all. However,
+on Morpheus 9.0.x with an HVM 1.x layout, omitting it makes every host fail to build at the
+"HVM Host Build OVS Interface" step (`build-ovs.py` exits with `KeyError: None`), so set it until the
+appliance fix is available. The provider does not make it required, because the API does not.
+
+~> **Terraform 1.14 caveat.** Terraform 1.14 silently ignores unknown attribute names nested inside a single-nested attribute such as `config_hvm`. A misspelled field name (for example `dns_1` instead of `dns1`) passes `terraform validate` and `terraform plan` without any error or warning on affected CLI versions, so the intended value is quietly dropped and the cluster is built without it. Double-check the spelling of `config_hvm` fields against the schema below. (See also the provider README.)
 
 ## Generic Cluster Config using the Dynamic Config
 
@@ -175,6 +198,8 @@ resource "hpe_morpheus_cluster" "example_generic_hvm" {
 - `id` (Number) The ID of the cluster
 - `service_url` (String)
 - `uuid` (String)
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (server.ssh_password_wo) was last
+sent to Morpheus. Changes whenever the cluster is created; not configurable.
 
 <a id="nestedatt--server"></a>
 ### Nested Schema for `server`
@@ -197,7 +222,9 @@ It should be passed as an array of Objects with the following attributes (see [b
 - `ssh_hosts` (Attributes Set) Array of Host IPs and Names. This is used in conjunction with sshUsername and sshPassword/sshKeyPair to add existing hosts such as with HPE VM clusters. (see [below for nested schema](#nestedatt--server--ssh_hosts))
 - `ssh_key_pair_id` (Number) SSH Key Pair ID.
 - `ssh_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only)
-- `ssh_password_wo_version` (Number) SSH password version. Used to determine if ssh_password_wo has been updated.
+- `ssh_password_wo_version` (Number, Deprecated) Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is
+no longer needed and will be removed in the 2.6 release. The SSH password cannot be changed
+after the cluster is created, so a change replaces the cluster.
 - `ssh_port` (Number) The port which the worker's SSH server is listening on.
 - `ssh_username` (String) SSH Username
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--server--tags))
@@ -270,10 +297,19 @@ Optional:
 - `compute_interface_name` (String)
 - `compute_vlans` (String)
 - `create_user` (Boolean) Whether to create a user on the cluster's workers. The default is 'false'.
+- `dns1` (String) Primary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+- `dns2` (String) Secondary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+- `dns3` (String) Tertiary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
 - `dynamic_placement` (Boolean) When enabled, Dynamic Placement will automatically balance VMs across cluster hosts based on resource utilization. When disabled, VMs will only migrate to a new host if they are pinned to a specific host or failed over and not running on the preferred host.
-- `overlay_interface_name` (String)
+- `no_proxy` (String) Comma-separated list of hosts that bypass the proxy. Requires a cluster layout with clusterVersion 2.0 or greater.
+- `ntp1` (String) Primary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+- `ntp2` (String) Secondary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+- `overlay_interface_name` (String) Name of the host network interface used for the overlay (VXLAN) Open vSwitch bridge, for example `ens193`. Optional: Morpheus creates the overlay bridge only when it is set, and recommends setting it whenever overlay networks will be used. Applies to HVM 1.x cluster layouts; HVM 2.0 (virtual switch) layouts do not use it. Note that on Morpheus 9.0.x with an HVM 1.x layout, omitting it makes every host fail to build at the "HVM Host Build OVS Interface" step (`build-ovs.py` exits with `KeyError: None`), so set it until the appliance fix is available.
+- `proxy` (String) Proxy server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+- `search_domain` (String) DNS search domain for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
 - `storage_interface_name` (String)
 - `vcpu_placement_mode` (String)
+- `virt_switch_name` (String) Name of the HVM virtual switch. Requires a cluster layout with clusterVersion 2.0 or greater.
 
 
 <a id="nestedatt--timeouts"></a>
@@ -289,6 +325,20 @@ Optional:
 ## Update limitations
 
 ~> Update support on `hpe_morpheus_cluster` is limited - only basic cluster information such as name, description, and labels can be updated. Additionally, certain `config` properties can be updated. Refer to the resource schema for full information.
+
+~> The SSH password (`server.ssh_password_wo`) is set when the cluster is created and cannot be changed afterwards. A change to the configured value therefore plans a **replacement** of the cluster; the read-only `write_only_revision` records when it was last sent. The deprecated `server.ssh_password_wo_version` marker still works for the 2.2 release (changing it plans the same replacement; removing it does not) and will be removed in 2.6. A change to `server.ssh_password_wo` made outside Terraform (in the UI or by another tool) is reported as a warning on the next plan; because the attribute replaces the cluster, set it to the appliance's value or replace the cluster.
+
+~> The HVM 2.0 network fields `dns1`, `dns2`, `dns3`, `search_domain`, `ntp1`, `ntp2`, `proxy`, and `no_proxy` can be changed on an existing cluster and are applied as an **in-place update** rather than a replacement. Morpheus reconciles the new values onto the cluster hosts through its daily node-settings drift-correction sync, so the hosts converge within a day. Two caveats follow: (1) convergence is **asynchronous** — `terraform apply` returns before the hosts are reconfigured; and (2) the reconciler only pushes non-empty values, so clearing a field (setting it back to empty) updates Terraform state but does not roll the hosts back on its own. By contrast, `virt_switch_name` has create/scale-out semantics (virtual switches are provisioned per host when a host is added), so a change to it still forces a **replacement**.
+
+## Cluster layout upgrades
+
+~> Changing `layout_id` forces the cluster to be **replaced** (destroyed and recreated). A layout reassignment in Morpheus only re-points the cluster's server group at the new layout; it does not reconfigure, re-provision, or roll the existing hosts, so it is not a safely idempotent in-place update that Terraform can converge to. The provider therefore treats a `layout_id` change as a replacement rather than an in-place update.
+
+-> If a cluster's layout is changed out-of-band (for example, through the Morpheus UI), a subsequent `terraform plan` will detect the changed `layout_id` and propose a destructive replacement. Running `terraform apply -refresh-only` updates Terraform state to the observed `layout_id`, but it does **not** converge on its own: the configuration still specifies the old `layout_id`, so the next plan proposes the replacement again. To durably reconcile without recreating the cluster, either update `layout_id` in your configuration to match the reassigned layout, or add `lifecycle { ignore_changes = [layout_id, config_hvm] }` to the resource.
+
+## Scaling HVM 2.0 clusters
+
+~> The set of cluster hosts is fixed at create time by `server.ssh_hosts`. Changing `server.ssh_hosts` (for example, to add or remove a host) forces the cluster to be **replaced** rather than scaled in place; the provider does not support adding or removing hosts on an existing cluster. Plan host changes accordingly, since a replacement destroys and recreates the cluster.
 
 ## Import
 

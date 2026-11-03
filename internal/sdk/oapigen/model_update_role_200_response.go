@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -44,6 +44,7 @@ type UpdateRole200Response struct {
 	TaskSetPermissions          []UpdateRole200ResponseAllOfTaskSetPermissionsInner         `json:"taskSetPermissions,omitempty"`
 	GlobalClusterTypeAccess     *string                                                     `json:"globalClusterTypeAccess,omitempty"`
 	ClusterTypePermissions      []UpdateRole200ResponseAllOfClusterTypePermissionsInner     `json:"clusterTypePermissions,omitempty"`
+	TenantCopiesMeta            *UpdateRole200ResponseAllOfTenantCopiesMeta                 `json:"tenantCopiesMeta,omitempty"`
 	Success                     *bool                                                       `json:"success,omitempty"`
 	AdditionalProperties        map[string]interface{}                                      `json:",remain"`
 }
@@ -132,6 +133,9 @@ func (o UpdateRole200Response) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.ClusterTypePermissions) {
 		toSerialize["clusterTypePermissions"] = o.ClusterTypePermissions
 	}
+	if !IsNil(o.TenantCopiesMeta) {
+		toSerialize["tenantCopiesMeta"] = o.TenantCopiesMeta
+	}
 	if !IsNil(o.Success) {
 		toSerialize["success"] = o.Success
 	}
@@ -141,51 +145,6 @@ func (o UpdateRole200Response) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateRole200Response struct {
-	value *UpdateRole200Response
-	isSet bool
-}
-
-func (v NullableUpdateRole200Response) Get() *UpdateRole200Response {
-	return v.value
-}
-
-func (v *NullableUpdateRole200Response) Set(val *UpdateRole200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateRole200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateRole200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateRole200Response(val *UpdateRole200Response) *NullableUpdateRole200Response {
-	return &NullableUpdateRole200Response{value: val, isSet: true}
-}
-
-func (v NullableUpdateRole200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateRole200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateRole200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateRole200Response) UnmarshalJSON(data []byte) (err error) {

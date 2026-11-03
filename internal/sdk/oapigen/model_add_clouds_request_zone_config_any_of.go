@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -224,51 +224,6 @@ func (o AddCloudsRequestZoneConfigAnyOf) ToMap() (map[string]interface{}, error)
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddCloudsRequestZoneConfigAnyOf struct {
-	value *AddCloudsRequestZoneConfigAnyOf
-	isSet bool
-}
-
-func (v NullableAddCloudsRequestZoneConfigAnyOf) Get() *AddCloudsRequestZoneConfigAnyOf {
-	return v.value
-}
-
-func (v *NullableAddCloudsRequestZoneConfigAnyOf) Set(val *AddCloudsRequestZoneConfigAnyOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddCloudsRequestZoneConfigAnyOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddCloudsRequestZoneConfigAnyOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddCloudsRequestZoneConfigAnyOf(val *AddCloudsRequestZoneConfigAnyOf) *NullableAddCloudsRequestZoneConfigAnyOf {
-	return &NullableAddCloudsRequestZoneConfigAnyOf{value: val, isSet: true}
-}
-
-func (v NullableAddCloudsRequestZoneConfigAnyOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddCloudsRequestZoneConfigAnyOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddCloudsRequestZoneConfigAnyOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddCloudsRequestZoneConfigAnyOf) UnmarshalJSON(data []byte) (err error) {

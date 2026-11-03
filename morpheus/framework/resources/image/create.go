@@ -17,8 +17,10 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -253,6 +255,15 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	plan.Id = convert.Int64ToType(image.VirtualImage.Id)
 
+	// Record the digests of the configured write-only values now the create
+	// POST succeeded, before the read-back's early returns -- otherwise a
+	// failure to reach ready, or to read the object back, would discard the
+	// digests and the next apply would see a spurious change.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Helper to taint the resource state on an error after the POST request
 	taintResourceState := func(id int64) {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
@@ -338,8 +349,19 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	state, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+
+	state, apiObj, found, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to read image state",
+			fmt.Sprintf("Image %d was created but could not be read", plan.Id.ValueInt64()),
+		)
+		taintResourceState(plan.Id.ValueInt64())
+
+		return
+	}
+	if !found {
 		resp.Diagnostics.AddError(
 			"failed to read image state",
 			fmt.Sprintf("Image %d was created but could not be read", plan.Id.ValueInt64()),
@@ -355,6 +377,12 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
+	// Record the appliance-side drift baseline from the read-back object, now
+	// the read succeeded; the configured-value digests were already stored
+	// above, right after the POST.
+	resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, apiObj)...)
+
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(

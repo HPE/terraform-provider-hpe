@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServe
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer struct {
-	value *GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer
-	isSet bool
-}
-
-func (v NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer) Get() *GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer {
-	return v.value
-}
-
-func (v *NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer) Set(val *GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer(val *GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer) *NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer {
-	return &NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerNetworkServer) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) ToMap()
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType struct {
-	value *GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType
-	isSet bool
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) Get() *GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType {
-	return v.value
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) Set(val *GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType(val *GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) *NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType {
-	return &NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType{value: val, isSet: true}
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) UnmarshalJSON(data []byte) (err error) {

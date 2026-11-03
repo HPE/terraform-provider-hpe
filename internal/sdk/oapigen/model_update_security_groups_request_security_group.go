@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,8 @@ var _ MappedNullable = &UpdateSecurityGroupsRequestSecurityGroup{}
 type UpdateSecurityGroupsRequestSecurityGroup struct {
 	// Name for your security group
 	Name *string `json:"name,omitempty"`
-	// Optional description field
-	Description *string `json:"description,omitempty"`
+	// Optional description field; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Set to `false` to disable a security group.
 	Active *bool `json:"active,omitempty"`
 	// Visibility for the security group.
@@ -48,8 +48,8 @@ func (o UpdateSecurityGroupsRequestSecurityGroup) ToMap() (map[string]interface{
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active
@@ -69,51 +69,6 @@ func (o UpdateSecurityGroupsRequestSecurityGroup) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateSecurityGroupsRequestSecurityGroup struct {
-	value *UpdateSecurityGroupsRequestSecurityGroup
-	isSet bool
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroup) Get() *UpdateSecurityGroupsRequestSecurityGroup {
-	return v.value
-}
-
-func (v *NullableUpdateSecurityGroupsRequestSecurityGroup) Set(val *UpdateSecurityGroupsRequestSecurityGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateSecurityGroupsRequestSecurityGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateSecurityGroupsRequestSecurityGroup(val *UpdateSecurityGroupsRequestSecurityGroup) *NullableUpdateSecurityGroupsRequestSecurityGroup {
-	return &NullableUpdateSecurityGroupsRequestSecurityGroup{value: val, isSet: true}
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateSecurityGroupsRequestSecurityGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateSecurityGroupsRequestSecurityGroup) UnmarshalJSON(data []byte) (err error) {

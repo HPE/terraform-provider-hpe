@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -146,51 +146,6 @@ func (o ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner) ToMap
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner struct {
-	value *ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner
-	isSet bool
-}
-
-func (v NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner) Get() *ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner {
-	return v.value
-}
-
-func (v *NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner) Set(val *ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner(val *ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner) *NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner {
-	return &NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner{value: val, isSet: true}
-}
-
-func (v NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInner) UnmarshalJSON(data []byte) (err error) {

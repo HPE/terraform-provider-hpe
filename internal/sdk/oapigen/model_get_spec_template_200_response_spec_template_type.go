@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o GetSpecTemplate200ResponseSpecTemplateType) ToMap() (map[string]interfac
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetSpecTemplate200ResponseSpecTemplateType struct {
-	value *GetSpecTemplate200ResponseSpecTemplateType
-	isSet bool
-}
-
-func (v NullableGetSpecTemplate200ResponseSpecTemplateType) Get() *GetSpecTemplate200ResponseSpecTemplateType {
-	return v.value
-}
-
-func (v *NullableGetSpecTemplate200ResponseSpecTemplateType) Set(val *GetSpecTemplate200ResponseSpecTemplateType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetSpecTemplate200ResponseSpecTemplateType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetSpecTemplate200ResponseSpecTemplateType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetSpecTemplate200ResponseSpecTemplateType(val *GetSpecTemplate200ResponseSpecTemplateType) *NullableGetSpecTemplate200ResponseSpecTemplateType {
-	return &NullableGetSpecTemplate200ResponseSpecTemplateType{value: val, isSet: true}
-}
-
-func (v NullableGetSpecTemplate200ResponseSpecTemplateType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetSpecTemplate200ResponseSpecTemplateType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetSpecTemplate200ResponseSpecTemplateType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetSpecTemplate200ResponseSpecTemplateType) UnmarshalJSON(data []byte) (err error) {

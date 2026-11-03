@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -29,7 +29,9 @@ type AddEnvironmentsRequestEnvironment struct {
 	// private or public
 	Visibility *string `json:"visibility,omitempty"`
 	// Sort order
-	SortOrder            *int64                 `json:"sortOrder,omitempty"`
+	SortOrder *int64 `json:"sortOrder,omitempty"`
+	// Set to false to create the environment inactive
+	Active               *bool                  `json:"active,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -56,57 +58,15 @@ func (o AddEnvironmentsRequestEnvironment) ToMap() (map[string]interface{}, erro
 	if !IsNil(o.SortOrder) {
 		toSerialize["sortOrder"] = o.SortOrder
 	}
+	if !IsNil(o.Active) {
+		toSerialize["active"] = o.Active
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddEnvironmentsRequestEnvironment struct {
-	value *AddEnvironmentsRequestEnvironment
-	isSet bool
-}
-
-func (v NullableAddEnvironmentsRequestEnvironment) Get() *AddEnvironmentsRequestEnvironment {
-	return v.value
-}
-
-func (v *NullableAddEnvironmentsRequestEnvironment) Set(val *AddEnvironmentsRequestEnvironment) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddEnvironmentsRequestEnvironment) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddEnvironmentsRequestEnvironment) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddEnvironmentsRequestEnvironment(val *AddEnvironmentsRequestEnvironment) *NullableAddEnvironmentsRequestEnvironment {
-	return &NullableAddEnvironmentsRequestEnvironment{value: val, isSet: true}
-}
-
-func (v NullableAddEnvironmentsRequestEnvironment) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddEnvironmentsRequestEnvironment) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddEnvironmentsRequestEnvironment) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddEnvironmentsRequestEnvironment) UnmarshalJSON(data []byte) (err error) {

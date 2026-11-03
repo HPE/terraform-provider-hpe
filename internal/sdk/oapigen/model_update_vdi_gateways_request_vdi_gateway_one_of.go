@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,10 +22,10 @@ var _ MappedNullable = &UpdateVDIGatewaysRequestVdiGatewayOneOf{}
 type UpdateVDIGatewaysRequestVdiGatewayOneOf struct {
 	// VDI Gateway name
 	Name *string `json:"name,omitempty"`
-	// Description
-	Description *string `json:"description,omitempty"`
-	// Gateway URL
-	GatewayUrl           *string                `json:"gatewayUrl,omitempty"`
+	// Description; null clears it
+	Description NullableString `json:"description,omitempty"`
+	// Gateway URL; null clears it
+	GatewayUrl           NullableString         `json:"gatewayUrl,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -44,11 +44,11 @@ func (o UpdateVDIGatewaysRequestVdiGatewayOneOf) ToMap() (map[string]interface{}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.GatewayUrl) {
-		toSerialize["gatewayUrl"] = o.GatewayUrl
+	if o.GatewayUrl.IsSet() {
+		toSerialize["gatewayUrl"] = o.GatewayUrl.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -56,51 +56,6 @@ func (o UpdateVDIGatewaysRequestVdiGatewayOneOf) ToMap() (map[string]interface{}
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateVDIGatewaysRequestVdiGatewayOneOf struct {
-	value *UpdateVDIGatewaysRequestVdiGatewayOneOf
-	isSet bool
-}
-
-func (v NullableUpdateVDIGatewaysRequestVdiGatewayOneOf) Get() *UpdateVDIGatewaysRequestVdiGatewayOneOf {
-	return v.value
-}
-
-func (v *NullableUpdateVDIGatewaysRequestVdiGatewayOneOf) Set(val *UpdateVDIGatewaysRequestVdiGatewayOneOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVDIGatewaysRequestVdiGatewayOneOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVDIGatewaysRequestVdiGatewayOneOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVDIGatewaysRequestVdiGatewayOneOf(val *UpdateVDIGatewaysRequestVdiGatewayOneOf) *NullableUpdateVDIGatewaysRequestVdiGatewayOneOf {
-	return &NullableUpdateVDIGatewaysRequestVdiGatewayOneOf{value: val, isSet: true}
-}
-
-func (v NullableUpdateVDIGatewaysRequestVdiGatewayOneOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVDIGatewaysRequestVdiGatewayOneOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVDIGatewaysRequestVdiGatewayOneOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateVDIGatewaysRequestVdiGatewayOneOf) UnmarshalJSON(data []byte) (err error) {

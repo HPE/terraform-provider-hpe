@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -52,7 +52,15 @@ type CreateNetworksRequestNetwork struct {
 	CidrIPv6 *string `json:"cidrIPv6,omitempty"`
 	VlanId   *int64  `json:"vlanId,omitempty"`
 	// Network switch identifier
-	SwitchId *string `json:"switchId,omitempty"`
+	SwitchId      *string                                    `json:"switchId,omitempty"`
+	NetworkServer *CreateNetworksRequestNetworkNetworkServer `json:"networkServer,omitempty"`
+	// Transport zone of an NSX-T segment (type `nsxtLogicalSwitch`) on NSX-T 2.x. Not editable after create and not returned by the API.
+	ScopeId *string `json:"scopeId,omitempty"`
+	// VXLAN ID of an OVS overlay network (type `ovsOverlay`). Not editable after create and not returned by the API.
+	VxlanId       *int64                                     `json:"vxlanId,omitempty"`
+	ParentNetwork *CreateNetworksRequestNetworkParentNetwork `json:"parentNetwork,omitempty"`
+	// Availability zone of an Amazon subnet (type `amazonSubnet`), e.g. `us-west-1a`. Set on create only.
+	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 	// Network Pool ID
 	Pool NullableInt64 `json:"pool,omitempty"`
 	// IPv6 Network Pool ID
@@ -151,6 +159,21 @@ func (o CreateNetworksRequestNetwork) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.SwitchId) {
 		toSerialize["switchId"] = o.SwitchId
 	}
+	if !IsNil(o.NetworkServer) {
+		toSerialize["networkServer"] = o.NetworkServer
+	}
+	if !IsNil(o.ScopeId) {
+		toSerialize["scopeId"] = o.ScopeId
+	}
+	if !IsNil(o.VxlanId) {
+		toSerialize["vxlanId"] = o.VxlanId
+	}
+	if !IsNil(o.ParentNetwork) {
+		toSerialize["parentNetwork"] = o.ParentNetwork
+	}
+	if !IsNil(o.AvailabilityZone) {
+		toSerialize["availabilityZone"] = o.AvailabilityZone
+	}
 	if o.Pool.IsSet() {
 		toSerialize["pool"] = o.Pool.Get()
 	}
@@ -208,51 +231,6 @@ func (o CreateNetworksRequestNetwork) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateNetworksRequestNetwork struct {
-	value *CreateNetworksRequestNetwork
-	isSet bool
-}
-
-func (v NullableCreateNetworksRequestNetwork) Get() *CreateNetworksRequestNetwork {
-	return v.value
-}
-
-func (v *NullableCreateNetworksRequestNetwork) Set(val *CreateNetworksRequestNetwork) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworksRequestNetwork) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworksRequestNetwork) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworksRequestNetwork(val *CreateNetworksRequestNetwork) *NullableCreateNetworksRequestNetwork {
-	return &NullableCreateNetworksRequestNetwork{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworksRequestNetwork) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworksRequestNetwork) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworksRequestNetwork) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateNetworksRequestNetwork) UnmarshalJSON(data []byte) (err error) {

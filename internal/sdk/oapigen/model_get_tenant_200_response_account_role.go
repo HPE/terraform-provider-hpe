@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,7 +20,9 @@ var _ MappedNullable = &GetTenant200ResponseAccountRole{}
 
 // GetTenant200ResponseAccountRole struct for GetTenant200ResponseAccountRole
 type GetTenant200ResponseAccountRole struct {
-	Id                   *int64                 `json:"id,omitempty"`
+	Id *int64 `json:"id,omitempty"`
+	// Role name
+	Name                 *string                `json:"name,omitempty"`
 	Authority            *string                `json:"authority,omitempty"`
 	Description          NullableString         `json:"description,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -41,6 +43,9 @@ func (o GetTenant200ResponseAccountRole) ToMap() (map[string]interface{}, error)
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
 	if !IsNil(o.Authority) {
 		toSerialize["authority"] = o.Authority
 	}
@@ -53,51 +58,6 @@ func (o GetTenant200ResponseAccountRole) ToMap() (map[string]interface{}, error)
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetTenant200ResponseAccountRole struct {
-	value *GetTenant200ResponseAccountRole
-	isSet bool
-}
-
-func (v NullableGetTenant200ResponseAccountRole) Get() *GetTenant200ResponseAccountRole {
-	return v.value
-}
-
-func (v *NullableGetTenant200ResponseAccountRole) Set(val *GetTenant200ResponseAccountRole) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetTenant200ResponseAccountRole) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetTenant200ResponseAccountRole) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetTenant200ResponseAccountRole(val *GetTenant200ResponseAccountRole) *NullableGetTenant200ResponseAccountRole {
-	return &NullableGetTenant200ResponseAccountRole{value: val, isSet: true}
-}
-
-func (v NullableGetTenant200ResponseAccountRole) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetTenant200ResponseAccountRole) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetTenant200ResponseAccountRole) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetTenant200ResponseAccountRole) UnmarshalJSON(data []byte) (err error) {

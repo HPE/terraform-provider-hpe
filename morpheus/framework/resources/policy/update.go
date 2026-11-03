@@ -11,6 +11,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -34,6 +35,14 @@ func (r *Resource) Update(
 	id := state.Id.ValueInt64()
 	name := plan.Name.ValueString()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	updatePolicy := &sdk.UpdatePoliciesRequestPolicy{}
 
 	client, err := r.NewClient(ctx)
@@ -56,9 +65,7 @@ func (r *Resource) Update(
 	// neither refType nor refId can be updated via the API.
 
 	// Set optional fields
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		updatePolicy.Description = plan.Description.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "description", plan.Description, &updatePolicy.Description)
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		updatePolicy.Enabled = plan.Enabled.ValueBoolPointer()
@@ -68,13 +75,10 @@ func (r *Resource) Update(
 		updatePolicy.EachUser = plan.EachUser.ValueBoolPointer()
 	}
 
-	// Set tenant IDs if provided
-	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
-		var tenantIDs []int64
-		diags := plan.Tenants.ElementsAs(ctx, &tenantIDs, false)
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-
+	// tenants: the planned list, or an empty list when being cleared
+	if tenantIDs, ok, ldiags := pending.Int64s(ctx, "tenants", plan.Tenants); ok {
+		resp.Diagnostics.Append(ldiags...)
+		if resp.Diagnostics.HasError() {
 			return
 		}
 		updatePolicy.Accounts = tenantIDs
@@ -124,7 +128,10 @@ func (r *Resource) Update(
 	}
 
 	// Read the updated policy to get full state
-	updatedState, diags := getPolicyAsState(ctx, id, client, &plan)
+	updatedState, found, diags := getPolicyAsState(ctx, id, client, &plan)
+	if !found && !diags.HasError() {
+		diags.AddError("update policy resource", fmt.Sprintf("policy %d not found after update", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
@@ -135,5 +142,6 @@ func (r *Resource) Update(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedState)...)
 }

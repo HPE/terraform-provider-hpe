@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj GetVirtualImage200ResponseVirtualImageConfig) GetActualInstanceValue()
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableGetVirtualImage200ResponseVirtualImageConfig struct {
-	value *GetVirtualImage200ResponseVirtualImageConfig
-	isSet bool
-}
-
-func (v NullableGetVirtualImage200ResponseVirtualImageConfig) Get() *GetVirtualImage200ResponseVirtualImageConfig {
-	return v.value
-}
-
-func (v *NullableGetVirtualImage200ResponseVirtualImageConfig) Set(val *GetVirtualImage200ResponseVirtualImageConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetVirtualImage200ResponseVirtualImageConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetVirtualImage200ResponseVirtualImageConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetVirtualImage200ResponseVirtualImageConfig(val *GetVirtualImage200ResponseVirtualImageConfig) *NullableGetVirtualImage200ResponseVirtualImageConfig {
-	return &NullableGetVirtualImage200ResponseVirtualImageConfig{value: val, isSet: true}
-}
-
-func (v NullableGetVirtualImage200ResponseVirtualImageConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetVirtualImage200ResponseVirtualImageConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetVirtualImage200ResponseVirtualImageConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

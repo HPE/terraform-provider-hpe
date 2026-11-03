@@ -17,6 +17,7 @@ resource "hpe_morpheus_user" "example" {
   email                       = "foo@testacc.com"
   password_wo                 = "Secret123!"
   password_wo_version         = 1
+  require_password_change     = true
   role_ids                    = [1]
   first_name                  = "Joe"
   last_name                   = "User"
@@ -48,30 +49,62 @@ resource "hpe_morpheus_user" "example" {
 - `last_name` (String) User's last name (optional)
 - `linux_key_pair_id` (Number) Linux key pair id (optional)
 - `linux_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Linux password (Write Only)
-- `linux_password_wo_version` (Number) Linux password version. Used to determine if linux_password_wo has been updated.
+- `linux_password_wo_version` (Number, Deprecated) Deprecated. Changes to linux_password_wo are detected automatically; this attribute is no longer
+needed and will be removed in the 2.6 release. Changing it still re-sends linux_password_wo.
 - `linux_username` (String) Linux username
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password to apply to the user (Write Only)
-- `password_wo_version` (Number) Password version. Used to determine if password_wo has been updated.
+- `password_wo_version` (Number, Deprecated) Deprecated. Changes to password_wo are detected automatically; this attribute is no longer
+needed and will be removed in the 2.6 release. Changing it still re-sends password_wo.
 - `receive_notifications` (Boolean) Receive Notifications?
+- `require_password_change` (Boolean) Require the user to choose a new password at their next sign-in to the Morpheus UI. While
+true, the password is marked as expired whenever the provider sets or re-sets it: on
+create, when the attribute is turned on for an existing user (their current password
+expires), and whenever password_wo changes. The next UI sign-in then redirects the user to
+the change-password page (signing in to the API with the password is not affected). The
+user's own change clears the flag, which the read-only password_expired reflects; this
+attribute is not read back, so it never fights with the user's change. False, or leaving
+it out, sends nothing: an expiry already set stays until the user changes the password
+(clear it in the UI if it is no longer wanted).
 - `tenant_id` (Number) Tenant Id (accountId) create user in a sub tenant account instead of your own. Changing this attribute forces a deletion and recreation.
 - `windows_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Windows password (Write Only)
-- `windows_password_wo_version` (Number) Windows password version. Used to determine if windows_password_wo has been updated.
+- `windows_password_wo_version` (Number, Deprecated) Deprecated. Changes to windows_password_wo are detected automatically; this attribute is no longer
+needed and will be removed in the 2.6 release. Changing it still re-sends windows_password_wo.
 - `windows_username` (String) Windows username
 
 ### Read-Only
 
 - `id` (Number) User id
-- `password_expired` (Boolean)
+- `password_expired` (Boolean) Whether the user must change their password at their next sign-in to the Morpheus UI:
+true after a create or password change with require_password_change set, false once the
+user has chosen a new password.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (password_wo,
+linux_password_wo or windows_password_wo) was last sent to Morpheus. Changes whenever one
+of those values changes; not configurable.
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-# Use user ID for import.
-
-# Note that password fields (password_wo, password_wo_version, etc) are
-# ignored during import, and should not be set.
+# Import by user ID. The write-only passwords (password_wo, linux_password_wo,
+# windows_password_wo) are not stored in state, so the import cannot tell
+# whether the values in your configuration match the ones on the appliance:
+# they are taken as already applied, the plan after import is empty, and a
+# change to them is only detected once the user is next updated for another
+# reason. Terraform warns about this on every plan until then.
 
 terraform import hpe_morpheus_user.example 123
+
+# To have changes detected from the start, add the sha256 digest of each
+# configured write-only value to the import ID, as <attribute>=<hex>:
+
+terraform import hpe_morpheus_user.example \
+  "123#password_wo=$(printf '%s' 'Secret123!' | sha256sum | cut -d' ' -f1)"
+
+# Several values are separated with '&'. The same ID works in an import block:
+#
+#   import {
+#     to = hpe_morpheus_user.example
+#     id = "123#password_wo=${sha256("Secret123!")}&linux_password_wo=${sha256("Linux123!")}"
+#   }
 ```

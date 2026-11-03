@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o AddRoles200ResponseAllOfVdiPoolPermissionsInner) ToMap() (map[string]int
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddRoles200ResponseAllOfVdiPoolPermissionsInner struct {
-	value *AddRoles200ResponseAllOfVdiPoolPermissionsInner
-	isSet bool
-}
-
-func (v NullableAddRoles200ResponseAllOfVdiPoolPermissionsInner) Get() *AddRoles200ResponseAllOfVdiPoolPermissionsInner {
-	return v.value
-}
-
-func (v *NullableAddRoles200ResponseAllOfVdiPoolPermissionsInner) Set(val *AddRoles200ResponseAllOfVdiPoolPermissionsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddRoles200ResponseAllOfVdiPoolPermissionsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddRoles200ResponseAllOfVdiPoolPermissionsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddRoles200ResponseAllOfVdiPoolPermissionsInner(val *AddRoles200ResponseAllOfVdiPoolPermissionsInner) *NullableAddRoles200ResponseAllOfVdiPoolPermissionsInner {
-	return &NullableAddRoles200ResponseAllOfVdiPoolPermissionsInner{value: val, isSet: true}
-}
-
-func (v NullableAddRoles200ResponseAllOfVdiPoolPermissionsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddRoles200ResponseAllOfVdiPoolPermissionsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddRoles200ResponseAllOfVdiPoolPermissionsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddRoles200ResponseAllOfVdiPoolPermissionsInner) UnmarshalJSON(data []byte) (err error) {

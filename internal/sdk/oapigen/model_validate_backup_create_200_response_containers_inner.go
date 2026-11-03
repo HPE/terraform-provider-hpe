@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -51,51 +51,6 @@ func (o ValidateBackupCreate200ResponseContainersInner) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableValidateBackupCreate200ResponseContainersInner struct {
-	value *ValidateBackupCreate200ResponseContainersInner
-	isSet bool
-}
-
-func (v NullableValidateBackupCreate200ResponseContainersInner) Get() *ValidateBackupCreate200ResponseContainersInner {
-	return v.value
-}
-
-func (v *NullableValidateBackupCreate200ResponseContainersInner) Set(val *ValidateBackupCreate200ResponseContainersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableValidateBackupCreate200ResponseContainersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableValidateBackupCreate200ResponseContainersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableValidateBackupCreate200ResponseContainersInner(val *ValidateBackupCreate200ResponseContainersInner) *NullableValidateBackupCreate200ResponseContainersInner {
-	return &NullableValidateBackupCreate200ResponseContainersInner{value: val, isSet: true}
-}
-
-func (v NullableValidateBackupCreate200ResponseContainersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableValidateBackupCreate200ResponseContainersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableValidateBackupCreate200ResponseContainersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ValidateBackupCreate200ResponseContainersInner) UnmarshalJSON(data []byte) (err error) {

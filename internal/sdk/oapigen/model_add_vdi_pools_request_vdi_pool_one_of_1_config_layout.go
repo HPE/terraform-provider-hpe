@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj AddVDIPoolsRequestVdiPoolOneOf1ConfigLayout) GetActualInstanceValue() 
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigLayout struct {
-	value *AddVDIPoolsRequestVdiPoolOneOf1ConfigLayout
-	isSet bool
-}
-
-func (v NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigLayout) Get() *AddVDIPoolsRequestVdiPoolOneOf1ConfigLayout {
-	return v.value
-}
-
-func (v *NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigLayout) Set(val *AddVDIPoolsRequestVdiPoolOneOf1ConfigLayout) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigLayout) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigLayout) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVDIPoolsRequestVdiPoolOneOf1ConfigLayout(val *AddVDIPoolsRequestVdiPoolOneOf1ConfigLayout) *NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigLayout {
-	return &NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigLayout{value: val, isSet: true}
-}
-
-func (v NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigLayout) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigLayout) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigLayout) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

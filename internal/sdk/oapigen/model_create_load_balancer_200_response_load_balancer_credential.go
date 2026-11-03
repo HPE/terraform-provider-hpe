@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o CreateLoadBalancer200ResponseLoadBalancerCredential) ToMap() (map[string
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateLoadBalancer200ResponseLoadBalancerCredential struct {
-	value *CreateLoadBalancer200ResponseLoadBalancerCredential
-	isSet bool
-}
-
-func (v NullableCreateLoadBalancer200ResponseLoadBalancerCredential) Get() *CreateLoadBalancer200ResponseLoadBalancerCredential {
-	return v.value
-}
-
-func (v *NullableCreateLoadBalancer200ResponseLoadBalancerCredential) Set(val *CreateLoadBalancer200ResponseLoadBalancerCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateLoadBalancer200ResponseLoadBalancerCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateLoadBalancer200ResponseLoadBalancerCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateLoadBalancer200ResponseLoadBalancerCredential(val *CreateLoadBalancer200ResponseLoadBalancerCredential) *NullableCreateLoadBalancer200ResponseLoadBalancerCredential {
-	return &NullableCreateLoadBalancer200ResponseLoadBalancerCredential{value: val, isSet: true}
-}
-
-func (v NullableCreateLoadBalancer200ResponseLoadBalancerCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateLoadBalancer200ResponseLoadBalancerCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateLoadBalancer200ResponseLoadBalancerCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateLoadBalancer200ResponseLoadBalancerCredential) UnmarshalJSON(data []byte) (err error) {

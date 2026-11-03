@@ -71,6 +71,7 @@ func TestAccMorpheusLoadBalancerResourceHAProxyExampleOk(t *testing.T) {
 					// them, so they cannot diff on import and need no ignore.
 					// The WriteOnly conversion is the actual fix for
 					// MORPH-10303.
+					"write_only_revision",
 				},
 			},
 		},
@@ -126,6 +127,7 @@ func TestAccMorpheusLoadBalancerResourceHAProxyGenericExampleOk(t *testing.T) {
 					// group_id/network_server_id are WriteOnly (never in state)
 					// and not returned by GET, so they cannot diff on import.
 					// See MORPH-10303.
+					"write_only_revision",
 				},
 			},
 		},

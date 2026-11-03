@@ -13,6 +13,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
@@ -135,6 +136,7 @@ func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateReq
 	}
 	mapReadResponseToModel(&plan, readResult.NetworkPool)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -197,23 +199,43 @@ func (r *networkPoolResource) Update(ctx context.Context, req resource.UpdateReq
 		Name: plan.Name.ValueStringPointer(),
 	}
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	additionalProps := map[string]interface{}{}
 	if !plan.PoolEnabled.IsNull() && !plan.PoolEnabled.IsUnknown() {
 		additionalProps["poolEnabled"] = plan.PoolEnabled.ValueBool()
 	}
-	if !plan.DnsDomain.IsNull() && !plan.DnsDomain.IsUnknown() {
+	switch {
+	case pending.Clears("dns_domain"):
+		additionalProps["dnsDomain"] = nil
+	case !plan.DnsDomain.IsNull() && !plan.DnsDomain.IsUnknown():
 		additionalProps["dnsDomain"] = plan.DnsDomain.ValueString()
 	}
 	if !plan.DhcpServer.IsNull() && !plan.DhcpServer.IsUnknown() {
 		additionalProps["dhcpServer"] = plan.DhcpServer.ValueBool()
 	}
-	if !plan.Gateway.IsNull() && !plan.Gateway.IsUnknown() {
+	switch {
+	case pending.Clears("gateway"):
+		additionalProps["gateway"] = nil
+	case !plan.Gateway.IsNull() && !plan.Gateway.IsUnknown():
 		additionalProps["gateway"] = plan.Gateway.ValueString()
 	}
-	if !plan.Netmask.IsNull() && !plan.Netmask.IsUnknown() {
+	switch {
+	case pending.Clears("netmask"):
+		additionalProps["netmask"] = nil
+	case !plan.Netmask.IsNull() && !plan.Netmask.IsUnknown():
 		additionalProps["netmask"] = plan.Netmask.ValueString()
 	}
-	if !plan.SubnetAddress.IsNull() && !plan.SubnetAddress.IsUnknown() {
+	switch {
+	case pending.Clears("subnet_address"):
+		additionalProps["subnetAddress"] = nil
+	case !plan.SubnetAddress.IsNull() && !plan.SubnetAddress.IsUnknown():
 		additionalProps["subnetAddress"] = plan.SubnetAddress.ValueString()
 	}
 	if !plan.IpRanges.IsNull() && !plan.IpRanges.IsUnknown() {
@@ -254,6 +276,7 @@ func (r *networkPoolResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 	mapReadResponseToModel(&plan, pool)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -273,8 +296,8 @@ func (r *networkPoolResource) Delete(ctx context.Context, req resource.DeleteReq
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.NetworksAPI.DeleteNetworkPool(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.NetworksAPI.DeleteNetworkPool(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "network_pool", "", err, httpResp)
 
 		return

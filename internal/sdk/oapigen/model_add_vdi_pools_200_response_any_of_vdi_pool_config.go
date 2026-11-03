@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -137,51 +137,6 @@ func (o AddVDIPools200ResponseAnyOfVdiPoolConfig) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddVDIPools200ResponseAnyOfVdiPoolConfig struct {
-	value *AddVDIPools200ResponseAnyOfVdiPoolConfig
-	isSet bool
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfig) Get() *AddVDIPools200ResponseAnyOfVdiPoolConfig {
-	return v.value
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfig) Set(val *AddVDIPools200ResponseAnyOfVdiPoolConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVDIPools200ResponseAnyOfVdiPoolConfig(val *AddVDIPools200ResponseAnyOfVdiPoolConfig) *NullableAddVDIPools200ResponseAnyOfVdiPoolConfig {
-	return &NullableAddVDIPools200ResponseAnyOfVdiPoolConfig{value: val, isSet: true}
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddVDIPools200ResponseAnyOfVdiPoolConfig) UnmarshalJSON(data []byte) (err error) {

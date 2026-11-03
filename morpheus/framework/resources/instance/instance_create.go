@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
@@ -172,6 +173,12 @@ func (g *Resource) Create(
 
 		if !plan.ConfigHvm.KvmHostId.IsNull() {
 			configHvm.KvmHostId = plan.ConfigHvm.KvmHostId.ValueInt64Pointer()
+		}
+
+		// Cloud-init user data: provision-time only (RequiresReplace in the
+		// schema). Morpheus trims it; the practitioner is told to trimspace().
+		if !plan.ConfigHvm.UserData.IsNull() && !plan.ConfigHvm.UserData.IsUnknown() {
+			configHvm.UserData = *sdk.NewNullableString(plan.ConfigHvm.UserData.ValueStringPointer())
 		}
 
 		if !plan.ConfigHvm.ImageId.IsNull() && !plan.ConfigHvm.ImageId.IsUnknown() {
@@ -560,14 +567,17 @@ func (g *Resource) Create(
 		// ErrorBody takes the body from the SDK error, or reads httpResp.Body
 		// and puts it back, so ErrMsg below still sees the full response. When
 		// Morpheus rejected a network as "Invalid network", say which network,
-		// which pool it belongs to and which pool was requested — the response
-		// itself says none of that. Any failure to explain leaves the API's
-		// error as it is.
+		// which pool it belongs to and which pool was requested, and which
+		// networks it would have accepted for this cloud, group, layout and
+		// pool — the response itself says none of that. Any failure to explain
+		// leaves the API's error as it is.
 		body := provisionhint.ErrorBody(err, httpResp)
 		msg := errfmt.ErrMsg(err, httpResp)
 
 		if hint := provisionhint.InvalidNetwork(ctx, client, body, provisionhint.Request{
 			CloudID:    getsafe.Get(reqInstance.ZoneId),
+			GroupID:    reqInstance.Instance.Site.Id,
+			LayoutID:   reqInstance.Instance.Layout.Id,
 			Config:     reqInstance.Config,
 			Interfaces: reqInstance.NetworkInterfaces,
 		}); hint != "" {
@@ -721,6 +731,17 @@ func (g *Resource) Create(
 		}
 	}
 
+	// The create request carries each evar's name and value only; the API drops
+	// export and masked. Apply any variable whose export or masked differs from
+	// the appliance default through the environment-variable add-or-update
+	// operation, so a create with those options set is honoured. MORPH-17657.
+	if d := applyEvarOptionsAfterCreate(ctx, client, instanceId, plan); d.HasError() {
+		resp.Diagnostics.Append(d...)
+		taintResourceState(instanceId)
+
+		return
+	}
+
 	// Read the instance state
 	state, found, d := getInstanceAsState(ctx, instanceId, client, plan, false)
 	if d.HasError() || !found {
@@ -737,6 +758,7 @@ func (g *Resource) Create(
 	// Set ServicePlanOptions in state.
 	state.ServicePlanOptions = plan.ServicePlanOptions
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(

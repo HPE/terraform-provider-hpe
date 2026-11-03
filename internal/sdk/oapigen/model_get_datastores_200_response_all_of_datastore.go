@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -162,51 +162,6 @@ func (o GetDatastores200ResponseAllOfDatastore) ToMap() (map[string]interface{},
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetDatastores200ResponseAllOfDatastore struct {
-	value *GetDatastores200ResponseAllOfDatastore
-	isSet bool
-}
-
-func (v NullableGetDatastores200ResponseAllOfDatastore) Get() *GetDatastores200ResponseAllOfDatastore {
-	return v.value
-}
-
-func (v *NullableGetDatastores200ResponseAllOfDatastore) Set(val *GetDatastores200ResponseAllOfDatastore) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetDatastores200ResponseAllOfDatastore) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetDatastores200ResponseAllOfDatastore) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetDatastores200ResponseAllOfDatastore(val *GetDatastores200ResponseAllOfDatastore) *NullableGetDatastores200ResponseAllOfDatastore {
-	return &NullableGetDatastores200ResponseAllOfDatastore{value: val, isSet: true}
-}
-
-func (v NullableGetDatastores200ResponseAllOfDatastore) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetDatastores200ResponseAllOfDatastore) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetDatastores200ResponseAllOfDatastore) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetDatastores200ResponseAllOfDatastore) UnmarshalJSON(data []byte) (err error) {

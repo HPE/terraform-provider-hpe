@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj ListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId) GetAc
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId struct {
-	value *ListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId
-	isSet bool
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId) Get() *ListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId {
-	return v.value
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId) Set(val *ListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId(val *ListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId) *NullableListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId {
-	return &NullableListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId{value: val, isSet: true}
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerConfigResourcePoolId) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

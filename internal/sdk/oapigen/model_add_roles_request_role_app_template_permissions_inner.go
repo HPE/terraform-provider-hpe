@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -47,51 +47,6 @@ func (o AddRolesRequestRoleAppTemplatePermissionsInner) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddRolesRequestRoleAppTemplatePermissionsInner struct {
-	value *AddRolesRequestRoleAppTemplatePermissionsInner
-	isSet bool
-}
-
-func (v NullableAddRolesRequestRoleAppTemplatePermissionsInner) Get() *AddRolesRequestRoleAppTemplatePermissionsInner {
-	return v.value
-}
-
-func (v *NullableAddRolesRequestRoleAppTemplatePermissionsInner) Set(val *AddRolesRequestRoleAppTemplatePermissionsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddRolesRequestRoleAppTemplatePermissionsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddRolesRequestRoleAppTemplatePermissionsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddRolesRequestRoleAppTemplatePermissionsInner(val *AddRolesRequestRoleAppTemplatePermissionsInner) *NullableAddRolesRequestRoleAppTemplatePermissionsInner {
-	return &NullableAddRolesRequestRoleAppTemplatePermissionsInner{value: val, isSet: true}
-}
-
-func (v NullableAddRolesRequestRoleAppTemplatePermissionsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddRolesRequestRoleAppTemplatePermissionsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddRolesRequestRoleAppTemplatePermissionsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddRolesRequestRoleAppTemplatePermissionsInner) UnmarshalJSON(data []byte) (err error) {

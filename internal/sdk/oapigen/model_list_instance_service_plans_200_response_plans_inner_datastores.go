@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ListInstanceServicePlans200ResponsePlansInnerDatastores) ToMap() (map[st
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListInstanceServicePlans200ResponsePlansInnerDatastores struct {
-	value *ListInstanceServicePlans200ResponsePlansInnerDatastores
-	isSet bool
-}
-
-func (v NullableListInstanceServicePlans200ResponsePlansInnerDatastores) Get() *ListInstanceServicePlans200ResponsePlansInnerDatastores {
-	return v.value
-}
-
-func (v *NullableListInstanceServicePlans200ResponsePlansInnerDatastores) Set(val *ListInstanceServicePlans200ResponsePlansInnerDatastores) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListInstanceServicePlans200ResponsePlansInnerDatastores) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListInstanceServicePlans200ResponsePlansInnerDatastores) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListInstanceServicePlans200ResponsePlansInnerDatastores(val *ListInstanceServicePlans200ResponsePlansInnerDatastores) *NullableListInstanceServicePlans200ResponsePlansInnerDatastores {
-	return &NullableListInstanceServicePlans200ResponsePlansInnerDatastores{value: val, isSet: true}
-}
-
-func (v NullableListInstanceServicePlans200ResponsePlansInnerDatastores) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListInstanceServicePlans200ResponsePlansInnerDatastores) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListInstanceServicePlans200ResponsePlansInnerDatastores) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListInstanceServicePlans200ResponsePlansInnerDatastores) UnmarshalJSON(data []byte) (err error) {

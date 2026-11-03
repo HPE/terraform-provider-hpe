@@ -65,15 +65,18 @@ func (r *Resource) Delete(
 
 	// Execute the remove-node action. No request body — the controller
 	// hard-codes [:].
-	_, hresp, err := client.ContainersAPI.
+	// The action answers HTTP 200 with success:false when Morpheus refuses
+	// it (MORPH-17987); the poll below would then time out on a container that
+	// is not going anywhere, so the body is checked first.
+	result, hresp, err := client.ContainersAPI.
 		ExecuteContainerAction(ctx, containerID).
 		Code(actionCode).
 		Execute()
-	if err != nil {
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"failed to remove node",
 			fmt.Sprintf("container %d action %q: %s",
-				containerID, actionCode, errfmt.ErrMsg(err, hresp)),
+				containerID, actionCode, err.Error()),
 		)
 
 		return

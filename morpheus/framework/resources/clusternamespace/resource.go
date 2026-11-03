@@ -19,6 +19,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -288,22 +289,27 @@ func (r *clusterNamespaceResource) Update(
 	clusterID := plan.ClusterId.ValueInt64()
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	ns := sdk.UpdateClusterNamespaceRequestNamespace{}
 	if !plan.Name.IsNull() {
 		v := plan.Name.ValueString()
 		ns.Name = &v
 	}
-	if !plan.Description.IsNull() {
-		v := plan.Description.ValueString()
-		ns.Description = &v
-	}
+	clearable.NullableString(pending, "description", plan.Description, &ns.Description)
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
 		ns.Active = plan.Active.ValueBoolPointer()
 	}
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		ns.Visibility = plan.Visibility.ValueStringPointer()
 	}
-	if perms := buildNamespaceUpdatePermissions(ctx, plan, &resp.Diagnostics); perms != nil {
+	if perms := buildNamespaceUpdatePermissions(ctx, plan, pending, &resp.Diagnostics); perms != nil {
 		ns.Permissions = perms
 	}
 	if resp.Diagnostics.HasError() {
@@ -370,8 +376,8 @@ func (r *clusterNamespaceResource) Delete(
 	clusterID := state.ClusterId.ValueInt64()
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.ClustersAPI.DeleteClusterNamespace(ctx, clusterID, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.ClustersAPI.DeleteClusterNamespace(ctx, clusterID, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "cluster_namespace", "", err, httpResp)
 
 		return
@@ -579,20 +585,21 @@ func buildNamespaceCreatePermissions(
 func buildNamespaceUpdatePermissions(
 	ctx context.Context,
 	plan ClusterNamespaceModel,
+	pending clearable.Pending,
 	diags *diag.Diagnostics,
 ) *sdk.UpdateClusterNamespaceRequestNamespacePermissions {
-	hasTP := !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown()
+	// tenant_ids: the planned list, or an empty list when being cleared
+	ids, hasTP, ldiags := pending.Int64s(ctx, "tenant_ids", plan.TenantIds)
+	diags.Append(ldiags...)
+	if diags.HasError() {
+		return nil
+	}
 	hasRP := !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown()
 	if !hasTP && !hasRP {
 		return nil
 	}
 	perms := &sdk.UpdateClusterNamespaceRequestNamespacePermissions{}
 	if hasTP {
-		var ids []int64
-		diags.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
-		if diags.HasError() {
-			return nil
-		}
 		perms.TenantPermissions = &sdk.UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions{Accounts: ids}
 	}
 	if hasRP {

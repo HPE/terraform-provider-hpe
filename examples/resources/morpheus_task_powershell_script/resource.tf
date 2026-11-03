@@ -4,7 +4,7 @@ resource "hpe_morpheus_task_powershell_script" "tfexample_powershell_local" {
   labels              = ["demo", "terraform"]
   source_type         = "local"
   script_content      = <<EOF
-  Write-Output "testing"
+Write-Output "testing"
 EOF
   elevated_shell      = true
   retryable           = true

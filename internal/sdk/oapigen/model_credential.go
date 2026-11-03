@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,7 @@ var _ MappedNullable = &Credential{}
 type Credential struct {
 	Id                   *int64                    `json:"id,omitempty"`
 	Name                 *string                   `json:"name,omitempty"`
-	Type                 *CredentialType           `json:"type,omitempty"`
+	Type                 NullableCredentialType    `json:"type,omitempty"`
 	Integration          NullableString            `json:"integration,omitempty"`
 	Description          NullableString            `json:"description,omitempty"`
 	Username             NullableString            `json:"username,omitempty"`
@@ -66,8 +66,8 @@ func (o Credential) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if o.Integration.IsSet() {
 		toSerialize["integration"] = o.Integration.Get()
@@ -138,51 +138,6 @@ func (o Credential) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCredential struct {
-	value *Credential
-	isSet bool
-}
-
-func (v NullableCredential) Get() *Credential {
-	return v.value
-}
-
-func (v *NullableCredential) Set(val *Credential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCredential(val *Credential) *NullableCredential {
-	return &NullableCredential{value: val, isSet: true}
-}
-
-func (v NullableCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *Credential) UnmarshalJSON(data []byte) (err error) {

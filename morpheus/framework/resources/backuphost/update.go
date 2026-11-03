@@ -10,7 +10,9 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 )
 
 func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -48,26 +50,23 @@ func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !plan.Enabled.IsNull() {
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
-	if !plan.StorageProviderId.IsUnknown() {
-		body.StorageProviderId = *sdk.NewNullableInt64(plan.StorageProviderId.ValueInt64Pointer())
-	}
-	if !plan.Path.IsNull() {
-		body.TargetPath = plan.Path.ValueStringPointer()
-	}
-	if !plan.SshUsername.IsNull() {
-		body.TargetUsername = plan.SshUsername.ValueStringPointer()
-	}
-	// The write-only ssh_password_wo cannot be diffed by Terraform, so it is only
-	// re-sent when ssh_password_wo_version changes.
-	if !plan.SshPasswordWoVersion.Equal(priorState.SshPasswordWoVersion) {
-		if config.SshPasswordWo.IsNull() {
-			resp.Diagnostics.AddError(
-				updateOperation,
-				"'ssh_password_wo_version' changed, but 'ssh_password_wo' is not set",
-			)
 
-			return
-		}
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared: sent when known, null when being cleared, not sent otherwise.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	clearable.NullableInt64(pending, "storage_provider_id", plan.StorageProviderId, &body.StorageProviderId)
+	clearable.NullableString(pending, "path", plan.Path, &body.TargetPath)
+	clearable.NullableString(pending, "ssh_username", plan.SshUsername, &body.TargetUsername)
+	// The write-only ssh_password_wo cannot be diffed by Terraform; ModifyPlan
+	// marks write_only_revision unknown when its digest changed (or the
+	// deprecated marker did), and that is when it is re-sent. See write_only.go.
+	resend := wodigest.Resend(ctx, req.Plan)
+	if resend && !config.SshPasswordWo.IsNull() && !config.SshPasswordWo.IsUnknown() {
 		body.TargetPassword = config.SshPasswordWo.ValueStringPointer()
 	}
 
@@ -80,11 +79,21 @@ func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	state, diags := getBackupAsState(ctx, id, client, plan)
+	state, found, diags := getBackupAsState(ctx, id, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError(updateOperation, "backup not found immediately after update")
+	}
+	state.WriteOnlyRevision = priorState.WriteOnlyRevision
+	if resend {
+		state.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	// Always record the digests of the configured values, sent or not.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

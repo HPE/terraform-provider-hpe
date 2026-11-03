@@ -14,6 +14,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -221,12 +222,18 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdatePowerSchedulesRequestSchedule{
 		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "description", plan.Description, &body.Description)
 	if !plan.ScheduleType.IsNull() {
 		body.ScheduleType = plan.ScheduleType.ValueStringPointer()
 	}
@@ -325,8 +332,8 @@ func (r *powerScheduleResource) Delete(ctx context.Context, req resource.DeleteR
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.AutomationAPI.RemovePowerSchedules(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.AutomationAPI.RemovePowerSchedules(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "power_schedule", "", err, httpResp)
 
 		return

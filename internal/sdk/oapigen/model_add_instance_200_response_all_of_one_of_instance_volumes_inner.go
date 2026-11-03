@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -114,51 +114,6 @@ func (o AddInstance200ResponseAllOfOneOfInstanceVolumesInner) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddInstance200ResponseAllOfOneOfInstanceVolumesInner struct {
-	value *AddInstance200ResponseAllOfOneOfInstanceVolumesInner
-	isSet bool
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceVolumesInner) Get() *AddInstance200ResponseAllOfOneOfInstanceVolumesInner {
-	return v.value
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceVolumesInner) Set(val *AddInstance200ResponseAllOfOneOfInstanceVolumesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceVolumesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceVolumesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstance200ResponseAllOfOneOfInstanceVolumesInner(val *AddInstance200ResponseAllOfOneOfInstanceVolumesInner) *NullableAddInstance200ResponseAllOfOneOfInstanceVolumesInner {
-	return &NullableAddInstance200ResponseAllOfOneOfInstanceVolumesInner{value: val, isSet: true}
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceVolumesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceVolumesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceVolumesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddInstance200ResponseAllOfOneOfInstanceVolumesInner) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -46,51 +46,6 @@ func (o AddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInne
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner struct {
-	value *AddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableAddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner) Get() *AddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableAddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner) Set(val *AddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner(val *AddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner) *NullableAddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner {
-	return &NullableAddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableAddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {

@@ -3,5 +3,5 @@ resource "hpe_morpheus_task_nested_workflow" "example" {
   code                      = "{{.Code}}"
   labels                    = {{.Labels}}
   operational_workflow_id   = {{.OperationalWorkflowId}}
-  operational_workflow_name = "{{.OperationalWorkflowName}}"
+  operational_workflow_name = {{.OperationalWorkflowName}}
 }

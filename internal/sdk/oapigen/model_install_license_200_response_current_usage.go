@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -26,6 +26,8 @@ type InstallLicense200ResponseCurrentUsage struct {
 	Storage *int64 `json:"storage,omitempty"`
 	// Total Workloads
 	Workloads *int64 `json:"workloads,omitempty"`
+	// Total Managed Servers
+	ManagedServers *int64 `json:"managedServers,omitempty"`
 	// Total Discovered Servers
 	DiscoveredServers *int64 `json:"discoveredServers,omitempty"`
 	// Total Hosts
@@ -34,6 +36,14 @@ type InstallLicense200ResponseCurrentUsage struct {
 	Mvm *int64 `json:"mvm,omitempty"`
 	// Total HPE VM Sockets
 	MvmSockets *int64 `json:"mvmSockets,omitempty"`
+	// Total Sockets
+	Sockets *int64 `json:"sockets,omitempty"`
+	// Hypervisor Socket Count
+	HypervisorSocketCount *int64 `json:"hypervisorSocketCount,omitempty"`
+	// Public Virtual Machine Count
+	PublicVirtualMachineCount *int64 `json:"publicVirtualMachineCount,omitempty"`
+	// Public Virtual Machine Socket Count
+	PublicVirtualMachineSocketCount *int64 `json:"publicVirtualMachineSocketCount,omitempty"`
 	// Total IAC Deployments
 	Iac *int64 `json:"iac,omitempty"`
 	// Total Xaas Instances
@@ -68,6 +78,9 @@ func (o InstallLicense200ResponseCurrentUsage) ToMap() (map[string]interface{}, 
 	if !IsNil(o.Workloads) {
 		toSerialize["workloads"] = o.Workloads
 	}
+	if !IsNil(o.ManagedServers) {
+		toSerialize["managedServers"] = o.ManagedServers
+	}
 	if !IsNil(o.DiscoveredServers) {
 		toSerialize["discoveredServers"] = o.DiscoveredServers
 	}
@@ -79,6 +92,18 @@ func (o InstallLicense200ResponseCurrentUsage) ToMap() (map[string]interface{}, 
 	}
 	if !IsNil(o.MvmSockets) {
 		toSerialize["mvmSockets"] = o.MvmSockets
+	}
+	if !IsNil(o.Sockets) {
+		toSerialize["sockets"] = o.Sockets
+	}
+	if !IsNil(o.HypervisorSocketCount) {
+		toSerialize["hypervisorSocketCount"] = o.HypervisorSocketCount
+	}
+	if !IsNil(o.PublicVirtualMachineCount) {
+		toSerialize["publicVirtualMachineCount"] = o.PublicVirtualMachineCount
+	}
+	if !IsNil(o.PublicVirtualMachineSocketCount) {
+		toSerialize["publicVirtualMachineSocketCount"] = o.PublicVirtualMachineSocketCount
 	}
 	if !IsNil(o.Iac) {
 		toSerialize["iac"] = o.Iac
@@ -101,51 +126,6 @@ func (o InstallLicense200ResponseCurrentUsage) ToMap() (map[string]interface{}, 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableInstallLicense200ResponseCurrentUsage struct {
-	value *InstallLicense200ResponseCurrentUsage
-	isSet bool
-}
-
-func (v NullableInstallLicense200ResponseCurrentUsage) Get() *InstallLicense200ResponseCurrentUsage {
-	return v.value
-}
-
-func (v *NullableInstallLicense200ResponseCurrentUsage) Set(val *InstallLicense200ResponseCurrentUsage) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstallLicense200ResponseCurrentUsage) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstallLicense200ResponseCurrentUsage) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstallLicense200ResponseCurrentUsage(val *InstallLicense200ResponseCurrentUsage) *NullableInstallLicense200ResponseCurrentUsage {
-	return &NullableInstallLicense200ResponseCurrentUsage{value: val, isSet: true}
-}
-
-func (v NullableInstallLicense200ResponseCurrentUsage) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstallLicense200ResponseCurrentUsage) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstallLicense200ResponseCurrentUsage) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *InstallLicense200ResponseCurrentUsage) UnmarshalJSON(data []byte) (err error) {

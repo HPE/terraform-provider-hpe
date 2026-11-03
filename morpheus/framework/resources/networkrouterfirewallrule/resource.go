@@ -18,6 +18,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -103,7 +104,7 @@ func (r *Resource) Create(
 		rule.Protocol = plan.Protocol.ValueStringPointer()
 	}
 	if !plan.PortRange.IsNull() && !plan.PortRange.IsUnknown() {
-		rule.PortRange = plan.PortRange.ValueStringPointer()
+		rule.PortRange.Set(plan.PortRange.ValueStringPointer())
 	}
 	if !plan.SourceType.IsNull() && !plan.SourceType.IsUnknown() {
 		rule.SourceType = plan.SourceType.ValueStringPointer()
@@ -112,10 +113,10 @@ func (r *Resource) Create(
 		rule.DestinationType = plan.DestinationType.ValueStringPointer()
 	}
 	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
-		rule.Application = plan.Application.ValueStringPointer()
+		rule.Application.Set(plan.Application.ValueStringPointer())
 	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		rule.Description = plan.Description.ValueStringPointer()
+		rule.Description.Set(plan.Description.ValueStringPointer())
 	}
 	rule.Config = &sdk.CreateNetworkRouterFirewallRuleRequestRuleConfig{
 		ParentId: plan.ParentId.ValueStringPointer(),
@@ -155,7 +156,10 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, absent, pdiags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
+	state, absent, found, pdiags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError(createOperation, fmt.Sprintf("firewall rule %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -169,6 +173,7 @@ func (r *Resource) Create(
 
 	warnIfFieldsAbsent(&resp.Diagnostics, plan, absent)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		taintState()
@@ -185,32 +190,35 @@ func getFirewallRuleAsState(
 	routerID int64,
 	client *sdk.APIClient,
 	plan NetworkRouterFirewallRuleModel,
-) (NetworkRouterFirewallRuleModel, ruleFieldsAbsent, diag.Diagnostics) {
+) (NetworkRouterFirewallRuleModel, ruleFieldsAbsent, bool, diag.Diagnostics) {
 	var state NetworkRouterFirewallRuleModel
 	var absent ruleFieldsAbsent
 	var diags diag.Diagnostics
 
 	resp, hresp, err := client.NetworksAPI.
 		GetNetworkRouterFirewallRule(ctx, id, routerID).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, absent, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("firewall rule %d GET failed: %s", id, errfmt.ErrMsg(err, hresp)),
 		)
 
-		return state, absent, diags
+		return state, absent, false, diags
 	}
 
 	rule := resp.Rule
 	if rule == nil {
 		diags.AddError("API returned nil", "Rule is nil in the response")
 
-		return state, absent, diags
+		return state, absent, false, diags
 	}
 
 	state, absent = mapRuleToState(rule, plan)
 
-	return state, absent, diags
+	return state, absent, true, diags
 }
 
 // ruleFieldsAbsent records which optional fields the API did not return, so
@@ -319,9 +327,18 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, _, diags := getFirewallRuleAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
+	state, _, found, diags := getFirewallRuleAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The firewall rule was deleted out of band (Morpheus returned 404); remove
+	// it from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("network router firewall rule %d not found, removing from state", plan.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -387,28 +404,31 @@ func (r *Resource) Update(
 	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
 		rule.Protocol = plan.Protocol.ValueStringPointer()
 	}
-	if !plan.PortRange.IsNull() && !plan.PortRange.IsUnknown() {
-		rule.PortRange = plan.PortRange.ValueStringPointer()
+
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared: sent when known, null when being cleared, not sent otherwise.
+	// Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	clearable.NullableString(pending, "port_range", plan.PortRange, &rule.PortRange)
 	if !plan.SourceType.IsNull() && !plan.SourceType.IsUnknown() {
 		rule.SourceType = plan.SourceType.ValueStringPointer()
 	}
 	if !plan.DestinationType.IsNull() && !plan.DestinationType.IsUnknown() {
 		rule.DestinationType = plan.DestinationType.ValueStringPointer()
 	}
-	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
-		rule.Application = plan.Application.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "application", plan.Application, &rule.Application)
 	// description is accepted by the API but never returned. Omitting it from
 	// the payload leaves the stored value untouched, so when it has been
-	// removed from the configuration send an empty string to clear it on the
-	// appliance. Only a value Terraform previously set is cleared, so a
+	// removed from the configuration an empty string is sent to clear it on
+	// the appliance. Only a value Terraform previously set is cleared, so a
 	// description set out of band is left alone.
-	switch {
-	case !plan.Description.IsNull() && !plan.Description.IsUnknown():
-		rule.Description = plan.Description.ValueStringPointer()
-	case plan.Description.IsNull() && !priorState.Description.IsNull():
-		rule.Description = convert.PtrString("")
+	if v := pending.String("description", plan.Description); v != nil {
+		rule.Description.Set(v)
 	}
 	rule.Config = &sdk.UpdateNetworkRouterFirewallRuleRequestRuleConfig{
 		ParentId: plan.ParentId.ValueStringPointer(),
@@ -430,7 +450,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, absent, diags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
+	state, absent, found, diags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError("update network router firewall rule resource", fmt.Sprintf("firewall rule %d not found after update", id))
+	}
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -438,6 +461,7 @@ func (r *Resource) Update(
 
 	warnIfFieldsAbsent(&resp.Diagnostics, plan, absent)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -467,18 +491,12 @@ func (r *Resource) Delete(
 
 	tflog.Debug(ctx, fmt.Sprintf("Deleting firewall rule %d on router %d", id, routerID))
 
-	_, hresp, err := client.NetworksAPI.
+	result, hresp, err := client.NetworksAPI.
 		DeleteNetworkRouterFirewallRule(ctx, id, routerID).Execute()
-	if err != nil {
-		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-			tflog.Debug(ctx, fmt.Sprintf("Firewall rule %d already deleted (404)", id))
-
-			return
-		}
-
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete network router firewall rule resource",
-			fmt.Sprintf("firewall rule %d DELETE failed: %s", id, errfmt.ErrMsg(err, hresp)),
+			fmt.Sprintf("firewall rule %d DELETE failed: %s", id, err.Error()),
 		)
 	}
 }

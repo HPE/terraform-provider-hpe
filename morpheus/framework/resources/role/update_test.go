@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package role_test
 
@@ -35,6 +35,15 @@ func TestAccMorpheusRoleResourceUserUpdateAllAttrsOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 	nameUpdated := name + "Updated"
+
+	// multitenant / multitenant_locked are master-tenant-only concepts;
+	// Morpheus silently ignores them for sub-tenant callers, and the provider
+	// now guards against setting them true as a sub-tenant (MORPH-17516). Only
+	// exercise the true case when the test caller is the master tenant.
+	multitenantVal := "false"
+	if testhelpers.IsMasterTenant(t) {
+		multitenantVal = "true"
+	}
 
 	dependencyResourceConfig := `
 resource "hpe_morpheus_group" "testacc_group" {
@@ -181,8 +190,8 @@ resource "hpe_morpheus_role" "update_test" {
   name = "` + nameUpdated + `"
   description = "Updated role description"
   landing_url = "https://updated.example.com"
-  multitenant = true
-  multitenant_locked = true
+  multitenant = ` + multitenantVal + `
+  multitenant_locked = ` + multitenantVal + `
   role_type = "user"
   permissions = {
 	default_group_access = "full"
@@ -251,8 +260,8 @@ resource "hpe_morpheus_role" "update_test" {
   name = "` + nameUpdated + `"
   description = "Updated role description"
   landing_url = "https://updated.example.com"
-  multitenant = true
-  multitenant_locked = true
+  multitenant = ` + multitenantVal + `
+  multitenant_locked = ` + multitenantVal + `
   role_type = "user"
 }
 `
@@ -489,12 +498,12 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
 			"multitenant",
-			"true",
+			multitenantVal,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
 			"multitenant_locked",
-			"true",
+			multitenantVal,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
@@ -702,12 +711,12 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
 			"multitenant",
-			"true",
+			multitenantVal,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
 			"multitenant_locked",
-			"true",
+			multitenantVal,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
@@ -799,6 +808,12 @@ resource "hpe_morpheus_role" "update_test" {
 // as part of the test.
 // TODO: Add VDI pool permissions checks once they are fixed in the OpenAPI spec and SDK.
 
+// TestAccMorpheusRoleResourceTenantUpdateAllAttrsOk exercises a sub-tenant
+// role with cloud_permissions on a cloud in the caller's own tenant. This is
+// the regression for MORPH-17517: the role GET echo filters zones by the
+// caller's cloud visibility, so a sub-tenant's own-cloud permission is
+// persisted but never echoed; the provider read-repairs the echo-gapped entry
+// so the apply no longer fails with "was cty.SetVal(...), but now null".
 func TestAccMorpheusRoleResourceTenantUpdateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -1513,6 +1528,21 @@ resource "hpe_morpheus_role" "update_test" {
 	updatedCheckFn := resource.ComposeAggregateTestCheckFunc(updatedChecks...)
 	removedPermissionsCheckFn := resource.ComposeAggregateTestCheckFunc(removedPermissionsChecks...)
 
+	// MORPH-17517 known limitation: a fresh sub-tenant import cannot recover
+	// cloud_permissions on the caller's own clouds, because the role GET echo
+	// filters zones by caller visibility and there is no prior state to
+	// read-repair from on import. Ignore cloud_permissions on import for
+	// sub-tenant callers only; master-tenant import remains bit-identical.
+	importIgnore := []string{
+		// Feature permissions on import will be the full set of computed permissions,
+		// not just those we set.
+		"permissions.feature_permissions",
+		"permissions.default_group_access",
+	}
+	if !testhelpers.IsMasterTenant(t) {
+		importIgnore = append(importIgnore, "permissions.cloud_permissions")
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
@@ -1554,16 +1584,11 @@ resource "hpe_morpheus_role" "update_test" {
 			},
 			// Test import state verification with updated values
 			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					// Feature permissions on import will be the full set of computed permissions,
-					// not just those we set.
-					"permissions.feature_permissions",
-					"permissions.default_group_access",
-				},
-				ResourceName: "hpe_morpheus_role.update_test",
-				Check:        updatedCheckFn,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: importIgnore,
+				ResourceName:            "hpe_morpheus_role.update_test",
+				Check:                   updatedCheckFn,
 			},
 			// Finally, test that nothing breaks if we remove the permissions block
 			{

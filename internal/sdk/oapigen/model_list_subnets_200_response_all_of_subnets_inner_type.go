@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o ListSubnets200ResponseAllOfSubnetsInnerType) ToMap() (map[string]interfa
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListSubnets200ResponseAllOfSubnetsInnerType struct {
-	value *ListSubnets200ResponseAllOfSubnetsInnerType
-	isSet bool
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerType) Get() *ListSubnets200ResponseAllOfSubnetsInnerType {
-	return v.value
-}
-
-func (v *NullableListSubnets200ResponseAllOfSubnetsInnerType) Set(val *ListSubnets200ResponseAllOfSubnetsInnerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListSubnets200ResponseAllOfSubnetsInnerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListSubnets200ResponseAllOfSubnetsInnerType(val *ListSubnets200ResponseAllOfSubnetsInnerType) *NullableListSubnets200ResponseAllOfSubnetsInnerType {
-	return &NullableListSubnets200ResponseAllOfSubnetsInnerType{value: val, isSet: true}
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListSubnets200ResponseAllOfSubnetsInnerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListSubnets200ResponseAllOfSubnetsInnerType) UnmarshalJSON(data []byte) (err error) {

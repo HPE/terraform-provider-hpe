@@ -3,6 +3,7 @@
 package task_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -35,17 +36,30 @@ func TestAccMorpheusTaskNestedWorkflowExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// MORPH-16489: the nestedWorkflow task API validates the ownership of the
+	// referenced operational workflow, so a hardcoded master-owned workflow
+	// (id 797) fails for a sub-tenant. Create a private operational workflow per
+	// run and wire both id and name from it.
+	workflowConfig := fmt.Sprintf(`
+resource "hpe_morpheus_workflow_operational" "wf" {
+  name                = %q
+  description         = "MORPH-16489 per-run operational workflow"
+  labels              = ["terraform", "acctest"]
+  platform            = "all"
+  visibility          = "private"
+  allow_custom_config = true
+}
+`, name+"-wf")
+
 	resourceConfig, err := task.RenderTaskNestedWorkflowConfig(t, map[string]string{
-		"Name": name,
-		// Environment-specific fixture: an operational workflow that exists in
-		// the acceptance test environment. Kept out of the example defaults so
-		// it doesn't leak into user-facing docs.
-		"OperationalWorkflowId":   "797",
-		"OperationalWorkflowName": "full-operational-workflow-1",
+		"Name":                    name,
+		"OperationalWorkflowId":   "hpe_morpheus_workflow_operational.wf.id",
+		"OperationalWorkflowName": "hpe_morpheus_workflow_operational.wf.name",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
+	resourceConfig = workflowConfig + resourceConfig
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -66,16 +80,16 @@ func TestAccMorpheusTaskNestedWorkflowExampleOk(t *testing.T) {
 			name,
 		),
 
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_task_nested_workflow.example",
 			"operational_workflow_id",
-			"797",
+			"hpe_morpheus_workflow_operational.wf", "id",
 		),
 
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_task_nested_workflow.example",
 			"operational_workflow_name",
-			"full-operational-workflow-1",
+			"hpe_morpheus_workflow_operational.wf", "name",
 		),
 	}
 

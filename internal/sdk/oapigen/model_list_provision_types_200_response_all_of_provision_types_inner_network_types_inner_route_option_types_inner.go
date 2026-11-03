@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -197,51 +197,6 @@ func (o ListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRo
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner struct {
-	value *ListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner
-	isSet bool
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner) Get() *ListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner) Set(val *ListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner(val *ListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner) *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner {
-	return &NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListProvisionTypes200ResponseAllOfProvisionTypesInnerNetworkTypesInnerRouteOptionTypesInner) UnmarshalJSON(data []byte) (err error) {

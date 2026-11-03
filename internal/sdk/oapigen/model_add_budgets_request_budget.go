@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -104,51 +104,6 @@ func (o AddBudgetsRequestBudget) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddBudgetsRequestBudget struct {
-	value *AddBudgetsRequestBudget
-	isSet bool
-}
-
-func (v NullableAddBudgetsRequestBudget) Get() *AddBudgetsRequestBudget {
-	return v.value
-}
-
-func (v *NullableAddBudgetsRequestBudget) Set(val *AddBudgetsRequestBudget) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddBudgetsRequestBudget) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddBudgetsRequestBudget) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddBudgetsRequestBudget(val *AddBudgetsRequestBudget) *NullableAddBudgetsRequestBudget {
-	return &NullableAddBudgetsRequestBudget{value: val, isSet: true}
-}
-
-func (v NullableAddBudgetsRequestBudget) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddBudgetsRequestBudget) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddBudgetsRequestBudget) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddBudgetsRequestBudget) UnmarshalJSON(data []byte) (err error) {

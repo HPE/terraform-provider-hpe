@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,8 +23,8 @@ var _ MappedNullable = &UpdateVDIAppsRequestVdiAppOneOf{}
 type UpdateVDIAppsRequestVdiAppOneOf struct {
 	// VDI App name
 	Name *string `json:"name,omitempty"`
-	// Description
-	Description *string `json:"description,omitempty"`
+	// Description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Icon Path. A relative location of an icon image
 	IconPath **os.File `json:"iconPath,omitempty"`
 	// The RDS App Name Prefix.  Must start with '||'
@@ -47,8 +47,8 @@ func (o UpdateVDIAppsRequestVdiAppOneOf) ToMap() (map[string]interface{}, error)
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.IconPath) {
 		toSerialize["iconPath"] = o.IconPath
@@ -62,51 +62,6 @@ func (o UpdateVDIAppsRequestVdiAppOneOf) ToMap() (map[string]interface{}, error)
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateVDIAppsRequestVdiAppOneOf struct {
-	value *UpdateVDIAppsRequestVdiAppOneOf
-	isSet bool
-}
-
-func (v NullableUpdateVDIAppsRequestVdiAppOneOf) Get() *UpdateVDIAppsRequestVdiAppOneOf {
-	return v.value
-}
-
-func (v *NullableUpdateVDIAppsRequestVdiAppOneOf) Set(val *UpdateVDIAppsRequestVdiAppOneOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVDIAppsRequestVdiAppOneOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVDIAppsRequestVdiAppOneOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVDIAppsRequestVdiAppOneOf(val *UpdateVDIAppsRequestVdiAppOneOf) *NullableUpdateVDIAppsRequestVdiAppOneOf {
-	return &NullableUpdateVDIAppsRequestVdiAppOneOf{value: val, isSet: true}
-}
-
-func (v NullableUpdateVDIAppsRequestVdiAppOneOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVDIAppsRequestVdiAppOneOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVDIAppsRequestVdiAppOneOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateVDIAppsRequestVdiAppOneOf) UnmarshalJSON(data []byte) (err error) {

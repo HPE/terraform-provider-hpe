@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -43,51 +43,6 @@ func (o MaxPoolMembersPolicyTypeConfiguration2) ToMap() (map[string]interface{},
 	}
 
 	return toSerialize, nil
-}
-
-type NullableMaxPoolMembersPolicyTypeConfiguration2 struct {
-	value *MaxPoolMembersPolicyTypeConfiguration2
-	isSet bool
-}
-
-func (v NullableMaxPoolMembersPolicyTypeConfiguration2) Get() *MaxPoolMembersPolicyTypeConfiguration2 {
-	return v.value
-}
-
-func (v *NullableMaxPoolMembersPolicyTypeConfiguration2) Set(val *MaxPoolMembersPolicyTypeConfiguration2) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMaxPoolMembersPolicyTypeConfiguration2) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMaxPoolMembersPolicyTypeConfiguration2) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMaxPoolMembersPolicyTypeConfiguration2(val *MaxPoolMembersPolicyTypeConfiguration2) *NullableMaxPoolMembersPolicyTypeConfiguration2 {
-	return &NullableMaxPoolMembersPolicyTypeConfiguration2{value: val, isSet: true}
-}
-
-func (v NullableMaxPoolMembersPolicyTypeConfiguration2) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMaxPoolMembersPolicyTypeConfiguration2) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMaxPoolMembersPolicyTypeConfiguration2) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *MaxPoolMembersPolicyTypeConfiguration2) UnmarshalJSON(data []byte) (err error) {

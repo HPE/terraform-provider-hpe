@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o GetVirtualImage200ResponseVirtualImageStorageControllersInnerType) ToMap
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetVirtualImage200ResponseVirtualImageStorageControllersInnerType struct {
-	value *GetVirtualImage200ResponseVirtualImageStorageControllersInnerType
-	isSet bool
-}
-
-func (v NullableGetVirtualImage200ResponseVirtualImageStorageControllersInnerType) Get() *GetVirtualImage200ResponseVirtualImageStorageControllersInnerType {
-	return v.value
-}
-
-func (v *NullableGetVirtualImage200ResponseVirtualImageStorageControllersInnerType) Set(val *GetVirtualImage200ResponseVirtualImageStorageControllersInnerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetVirtualImage200ResponseVirtualImageStorageControllersInnerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetVirtualImage200ResponseVirtualImageStorageControllersInnerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetVirtualImage200ResponseVirtualImageStorageControllersInnerType(val *GetVirtualImage200ResponseVirtualImageStorageControllersInnerType) *NullableGetVirtualImage200ResponseVirtualImageStorageControllersInnerType {
-	return &NullableGetVirtualImage200ResponseVirtualImageStorageControllersInnerType{value: val, isSet: true}
-}
-
-func (v NullableGetVirtualImage200ResponseVirtualImageStorageControllersInnerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetVirtualImage200ResponseVirtualImageStorageControllersInnerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetVirtualImage200ResponseVirtualImageStorageControllersInnerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetVirtualImage200ResponseVirtualImageStorageControllersInnerType) UnmarshalJSON(data []byte) (err error) {

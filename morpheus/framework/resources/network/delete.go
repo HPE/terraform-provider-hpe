@@ -5,13 +5,11 @@ package network
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
 func (r *Resource) Delete(
@@ -49,13 +47,8 @@ func (r *Resource) Delete(
 	id := state.Id.ValueInt64()
 
 	tflog.Debug(ctx, fmt.Sprintf("Deleting network %d", id))
-	_, hresp, err := client.NetworksAPI.DeleteNetwork(ctx, id).
-		Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"delete network resource",
-			fmt.Sprintf("network %d DELETE failed: %s",
-				id, errfmt.ErrMsg(err, hresp)),
-		)
+
+	if err := deleteNetworkAndWait(ctx, client, id, constants.NetworkDeleteTimeout); err != nil {
+		resp.Diagnostics.AddError("delete network resource", err.Error())
 	}
 }

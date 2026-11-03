@@ -5,7 +5,6 @@ package cloud
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
@@ -29,11 +28,11 @@ func (r *Resource) Delete(
 
 	client, _ := r.NewClient(ctx)
 
-	_, hresp, err := client.CloudsAPI.RemoveClouds(ctx, id).Force(true).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.CloudsAPI.RemoveClouds(ctx, id).Force(true).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete cloud resource",
-			fmt.Sprintf("cloud %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("cloud %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

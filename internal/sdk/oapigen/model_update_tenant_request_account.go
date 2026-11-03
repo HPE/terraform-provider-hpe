@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,19 +23,19 @@ type UpdateTenantRequestAccount struct {
 	// Name
 	Name *string `json:"name,omitempty"`
 	// Description
-	Description NullableString                  `json:"description,omitempty"`
-	Role        *UpdateTenantRequestAccountRole `json:"role,omitempty"`
+	Description NullableString `json:"description,omitempty"`
+	// Whether the tenant is active
+	Active *bool                           `json:"active,omitempty"`
+	Role   *UpdateTenantRequestAccountRole `json:"role,omitempty"`
 	// The subdomain. This will be part of the login URL and username for sub tenant users.
 	Subdomain NullableString `json:"subdomain,omitempty"`
-	// Currency ISO 4217 code for the tenant (e.g. USD, EUR, GBP). Must be a currency enabled on the target appliance; see the `currencies` option source (GET /api/options/currencies) for the live set. See CurrencyCode for the canonical ISO 4217 list.
+	// Currency Code (ISO 4217)
 	Currency *string `json:"currency,omitempty"`
-	// Whether the tenant is enabled. Disabled tenants cannot be logged into.
-	Active *bool `json:"active,omitempty"`
-	// An optional field that can be used for billing and accounting.
+	// Account number
 	AccountNumber NullableString `json:"accountNumber,omitempty"`
-	// An optional field that can be used for billing and accounting.
+	// Account name
 	AccountName NullableString `json:"accountName,omitempty"`
-	// An optional field that can be used for billing and accounting.
+	// Customer number
 	CustomerNumber       NullableString         `json:"customerNumber,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
@@ -58,6 +58,9 @@ func (o UpdateTenantRequestAccount) ToMap() (map[string]interface{}, error) {
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
+	if !IsNil(o.Active) {
+		toSerialize["active"] = o.Active
+	}
 	if !IsNil(o.Role) {
 		toSerialize["role"] = o.Role
 	}
@@ -66,9 +69,6 @@ func (o UpdateTenantRequestAccount) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Currency) {
 		toSerialize["currency"] = o.Currency
-	}
-	if !IsNil(o.Active) {
-		toSerialize["active"] = o.Active
 	}
 	if o.AccountNumber.IsSet() {
 		toSerialize["accountNumber"] = o.AccountNumber.Get()
@@ -85,51 +85,6 @@ func (o UpdateTenantRequestAccount) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateTenantRequestAccount struct {
-	value *UpdateTenantRequestAccount
-	isSet bool
-}
-
-func (v NullableUpdateTenantRequestAccount) Get() *UpdateTenantRequestAccount {
-	return v.value
-}
-
-func (v *NullableUpdateTenantRequestAccount) Set(val *UpdateTenantRequestAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateTenantRequestAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateTenantRequestAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateTenantRequestAccount(val *UpdateTenantRequestAccount) *NullableUpdateTenantRequestAccount {
-	return &NullableUpdateTenantRequestAccount{value: val, isSet: true}
-}
-
-func (v NullableUpdateTenantRequestAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateTenantRequestAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateTenantRequestAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateTenantRequestAccount) UnmarshalJSON(data []byte) (err error) {

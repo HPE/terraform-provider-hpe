@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -25,7 +25,6 @@ type GetClouds200ResponseZoneConfigAnyOf struct {
 	ExternalId                 NullableString                                         `json:"externalId,omitempty"`
 	InventoryLevel             NullableString                                         `json:"inventoryLevel,omitempty"`
 	ConsoleKeymap              NullableString                                         `json:"consoleKeymap,omitempty"`
-	BackupMode                 NullableString                                         `json:"backupMode,omitempty"`
 	CertificateProvider        NullableString                                         `json:"certificateProvider,omitempty"`
 	ConfigCmdbDiscovery        *bool                                                  `json:"configCmdbDiscovery,omitempty"`
 	EnableNetworkTypeSelection NullableString                                         `json:"enableNetworkTypeSelection,omitempty"`
@@ -64,9 +63,6 @@ func (o GetClouds200ResponseZoneConfigAnyOf) ToMap() (map[string]interface{}, er
 	if o.ConsoleKeymap.IsSet() {
 		toSerialize["consoleKeymap"] = o.ConsoleKeymap.Get()
 	}
-	if o.BackupMode.IsSet() {
-		toSerialize["backupMode"] = o.BackupMode.Get()
-	}
 	if o.CertificateProvider.IsSet() {
 		toSerialize["certificateProvider"] = o.CertificateProvider.Get()
 	}
@@ -97,51 +93,6 @@ func (o GetClouds200ResponseZoneConfigAnyOf) ToMap() (map[string]interface{}, er
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClouds200ResponseZoneConfigAnyOf struct {
-	value *GetClouds200ResponseZoneConfigAnyOf
-	isSet bool
-}
-
-func (v NullableGetClouds200ResponseZoneConfigAnyOf) Get() *GetClouds200ResponseZoneConfigAnyOf {
-	return v.value
-}
-
-func (v *NullableGetClouds200ResponseZoneConfigAnyOf) Set(val *GetClouds200ResponseZoneConfigAnyOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClouds200ResponseZoneConfigAnyOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClouds200ResponseZoneConfigAnyOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClouds200ResponseZoneConfigAnyOf(val *GetClouds200ResponseZoneConfigAnyOf) *NullableGetClouds200ResponseZoneConfigAnyOf {
-	return &NullableGetClouds200ResponseZoneConfigAnyOf{value: val, isSet: true}
-}
-
-func (v NullableGetClouds200ResponseZoneConfigAnyOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClouds200ResponseZoneConfigAnyOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClouds200ResponseZoneConfigAnyOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClouds200ResponseZoneConfigAnyOf) UnmarshalJSON(data []byte) (err error) {

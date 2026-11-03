@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner) ToMap() (
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner struct {
-	value *ListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner
-	isSet bool
-}
-
-func (v NullableListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner) Get() *ListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner {
-	return v.value
-}
-
-func (v *NullableListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner) Set(val *ListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner(val *ListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner) *NullableListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner {
-	return &NullableListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner{value: val, isSet: true}
-}
-
-func (v NullableListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListInstanceServicePlans200ResponsePlansInnerAutoOptionsInner) UnmarshalJSON(data []byte) (err error) {

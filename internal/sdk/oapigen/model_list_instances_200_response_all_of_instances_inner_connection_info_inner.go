@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o ListInstances200ResponseAllOfInstancesInnerConnectionInfoInner) ToMap() 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListInstances200ResponseAllOfInstancesInnerConnectionInfoInner struct {
-	value *ListInstances200ResponseAllOfInstancesInnerConnectionInfoInner
-	isSet bool
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerConnectionInfoInner) Get() *ListInstances200ResponseAllOfInstancesInnerConnectionInfoInner {
-	return v.value
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerConnectionInfoInner) Set(val *ListInstances200ResponseAllOfInstancesInnerConnectionInfoInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerConnectionInfoInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerConnectionInfoInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListInstances200ResponseAllOfInstancesInnerConnectionInfoInner(val *ListInstances200ResponseAllOfInstancesInnerConnectionInfoInner) *NullableListInstances200ResponseAllOfInstancesInnerConnectionInfoInner {
-	return &NullableListInstances200ResponseAllOfInstancesInnerConnectionInfoInner{value: val, isSet: true}
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerConnectionInfoInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerConnectionInfoInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerConnectionInfoInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListInstances200ResponseAllOfInstancesInnerConnectionInfoInner) UnmarshalJSON(data []byte) (err error) {

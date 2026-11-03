@@ -1,4 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
 package user
 
 import (
@@ -16,9 +17,14 @@ func RenderUserConfig(t *testing.T, overrides map[string]string) (string, error)
 	t.Helper()
 
 	defaults := map[string]string{
-		"TenantId":       testhelpers.WhoamiTenantIDRef,
-		"Username":       "example-user",
-		"RoleIds":        "1",
+		"TenantId": testhelpers.WhoamiTenantIDRef,
+		"Username": "example-user",
+		// MORPH-16460: default to an HCL reference so callers wire a per-run
+		// role dependency instead of the master-tenant role id "1". Callers
+		// must supply a matching hpe_morpheus_role.example resource. The
+		// go:generate directive above still renders the docs example with a
+		// literal role id.
+		"RoleIds":        "hpe_morpheus_role.example.id",
 		"LinuxKeyPairId": "100",
 	}
 

@@ -11,10 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
@@ -33,18 +36,21 @@ func getCloudAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan CloudModel,
-) (CloudModel, diag.Diagnostics) {
+) (CloudModel, *sdk.GetClouds200ResponseZone, bool, diag.Diagnostics) {
 	var state CloudModel
 	var diags diag.Diagnostics
 
 	c, hresp, err := client.CloudsAPI.GetClouds(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, nil, false, diags
+	}
 	if err != nil || c == nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("cloud %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, nil, false, diags
 	}
 
 	if c.Zone == nil {
@@ -53,7 +59,7 @@ func getCloudAsState(
 			fmt.Sprintf("cloud %d missing zone", id),
 		)
 
-		return state, diags
+		return state, nil, false, diags
 	}
 
 	cloud := c.Zone
@@ -64,11 +70,14 @@ func getCloudAsState(
 			fmt.Sprintf("cloud %d missing config", id),
 		)
 
-		return state, diags
+		return state, cloud, false, diags
 	}
 
 	importing := plan.Name.IsNull()
-	cloudType := *cloud.ZoneType.Code
+	cloudType := ""
+	if zt := cloud.ZoneType.Get(); zt != nil && zt.Code != nil {
+		cloudType = *zt.Code
+	}
 
 	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
 		state.GroupId = plan.GroupId
@@ -98,18 +107,42 @@ func getCloudAsState(
 	state.Labels = convert.StrSliceToSet(cloud.Labels)
 	state.Location = convert.StrToType(cloud.Location.Get())
 	state.Name = convert.StrToType(cloud.Name)
-	state.CloudTypeCode = convert.StrToType(cloud.ZoneType.Code)
+	state.CloudTypeCode = types.StringValue(cloudType)
 	state.SecurityMode = convert.StrToType(cloud.SecurityMode)
 	state.TenantId = convert.Int64ToType(cloud.AccountId)
 	state.Visibility = convert.StrToType(cloud.Visibility)
+
+	// backup_provider_ids: integration ids assigned to the cloud. Morpheus
+	// defaults the set to the internal provider when none is configured, so the
+	// server's answer is authoritative — except below 9.0.2, where the zones
+	// service persists the field but the API response does not carry it; there
+	// the value cannot be read back, so the configured value is preserved. The
+	// gate is on the appliance version, not on an empty answer, so that a
+	// server-side default or a dropped value on 9.0.2+ still shows as drift.
+	// Fail open: when the version cannot be determined, trust the server's
+	// answer, as on a current appliance.
+	readable := true
+	if v, err := versioncheck.Appliance(ctx, client); err == nil {
+		if ok, err := versioncheck.Satisfies(v, constants.CloudBackupProvidersMinVersion); err == nil {
+			readable = ok
+		}
+	}
+	switch {
+	case readable:
+		state.BackupProviderIds = convert.Int64SliceToSet(cloud.BackupProviders)
+	case !plan.BackupProviderIds.IsNull() && !plan.BackupProviderIds.IsUnknown():
+		state.BackupProviderIds = plan.BackupProviderIds
+	default:
+		state.BackupProviderIds = types.SetNull(types.Int64Type)
+	}
 
 	switch {
 	case cloudType == awsCloud && (!plan.ConfigAws.IsNull() || importing):
 		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf2
 
 		// Move these common fields up
-		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl)
-		state.DataCenterName = convert.StrToType(cfg.DatacenterName)
+		state.ApplianceUrl = configString(cfg.ApplianceUrl)
+		state.DataCenterName = configString(cfg.DatacenterName)
 
 		attrTypes := ConfigAwsValue{}.AttributeTypes(ctx)
 		attrValues := make(map[string]attr.Value)
@@ -120,8 +153,11 @@ func getCloudAsState(
 			attrValues["access_key"] = types.StringNull()
 		}
 
-		if cfg.BackupMode != nil {
-			attrValues["backup_provider"] = convert.StrToType(cfg.BackupMode)
+		// backupMode left the documented AWS configuration in 9.1.0 (the API
+		// exposes backup providers at the cloud level instead) but is still
+		// stored in the configuration map; read it from the undocumented keys.
+		if v, ok := cfg.AdditionalProperties["backupMode"].(string); ok && v != "" {
+			attrValues["backup_provider"] = types.StringValue(v)
 		} else {
 			attrValues["backup_provider"] = types.StringNull()
 		}
@@ -316,7 +352,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode AWS configuration", id),
 			)
 
-			return state, diags
+			return state, cloud, false, diags
 		}
 
 		state.ConfigAws = configAws
@@ -325,11 +361,11 @@ func getCloudAsState(
 		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf
 
 		// Move these common fields up
-		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
-		state.DataCenterName = convert.StrToType(cfg.DatacenterName.Get())
-		state.ExternalId = convert.StrToType(cfg.ExternalId.Get())
-		state.ImportExistingVms = convert.StrToType(cfg.InventoryLevel.Get())
-		state.KeyboardLayout = convert.StrToType(cfg.ConsoleKeymap.Get())
+		state.ApplianceUrl = configString(cfg.ApplianceUrl.Get())
+		state.DataCenterName = configString(cfg.DatacenterName.Get())
+		state.ExternalId = configString(cfg.ExternalId.Get())
+		state.ImportExistingVms = configString(cfg.InventoryLevel.Get())
+		state.KeyboardLayout = configString(cfg.ConsoleKeymap.Get())
 
 		attrTypes := ConfigHvmValue{}.AttributeTypes(ctx)
 		attrValues := make(map[string]attr.Value)
@@ -354,7 +390,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode HVM configuration", id),
 			)
 
-			return state, diags
+			return state, cloud, false, diags
 		}
 
 		state.ConfigHvm = configHvm
@@ -363,11 +399,11 @@ func getCloudAsState(
 		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf1
 
 		// Move these common fields up
-		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
-		state.DataCenterName = convert.StrToType(cfg.DatacenterName.Get())
-		state.ExternalId = convert.StrToType(cfg.ExternalId.Get())
-		state.ImportExistingVms = convert.StrToType(cfg.InventoryLevel.Get())
-		state.KeyboardLayout = convert.StrToType(cfg.ConsoleKeymap.Get())
+		state.ApplianceUrl = configString(cfg.ApplianceUrl.Get())
+		state.DataCenterName = configString(cfg.DatacenterName.Get())
+		state.ExternalId = configString(cfg.ExternalId.Get())
+		state.ImportExistingVms = configString(cfg.InventoryLevel.Get())
+		state.KeyboardLayout = configString(cfg.ConsoleKeymap.Get())
 
 		attrTypes := ConfigVmwareValue{}.AttributeTypes(ctx)
 		attrValues := make(map[string]attr.Value)
@@ -476,7 +512,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode VMware configuration", id),
 			)
 
-			return state, diags
+			return state, cloud, false, diags
 		}
 
 		state.ConfigVmware = configVmware
@@ -487,8 +523,8 @@ func getCloudAsState(
 		// The AnyOf index differs between request/response specs but both are Azure.
 		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf3
 
-		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl)
-		state.DataCenterName = convert.StrToType(cfg.DatacenterName)
+		state.ApplianceUrl = configString(cfg.ApplianceUrl)
+		state.DataCenterName = configString(cfg.DatacenterName)
 
 		attrTypes := ConfigAzureValue{}.AttributeTypes(ctx)
 		attrValues := make(map[string]attr.Value)
@@ -563,7 +599,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode Azure configuration", id),
 			)
 
-			return state, diags
+			return state, cloud, false, diags
 		}
 
 		state.ConfigAzure = configAzure
@@ -577,30 +613,30 @@ func getCloudAsState(
 				"cloud: generic config missing from API response",
 			)
 
-			return state, diags
+			return state, cloud, false, diags
 		}
 
 		cfgValue := *cfg
 
 		// Move these common fields up
 		if v, ok := cfgValue["applianceUrl"].(string); ok {
-			state.ApplianceUrl = convert.StrToType(&v)
+			state.ApplianceUrl = configString(&v)
 			delete(cfgValue, "applianceUrl")
 		}
 		if v, ok := cfgValue["datacenterName"].(string); ok {
-			state.DataCenterName = convert.StrToType(&v)
+			state.DataCenterName = configString(&v)
 			delete(cfgValue, "datacenterName")
 		}
 		if v, ok := cfgValue["externalId"].(string); ok {
-			state.ExternalId = convert.StrToType(&v)
+			state.ExternalId = configString(&v)
 			delete(cfgValue, "externalId")
 		}
 		if v, ok := cfgValue["inventoryLevel"].(string); ok {
-			state.ImportExistingVms = convert.StrToType(&v)
+			state.ImportExistingVms = configString(&v)
 			delete(cfgValue, "inventoryLevel")
 		}
 		if v, ok := cfgValue["consoleKeymap"].(string); ok {
-			state.KeyboardLayout = convert.StrToType(&v)
+			state.KeyboardLayout = configString(&v)
 			delete(cfgValue, "consoleKeymap")
 		}
 
@@ -613,23 +649,23 @@ func getCloudAsState(
 
 			// Move these common fields up
 			if v, ok := cfgValue["applianceUrl"].(string); ok {
-				state.ApplianceUrl = convert.StrToType(&v)
+				state.ApplianceUrl = configString(&v)
 				delete(cfgValue, "applianceUrl")
 			}
 			if v, ok := cfgValue["datacenterName"].(string); ok {
-				state.DataCenterName = convert.StrToType(&v)
+				state.DataCenterName = configString(&v)
 				delete(cfgValue, "datacenterName")
 			}
 			if v, ok := cfgValue["externalId"].(string); ok {
-				state.ExternalId = convert.StrToType(&v)
+				state.ExternalId = configString(&v)
 				delete(cfgValue, "externalId")
 			}
 			if v, ok := cfgValue["inventoryLevel"].(string); ok {
-				state.ImportExistingVms = convert.StrToType(&v)
+				state.ImportExistingVms = configString(&v)
 				delete(cfgValue, "inventoryLevel")
 			}
 			if v, ok := cfgValue["consoleKeymap"].(string); ok {
-				state.KeyboardLayout = convert.StrToType(&v)
+				state.KeyboardLayout = configString(&v)
 				delete(cfgValue, "consoleKeymap")
 			}
 
@@ -640,12 +676,15 @@ func getCloudAsState(
 					"cloud: failed to convert generic config: "+err.Error(),
 				)
 
-				return state, diags
+				return state, cloud, false, diags
 			}
 		}
 	}
 
-	return state, diags
+	// write_only_revision is not in the API; carried from prior state.
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
+
+	return state, cloud, true, diags
 }
 
 func (r *Resource) Read(
@@ -672,7 +711,7 @@ func (r *Resource) Read(
 
 	id := plan.Id.ValueInt64()
 
-	state, pdiags := getCloudAsState(ctx, id, client, plan)
+	state, zone, found, pdiags := getCloudAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -681,6 +720,29 @@ func (r *Resource) Read(
 		)
 
 		return
+	}
+
+	// The cloud was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("cloud %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
+
+		return
+	}
+
+	// Appliance-side drift detection: compare the current hash of each stored
+	// secret with the baseline recorded after the provider last sent it. Any
+	// drift is recorded in private state for ModifyPlan to act on; it is
+	// logged, not surfaced as an error, so a read is never blocked by it. The
+	// zone read by getCloudAsState above is reused -- Read does not GET the
+	// cloud a second time for drift detection.
+	drifted, ddiags := wo.CheckDrift(ctx, resp.Private, zone)
+	resp.Diagnostics.Append(ddiags...)
+	if len(drifted) > 0 {
+		tflog.Info(ctx, "cloud: write-only secret changed on the appliance", map[string]any{
+			"cloud": id, "attributes": drifted,
+		})
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -693,4 +755,17 @@ func (r *Resource) Read(
 	resp.Diagnostics.Append(
 		schemadefaults.Apply(ctx, CloudResourceSchema(ctx), &resp.State)...,
 	)
+}
+
+// configString is the state value of a cloud attribute that lives in the
+// cloud's configuration map. Morpheus keeps a key that was cleared as an
+// empty string rather than dropping it, so an empty value is unset, and reads
+// back as null — the same value the plan holds after the attribute is removed
+// from the configuration.
+func configString(s *string) types.String {
+	if s == nil || *s == "" {
+		return types.StringNull()
+	}
+
+	return types.StringValue(*s)
 }

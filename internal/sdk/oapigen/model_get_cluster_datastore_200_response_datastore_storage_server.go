@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o GetClusterDatastore200ResponseDatastoreStorageServer) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClusterDatastore200ResponseDatastoreStorageServer struct {
-	value *GetClusterDatastore200ResponseDatastoreStorageServer
-	isSet bool
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreStorageServer) Get() *GetClusterDatastore200ResponseDatastoreStorageServer {
-	return v.value
-}
-
-func (v *NullableGetClusterDatastore200ResponseDatastoreStorageServer) Set(val *GetClusterDatastore200ResponseDatastoreStorageServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreStorageServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterDatastore200ResponseDatastoreStorageServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterDatastore200ResponseDatastoreStorageServer(val *GetClusterDatastore200ResponseDatastoreStorageServer) *NullableGetClusterDatastore200ResponseDatastoreStorageServer {
-	return &NullableGetClusterDatastore200ResponseDatastoreStorageServer{value: val, isSet: true}
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreStorageServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterDatastore200ResponseDatastoreStorageServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreStorageServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClusterDatastore200ResponseDatastoreStorageServer) UnmarshalJSON(data []byte) (err error) {

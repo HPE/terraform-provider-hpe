@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o ListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) ToMap() (map[st
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListNetworkServerGroups200ResponseAllOfGroupsInnerOwner struct {
-	value *ListNetworkServerGroups200ResponseAllOfGroupsInnerOwner
-	isSet bool
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) Get() *ListNetworkServerGroups200ResponseAllOfGroupsInnerOwner {
-	return v.value
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) Set(val *ListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListNetworkServerGroups200ResponseAllOfGroupsInnerOwner(val *ListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerOwner {
-	return &NullableListNetworkServerGroups200ResponseAllOfGroupsInnerOwner{value: val, isSet: true}
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) UnmarshalJSON(data []byte) (err error) {

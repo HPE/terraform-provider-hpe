@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o MessageOfTheDayPolicyTypeConfiguration1Motd) ToMap() (map[string]interfa
 	}
 
 	return toSerialize, nil
-}
-
-type NullableMessageOfTheDayPolicyTypeConfiguration1Motd struct {
-	value *MessageOfTheDayPolicyTypeConfiguration1Motd
-	isSet bool
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration1Motd) Get() *MessageOfTheDayPolicyTypeConfiguration1Motd {
-	return v.value
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration1Motd) Set(val *MessageOfTheDayPolicyTypeConfiguration1Motd) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration1Motd) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration1Motd) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMessageOfTheDayPolicyTypeConfiguration1Motd(val *MessageOfTheDayPolicyTypeConfiguration1Motd) *NullableMessageOfTheDayPolicyTypeConfiguration1Motd {
-	return &NullableMessageOfTheDayPolicyTypeConfiguration1Motd{value: val, isSet: true}
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration1Motd) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration1Motd) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration1Motd) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *MessageOfTheDayPolicyTypeConfiguration1Motd) UnmarshalJSON(data []byte) (err error) {

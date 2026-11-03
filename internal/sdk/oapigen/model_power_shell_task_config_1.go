@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,14 +20,16 @@ var _ MappedNullable = &PowerShellTaskConfig1{}
 
 // PowerShellTaskConfig1 struct for PowerShellTaskConfig1
 type PowerShellTaskConfig1 struct {
-	Host                 NullableString         `json:"host,omitempty"`
-	LocalScriptGitId     NullableString         `json:"localScriptGitId,omitempty"`
-	Username             NullableString         `json:"username,omitempty"`
-	Port                 NullableString         `json:"port,omitempty"`
-	LocalScriptGitRef    NullableString         `json:"localScriptGitRef,omitempty"`
-	Password             NullableString         `json:"password,omitempty"`
-	PasswordHash         NullableString         `json:"passwordHash,omitempty"`
-	SshKey               NullableString         `json:"sshKey,omitempty"`
+	Host              NullableString `json:"host,omitempty"`
+	LocalScriptGitId  NullableString `json:"localScriptGitId,omitempty"`
+	Username          NullableString `json:"username,omitempty"`
+	Port              NullableString `json:"port,omitempty"`
+	LocalScriptGitRef NullableString `json:"localScriptGitRef,omitempty"`
+	Password          NullableString `json:"password,omitempty"`
+	PasswordHash      NullableString `json:"passwordHash,omitempty"`
+	SshKey            NullableString `json:"sshKey,omitempty"`
+	// Run the script in an elevated shell. The API stores the flag as the string 'on' when set.
+	WinrmElevated        *string                `json:"winrm.elevated,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -67,57 +69,15 @@ func (o PowerShellTaskConfig1) ToMap() (map[string]interface{}, error) {
 	if o.SshKey.IsSet() {
 		toSerialize["sshKey"] = o.SshKey.Get()
 	}
+	if !IsNil(o.WinrmElevated) {
+		toSerialize["winrm.elevated"] = o.WinrmElevated
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
 	}
 
 	return toSerialize, nil
-}
-
-type NullablePowerShellTaskConfig1 struct {
-	value *PowerShellTaskConfig1
-	isSet bool
-}
-
-func (v NullablePowerShellTaskConfig1) Get() *PowerShellTaskConfig1 {
-	return v.value
-}
-
-func (v *NullablePowerShellTaskConfig1) Set(val *PowerShellTaskConfig1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePowerShellTaskConfig1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePowerShellTaskConfig1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePowerShellTaskConfig1(val *PowerShellTaskConfig1) *NullablePowerShellTaskConfig1 {
-	return &NullablePowerShellTaskConfig1{value: val, isSet: true}
-}
-
-func (v NullablePowerShellTaskConfig1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePowerShellTaskConfig1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePowerShellTaskConfig1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *PowerShellTaskConfig1) UnmarshalJSON(data []byte) (err error) {

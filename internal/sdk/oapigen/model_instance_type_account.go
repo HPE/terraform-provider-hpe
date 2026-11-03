@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o InstanceTypeAccount) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableInstanceTypeAccount struct {
-	value *InstanceTypeAccount
-	isSet bool
-}
-
-func (v NullableInstanceTypeAccount) Get() *InstanceTypeAccount {
-	return v.value
-}
-
-func (v *NullableInstanceTypeAccount) Set(val *InstanceTypeAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceTypeAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceTypeAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceTypeAccount(val *InstanceTypeAccount) *NullableInstanceTypeAccount {
-	return &NullableInstanceTypeAccount{value: val, isSet: true}
-}
-
-func (v NullableInstanceTypeAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceTypeAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceTypeAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *InstanceTypeAccount) UnmarshalJSON(data []byte) (err error) {

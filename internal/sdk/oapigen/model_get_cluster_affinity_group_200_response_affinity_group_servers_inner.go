@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetClusterAffinityGroup200ResponseAffinityGroupServersInner) ToMap() (ma
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClusterAffinityGroup200ResponseAffinityGroupServersInner struct {
-	value *GetClusterAffinityGroup200ResponseAffinityGroupServersInner
-	isSet bool
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupServersInner) Get() *GetClusterAffinityGroup200ResponseAffinityGroupServersInner {
-	return v.value
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroupServersInner) Set(val *GetClusterAffinityGroup200ResponseAffinityGroupServersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupServersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroupServersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterAffinityGroup200ResponseAffinityGroupServersInner(val *GetClusterAffinityGroup200ResponseAffinityGroupServersInner) *NullableGetClusterAffinityGroup200ResponseAffinityGroupServersInner {
-	return &NullableGetClusterAffinityGroup200ResponseAffinityGroupServersInner{value: val, isSet: true}
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupServersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroupServersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupServersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClusterAffinityGroup200ResponseAffinityGroupServersInner) UnmarshalJSON(data []byte) (err error) {

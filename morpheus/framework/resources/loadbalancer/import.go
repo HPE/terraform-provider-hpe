@@ -15,11 +15,18 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.ParseInt(req.ID, 10, 64)
+	// "<id>" or "<id>#group_id=<sha256 hex>&network_server_id=<sha256 hex>":
+	// see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.ParseInt(rawID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"import load balancer resource",
-			"provided import ID '"+req.ID+"' is invalid (non-number)",
+			"provided import ID '"+rawID+"' is invalid (non-number)",
 		)
 
 		return

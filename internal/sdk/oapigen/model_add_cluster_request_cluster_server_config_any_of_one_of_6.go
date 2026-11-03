@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,14 +23,37 @@ type AddClusterRequestClusterServerConfigAnyOfOneOf6 struct {
 	CpuArch  *string `json:"cpuArch,omitempty"`
 	CpuModel *string `json:"cpuModel,omitempty"`
 	// When enabled, Dynamic Placement will automatically balance VMs across cluster hosts based on resource utilization. When disabled, VMs will only migrate to a new host if they are pinned to a specific host or failed over and not running on the preferred host.
-	DynamicPlacementMode *string                `json:"dynamicPlacementMode,omitempty"`
-	PowerPolicy          *string                `json:"powerPolicy,omitempty"`
-	VcpuPlacementMode    *string                `json:"vcpuPlacementMode,omitempty"`
-	StorageInterfaceName *string                `json:"storageInterfaceName,omitempty"`
-	ComputeInterfaceName *string                `json:"computeInterfaceName,omitempty"`
-	ComputeVlans         *string                `json:"computeVlans,omitempty"`
-	OverlayInterfaceName *string                `json:"overlayInterfaceName,omitempty"`
-	CreateUser           *bool                  `json:"createUser,omitempty"`
+	DynamicPlacementMode *string `json:"dynamicPlacementMode,omitempty"`
+	PowerPolicy          *string `json:"powerPolicy,omitempty"`
+	VcpuPlacementMode    *string `json:"vcpuPlacementMode,omitempty"`
+	StorageInterfaceName *string `json:"storageInterfaceName,omitempty"`
+	ComputeInterfaceName *string `json:"computeInterfaceName,omitempty"`
+	ComputeVlans         *string `json:"computeVlans,omitempty"`
+	// Name of the host network interface used for the overlay (VXLAN) Open vSwitch bridge, for example `ens193`. Optional: Morpheus creates the overlay bridge only when it is set, and recommends setting it whenever overlay networks will be used. Applies to HVM 1.x cluster layouts; HVM 2.0 (virtual switch) layouts do not use it. Note that on Morpheus 9.0.x with an HVM 1.x layout, omitting it makes every host fail to build at the \"HVM Host Build OVS Interface\" step (`build-ovs.py` exits with `KeyError: None`), so set it until the appliance fix is available.
+	OverlayInterfaceName *string `json:"overlayInterfaceName,omitempty"`
+	CreateUser           *bool   `json:"createUser,omitempty"`
+	// Sets the maximum number of VMs to migrate in parallel per host during maintenance mode.
+	MigrationConcurrencyLimit *string `json:"migrationConcurrencyLimit,omitempty"`
+	// When enabled, Morpheus automatically sizes maintenance mode migration concurrency based on available bandwidth and VM count, using Migration Concurrency (if set) as an upper bound. When disabled, Migration Concurrency runs as a fixed number of parallel migrations at all times.
+	MigrationConcurrencyAutoMode *string `json:"migrationConcurrencyAutoMode,omitempty"`
+	// Name of the HVM virtual switch. Requires a cluster layout with clusterVersion 2.0 or greater.
+	VirtSwitchName *string `json:"virtSwitchName,omitempty"`
+	// Primary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Dns1 *string `json:"dns1,omitempty"`
+	// Secondary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Dns2 *string `json:"dns2,omitempty"`
+	// Tertiary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Dns3 *string `json:"dns3,omitempty"`
+	// DNS search domain for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	SearchDomain *string `json:"searchDomain,omitempty"`
+	// Primary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Ntp1 *string `json:"ntp1,omitempty"`
+	// Secondary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Ntp2 *string `json:"ntp2,omitempty"`
+	// Proxy server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Proxy *string `json:"proxy,omitempty"`
+	// Comma-separated list of hosts that bypass the proxy. Requires a cluster layout with clusterVersion 2.0 or greater.
+	NoProxy              *string                `json:"noProxy,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -76,57 +99,45 @@ func (o AddClusterRequestClusterServerConfigAnyOfOneOf6) ToMap() (map[string]int
 	if !IsNil(o.CreateUser) {
 		toSerialize["createUser"] = o.CreateUser
 	}
+	if !IsNil(o.MigrationConcurrencyLimit) {
+		toSerialize["migrationConcurrencyLimit"] = o.MigrationConcurrencyLimit
+	}
+	if !IsNil(o.MigrationConcurrencyAutoMode) {
+		toSerialize["migrationConcurrencyAutoMode"] = o.MigrationConcurrencyAutoMode
+	}
+	if !IsNil(o.VirtSwitchName) {
+		toSerialize["virtSwitchName"] = o.VirtSwitchName
+	}
+	if !IsNil(o.Dns1) {
+		toSerialize["dns1"] = o.Dns1
+	}
+	if !IsNil(o.Dns2) {
+		toSerialize["dns2"] = o.Dns2
+	}
+	if !IsNil(o.Dns3) {
+		toSerialize["dns3"] = o.Dns3
+	}
+	if !IsNil(o.SearchDomain) {
+		toSerialize["searchDomain"] = o.SearchDomain
+	}
+	if !IsNil(o.Ntp1) {
+		toSerialize["ntp1"] = o.Ntp1
+	}
+	if !IsNil(o.Ntp2) {
+		toSerialize["ntp2"] = o.Ntp2
+	}
+	if !IsNil(o.Proxy) {
+		toSerialize["proxy"] = o.Proxy
+	}
+	if !IsNil(o.NoProxy) {
+		toSerialize["noProxy"] = o.NoProxy
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddClusterRequestClusterServerConfigAnyOfOneOf6 struct {
-	value *AddClusterRequestClusterServerConfigAnyOfOneOf6
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf6) Get() *AddClusterRequestClusterServerConfigAnyOfOneOf6 {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf6) Set(val *AddClusterRequestClusterServerConfigAnyOfOneOf6) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf6) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf6) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterServerConfigAnyOfOneOf6(val *AddClusterRequestClusterServerConfigAnyOfOneOf6) *NullableAddClusterRequestClusterServerConfigAnyOfOneOf6 {
-	return &NullableAddClusterRequestClusterServerConfigAnyOfOneOf6{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf6) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf6) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf6) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddClusterRequestClusterServerConfigAnyOfOneOf6) UnmarshalJSON(data []byte) (err error) {

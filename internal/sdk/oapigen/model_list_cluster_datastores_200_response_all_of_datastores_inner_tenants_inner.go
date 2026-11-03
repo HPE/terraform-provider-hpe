@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o ListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner) ToMap(
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner struct {
-	value *ListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner
-	isSet bool
-}
-
-func (v NullableListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner) Get() *ListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner {
-	return v.value
-}
-
-func (v *NullableListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner) Set(val *ListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner(val *ListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner) *NullableListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner {
-	return &NullableListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner{value: val, isSet: true}
-}
-
-func (v NullableListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListClusterDatastores200ResponseAllOfDatastoresInnerTenantsInner) UnmarshalJSON(data []byte) (err error) {

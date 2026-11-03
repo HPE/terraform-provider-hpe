@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o ListUsers200ResponseAllOfUsersInnerAccessReportTypesInner) ToMap() (map[
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListUsers200ResponseAllOfUsersInnerAccessReportTypesInner struct {
-	value *ListUsers200ResponseAllOfUsersInnerAccessReportTypesInner
-	isSet bool
-}
-
-func (v NullableListUsers200ResponseAllOfUsersInnerAccessReportTypesInner) Get() *ListUsers200ResponseAllOfUsersInnerAccessReportTypesInner {
-	return v.value
-}
-
-func (v *NullableListUsers200ResponseAllOfUsersInnerAccessReportTypesInner) Set(val *ListUsers200ResponseAllOfUsersInnerAccessReportTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListUsers200ResponseAllOfUsersInnerAccessReportTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListUsers200ResponseAllOfUsersInnerAccessReportTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListUsers200ResponseAllOfUsersInnerAccessReportTypesInner(val *ListUsers200ResponseAllOfUsersInnerAccessReportTypesInner) *NullableListUsers200ResponseAllOfUsersInnerAccessReportTypesInner {
-	return &NullableListUsers200ResponseAllOfUsersInnerAccessReportTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListUsers200ResponseAllOfUsersInnerAccessReportTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListUsers200ResponseAllOfUsersInnerAccessReportTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListUsers200ResponseAllOfUsersInnerAccessReportTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListUsers200ResponseAllOfUsersInnerAccessReportTypesInner) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj ListHosts200ResponseAllOfServersInnerConfigCreateUser) GetActualInstan
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableListHosts200ResponseAllOfServersInnerConfigCreateUser struct {
-	value *ListHosts200ResponseAllOfServersInnerConfigCreateUser
-	isSet bool
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerConfigCreateUser) Get() *ListHosts200ResponseAllOfServersInnerConfigCreateUser {
-	return v.value
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerConfigCreateUser) Set(val *ListHosts200ResponseAllOfServersInnerConfigCreateUser) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerConfigCreateUser) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerConfigCreateUser) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListHosts200ResponseAllOfServersInnerConfigCreateUser(val *ListHosts200ResponseAllOfServersInnerConfigCreateUser) *NullableListHosts200ResponseAllOfServersInnerConfigCreateUser {
-	return &NullableListHosts200ResponseAllOfServersInnerConfigCreateUser{value: val, isSet: true}
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerConfigCreateUser) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerConfigCreateUser) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerConfigCreateUser) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

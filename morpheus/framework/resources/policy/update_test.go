@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package policy_test
 
@@ -8,7 +8,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
@@ -108,6 +111,15 @@ resource "hpe_morpheus_policy" "update_test" {
 				Config:             providerConfig + testhelpers.WhoamiBlock() + updatedConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              updatedCheckFn,
+				// An in-place update must keep id known: planned as unknown it forces
+				// the replacement of anything that references the policy through a
+				// create-only attribute (MORPH-18309).
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("hpe_morpheus_policy.update_test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue("hpe_morpheus_policy.update_test", tfjsonpath.New("id"), knownvalue.NotNull()),
+					},
+				},
 			},
 		},
 	})
@@ -279,6 +291,16 @@ resource "hpe_morpheus_policy" "replace_test" {
 }
 `
 
+	// MORPH-17518: tenant scoping via `tenants` is only honored for
+	// master-tenant callers except on Group-scoped policies. Step 2 is a Global
+	// scope, so a sub-tenant caller must not set tenants (the provider guards
+	// against it, and the API would silently drop it). The Group-scoped step 1
+	// keeps tenants unconditionally (it round-trips for sub-tenants).
+	globalTenantsLine := ""
+	if testhelpers.IsMasterTenant(t) {
+		globalTenantsLine = "  tenants = [data.hpe_morpheus_whoami.current.tenant_id]\n"
+	}
+
 	updatedConfig := `
 resource "hpe_morpheus_group" "test" {
   name = "` + groupName + `"
@@ -297,8 +319,7 @@ resource "hpe_morpheus_policy" "replace_test" {
     maxMemory = 8
   }
   
-  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
-}
+` + globalTenantsLine + `}
 `
 
 	var initialResourceID string

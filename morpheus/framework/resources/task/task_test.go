@@ -1,27 +1,51 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package task_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/provider"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
-const (
-	testWorkflowName              = "full-operational-workflow-2"
-	testFailureWorkflowName       = "full-operational-workflow-1"
-	testIfOperationalWorkflowId   = "797"
-	testElseOperationalWorkflowId = "796"
-)
+// MORPH-16489: the nestedWorkflow / conditionalWorkflow task APIs validate the
+// OWNERSHIP (not merely the visibility) of the referenced operational
+// workflow. Hardcoded master-owned workflows (ids 797/796, names
+// "full-operational-workflow-*") therefore fail when the acceptance tests run
+// as a sub-tenant. Instead of pinning those, each test now declares its own
+// operational workflow(s) per run and wires both the id and the name from the
+// created resource — the API requires a non-blank name, then overwrites it from
+// the resolved workflow. Workflows are created with visibility = "private":
+// sub-tenants cannot own public workflows, and public workflows cause perpetual
+// plan churn (MORPH-16419).
+
+// operationalWorkflowHCL renders a private operational workflow resource with a
+// per-run unique name. The Terraform resource label and the workflow name are
+// both derived from label so multiple workflows in one config do not collide.
+func operationalWorkflowHCL(label, name string) string {
+	return fmt.Sprintf(`
+resource "hpe_morpheus_workflow_operational" %[1]q {
+  name                = %[2]q
+  description         = "MORPH-16489 per-run operational workflow"
+  labels              = ["terraform", "acctest"]
+  platform            = "all"
+  visibility          = "private"
+  allow_custom_config = true
+}
+`, label, name)
+}
 
 func TestMain(m *testing.M) {
 	code := testhelpers.TestMain(m)
@@ -29,16 +53,13 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", adapter.NewMorpheus())()
+// taskAccFactories muxes the framework provider (hpe_morpheus_task) with the
+// SDKv2 provider so tests can also create hpe_morpheus_workflow_operational
+// resources (an SDKv2 resource) as per-run fixtures. See MORPH-16489.
+func taskAccFactories(t *testing.T) map[string]func() (tfprotov6.ProviderServer, error) {
+	t.Helper()
 
-	return providerserver.NewProtocol6WithError(providerInstance)()
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
+	return testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider())
 }
 
 func TestAccMorpheusTaskResourceExampleConditionalOk(t *testing.T) {
@@ -55,17 +76,23 @@ func TestAccMorpheusTaskResourceExampleConditionalOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	// MORPH-16489: create the two referenced operational workflows per run and
+	// wire both id and name from the created resources, instead of hardcoding
+	// master-owned workflows.
+	ifWF := operationalWorkflowHCL("if_wf", name+"-if")
+	elseWF := operationalWorkflowHCL("else_wf", name+"-else")
 	resourceConfig, err := testhelpers.RenderExample(
 		t, "example_conditional_workflow.tf.tmpl",
 		"Name", name,
-		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
-		"ElseOperationalWorkflowId", testElseOperationalWorkflowId,
-		"IfOperationalWorkflowName", testFailureWorkflowName,
-		"ElseOperationalWorkflowName", testWorkflowName,
+		"IfOperationalWorkflowId", "hpe_morpheus_workflow_operational.if_wf.id",
+		"ElseOperationalWorkflowId", "hpe_morpheus_workflow_operational.else_wf.id",
+		"IfOperationalWorkflowName", "hpe_morpheus_workflow_operational.if_wf.name",
+		"ElseOperationalWorkflowName", "hpe_morpheus_workflow_operational.else_wf.name",
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
+	resourceConfig = ifWF + elseWF + resourceConfig
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -78,15 +105,15 @@ func TestAccMorpheusTaskResourceExampleConditionalOk(t *testing.T) {
 			"task_type_code",
 			"conditionalWorkflow",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_task.example_task",
 			"config_conditional_workflow.if_operational_workflow_id",
-			testIfOperationalWorkflowId,
+			"hpe_morpheus_workflow_operational.if_wf", "id",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_task.example_task",
 			"config_conditional_workflow.else_operational_workflow_id",
-			testElseOperationalWorkflowId,
+			"hpe_morpheus_workflow_operational.else_wf", "id",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task.example_task",
@@ -98,7 +125,7 @@ func TestAccMorpheusTaskResourceExampleConditionalOk(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: taskAccFactories(t),
 		Steps: []resource.TestStep{
 			{
 				Config:             providerConfig + resourceConfig,
@@ -136,17 +163,23 @@ func TestAccMorpheusTaskResourceConditionalWorkflowUpdate(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	// MORPH-16489: create the referenced operational workflows per run and wire
+	// both id and name from them, rather than hardcoding master-owned workflows.
+	ifWF := operationalWorkflowHCL("if_wf", name+"-if")
+	elseWF := operationalWorkflowHCL("else_wf", name+"-else")
+	workflowConfig := ifWF + elseWF
 	resourceConfig, err := testhelpers.RenderExample(
 		t, "example_conditional_workflow.tf.tmpl",
 		"Name", name,
-		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
-		"ElseOperationalWorkflowId", testElseOperationalWorkflowId,
-		"IfOperationalWorkflowName", testFailureWorkflowName,
-		"ElseOperationalWorkflowName", testWorkflowName,
+		"IfOperationalWorkflowId", "hpe_morpheus_workflow_operational.if_wf.id",
+		"ElseOperationalWorkflowId", "hpe_morpheus_workflow_operational.else_wf.id",
+		"IfOperationalWorkflowName", "hpe_morpheus_workflow_operational.if_wf.name",
+		"ElseOperationalWorkflowName", "hpe_morpheus_workflow_operational.else_wf.name",
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
+	resourceConfig = workflowConfig + resourceConfig
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -159,15 +192,15 @@ func TestAccMorpheusTaskResourceConditionalWorkflowUpdate(t *testing.T) {
 			"task_type_code",
 			"conditionalWorkflow",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_task.example_task",
 			"config_conditional_workflow.if_operational_workflow_id",
-			testIfOperationalWorkflowId,
+			"hpe_morpheus_workflow_operational.if_wf", "id",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_task.example_task",
 			"config_conditional_workflow.else_operational_workflow_id",
-			testElseOperationalWorkflowId,
+			"hpe_morpheus_workflow_operational.else_wf", "id",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task.example_task",
@@ -185,6 +218,14 @@ func TestAccMorpheusTaskResourceConditionalWorkflowUpdate(t *testing.T) {
 				"hpe_morpheus_task.example_task",
 				plancheck.ResourceActionUpdate,
 			),
+			// id must stay known across an in-place update: planned as unknown it
+			// forces the replacement of anything that references it through a
+			// create-only attribute (MORPH-18309).
+			plancheck.ExpectKnownValue(
+				"hpe_morpheus_task.example_task",
+				tfjsonpath.New("id"),
+				knownvalue.NotNull(),
+			),
 		},
 	}
 
@@ -199,7 +240,7 @@ func TestAccMorpheusTaskResourceConditionalWorkflowUpdate(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: taskAccFactories(t),
 		Steps: []resource.TestStep{
 			{
 				Config:             providerConfig + resourceConfig,
@@ -209,16 +250,16 @@ func TestAccMorpheusTaskResourceConditionalWorkflowUpdate(t *testing.T) {
 			{
 				ConfigPlanChecks: checkInPlaceUpdate,
 				Check:            checkFn,
-				Config: providerConfig + `
+				Config: providerConfig + workflowConfig + `
 					resource "hpe_morpheus_task" "example_task" {
 						name = "` + name + `2"
 						task_type_code = "conditionalWorkflow"
 						config_conditional_workflow = {
-							if_operational_workflow_id   = ` + testIfOperationalWorkflowId + `
-							if_operational_workflow_name = "` + testFailureWorkflowName + `"
+							if_operational_workflow_id   = hpe_morpheus_workflow_operational.if_wf.id
+							if_operational_workflow_name = hpe_morpheus_workflow_operational.if_wf.name
 
-							else_operational_workflow_id   = ` + testElseOperationalWorkflowId + `
-							else_operational_workflow_name = "` + testWorkflowName + `"
+							else_operational_workflow_id   = hpe_morpheus_workflow_operational.else_wf.id
+							else_operational_workflow_name = hpe_morpheus_workflow_operational.else_wf.name
 						}
 
 						execute_target = "local"
@@ -230,14 +271,14 @@ func TestAccMorpheusTaskResourceConditionalWorkflowUpdate(t *testing.T) {
 			{
 				ConfigPlanChecks: checkReplaceUpdate,
 				PlanOnly:         false,
-				Config: providerConfig + `
+				Config: providerConfig + workflowConfig + `
 					resource "hpe_morpheus_task" "example_task" {
 						name = "` + name + `2"
 						task_type_code = "nestedWorkflow"
 
 						config = {
-							operationalWorkflowId   = "` + testIfOperationalWorkflowId + `"
-							operationalWorkflowName = "` + testFailureWorkflowName + `"
+							operationalWorkflowId   = hpe_morpheus_workflow_operational.if_wf.id
+							operationalWorkflowName = hpe_morpheus_workflow_operational.if_wf.name
 						}
 
 						execute_target = "local"
@@ -262,15 +303,21 @@ func TestAccMorpheusTaskResourceExampleGenericNestedOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	// MORPH-16489: create the referenced operational workflow per run and wire
+	// both id and name from it, rather than hardcoding a master-owned workflow.
+	wf := operationalWorkflowHCL("wf", name+"-wf")
 	resourceConfig, err := testhelpers.RenderExample(
 		t, "example_generic_config.tf.tmpl",
 		"Name", name,
-		"OperationalWorkflowId", testElseOperationalWorkflowId,
-		"OperationalWorkflowName", testWorkflowName,
+		// config is a Dynamic (string) map, so the numeric id is coerced to a
+		// string to match how the value round-trips.
+		"OperationalWorkflowId", "tostring(hpe_morpheus_workflow_operational.wf.id)",
+		"OperationalWorkflowName", "hpe_morpheus_workflow_operational.wf.name",
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
+	resourceConfig = wf + resourceConfig
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -283,22 +330,22 @@ func TestAccMorpheusTaskResourceExampleGenericNestedOk(t *testing.T) {
 			"task_type_code",
 			"nestedWorkflow",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_task.example_task",
 			"config.operationalWorkflowId",
-			testElseOperationalWorkflowId,
+			"hpe_morpheus_workflow_operational.wf", "id",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_task.example_task",
 			"config.operationalWorkflowName",
-			testWorkflowName,
+			"hpe_morpheus_workflow_operational.wf", "name",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: taskAccFactories(t),
 		Steps: []resource.TestStep{
 			{
 				Config:             providerConfig + resourceConfig,
@@ -330,15 +377,18 @@ func TestAccMorpheusTaskResourceExampleConditionalNullElseOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	// MORPH-16489: create the referenced "if" operational workflow per run.
+	ifWF := operationalWorkflowHCL("if_wf", name+"-if")
 	resourceConfig, err := testhelpers.RenderExample(
 		t, "example_conditional_workflow_null_else.tf.tmpl",
 		"Name", name,
-		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
-		"IfOperationalWorkflowName", testFailureWorkflowName,
+		"IfOperationalWorkflowId", "hpe_morpheus_workflow_operational.if_wf.id",
+		"IfOperationalWorkflowName", "hpe_morpheus_workflow_operational.if_wf.name",
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
+	resourceConfig = ifWF + resourceConfig
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -351,10 +401,10 @@ func TestAccMorpheusTaskResourceExampleConditionalNullElseOk(t *testing.T) {
 			"task_type_code",
 			"conditionalWorkflow",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_task.example_task",
 			"config_conditional_workflow.if_operational_workflow_id",
-			testIfOperationalWorkflowId,
+			"hpe_morpheus_workflow_operational.if_wf", "id",
 		),
 		// Else id should be null in state
 		resource.TestCheckNoResourceAttr(
@@ -371,7 +421,7 @@ func TestAccMorpheusTaskResourceExampleConditionalNullElseOk(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: taskAccFactories(t),
 		Steps: []resource.TestStep{
 			{
 				Config:             providerConfig + resourceConfig,
@@ -406,15 +456,21 @@ func TestAccMorpheusTaskResourceExampleConditionalNullElseUpdateOk(t *testing.T)
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	// MORPH-16489: create the referenced operational workflows per run. The
+	// "else" workflow is only added in the update step, matching the transition
+	// from a null else to a populated one.
+	ifWF := operationalWorkflowHCL("if_wf", name+"-if")
+	elseWF := operationalWorkflowHCL("else_wf", name+"-else")
 	resourceConfig, err := testhelpers.RenderExample(
 		t, "example_conditional_workflow_null_else.tf.tmpl",
 		"Name", name,
-		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
-		"IfOperationalWorkflowName", testFailureWorkflowName,
+		"IfOperationalWorkflowId", "hpe_morpheus_workflow_operational.if_wf.id",
+		"IfOperationalWorkflowName", "hpe_morpheus_workflow_operational.if_wf.name",
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
+	resourceConfig = ifWF + resourceConfig
 
 	nullElseChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(
@@ -434,15 +490,15 @@ func TestAccMorpheusTaskResourceExampleConditionalNullElseUpdateOk(t *testing.T)
 			"name",
 			name,
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_task.example_task",
 			"config_conditional_workflow.if_operational_workflow_id",
-			testIfOperationalWorkflowId,
+			"hpe_morpheus_workflow_operational.if_wf", "id",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_task.example_task",
 			"config_conditional_workflow.else_operational_workflow_id",
-			testElseOperationalWorkflowId,
+			"hpe_morpheus_workflow_operational.else_wf", "id",
 		),
 	)
 
@@ -456,7 +512,7 @@ func TestAccMorpheusTaskResourceExampleConditionalNullElseUpdateOk(t *testing.T)
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: taskAccFactories(t),
 		Steps: []resource.TestStep{
 			{
 				Config:             providerConfig + resourceConfig,
@@ -467,16 +523,16 @@ func TestAccMorpheusTaskResourceExampleConditionalNullElseUpdateOk(t *testing.T)
 			{
 				ConfigPlanChecks: checkInPlaceUpdate,
 				Check:            nonNullElseChecks,
-				Config: providerConfig + `
+				Config: providerConfig + ifWF + elseWF + `
 					resource "hpe_morpheus_task" "example_task" {
 						name = "` + name + `"
 						task_type_code = "conditionalWorkflow"
 						config_conditional_workflow = {
-							if_operational_workflow_id   = ` + testIfOperationalWorkflowId + `
-							if_operational_workflow_name = "` + testFailureWorkflowName + `"
+							if_operational_workflow_id   = hpe_morpheus_workflow_operational.if_wf.id
+							if_operational_workflow_name = hpe_morpheus_workflow_operational.if_wf.name
 
-							else_operational_workflow_id   = ` + testElseOperationalWorkflowId + `
-							else_operational_workflow_name = "` + testWorkflowName + `"
+							else_operational_workflow_id   = hpe_morpheus_workflow_operational.else_wf.id
+							else_operational_workflow_name = hpe_morpheus_workflow_operational.else_wf.name
 						}
 
 						execute_target = "local"

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o AddEnvironments200ResponseAllOfEnvironmentAccount) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddEnvironments200ResponseAllOfEnvironmentAccount struct {
-	value *AddEnvironments200ResponseAllOfEnvironmentAccount
-	isSet bool
-}
-
-func (v NullableAddEnvironments200ResponseAllOfEnvironmentAccount) Get() *AddEnvironments200ResponseAllOfEnvironmentAccount {
-	return v.value
-}
-
-func (v *NullableAddEnvironments200ResponseAllOfEnvironmentAccount) Set(val *AddEnvironments200ResponseAllOfEnvironmentAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddEnvironments200ResponseAllOfEnvironmentAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddEnvironments200ResponseAllOfEnvironmentAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddEnvironments200ResponseAllOfEnvironmentAccount(val *AddEnvironments200ResponseAllOfEnvironmentAccount) *NullableAddEnvironments200ResponseAllOfEnvironmentAccount {
-	return &NullableAddEnvironments200ResponseAllOfEnvironmentAccount{value: val, isSet: true}
-}
-
-func (v NullableAddEnvironments200ResponseAllOfEnvironmentAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddEnvironments200ResponseAllOfEnvironmentAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddEnvironments200ResponseAllOfEnvironmentAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddEnvironments200ResponseAllOfEnvironmentAccount) UnmarshalJSON(data []byte) (err error) {

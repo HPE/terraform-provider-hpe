@@ -44,8 +44,8 @@ resource "hpe_opsramp_scheduled_maintenance" "example" {
 
   schedule = {
     type       = "recurring"
-    start_time = "2026-06-10T15:30:00+0100"
-    end_time   = "2026-06-10T20:00:00+0100"
+    start_time = "2026-06-10T15:30:00+0200"
+    end_time   = "2026-06-10T20:00:00-0500"
     end_by     = "Never"
     pattern = {
       type             = "daily"

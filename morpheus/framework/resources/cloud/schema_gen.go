@@ -53,6 +53,13 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Automatically Power on VMs",
 				Default:             booldefault.StaticBool(false),
 			},
+			"backup_provider_ids": schema.SetAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Computed:            true,
+				Description:         "IDs of the backup provider integrations assigned to this cloud. Morpheus\ndefaults to the internal backup provider when none is supplied, so this\nattribute is server-defaulted: leave it unset to accept the default.",
+				MarkdownDescription: "IDs of the backup provider integrations assigned to this cloud. Morpheus\ndefaults to the internal backup provider when none is supplied, so this\nattribute is server-defaulted: leave it unset to accept the default.",
+			},
 			"cloud_type_code": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -91,8 +98,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 					"backup_provider": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "The backup provider for the cloud",
-						MarkdownDescription: "The backup provider for the cloud",
+						Description:         "Deprecated. The per-cloud AWS backup mode (stored as config.backupMode)\nhas no effect on Morpheus 9.x, which assigns backup providers at the\ncloud level. Use backup_provider_ids instead. The value is retained in\nTerraform state only and is no longer sent to the appliance.",
+						MarkdownDescription: "Deprecated. The per-cloud AWS backup mode (stored as config.backupMode)\nhas no effect on Morpheus 9.x, which assigns backup providers at the\ncloud level. Use backup_provider_ids instead. The value is retained in\nTerraform state only and is no longer sent to the appliance.",
+						DeprecationMessage:  "config_aws.backup_provider has no effect on Morpheus 9.x: backup providers are assigned at the cloud level. Use backup_provider_ids instead. The value is retained in Terraform state only and is no longer sent to the appliance.",
 					},
 					"bypass_proxy": schema.BoolAttribute{
 						Optional:            true,
@@ -321,8 +329,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"client_secret_version": schema.Int64Attribute{
 						Optional:            true,
-						Description:         "Client secret version. Used to determine if client secret has been updated.",
-						MarkdownDescription: "Client secret version. Used to determine if client secret has been updated.",
+						Description:         "Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+						MarkdownDescription: "Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+						DeprecationMessage:  "No longer needed: changes to config_azure.client_secret are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 					},
 					"cloud_type": schema.StringAttribute{
 						Optional:            true,
@@ -488,8 +497,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"password_version": schema.Int64Attribute{
 						Optional:            true,
-						Description:         "Password version. Used to determine if password has been updated.",
-						MarkdownDescription: "Password version. Used to determine if password has been updated.",
+						Description:         "Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+						MarkdownDescription: "Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+						DeprecationMessage:  "No longer needed: changes to config_vmware.password are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 					},
 					"resource_pool": schema.StringAttribute{
 						Optional:            true,
@@ -681,6 +691,14 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString("private"),
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which a write-only value (config_vmware.password or config_azure.client_secret) was last\nsent to Morpheus. Changes whenever one of those values changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which a write-only value (config_vmware.password or config_azure.client_secret) was last\nsent to Morpheus. Changes whenever one of those values changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -689,6 +707,7 @@ type CloudModel struct {
 	AgentInstallMode               types.String      `tfsdk:"agent_install_mode"`
 	ApplianceUrl                   types.String      `tfsdk:"appliance_url"`
 	AutoRecoverPowerState          types.Bool        `tfsdk:"auto_recover_power_state"`
+	BackupProviderIds              types.Set         `tfsdk:"backup_provider_ids"`
 	CloudTypeCode                  types.String      `tfsdk:"cloud_type_code"`
 	Code                           types.String      `tfsdk:"code"`
 	Config                         types.Dynamic     `tfsdk:"config"`
@@ -717,6 +736,7 @@ type CloudModel struct {
 	SecurityMode                   types.String      `tfsdk:"security_mode"`
 	TenantId                       types.Int64       `tfsdk:"tenant_id"`
 	Visibility                     types.String      `tfsdk:"visibility"`
+	WriteOnlyRevision              types.Int64       `tfsdk:"write_only_revision"`
 }
 
 var _ basetypes.ObjectTypable = ConfigAwsType{}

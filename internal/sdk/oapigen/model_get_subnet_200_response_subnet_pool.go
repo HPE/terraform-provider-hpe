@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetSubnet200ResponseSubnetPool) ToMap() (map[string]interface{}, error) 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetSubnet200ResponseSubnetPool struct {
-	value *GetSubnet200ResponseSubnetPool
-	isSet bool
-}
-
-func (v NullableGetSubnet200ResponseSubnetPool) Get() *GetSubnet200ResponseSubnetPool {
-	return v.value
-}
-
-func (v *NullableGetSubnet200ResponseSubnetPool) Set(val *GetSubnet200ResponseSubnetPool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetSubnet200ResponseSubnetPool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetSubnet200ResponseSubnetPool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetSubnet200ResponseSubnetPool(val *GetSubnet200ResponseSubnetPool) *NullableGetSubnet200ResponseSubnetPool {
-	return &NullableGetSubnet200ResponseSubnetPool{value: val, isSet: true}
-}
-
-func (v NullableGetSubnet200ResponseSubnetPool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetSubnet200ResponseSubnetPool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetSubnet200ResponseSubnetPool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetSubnet200ResponseSubnetPool) UnmarshalJSON(data []byte) (err error) {

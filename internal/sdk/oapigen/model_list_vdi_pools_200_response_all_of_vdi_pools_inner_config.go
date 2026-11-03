@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -137,51 +137,6 @@ func (o ListVDIPools200ResponseAllOfVdiPoolsInnerConfig) ToMap() (map[string]int
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfig struct {
-	value *ListVDIPools200ResponseAllOfVdiPoolsInnerConfig
-	isSet bool
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfig) Get() *ListVDIPools200ResponseAllOfVdiPoolsInnerConfig {
-	return v.value
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfig) Set(val *ListVDIPools200ResponseAllOfVdiPoolsInnerConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListVDIPools200ResponseAllOfVdiPoolsInnerConfig(val *ListVDIPools200ResponseAllOfVdiPoolsInnerConfig) *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfig {
-	return &NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfig{value: val, isSet: true}
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListVDIPools200ResponseAllOfVdiPoolsInnerConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListVDIPools200ResponseAllOfVdiPoolsInnerConfig) UnmarshalJSON(data []byte) (err error) {

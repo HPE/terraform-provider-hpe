@@ -12,9 +12,11 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/sdkfuncs"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -158,6 +160,19 @@ func (r *Resource) Create(
 
 	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
 		addCloud.GroupId = plan.GroupId.ValueInt64()
+	}
+
+	// backup_provider_ids: integration ids assigned to the cloud. Server-defaulted
+	// (Morpheus uses the internal provider when none is supplied), so only send
+	// when the practitioner set it; the value is read back after apply.
+	if !plan.BackupProviderIds.IsNull() && !plan.BackupProviderIds.IsUnknown() {
+		ids, err := convert.SetToSlice[int64](ctx, plan.BackupProviderIds)
+		if err != nil {
+			resp.Diagnostics.AddError("create cloud", "invalid backup_provider_ids: "+err.Error())
+
+			return
+		}
+		addCloud.BackupProviders = ids
 	}
 
 	addCloudConfig := addCloud.Config
@@ -641,6 +656,15 @@ func (r *Resource) Create(
 	id := *cloud.Zone.Id
 	plan.Id = types.Int64Value(id)
 
+	// Record the configured-value digests unconditionally, right after the
+	// create call succeeded and before any early return, so a failed read-back
+	// still leaves the configured-value digests on record. The appliance
+	// baseline is only taken later, after a successful read-back.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Helper to taint the resource state on an error after the POST request
 	taintResourceState := func(id int64) {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
@@ -651,7 +675,12 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, pdiags := getCloudAsState(ctx, id, client, plan)
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+
+	state, zone, found, pdiags := getCloudAsState(ctx, id, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError(createOperation, fmt.Sprintf("Cloud %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -663,6 +692,13 @@ func (r *Resource) Create(
 		return
 	}
 
+	// Record the appliance-hash drift baseline now that the cloud reads back,
+	// reusing the zone getCloudAsState already fetched (no second GET). The
+	// hash Morpheus rendered for the secret we just sent becomes the baseline
+	// compared on every later read. The configured-value digests were already
+	// recorded unconditionally above.
+	resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, zone)...)
+
 	// Apply-time fallback for the sub-tenant visibility coercion (MORPH-16419):
 	// if the plan asked for "public" but the API stored "private", surface a
 	// clear error rather than an opaque "inconsistent result".
@@ -672,6 +708,7 @@ func (r *Resource) Create(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(

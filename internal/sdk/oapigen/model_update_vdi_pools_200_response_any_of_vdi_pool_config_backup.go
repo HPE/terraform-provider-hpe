@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,7 @@ type UpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup struct {
 	CreateBackup         *bool                  `json:"createBackup,omitempty"`
 	JobAction            *string                `json:"jobAction,omitempty"`
 	JobRetentionCount    *string                `json:"jobRetentionCount,omitempty"`
-	ProviderBackupType   *int64                 `json:"providerBackupType,omitempty"`
+	ProviderBackupType   NullableInt64          `json:"providerBackupType,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -48,8 +48,8 @@ func (o UpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) ToMap() (map[string]i
 	if !IsNil(o.JobRetentionCount) {
 		toSerialize["jobRetentionCount"] = o.JobRetentionCount
 	}
-	if !IsNil(o.ProviderBackupType) {
-		toSerialize["providerBackupType"] = o.ProviderBackupType
+	if o.ProviderBackupType.IsSet() {
+		toSerialize["providerBackupType"] = o.ProviderBackupType.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -57,51 +57,6 @@ func (o UpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup struct {
-	value *UpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup
-	isSet bool
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) Get() *UpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup {
-	return v.value
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) Set(val *UpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup(val *UpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup {
-	return &NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup{value: val, isSet: true}
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateVDIPools200ResponseAnyOfVdiPoolConfigBackup) UnmarshalJSON(data []byte) (err error) {

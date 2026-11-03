@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -26,10 +26,10 @@ type UpdateProvisioningLicenseRequestLicense struct {
 	LicenseVersion *string `json:"licenseVersion,omitempty"`
 	// Copies - The number of times the key can be used.
 	Copies *int64 `json:"copies,omitempty"`
-	// Description
-	Description *string `json:"description,omitempty"`
-	// Virtual Images - Array of Virtual Image IDs to associate with license.
-	VirtualImages []int64 `json:"virtualImages,omitempty"`
+	// Description; null clears it
+	Description NullableString `json:"description,omitempty"`
+	// Virtual image ids, or objects with `id`. Replaces set when provided.
+	VirtualImages []UpdateProvisioningLicenseRequestLicenseVirtualImagesInner `json:"virtualImages,omitempty"`
 	// Tenants - Array of tenants that are allowed to use the key.
 	Tenants              []int64                `json:"tenants,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -56,8 +56,8 @@ func (o UpdateProvisioningLicenseRequestLicense) ToMap() (map[string]interface{}
 	if !IsNil(o.Copies) {
 		toSerialize["copies"] = o.Copies
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.VirtualImages) {
 		toSerialize["virtualImages"] = o.VirtualImages
@@ -71,51 +71,6 @@ func (o UpdateProvisioningLicenseRequestLicense) ToMap() (map[string]interface{}
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateProvisioningLicenseRequestLicense struct {
-	value *UpdateProvisioningLicenseRequestLicense
-	isSet bool
-}
-
-func (v NullableUpdateProvisioningLicenseRequestLicense) Get() *UpdateProvisioningLicenseRequestLicense {
-	return v.value
-}
-
-func (v *NullableUpdateProvisioningLicenseRequestLicense) Set(val *UpdateProvisioningLicenseRequestLicense) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateProvisioningLicenseRequestLicense) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateProvisioningLicenseRequestLicense) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateProvisioningLicenseRequestLicense(val *UpdateProvisioningLicenseRequestLicense) *NullableUpdateProvisioningLicenseRequestLicense {
-	return &NullableUpdateProvisioningLicenseRequestLicense{value: val, isSet: true}
-}
-
-func (v NullableUpdateProvisioningLicenseRequestLicense) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateProvisioningLicenseRequestLicense) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateProvisioningLicenseRequestLicense) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateProvisioningLicenseRequestLicense) UnmarshalJSON(data []byte) (err error) {

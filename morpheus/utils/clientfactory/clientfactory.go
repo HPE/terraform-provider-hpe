@@ -145,6 +145,9 @@ func NewAPIClient(
 			transport = httptrace.New(transport)
 		}
 
+		// Pass-through unless an in-process test installed an observer.
+		transport = httptrace.ObserveRoundTripper{Transport: transport}
+
 		var authRoundTripper http.RoundTripper
 		if token != "" {
 			authRoundTripper = auth.NewTokenRoundTripper(

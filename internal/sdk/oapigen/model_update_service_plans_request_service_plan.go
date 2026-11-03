@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,8 +24,8 @@ type UpdateServicePlansRequestServicePlan struct {
 	Name *string `json:"name,omitempty"`
 	// Service plan code, must be unique
 	Code *string `json:"code,omitempty"`
-	// Service plan description
-	Description *string `json:"description,omitempty"`
+	// Service plan description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Can be used to enable / disable the editability of the service plan.
 	Editable *bool `json:"editable,omitempty"`
 	// Max storage size in bytes
@@ -77,8 +77,8 @@ func (o UpdateServicePlansRequestServicePlan) ToMap() (map[string]interface{}, e
 	if !IsNil(o.Code) {
 		toSerialize["code"] = o.Code
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Editable) {
 		toSerialize["editable"] = o.Editable
@@ -137,51 +137,6 @@ func (o UpdateServicePlansRequestServicePlan) ToMap() (map[string]interface{}, e
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateServicePlansRequestServicePlan struct {
-	value *UpdateServicePlansRequestServicePlan
-	isSet bool
-}
-
-func (v NullableUpdateServicePlansRequestServicePlan) Get() *UpdateServicePlansRequestServicePlan {
-	return v.value
-}
-
-func (v *NullableUpdateServicePlansRequestServicePlan) Set(val *UpdateServicePlansRequestServicePlan) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateServicePlansRequestServicePlan) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateServicePlansRequestServicePlan) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateServicePlansRequestServicePlan(val *UpdateServicePlansRequestServicePlan) *NullableUpdateServicePlansRequestServicePlan {
-	return &NullableUpdateServicePlansRequestServicePlan{value: val, isSet: true}
-}
-
-func (v NullableUpdateServicePlansRequestServicePlan) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateServicePlansRequestServicePlan) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateServicePlansRequestServicePlan) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateServicePlansRequestServicePlan) UnmarshalJSON(data []byte) (err error) {

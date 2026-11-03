@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o ListUsers200ResponseAllOfUsersInnerAccessFeaturesInner) ToMap() (map[str
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListUsers200ResponseAllOfUsersInnerAccessFeaturesInner struct {
-	value *ListUsers200ResponseAllOfUsersInnerAccessFeaturesInner
-	isSet bool
-}
-
-func (v NullableListUsers200ResponseAllOfUsersInnerAccessFeaturesInner) Get() *ListUsers200ResponseAllOfUsersInnerAccessFeaturesInner {
-	return v.value
-}
-
-func (v *NullableListUsers200ResponseAllOfUsersInnerAccessFeaturesInner) Set(val *ListUsers200ResponseAllOfUsersInnerAccessFeaturesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListUsers200ResponseAllOfUsersInnerAccessFeaturesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListUsers200ResponseAllOfUsersInnerAccessFeaturesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListUsers200ResponseAllOfUsersInnerAccessFeaturesInner(val *ListUsers200ResponseAllOfUsersInnerAccessFeaturesInner) *NullableListUsers200ResponseAllOfUsersInnerAccessFeaturesInner {
-	return &NullableListUsers200ResponseAllOfUsersInnerAccessFeaturesInner{value: val, isSet: true}
-}
-
-func (v NullableListUsers200ResponseAllOfUsersInnerAccessFeaturesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListUsers200ResponseAllOfUsersInnerAccessFeaturesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListUsers200ResponseAllOfUsersInnerAccessFeaturesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListUsers200ResponseAllOfUsersInnerAccessFeaturesInner) UnmarshalJSON(data []byte) (err error) {

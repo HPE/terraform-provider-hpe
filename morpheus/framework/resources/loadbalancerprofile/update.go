@@ -10,6 +10,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -40,9 +41,16 @@ func (r *Resource) Update(
 	profile := &sdk.UpdateLoadBalancerProfileRequestLoadBalancerProfile{}
 	profile.Name = sdk.PtrString(plan.Name.ValueString())
 
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		profile.Description = sdk.PtrString(plan.Description.ValueString())
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	// Sent when known, null when being cleared, not sent otherwise.
+	clearable.NullableString(pending, "description", plan.Description, &profile.Description)
 
 	profile.ServiceType = sdk.PtrString(plan.ServiceType.ValueString())
 
@@ -74,9 +82,12 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, stateDiags := getLoadBalancerProfileAsState(
+	state, found, stateDiags := getLoadBalancerProfileAsState(
 		ctx, loadBalancerID, id, client, plan,
 	)
+	if !found && !stateDiags.HasError() {
+		stateDiags.AddError("read load balancer profile", "profile not found immediately after update")
+	}
 	if resp.Diagnostics.Append(stateDiags...); resp.Diagnostics.HasError() {
 		return
 	}

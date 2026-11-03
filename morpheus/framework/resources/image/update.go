@@ -3,17 +3,17 @@ package image
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -89,29 +89,37 @@ func (r *Resource) Update(
 		updateImage.InstallAgent = plan.InstallAgent.ValueBoolPointer()
 	}
 
-	// labels
-	if !plan.Labels.IsNull() {
-		labels, err := convert.SetToStrSlice(plan.Labels)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"update image resource",
-				"image "+name+": failed to parse label: "+err.Error(),
-			)
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-			return
-		}
+	// labels: the planned list, or an empty list when being cleared
+	labels, sendLabels, ldiags := pending.Strings(ctx, "labels", plan.Labels)
+	resp.Diagnostics.Append(ldiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
+	if sendLabels {
 		updateImage.Labels = labels
 	}
 
-	// min_disk
-	if !plan.MinDisk.IsNull() {
+	// min_disk: in bytes on the wire; null when being cleared
+	switch {
+	case pending.Clears("min_disk"):
+		updateImage.MinDisk.Set(nil)
+	case !plan.MinDisk.IsNull() && !plan.MinDisk.IsUnknown():
 		val := plan.MinDisk.ValueInt64() * 1024 * 1024 * 1024
 		updateImage.MinDisk.Set(&val)
 	}
 
-	// min_ram
-	if !plan.MinRam.IsNull() {
+	// min_ram: not clearable — Morpheus rejects a null with a server error
+	// and ignores zero — so it is only ever sent when known.
+	if !plan.MinRam.IsNull() && !plan.MinRam.IsUnknown() {
 		val := plan.MinRam.ValueInt64()
 		updateImage.MinRamGB.Set(&val)
 	}
@@ -122,31 +130,22 @@ func (r *Resource) Update(
 	}
 
 	// os_type_id
-	if !plan.OsTypeId.IsNull() {
-		updateImage.OsType.Set(plan.OsTypeId.ValueInt64Pointer())
-	}
+	clearable.NullableInt64(pending, "os_type_id", plan.OsTypeId, &updateImage.OsType)
 
-	// ssh_password_wo
-	if !plan.SshPasswordWoVersion.Equal(state.SshPasswordWoVersion) {
-		if config.SshPasswordWo.IsUnknown() {
-			resp.Diagnostics.AddError(
-				"update image resource",
-				fmt.Sprintf("image %s: 'ssh_password_wo_version' changed, "+
-					"but 'ssh_password_wo' is not set", name),
-			)
-
-			return
-		}
+	// ssh_password_wo: re-sent when ModifyPlan marked write_only_revision
+	// unknown (its digest changed, or the deprecated marker did). See
+	// write_only.go.
+	resend := wodigest.Resend(ctx, req.Plan)
+	if resend && !config.SshPasswordWo.IsNull() && !config.SshPasswordWo.IsUnknown() {
 		updateImage.SshPassword.Set(config.SshPasswordWo.ValueStringPointer())
 	}
 
 	// ssh_username
-	if !plan.SshUsername.IsNull() {
-		updateImage.SshUsername.Set(plan.SshUsername.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "ssh_username", plan.SshUsername, &updateImage.SshUsername)
 
-	// storage_provider_id
-	if !plan.StorageProviderId.IsNull() {
+	// storage_provider_id: not clearable — Morpheus ignores it on update and a
+	// change replaces the image — so it is only ever sent when known.
+	if !plan.StorageProviderId.IsNull() && !plan.StorageProviderId.IsUnknown() {
 		storageProvider := &sdk.UpdateVirtualImageRequestVirtualImageStorageProvider{}
 		storageProvider.Id = plan.StorageProviderId.ValueInt64Pointer()
 
@@ -168,21 +167,15 @@ func (r *Resource) Update(
 	}
 	updateImage.Tags = tags
 
-	// tenant_ids
-	if !plan.TenantIds.IsNull() {
-		tenantIDs, err := convert.SetToSlice[types.Int64](ctx, plan.TenantIds)
-		if err != nil {
-			log.Fatal(err)
-		}
+	// tenant_ids: the planned tenants, or an empty list when being cleared
+	tenantIDs, sendTenants, tdiags := pending.Int64s(ctx, "tenant_ids", plan.TenantIds)
+	resp.Diagnostics.Append(tdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-		for _, idVal := range tenantIDs {
-			if !idVal.IsNull() {
-				updateImage.Accounts = append(
-					updateImage.Accounts,
-					idVal.ValueInt64(),
-				)
-			}
-		}
+	if sendTenants {
+		updateImage.Accounts = tenantIDs
 	}
 
 	// trial_version
@@ -201,9 +194,7 @@ func (r *Resource) Update(
 	// of the image URL
 
 	// user_data
-	if !plan.UserData.IsNull() {
-		updateImage.UserData.Set(plan.UserData.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "user_data", plan.UserData, &updateImage.UserData)
 
 	// virtio_supported
 	if !plan.VirtioSupported.IsNull() {
@@ -245,13 +236,26 @@ func (r *Resource) Update(
 
 	plan.Id = convert.Int64ToType(image.VirtualImage.Id)
 
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if resend {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	state, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
+	state, apiObj, found, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+	if !found {
+		resp.Diagnostics.AddError(
+			"failed to read image state",
+			fmt.Sprintf("image %d not found after update", plan.Id.ValueInt64()),
+		)
+
 		return
 	}
 
@@ -261,6 +265,12 @@ func (r *Resource) Update(
 		return
 	}
 
+	// Record the digests of the configured values, sent or not, once the
+	// read-back succeeded, so private state and state move together, and
+	// re-baseline the appliance-side drift hash from the read-back object.
+	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, apiObj)...)
+
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return

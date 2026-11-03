@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj AddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId) GetActua
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableAddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId struct {
-	value *AddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId
-	isSet bool
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId) Get() *AddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId {
-	return v.value
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId) Set(val *AddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId(val *AddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId) *NullableAddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId {
-	return &NullableAddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId{value: val, isSet: true}
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigResourcePoolId) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

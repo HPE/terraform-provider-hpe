@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o GetClusterDatastore200ResponseDatastoreZonePool) ToMap() (map[string]int
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClusterDatastore200ResponseDatastoreZonePool struct {
-	value *GetClusterDatastore200ResponseDatastoreZonePool
-	isSet bool
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreZonePool) Get() *GetClusterDatastore200ResponseDatastoreZonePool {
-	return v.value
-}
-
-func (v *NullableGetClusterDatastore200ResponseDatastoreZonePool) Set(val *GetClusterDatastore200ResponseDatastoreZonePool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreZonePool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterDatastore200ResponseDatastoreZonePool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterDatastore200ResponseDatastoreZonePool(val *GetClusterDatastore200ResponseDatastoreZonePool) *NullableGetClusterDatastore200ResponseDatastoreZonePool {
-	return &NullableGetClusterDatastore200ResponseDatastoreZonePool{value: val, isSet: true}
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreZonePool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterDatastore200ResponseDatastoreZonePool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreZonePool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClusterDatastore200ResponseDatastoreZonePool) UnmarshalJSON(data []byte) (err error) {

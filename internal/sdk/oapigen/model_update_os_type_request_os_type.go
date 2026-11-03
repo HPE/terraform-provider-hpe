@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -40,8 +40,8 @@ type UpdateOsTypeRequestOsType struct {
 	OsFamily NullableString `json:"osFamily,omitempty"`
 	// The bitCount/architecture of the osType.
 	BitCount *int64 `json:"bitCount,omitempty"`
-	// The version of CloudInit being used.
-	CloudInitVersion *string `json:"cloudInitVersion,omitempty"`
+	// The version of CloudInit being used; null clears it.
+	CloudInitVersion NullableString `json:"cloudInitVersion,omitempty"`
 	// Whether the morpheus agent is installed.
 	InstallAgent         NullableBool           `json:"installAgent,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -89,8 +89,8 @@ func (o UpdateOsTypeRequestOsType) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.BitCount) {
 		toSerialize["bitCount"] = o.BitCount
 	}
-	if !IsNil(o.CloudInitVersion) {
-		toSerialize["cloudInitVersion"] = o.CloudInitVersion
+	if o.CloudInitVersion.IsSet() {
+		toSerialize["cloudInitVersion"] = o.CloudInitVersion.Get()
 	}
 	if o.InstallAgent.IsSet() {
 		toSerialize["installAgent"] = o.InstallAgent.Get()
@@ -101,51 +101,6 @@ func (o UpdateOsTypeRequestOsType) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateOsTypeRequestOsType struct {
-	value *UpdateOsTypeRequestOsType
-	isSet bool
-}
-
-func (v NullableUpdateOsTypeRequestOsType) Get() *UpdateOsTypeRequestOsType {
-	return v.value
-}
-
-func (v *NullableUpdateOsTypeRequestOsType) Set(val *UpdateOsTypeRequestOsType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateOsTypeRequestOsType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateOsTypeRequestOsType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateOsTypeRequestOsType(val *UpdateOsTypeRequestOsType) *NullableUpdateOsTypeRequestOsType {
-	return &NullableUpdateOsTypeRequestOsType{value: val, isSet: true}
-}
-
-func (v NullableUpdateOsTypeRequestOsType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateOsTypeRequestOsType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateOsTypeRequestOsType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateOsTypeRequestOsType) UnmarshalJSON(data []byte) (err error) {

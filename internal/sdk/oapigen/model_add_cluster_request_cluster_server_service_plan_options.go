@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -56,51 +56,6 @@ func (o AddClusterRequestClusterServerServicePlanOptions) ToMap() (map[string]in
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddClusterRequestClusterServerServicePlanOptions struct {
-	value *AddClusterRequestClusterServerServicePlanOptions
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterServerServicePlanOptions) Get() *AddClusterRequestClusterServerServicePlanOptions {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterServerServicePlanOptions) Set(val *AddClusterRequestClusterServerServicePlanOptions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterServerServicePlanOptions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterServerServicePlanOptions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterServerServicePlanOptions(val *AddClusterRequestClusterServerServicePlanOptions) *NullableAddClusterRequestClusterServerServicePlanOptions {
-	return &NullableAddClusterRequestClusterServerServicePlanOptions{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterServerServicePlanOptions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterServerServicePlanOptions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterServerServicePlanOptions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddClusterRequestClusterServerServicePlanOptions) UnmarshalJSON(data []byte) (err error) {

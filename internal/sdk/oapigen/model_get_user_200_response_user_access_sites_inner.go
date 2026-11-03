@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o GetUser200ResponseUserAccessSitesInner) ToMap() (map[string]interface{},
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetUser200ResponseUserAccessSitesInner struct {
-	value *GetUser200ResponseUserAccessSitesInner
-	isSet bool
-}
-
-func (v NullableGetUser200ResponseUserAccessSitesInner) Get() *GetUser200ResponseUserAccessSitesInner {
-	return v.value
-}
-
-func (v *NullableGetUser200ResponseUserAccessSitesInner) Set(val *GetUser200ResponseUserAccessSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetUser200ResponseUserAccessSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetUser200ResponseUserAccessSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetUser200ResponseUserAccessSitesInner(val *GetUser200ResponseUserAccessSitesInner) *NullableGetUser200ResponseUserAccessSitesInner {
-	return &NullableGetUser200ResponseUserAccessSitesInner{value: val, isSet: true}
-}
-
-func (v NullableGetUser200ResponseUserAccessSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetUser200ResponseUserAccessSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetUser200ResponseUserAccessSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetUser200ResponseUserAccessSitesInner) UnmarshalJSON(data []byte) (err error) {

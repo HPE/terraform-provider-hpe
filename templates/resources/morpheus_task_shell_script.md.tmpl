@@ -8,6 +8,15 @@ description: |-
 
 {{ .Description | trimspace }}
 
+## Write-only remote target password
+
+The remote target password is a write-only value: `remote_target_password_wo` is sent to Morpheus
+but never stored in Terraform state. Changes to it are detected through a private-state digest and
+surface as a change to the computed `write_only_revision` attribute, which plans an in-place update
+that re-sends the value. The deprecated `remote_target_password_wo_version` marker still forces a
+re-send when it changes, but is no longer required and will be removed in the 2.6 release. The
+write-only attribute requires Terraform/OpenTofu 1.11 or later.
+
 ## Example Usage
 
 Creating the shell script task with local script content:
@@ -24,23 +33,15 @@ Creating the shell script task with the script fetch via git:
 
 {{ .SchemaMarkdown | trimspace }}
 
-## Switching to `remote_target_password_wo`
-
-As of version 1.7, the `remote_target_password` attribute is deprecated. Morpheus
-returns the password as a hash, so this attribute holds the password hash — not the
-original password — in Terraform state. Prefer the write-only
-`remote_target_password_wo` attribute, whose value is never persisted to state
-(requires Terraform/OpenTofu 1.11 or later).
-
-To migrate, replace `remote_target_password` with `remote_target_password_wo` using
-the same value, and set `remote_target_password_wo_version` to an integer such as
-`1`. The two password attributes are mutually exclusive, so set only one. Because
-write-only values are not stored in state, rotating the password later requires
-updating `remote_target_password_wo` **and** incrementing
-`remote_target_password_wo_version`.
-
 ## Import
 
 Import is supported using the following syntax:
 
 {{codefile "shell" "examples/resources/morpheus_task_shell_script/import.sh" }}
+
+The write-only value `remote_target_password_wo` is not stored in state, so the import cannot tell
+whether the value in your configuration matches the appliance: it is taken as already applied, the
+plan after import is empty, and a later change to it is only detected once the resource is next
+updated for another reason (Terraform warns about this on every plan until then). To have changes
+detected from the start, append the sha256 digest of the configured write-only value to the import
+ID, as shown above.

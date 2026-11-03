@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o CreateNetworkFirewallRuleRequestRuleConfig) ToMap() (map[string]interfac
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateNetworkFirewallRuleRequestRuleConfig struct {
-	value *CreateNetworkFirewallRuleRequestRuleConfig
-	isSet bool
-}
-
-func (v NullableCreateNetworkFirewallRuleRequestRuleConfig) Get() *CreateNetworkFirewallRuleRequestRuleConfig {
-	return v.value
-}
-
-func (v *NullableCreateNetworkFirewallRuleRequestRuleConfig) Set(val *CreateNetworkFirewallRuleRequestRuleConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkFirewallRuleRequestRuleConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkFirewallRuleRequestRuleConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkFirewallRuleRequestRuleConfig(val *CreateNetworkFirewallRuleRequestRuleConfig) *NullableCreateNetworkFirewallRuleRequestRuleConfig {
-	return &NullableCreateNetworkFirewallRuleRequestRuleConfig{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkFirewallRuleRequestRuleConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkFirewallRuleRequestRuleConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkFirewallRuleRequestRuleConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateNetworkFirewallRuleRequestRuleConfig) UnmarshalJSON(data []byte) (err error) {

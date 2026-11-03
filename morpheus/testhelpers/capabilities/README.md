@@ -104,7 +104,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | Capability | Env Value | Description |
 |------------|-----------|-------------|
 | `Kubernetes` | `kubernetes` | Kubernetes library artifacts (spec templates, blueprints, cluster layouts/types) -- no running cluster required |
-| `KubernetesCluster` | `kubernetes_cluster` | A live, healthy Kubernetes cluster (HKS worker provisioning + cluster namespaces). Omit on environments that lack a usable cluster |
+| `KubernetesCluster` | `kubernetes_cluster` | A live, healthy Kubernetes cluster that `TF_VAR_testacc_morpheus_k8s_cluster_id` names (cluster namespaces). The HKS-on-HVM provisioning test is gated on it too but is opt-in (`RUN_SKIPPED_BY_DEFAULT`): it builds four nodes from QA-appliance ids. Omit on environments that lack a usable cluster |
 | `Docker` | `docker` | Docker/container registries |
 
 ### Storage & VDI
@@ -119,6 +119,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | Capability | Env Value | Description |
 |------------|-----------|-------------|
 | `PCE` | `pce` | A live PCE (Private Cloud Enterprise) instance reachable via GreenLake IAM. Gates the end-to-end `pce_identity` auth-flow test, which authenticates through GreenLake rather than the main appliance credentials. The test skips unless `TF_VAR_testacc_pce_identity_client_id`, `_client_secret`, `_issuer_url`, `_location`, `_space` and `TF_ACC_PCE_IDENTITY_CLOUD_NAME` are all set |
+| `Plugins` | `plugins` | Plugin install/remove -- appliance-wide, needs admin-plugins permission |
 
 ### Tenancy
 
@@ -257,9 +258,22 @@ Exit codes:
 |----------|-------------|
 | `TF_ACC_CAPABILITIES` | Comma-separated list of available capabilities |
 | `TF_ACC_CAPABILITIES_VERBOSE` | Set to `1` to log when tests don't run |
+| `TF_ACC_PHPIPAM_URL`, `TF_ACC_PHPIPAM_APP_ID`, `TF_ACC_PHPIPAM_USERNAME`, `TF_ACC_PHPIPAM_PASSWORD` | A reachable phpIPAM service for the phpIPAM pool-server test, which skips without them. Optional `TF_ACC_PHPIPAM_APP_ID_2` names a second application for the app-ID change step |
 | `TF_VAR_testacc_morpheus_affinity_cloud_id` | ID of a cloud that supports affinity groups. Required by the `affinity_group` + `vmware` tests, which skip without it |
-| `TF_VAR_testacc_morpheus_affinity_cluster_id` | ID of an HVM cluster that supports affinity groups. Required by the `affinity_group` + `hvm` tests, which skip without it |
+| `TF_VAR_testacc_morpheus_affinity_cluster_id` | ID of an HVM cluster that supports affinity groups. Required by the cluster affinity-group resource/data-source tests, which skip without it (the instance placement tests use the HVM fixture's cluster by name instead) |
 | `TF_VAR_testacc_morpheus_affinity_pool_id` | ID of a resource pool of type Cluster on the cloud above. Morpheus rejects a cloud affinity group created without a pool, so the `affinity_group` + `vmware` resource tests skip without it |
+| `TF_VAR_testacc_morpheus_hvm_cloud_name` | Name of the Morpheus private cloud an HVM cluster is in. The HVM fixture (`testhelpers/hvm_fixture.go`): the objects the HVM/KVM instance and data-source tests provision against, **by name**, resolved by data sources inside the test configuration — never by id. Tests skip when a variable they need is unset |
+| `TF_VAR_testacc_morpheus_hvm_cluster_name` | Name of the HVM cluster to provision into; its resource pool, networks and datastores are what the other names are looked up in |
+| `TF_VAR_testacc_morpheus_hvm_network_name` | Name of a network of that cluster (`GET /api/networks?clusterId=`) |
+| `TF_VAR_testacc_morpheus_hvm_datastore_name` | Name of a datastore of that cluster (`GET /api/clusters/{id}/datastores`); optional for the instance tests, which fall back to automatic datastore selection |
+| `TF_VAR_testacc_morpheus_hvm_layout_name`, `TF_VAR_testacc_morpheus_hvm_layout_version` | The instance type layout to provision with (its instance type comes with it); the version pins one of the same-named layouts |
+| `TF_VAR_testacc_morpheus_hvm_plan_name` | A small kvm service plan for the test VMs, e.g. `1 CPU, 1GB Memory` |
+| `TF_VAR_testacc_morpheus_hvm_image_name` | A virtual image to provision from when the layout carries none; optional for the instance tests |
+| `TF_VAR_testacc_morpheus_hvm_affinity_group_name` | An existing cluster affinity group of the HVM cluster, for the instance affinity-group tests (replaces the former `TF_VAR_testacc_morpheus_affinity_group_cluster_ag_id`); it has to exist, since 9.1 refuses an empty group |
+| `TF_VAR_testacc_morpheus_hvm_growing_image_name` | A virtual image whose raw size is just over its minimum disk (10 GB requested -> 11 GB after provisioning), for the volume `actual_size` test; it skips without one |
+| `TF_VAR_testacc_morpheus_hvm_no_agent` | `true` to provision the test VMs without the Morpheus agent (default: with it). Without the agent Morpheus SSHes from the appliance into the guest to report its address and apply environment variables, so set this only where the appliance can reach the test VMs |
+| `TF_VAR_testacc_morpheus_hvm_other_cluster_name` | A second HVM cluster in the same cloud, for the wrong-pool test (an instance targeting one cluster's pool with a network of the other's) |
+| `TF_VAR_testacc_morpheus_hvm_poolless_network_name` | A network of the HVM cloud that belongs to no resource pool (a docker bridge, say), for the test that lists the networks Morpheus would accept instead |
 | `TF_VAR_testacc_pce_identity_client_id` | GreenLake API client ID. Required by the `pce` test |
 | `TF_VAR_testacc_pce_identity_client_secret` | GreenLake API client secret. Required by the `pce` test |
 | `TF_VAR_testacc_pce_identity_issuer_url` | GreenLake IAM issuer URL used to mint access tokens. Required by the `pce` test |
@@ -267,6 +281,17 @@ Exit codes:
 | `TF_VAR_testacc_pce_identity_space` | GreenLake space containing the PCE instance. Required by the `pce` test — the `pce_identity` block rejects a null `space` |
 | `TF_VAR_testacc_pce_identity_broker_url` | PCE broker URL override. Optional; leave unset to use the HPE-hosted cloud broker |
 | `TF_ACC_PCE_IDENTITY_CLOUD_NAME` | Name of a cloud to read back through the PCE token exchange. Required by the `pce` test; there is no default, as the reachable clouds differ per GreenLake tenant. Not a `TF_VAR_`, because the test renders it into HCL rather than passing it through a Terraform variable |
+| `TF_ACC_IPAM_TYPE` | Pool server type code (e.g. `infoblox`, `phpipam`, `bluecat`) of a reachable IPAM. Required by the network pool server create-based tests — Morpheus 9.1.2 verifies the service URL on create, so these tests skip without a reachable IPAM |
+| `TF_ACC_IPAM_URL` | Reachable IPAM service URL. Required by the network pool server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_IPAM_USERNAME` | IPAM service username. Required by the network pool server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_IPAM_PASSWORD` | IPAM service password. Required by the network pool server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_STORAGE_SERVER_TYPE` | Storage server type code (e.g. `alletra-mp`) of a reachable storage service. Required by the storage server create-based tests — Morpheus 9.1.2 verifies the service URL on create, so these tests skip without a reachable service |
+| `TF_ACC_STORAGE_SERVER_URL` | Reachable storage service URL. Required by the storage server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_STORAGE_SERVER_USERNAME` | Storage service username. Required by the storage server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_STORAGE_SERVER_PASSWORD` | Storage service password. Required by the storage server create-based tests (9.1.2 reachability check) |
+| `TF_ACC_IPAM_ROTATABLE` | Set to `1` to re-enable the network pool server write-only matrix and drift tests. They are skipped by default because Morpheus 9.1.x validates the IPAM credentials on create and update, so an out-of-band password rotation cannot be staged against an ordinary integration; set this against an IPAM whose credentials can be rotated (MORPH-19005 follow-up) |
+| `TF_ACC_STORAGE_SERVER_ROTATABLE` | Set to `1` to re-enable the storage server write-only matrix and drift tests. They are skipped by default because Morpheus 9.1.x validates the storage server credentials on create and update, so an out-of-band password rotation cannot be staged; set this against a storage server whose credentials can be rotated (MORPH-19005 follow-up) |
+| `TF_ACC_BGP_SOURCE_ADDRESS` | Overrides the BGP source address used by the network router BGP neighbor drift test (`config_nsxt.source_addresses`). Optional; no fixture carries it, so set it to a valid source address on the target tier-0 router when running that test |
 
 ### Examples
 

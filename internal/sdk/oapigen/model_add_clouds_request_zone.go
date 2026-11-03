@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -61,7 +61,9 @@ type AddCloudsRequestZone struct {
 	// Linked Account ID (enter commercial ID to get costing for AWS Govcloud)
 	LinkedAccountId *int64 `json:"linkedAccountId,omitempty"`
 	// host firewall. `off` or `internal`. a.k.a. \"local firewall\"
-	SecurityMode         *string                         `json:"securityMode,omitempty"`
+	SecurityMode *string `json:"securityMode,omitempty"`
+	// Array of backup provider (integration) IDs to assign to this cloud.
+	BackupProviders      []int64                         `json:"backupProviders,omitempty"`
 	Credential           *AddCloudsRequestZoneCredential `json:"credential,omitempty"`
 	AdditionalProperties map[string]interface{}          `json:",remain"`
 }
@@ -136,6 +138,9 @@ func (o AddCloudsRequestZone) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.SecurityMode) {
 		toSerialize["securityMode"] = o.SecurityMode
 	}
+	if !IsNil(o.BackupProviders) {
+		toSerialize["backupProviders"] = o.BackupProviders
+	}
 	if !IsNil(o.Credential) {
 		toSerialize["credential"] = o.Credential
 	}
@@ -145,51 +150,6 @@ func (o AddCloudsRequestZone) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddCloudsRequestZone struct {
-	value *AddCloudsRequestZone
-	isSet bool
-}
-
-func (v NullableAddCloudsRequestZone) Get() *AddCloudsRequestZone {
-	return v.value
-}
-
-func (v *NullableAddCloudsRequestZone) Set(val *AddCloudsRequestZone) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddCloudsRequestZone) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddCloudsRequestZone) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddCloudsRequestZone(val *AddCloudsRequestZone) *NullableAddCloudsRequestZone {
-	return &NullableAddCloudsRequestZone{value: val, isSet: true}
-}
-
-func (v NullableAddCloudsRequestZone) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddCloudsRequestZone) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddCloudsRequestZone) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddCloudsRequestZone) UnmarshalJSON(data []byte) (err error) {

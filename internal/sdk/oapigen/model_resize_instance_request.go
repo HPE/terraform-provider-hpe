@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,6 +24,8 @@ type ResizeInstanceRequest struct {
 	ServicePlanOptions *ResizeInstanceRequestServicePlanOptions `json:"servicePlanOptions,omitempty"`
 	// Can be used to grow just the logical volume of the instance instead of choosing a plan
 	Volumes []ResizeInstanceRequestVolumesInner `json:"volumes,omitempty"`
+	// Optional array of storage controller configurations representing the full desired controller state of the instance after resize. Include every existing controller (by `id`) that should be preserved, plus any new controllers to add. Existing controllers omitted from the array are treated as deletes; controllers with volumes attached cannot be deleted and will fail the resize.  Must be sent alongside the `volumes` array in the same request — controller changes are only processed when `volumes` is present in the payload. Supported on VMware and MVM.
+	StorageControllers []ResizeInstanceRequestStorageControllersInner `json:"storageControllers,omitempty"`
 	// Delete the original volumes after resizing. (Amazon only)
 	DeleteOriginalVolumes *bool `json:"deleteOriginalVolumes,omitempty"`
 	// Key for network configuration. Include id to update an existing interface. The existing interfaces and their id can be retrieved with the hosts API.
@@ -52,6 +54,9 @@ func (o ResizeInstanceRequest) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Volumes) {
 		toSerialize["volumes"] = o.Volumes
 	}
+	if !IsNil(o.StorageControllers) {
+		toSerialize["storageControllers"] = o.StorageControllers
+	}
 	if !IsNil(o.DeleteOriginalVolumes) {
 		toSerialize["deleteOriginalVolumes"] = o.DeleteOriginalVolumes
 	}
@@ -64,51 +69,6 @@ func (o ResizeInstanceRequest) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableResizeInstanceRequest struct {
-	value *ResizeInstanceRequest
-	isSet bool
-}
-
-func (v NullableResizeInstanceRequest) Get() *ResizeInstanceRequest {
-	return v.value
-}
-
-func (v *NullableResizeInstanceRequest) Set(val *ResizeInstanceRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableResizeInstanceRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableResizeInstanceRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableResizeInstanceRequest(val *ResizeInstanceRequest) *NullableResizeInstanceRequest {
-	return &NullableResizeInstanceRequest{value: val, isSet: true}
-}
-
-func (v NullableResizeInstanceRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableResizeInstanceRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableResizeInstanceRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ResizeInstanceRequest) UnmarshalJSON(data []byte) (err error) {

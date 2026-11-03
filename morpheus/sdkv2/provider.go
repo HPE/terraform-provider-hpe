@@ -23,7 +23,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/identitysource"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/integration"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/job"
-	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/license"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/optionlist"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/optiontype"
@@ -107,8 +106,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_job_task":                         job.ResourceJobTask(),
 			"hpe_morpheus_job_workflow":                     job.ResourceJobWorkflow(),
 			"hpe_morpheus_key_pair":                         trust.ResourceKeyPair(),
-			"hpe_morpheus_license":                          license.ResourceLicense(),
-			"hpe_morpheus_network_domain":                   network.ResourceNetworkDomain(),
 			"hpe_morpheus_node_type":                        blueprint.ResourceNodeType(),
 			"hpe_morpheus_option_list_api":                  optionlist.ResourceOptionListAPI(),
 			"hpe_morpheus_option_list_manual":               optionlist.ResourceOptionListManual(),
@@ -148,11 +145,9 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_library_script":              task.ResourceTaskLibraryScript(),
 			"hpe_morpheus_task_library_template":            task.ResourceTaskLibraryTemplate(),
 			"hpe_morpheus_task_nested_workflow":             task.ResourceTaskNestedWorkflow(),
-			"hpe_morpheus_task_powershell_script":           task.ResourceTaskPowerShellScript(),
 			"hpe_morpheus_task_python_script":               task.ResourceTaskPythonScript(),
 			"hpe_morpheus_task_restart":                     task.ResourceTaskRestart(),
 			"hpe_morpheus_task_ruby_script":                 task.ResourceTaskRubyScript(),
-			"hpe_morpheus_task_shell_script":                task.ResourceTaskShellScript(),
 			"hpe_morpheus_task_vro":                         task.ResourceTaskVRO(),
 			"hpe_morpheus_task_write_attributes":            task.ResourceTaskWriteAttributes(),
 			"hpe_morpheus_user_group":                       usergroup.ResourceUserGroup(),

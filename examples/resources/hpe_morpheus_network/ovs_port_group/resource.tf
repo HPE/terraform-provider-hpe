@@ -13,7 +13,7 @@ variable "description" {
 variable "cloud_id" {
   description = "Cloud (zone) id"
   type        = number
-  default     = 7714
+  default     = 17
 }
 
 variable "pool_id" {
@@ -28,28 +28,34 @@ variable "group_id" {
   default     = 1
 }
 
-variable "type_id" {
-  description = "Network type id (OVS Port Group)"
+variable "network_server_id" {
+  description = "The cluster's HVM network server id (GET /api/networks/servers?showHidden=true)"
   type        = number
-  default     = 63
+  default     = 7834
+}
+
+variable "vlan_trunks" {
+  description = "VLAN ids to trunk on the port group"
+  type        = string
+  default     = "100,200"
 }
 
 variable "cidr" {
   description = "CIDR Network"
   type        = string
-  default     = "10.32.148.0/22"
+  default     = "10.209.101.0/24"
 }
 
 variable "zone_pool_id" {
-  description = "Zone pool id"
+  description = "Zone pool id (the HVM cluster's resource pool)"
   type        = number
-  default     = 62299
+  default     = 153047
 }
 
 variable "vlan_id" {
   description = "VLAN ID"
   type        = number
-  default     = 43
+  default     = 2101
 }
 
 variable "switch_id" {
@@ -83,14 +89,18 @@ variable "visibility" {
 }
 
 resource "hpe_morpheus_network" "ovs_port_group" {
-  name                       = var.name
-  description                = var.description
-  cloud_id                   = var.cloud_id
-  pool_id                    = var.pool_id
-  group_id                   = var.group_id
-  type_id                    = var.type_id
-  switch_id                  = var.switch_id
-  config                     = {}
+  name              = var.name
+  description       = var.description
+  cloud_id          = var.cloud_id
+  pool_id           = var.pool_id
+  group_id          = var.group_id
+  type_code         = "ovsPortGroup"
+  switch_id         = var.switch_id
+  network_server_id = var.network_server_id
+  config_ovs_port_group = {
+    vlan_trunks = var.vlan_trunks
+    trunk_only  = false
+  }
   active                     = var.active
   dhcp_server                = var.dhcp_server
   appliance_url_proxy_bypass = var.appliance_url_proxy_bypass

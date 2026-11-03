@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj UpdateVirtualImageRequestVirtualImageConfig) GetActualInstanceValue() 
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableUpdateVirtualImageRequestVirtualImageConfig struct {
-	value *UpdateVirtualImageRequestVirtualImageConfig
-	isSet bool
-}
-
-func (v NullableUpdateVirtualImageRequestVirtualImageConfig) Get() *UpdateVirtualImageRequestVirtualImageConfig {
-	return v.value
-}
-
-func (v *NullableUpdateVirtualImageRequestVirtualImageConfig) Set(val *UpdateVirtualImageRequestVirtualImageConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVirtualImageRequestVirtualImageConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVirtualImageRequestVirtualImageConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVirtualImageRequestVirtualImageConfig(val *UpdateVirtualImageRequestVirtualImageConfig) *NullableUpdateVirtualImageRequestVirtualImageConfig {
-	return &NullableUpdateVirtualImageRequestVirtualImageConfig{value: val, isSet: true}
-}
-
-func (v NullableUpdateVirtualImageRequestVirtualImageConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVirtualImageRequestVirtualImageConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVirtualImageRequestVirtualImageConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

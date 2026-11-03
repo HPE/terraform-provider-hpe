@@ -1,0 +1,58 @@
+{
+ "active": true,
+ "allow_static_override": false,
+ "appliance_url_proxy_bypass": true,
+ "assign_public_ip": false,
+ "cidr": "10.208.1.0/24",
+ "cidr_ipv6": null,
+ "cloud_id": 17,
+ "config": {
+  "type": [
+   "object",
+   {
+    "another": "string",
+    "spikeKey": "string"
+   }
+  ],
+  "value": {
+   "another": "x",
+   "spikeKey": "v1"
+  }
+ },
+ "connected_gateway": null,
+ "description": "MORPH-17744 upgrade spike",
+ "dhcp_server": false,
+ "dhcp_server_ipv6": false,
+ "display_name": null,
+ "dns_primary": null,
+ "dns_primary_ipv6": null,
+ "dns_secondary": null,
+ "dns_secondary_ipv6": null,
+ "gateway": null,
+ "gateway_ipv6": null,
+ "group_id": 1,
+ "id": 252799,
+ "ipv4enabled": true,
+ "ipv6enabled": false,
+ "labels": null,
+ "name": "tf17744-upgrade-fixture",
+ "netmask_ipv6": null,
+ "network_domain_id": null,
+ "network_proxy_id": null,
+ "no_proxy": null,
+ "pool_id": null,
+ "pool_ipv6_id": null,
+ "resource_permissions": {
+  "all": true,
+  "group_ids": null
+ },
+ "search_domains": null,
+ "switch_id": null,
+ "tenant_ids": [
+  1
+ ],
+ "type_id": 1,
+ "visibility": "private",
+ "vlan_id": null,
+ "zone_pool_id": null
+}

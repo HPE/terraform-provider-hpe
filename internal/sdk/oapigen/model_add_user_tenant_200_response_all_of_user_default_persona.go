@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,8 +21,8 @@ var _ MappedNullable = &AddUserTenant200ResponseAllOfUserDefaultPersona{}
 // AddUserTenant200ResponseAllOfUserDefaultPersona struct for AddUserTenant200ResponseAllOfUserDefaultPersona
 type AddUserTenant200ResponseAllOfUserDefaultPersona struct {
 	Id                   *int64                 `json:"id,omitempty"`
-	Code                 *string                `json:"code,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
+	Code                 *string                `json:"code,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -41,11 +41,11 @@ func (o AddUserTenant200ResponseAllOfUserDefaultPersona) ToMap() (map[string]int
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
-	if !IsNil(o.Code) {
-		toSerialize["code"] = o.Code
-	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.Code) {
+		toSerialize["code"] = o.Code
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -53,51 +53,6 @@ func (o AddUserTenant200ResponseAllOfUserDefaultPersona) ToMap() (map[string]int
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddUserTenant200ResponseAllOfUserDefaultPersona struct {
-	value *AddUserTenant200ResponseAllOfUserDefaultPersona
-	isSet bool
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserDefaultPersona) Get() *AddUserTenant200ResponseAllOfUserDefaultPersona {
-	return v.value
-}
-
-func (v *NullableAddUserTenant200ResponseAllOfUserDefaultPersona) Set(val *AddUserTenant200ResponseAllOfUserDefaultPersona) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserDefaultPersona) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddUserTenant200ResponseAllOfUserDefaultPersona) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddUserTenant200ResponseAllOfUserDefaultPersona(val *AddUserTenant200ResponseAllOfUserDefaultPersona) *NullableAddUserTenant200ResponseAllOfUserDefaultPersona {
-	return &NullableAddUserTenant200ResponseAllOfUserDefaultPersona{value: val, isSet: true}
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserDefaultPersona) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddUserTenant200ResponseAllOfUserDefaultPersona) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddUserTenant200ResponseAllOfUserDefaultPersona) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddUserTenant200ResponseAllOfUserDefaultPersona) UnmarshalJSON(data []byte) (err error) {

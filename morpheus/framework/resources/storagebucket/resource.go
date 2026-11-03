@@ -14,7 +14,9 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
@@ -23,6 +25,7 @@ var (
 	_ resource.Resource                = &storageBucketResource{}
 	_ resource.ResourceWithConfigure   = &storageBucketResource{}
 	_ resource.ResourceWithImportState = &storageBucketResource{}
+	_ resource.ResourceWithModifyPlan  = &storageBucketResource{}
 )
 
 type storageBucketResource struct {
@@ -161,6 +164,9 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 	}
 	mapGetResponseToModel(&plan, readResult.StorageBucket)
 
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -233,7 +239,23 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 
 	id := plan.Id.ValueInt64()
 
+	// access_key and secret_key are write-only. They are re-sent when ModifyPlan
+	// marked write_only_revision unknown (a digest changed, or a deprecated
+	// marker did); otherwise the update carries only the endpoint. See
+	// write_only.go.
+	resend := wodigest.Resend(ctx, req.Plan)
 	accessKey, secretKey, endpoint := bucketConfigFields(plan.Endpoint, config.AccessKey, config.SecretKey)
+	if !resend {
+		accessKey, secretKey = nil, nil
+	}
+
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	body := sdk.UpdateStorageBucketsRequestStorageBucket{
 		Name:         plan.Name.ValueStringPointer(),
@@ -252,8 +274,8 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 	if !plan.DefaultBackupTarget.IsNull() {
 		body.DefaultBackupTarget = plan.DefaultBackupTarget.ValueBoolPointer()
 	}
-	if !plan.RetentionDays.IsNull() {
-		body.RetentionPolicyDays = plan.RetentionDays.ValueInt64Pointer()
+	sent := clearable.NullableInt64(pending, "retention_days", plan.RetentionDays, &body.RetentionPolicyDays)
+	if sent && !plan.RetentionDays.IsNull() {
 		retType := "delete"
 		body.RetentionPolicyType = &retType
 	}
@@ -282,6 +304,15 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 	}
 	mapGetResponseToModel(&plan, readResult.StorageBucket)
 
+	var priorState StorageBucketModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
+	plan.WriteOnlyRevision = priorState.WriteOnlyRevision
+	if resend {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	// Always record the digests of the configured values, sent or not.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -301,8 +332,8 @@ func (r *storageBucketResource) Delete(ctx context.Context, req resource.DeleteR
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.StorageAPI.RemoveStorageBuckets(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.StorageAPI.RemoveStorageBuckets(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "storage_bucket", "", err, httpResp)
 
 		return
@@ -314,9 +345,15 @@ func (r *storageBucketResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.ParseInt(req.ID, 10, 64)
+	// "<id>" or "<id>#access_key=<sha256 hex>&secret_key=<sha256 hex>": see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.ParseInt(rawID, 10, 64)
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", rawID, err))
 
 		return
 	}

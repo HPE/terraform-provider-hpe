@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -47,51 +47,6 @@ func (o UpdateRoleRequestRoleFeaturePermissionsInner) ToMap() (map[string]interf
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateRoleRequestRoleFeaturePermissionsInner struct {
-	value *UpdateRoleRequestRoleFeaturePermissionsInner
-	isSet bool
-}
-
-func (v NullableUpdateRoleRequestRoleFeaturePermissionsInner) Get() *UpdateRoleRequestRoleFeaturePermissionsInner {
-	return v.value
-}
-
-func (v *NullableUpdateRoleRequestRoleFeaturePermissionsInner) Set(val *UpdateRoleRequestRoleFeaturePermissionsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateRoleRequestRoleFeaturePermissionsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateRoleRequestRoleFeaturePermissionsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateRoleRequestRoleFeaturePermissionsInner(val *UpdateRoleRequestRoleFeaturePermissionsInner) *NullableUpdateRoleRequestRoleFeaturePermissionsInner {
-	return &NullableUpdateRoleRequestRoleFeaturePermissionsInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateRoleRequestRoleFeaturePermissionsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateRoleRequestRoleFeaturePermissionsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateRoleRequestRoleFeaturePermissionsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateRoleRequestRoleFeaturePermissionsInner) UnmarshalJSON(data []byte) (err error) {

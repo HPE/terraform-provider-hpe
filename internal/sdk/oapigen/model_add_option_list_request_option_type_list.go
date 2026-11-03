@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -122,51 +122,6 @@ func (o AddOptionListRequestOptionTypeList) ToMap() (map[string]interface{}, err
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddOptionListRequestOptionTypeList struct {
-	value *AddOptionListRequestOptionTypeList
-	isSet bool
-}
-
-func (v NullableAddOptionListRequestOptionTypeList) Get() *AddOptionListRequestOptionTypeList {
-	return v.value
-}
-
-func (v *NullableAddOptionListRequestOptionTypeList) Set(val *AddOptionListRequestOptionTypeList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddOptionListRequestOptionTypeList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddOptionListRequestOptionTypeList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddOptionListRequestOptionTypeList(val *AddOptionListRequestOptionTypeList) *NullableAddOptionListRequestOptionTypeList {
-	return &NullableAddOptionListRequestOptionTypeList{value: val, isSet: true}
-}
-
-func (v NullableAddOptionListRequestOptionTypeList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddOptionListRequestOptionTypeList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddOptionListRequestOptionTypeList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddOptionListRequestOptionTypeList) UnmarshalJSON(data []byte) (err error) {

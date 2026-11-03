@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ProvisioningSettingsCloudInitKeyPair) ToMap() (map[string]interface{}, e
 	}
 
 	return toSerialize, nil
-}
-
-type NullableProvisioningSettingsCloudInitKeyPair struct {
-	value *ProvisioningSettingsCloudInitKeyPair
-	isSet bool
-}
-
-func (v NullableProvisioningSettingsCloudInitKeyPair) Get() *ProvisioningSettingsCloudInitKeyPair {
-	return v.value
-}
-
-func (v *NullableProvisioningSettingsCloudInitKeyPair) Set(val *ProvisioningSettingsCloudInitKeyPair) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableProvisioningSettingsCloudInitKeyPair) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableProvisioningSettingsCloudInitKeyPair) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableProvisioningSettingsCloudInitKeyPair(val *ProvisioningSettingsCloudInitKeyPair) *NullableProvisioningSettingsCloudInitKeyPair {
-	return &NullableProvisioningSettingsCloudInitKeyPair{value: val, isSet: true}
-}
-
-func (v NullableProvisioningSettingsCloudInitKeyPair) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableProvisioningSettingsCloudInitKeyPair) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableProvisioningSettingsCloudInitKeyPair) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ProvisioningSettingsCloudInitKeyPair) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,138 +23,6 @@ import (
 
 // SecurityGroupsAPIService SecurityGroupsAPI service
 type SecurityGroupsAPIService service
-
-type ApiAddSecurityGroupLocationsRequest struct {
-	ctx                              context.Context
-	ApiService                       *SecurityGroupsAPIService
-	id                               int64
-	addSecurityGroupLocationsRequest *AddSecurityGroupLocationsRequest
-}
-
-func (r ApiAddSecurityGroupLocationsRequest) AddSecurityGroupLocationsRequest(addSecurityGroupLocationsRequest AddSecurityGroupLocationsRequest) ApiAddSecurityGroupLocationsRequest {
-	r.addSecurityGroupLocationsRequest = &addSecurityGroupLocationsRequest
-	return r
-}
-
-func (r ApiAddSecurityGroupLocationsRequest) Execute() (*AddSecurityGroupLocations200Response, *http.Response, error) {
-	return r.ApiService.AddSecurityGroupLocationsExecute(r)
-}
-
-/*
-AddSecurityGroupLocations Creates a Security Group Location
-
-Creates a security group location.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@return ApiAddSecurityGroupLocationsRequest
-*/
-func (a *SecurityGroupsAPIService) AddSecurityGroupLocations(ctx context.Context, id int64) ApiAddSecurityGroupLocationsRequest {
-	return ApiAddSecurityGroupLocationsRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-	}
-}
-
-// Execute executes the request
-//
-//	@return AddSecurityGroupLocations200Response
-func (a *SecurityGroupsAPIService) AddSecurityGroupLocationsExecute(r ApiAddSecurityGroupLocationsRequest) (*AddSecurityGroupLocations200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *AddSecurityGroupLocations200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SecurityGroupsAPIService.AddSecurityGroupLocations")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/security-groups/{id}/locations"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.addSecurityGroupLocationsRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
 
 type ApiAddSecurityGroupRulesRequest struct {
 	ctx                          context.Context
@@ -253,7 +121,7 @@ func (a *SecurityGroupsAPIService) AddSecurityGroupRulesExecute(r ApiAddSecurity
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -264,7 +132,7 @@ func (a *SecurityGroupsAPIService) AddSecurityGroupRulesExecute(r ApiAddSecurity
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -381,7 +249,7 @@ func (a *SecurityGroupsAPIService) AddSecurityGroupsExecute(r ApiAddSecurityGrou
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -392,7 +260,7 @@ func (a *SecurityGroupsAPIService) AddSecurityGroupsExecute(r ApiAddSecurityGrou
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -420,7 +288,7 @@ type ApiGetSecurityGroupRulesRequest struct {
 	ctx        context.Context
 	ApiService *SecurityGroupsAPIService
 	id         int64
-	sgId       float32
+	sgId       int64
 }
 
 func (r ApiGetSecurityGroupRulesRequest) Execute() (*GetSecurityGroupRules200Response, *http.Response, error) {
@@ -437,7 +305,7 @@ Retrieves a specific security group rule.
 	@param sgId Morpheus ID of the security group rule being referenced
 	@return ApiGetSecurityGroupRulesRequest
 */
-func (a *SecurityGroupsAPIService) GetSecurityGroupRules(ctx context.Context, id int64, sgId float32) ApiGetSecurityGroupRulesRequest {
+func (a *SecurityGroupsAPIService) GetSecurityGroupRules(ctx context.Context, id int64, sgId int64) ApiGetSecurityGroupRulesRequest {
 	return ApiGetSecurityGroupRulesRequest{
 		ApiService: a,
 		ctx:        ctx,
@@ -509,7 +377,7 @@ func (a *SecurityGroupsAPIService) GetSecurityGroupRulesExecute(r ApiGetSecurity
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -520,7 +388,7 @@ func (a *SecurityGroupsAPIService) GetSecurityGroupRulesExecute(r ApiGetSecurity
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -633,7 +501,7 @@ func (a *SecurityGroupsAPIService) GetSecurityGroupsExecute(r ApiGetSecurityGrou
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -644,7 +512,7 @@ func (a *SecurityGroupsAPIService) GetSecurityGroupsExecute(r ApiGetSecurityGrou
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -829,7 +697,7 @@ func (a *SecurityGroupsAPIService) ListSecurityGroupRulesExecute(r ApiListSecuri
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -840,7 +708,7 @@ func (a *SecurityGroupsAPIService) ListSecurityGroupRulesExecute(r ApiListSecuri
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1021,7 +889,7 @@ func (a *SecurityGroupsAPIService) ListSecurityGroupsExecute(r ApiListSecurityGr
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1032,135 +900,7 @@ func (a *SecurityGroupsAPIService) ListSecurityGroupsExecute(r ApiListSecurityGr
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-			err:  err,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiRemoveSecurityGroupLocationsRequest struct {
-	ctx        context.Context
-	ApiService *SecurityGroupsAPIService
-	id         int64
-	locationId float32
-}
-
-func (r ApiRemoveSecurityGroupLocationsRequest) Execute() (*RemoveExecuteSchedules200Response, *http.Response, error) {
-	return r.ApiService.RemoveSecurityGroupLocationsExecute(r)
-}
-
-/*
-RemoveSecurityGroupLocations Deletes a Security Group Location
-
-Deletes a security group location.
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id Morpheus ID of the Object being referenced
-	@param locationId The ID of the location
-	@return ApiRemoveSecurityGroupLocationsRequest
-*/
-func (a *SecurityGroupsAPIService) RemoveSecurityGroupLocations(ctx context.Context, id int64, locationId float32) ApiRemoveSecurityGroupLocationsRequest {
-	return ApiRemoveSecurityGroupLocationsRequest{
-		ApiService: a,
-		ctx:        ctx,
-		id:         id,
-		locationId: locationId,
-	}
-}
-
-// Execute executes the request
-//
-//	@return RemoveExecuteSchedules200Response
-func (a *SecurityGroupsAPIService) RemoveSecurityGroupLocationsExecute(r ApiRemoveSecurityGroupLocationsRequest) (*RemoveExecuteSchedules200Response, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodDelete
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *RemoveExecuteSchedules200Response
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SecurityGroupsAPIService.RemoveSecurityGroupLocations")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
-	}
-
-	localVarPath := localBasePath + "/api/security-groups/{id}/locations/{locationId}"
-	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"locationId"+"}", url.PathEscape(parameterValueToString(r.locationId, "locationId")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body: localVarBody,
-		}
-		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.err = err
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1188,7 +928,7 @@ type ApiRemoveSecurityGroupRulesRequest struct {
 	ctx        context.Context
 	ApiService *SecurityGroupsAPIService
 	id         int64
-	sgId       float32
+	sgId       int64
 }
 
 func (r ApiRemoveSecurityGroupRulesRequest) Execute() (*RemoveExecuteSchedules200Response, *http.Response, error) {
@@ -1205,7 +945,7 @@ Deletes a security group rule.
 	@param sgId Morpheus ID of the security group rule being referenced
 	@return ApiRemoveSecurityGroupRulesRequest
 */
-func (a *SecurityGroupsAPIService) RemoveSecurityGroupRules(ctx context.Context, id int64, sgId float32) ApiRemoveSecurityGroupRulesRequest {
+func (a *SecurityGroupsAPIService) RemoveSecurityGroupRules(ctx context.Context, id int64, sgId int64) ApiRemoveSecurityGroupRulesRequest {
 	return ApiRemoveSecurityGroupRulesRequest{
 		ApiService: a,
 		ctx:        ctx,
@@ -1277,7 +1017,7 @@ func (a *SecurityGroupsAPIService) RemoveSecurityGroupRulesExecute(r ApiRemoveSe
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1288,7 +1028,7 @@ func (a *SecurityGroupsAPIService) RemoveSecurityGroupRulesExecute(r ApiRemoveSe
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1401,7 +1141,7 @@ func (a *SecurityGroupsAPIService) RemoveSecurityGroupsExecute(r ApiRemoveSecuri
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1412,7 +1152,7 @@ func (a *SecurityGroupsAPIService) RemoveSecurityGroupsExecute(r ApiRemoveSecuri
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1440,7 +1180,7 @@ type ApiUpdateSecurityGroupRulesRequest struct {
 	ctx                             context.Context
 	ApiService                      *SecurityGroupsAPIService
 	id                              int64
-	sgId                            float32
+	sgId                            int64
 	updateSecurityGroupRulesRequest *UpdateSecurityGroupRulesRequest
 }
 
@@ -1463,7 +1203,7 @@ Updates a security group rule.
 	@param sgId Morpheus ID of the security group rule being referenced
 	@return ApiUpdateSecurityGroupRulesRequest
 */
-func (a *SecurityGroupsAPIService) UpdateSecurityGroupRules(ctx context.Context, id int64, sgId float32) ApiUpdateSecurityGroupRulesRequest {
+func (a *SecurityGroupsAPIService) UpdateSecurityGroupRules(ctx context.Context, id int64, sgId int64) ApiUpdateSecurityGroupRulesRequest {
 	return ApiUpdateSecurityGroupRulesRequest{
 		ApiService: a,
 		ctx:        ctx,
@@ -1537,7 +1277,7 @@ func (a *SecurityGroupsAPIService) UpdateSecurityGroupRulesExecute(r ApiUpdateSe
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1548,7 +1288,7 @@ func (a *SecurityGroupsAPIService) UpdateSecurityGroupRulesExecute(r ApiUpdateSe
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1669,7 +1409,7 @@ func (a *SecurityGroupsAPIService) UpdateSecurityGroupsExecute(r ApiUpdateSecuri
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1680,7 +1420,7 @@ func (a *SecurityGroupsAPIService) UpdateSecurityGroupsExecute(r ApiUpdateSecuri
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

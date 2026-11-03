@@ -3,16 +3,20 @@
 package image_test
 
 import (
+	"context"
 	"os"
 	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
@@ -45,7 +49,7 @@ data "hpe_morpheus_os_type" "test" {
 }
 
 data "hpe_morpheus_storage_bucket" "test" {
-	name = "Local Storage"
+	name = "` + testhelpers.ImageStorageBucket("Local Storage") + `"
 }
 `
 
@@ -91,10 +95,34 @@ apk add --no-cache bash`,
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	var stashed *terraform.State
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
+				Config:             providerConfig + datasourceConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkFn,
+					testhelpers.StashState(&stashed),
+				),
+				PlanOnly: false,
+			},
+			// MORPH-18584: delete the image outside Terraform; the next refresh
+			// must remove it from state and plan a create, not fail.
+			testhelpers.DeleteOutOfBand(
+				t,
+				&stashed,
+				"hpe_morpheus_image.example_image",
+				func(ctx context.Context, client *sdk.APIClient, id int64) error {
+					result, hresp, err := client.LibraryAPI.RemoveVirtualImage(ctx, id).Execute()
+
+					return errfmt.CheckDeleted(result, err, hresp)
+				},
+			),
+			{
+				// Recreate after the out-of-band delete, then continue checks.
 				Config:             providerConfig + datasourceConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
@@ -112,7 +140,7 @@ apk add --no-cache bash`,
 				ImportStateVerify: true, // Check state post import
 				ResourceName:      "hpe_morpheus_image.example_image",
 				// ignore these fields as they are not available from the API
-				ImportStateVerifyIgnore: []string{"url", "ssh_password_wo_version", "ssh_key_wo_version"},
+				ImportStateVerifyIgnore: []string{"url", "ssh_password_wo_version", "ssh_key_wo_version", "write_only_revision"},
 				Check:                   checkFn,
 			},
 		},

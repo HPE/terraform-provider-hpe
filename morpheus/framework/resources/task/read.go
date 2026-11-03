@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -34,8 +35,17 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	state, diag := getTaskAsState(ctx, data.Id.ValueInt64(), client, data)
+	state, found, diag := getTaskAsState(ctx, data.Id.ValueInt64(), client, data)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The task was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("task %d not found, removing from state", data.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -56,25 +66,28 @@ func getTaskAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan TaskModel,
-) (TaskModel, diag.Diagnostics) {
+) (TaskModel, bool, diag.Diagnostics) {
 	var state TaskModel
 	var diags diag.Diagnostics
 
 	taskResp, httpResp, err := client.AutomationAPI.GetTasks(ctx, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return state, false, diags
+	}
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate task resource",
 			fmt.Sprintf("task %d GET failed: ", id)+errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	task := taskResp.Task
 	if task == nil {
 		diags.AddError("populate task resource", fmt.Sprintf("task %d: response task is nil", id))
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// allow_custom_config
@@ -84,8 +97,8 @@ func getTaskAsState(
 	state.Code = convert.StrToType(task.Code.Get())
 
 	var typeCode string
-	if task.TaskType != nil && task.TaskType.Code != nil {
-		typeCode = *task.TaskType.Code
+	if tt := task.TaskType.Get(); tt != nil && tt.Code != nil {
+		typeCode = *tt.Code
 	}
 	// config
 	state.Config = basetypes.NewDynamicNull()
@@ -145,7 +158,7 @@ func getTaskAsState(
 			"could not parse a slice of labels",
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// Morpheus API may change the casing of the labels, to avoid Terraform
@@ -179,12 +192,12 @@ func getTaskAsState(
 	state.Retryable = convert.BoolToType(task.Retryable)
 
 	// task_type_code
-	state.TaskTypeCode = taskTypeCodeToState(task.TaskType)
+	state.TaskTypeCode = taskTypeCodeToState(task.TaskType.Get())
 
 	// visibility
 	state.Visibility = convert.StrToType(task.Visibility)
 
-	return state, diags
+	return state, true, diags
 }
 
 // retryDelaySecondsToState preserves a non-zero planned retry_delay_seconds when the

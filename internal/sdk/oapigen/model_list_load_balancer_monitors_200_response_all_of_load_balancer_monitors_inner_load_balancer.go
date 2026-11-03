@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,11 +20,11 @@ var _ MappedNullable = &ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMoni
 
 // ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer struct for ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer
 type ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer struct {
-	Id                   *int64                                                                             `json:"id,omitempty"`
-	Type                 *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancerType `json:"type,omitempty"`
-	Name                 *string                                                                            `json:"name,omitempty"`
-	Ip                   *string                                                                            `json:"ip,omitempty"`
-	AdditionalProperties map[string]interface{}                                                             `json:",remain"`
+	Id                   *int64                                                                                    `json:"id,omitempty"`
+	Type                 NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancerType `json:"type,omitempty"`
+	Name                 *string                                                                                   `json:"name,omitempty"`
+	Ip                   *string                                                                                   `json:"ip,omitempty"`
+	AdditionalProperties map[string]interface{}                                                                    `json:",remain"`
 }
 
 type _ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer
@@ -42,8 +42,8 @@ func (o ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBal
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
@@ -57,51 +57,6 @@ func (o ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBal
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer struct {
-	value *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer
-	isSet bool
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer) Get() *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer {
-	return v.value
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer) Set(val *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer(val *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer) *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer {
-	return &NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer{value: val, isSet: true}
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerLoadBalancer) UnmarshalJSON(data []byte) (err error) {

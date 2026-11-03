@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,14 +20,16 @@ var _ MappedNullable = &ShellTaskConfig1{}
 
 // ShellTaskConfig1 struct for ShellTaskConfig1
 type ShellTaskConfig1 struct {
-	LocalScriptGitRef    NullableString         `json:"localScriptGitRef,omitempty"`
-	Port                 NullableString         `json:"port,omitempty"`
-	Password             NullableString         `json:"password,omitempty"`
-	PasswordHash         NullableString         `json:"passwordHash,omitempty"`
-	Username             NullableString         `json:"username,omitempty"`
-	Host                 NullableString         `json:"host,omitempty"`
-	SshKey               NullableString         `json:"sshKey,omitempty"`
-	LocalScriptGitId     NullableString         `json:"localScriptGitId,omitempty"`
+	LocalScriptGitRef NullableString `json:"localScriptGitRef,omitempty"`
+	Port              NullableString `json:"port,omitempty"`
+	Password          NullableString `json:"password,omitempty"`
+	PasswordHash      NullableString `json:"passwordHash,omitempty"`
+	Username          NullableString `json:"username,omitempty"`
+	Host              NullableString `json:"host,omitempty"`
+	SshKey            NullableString `json:"sshKey,omitempty"`
+	LocalScriptGitId  NullableString `json:"localScriptGitId,omitempty"`
+	// Run the script with sudo. The API stores the flag as the string 'on' when set.
+	ShellSudo            *string                `json:"shell.sudo,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -67,57 +69,15 @@ func (o ShellTaskConfig1) ToMap() (map[string]interface{}, error) {
 	if o.LocalScriptGitId.IsSet() {
 		toSerialize["localScriptGitId"] = o.LocalScriptGitId.Get()
 	}
+	if !IsNil(o.ShellSudo) {
+		toSerialize["shell.sudo"] = o.ShellSudo
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
 	}
 
 	return toSerialize, nil
-}
-
-type NullableShellTaskConfig1 struct {
-	value *ShellTaskConfig1
-	isSet bool
-}
-
-func (v NullableShellTaskConfig1) Get() *ShellTaskConfig1 {
-	return v.value
-}
-
-func (v *NullableShellTaskConfig1) Set(val *ShellTaskConfig1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableShellTaskConfig1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableShellTaskConfig1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableShellTaskConfig1(val *ShellTaskConfig1) *NullableShellTaskConfig1 {
-	return &NullableShellTaskConfig1{value: val, isSet: true}
-}
-
-func (v NullableShellTaskConfig1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableShellTaskConfig1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableShellTaskConfig1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ShellTaskConfig1) UnmarshalJSON(data []byte) (err error) {

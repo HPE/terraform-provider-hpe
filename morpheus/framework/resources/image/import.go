@@ -15,11 +15,17 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.Atoi(req.ID)
+	// "<id>" or "<id>#ssh_password_wo=<sha256 hex>": see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.Atoi(rawID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"import image resource",
-			"provided import ID '"+req.ID+"' is invalid (non-number)",
+			"provided import ID '"+rawID+"' is invalid (non-number)",
 		)
 
 		return

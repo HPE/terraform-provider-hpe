@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -33,7 +33,6 @@ type AddClouds200ResponseAllOfZoneConfigAnyOf3 struct {
 	NetworkServer        *AddClouds200ResponseAllOfZoneConfigAnyOf3NetworkServer `json:"networkServer,omitempty"`
 	SecurityMode         *string                                                 `json:"securityMode,omitempty"`
 	CertificateProvider  *string                                                 `json:"certificateProvider,omitempty"`
-	BackupMode           *string                                                 `json:"backupMode,omitempty"`
 	ReplicationMode      *string                                                 `json:"replicationMode,omitempty"`
 	DnsIntegrationId     *string                                                 `json:"dnsIntegrationId,omitempty"`
 	ConfigManagementId   *string                                                 `json:"configManagementId,omitempty"`
@@ -108,9 +107,6 @@ func (o AddClouds200ResponseAllOfZoneConfigAnyOf3) ToMap() (map[string]interface
 	if !IsNil(o.CertificateProvider) {
 		toSerialize["certificateProvider"] = o.CertificateProvider
 	}
-	if !IsNil(o.BackupMode) {
-		toSerialize["backupMode"] = o.BackupMode
-	}
 	if !IsNil(o.ReplicationMode) {
 		toSerialize["replicationMode"] = o.ReplicationMode
 	}
@@ -177,51 +173,6 @@ func (o AddClouds200ResponseAllOfZoneConfigAnyOf3) ToMap() (map[string]interface
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddClouds200ResponseAllOfZoneConfigAnyOf3 struct {
-	value *AddClouds200ResponseAllOfZoneConfigAnyOf3
-	isSet bool
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneConfigAnyOf3) Get() *AddClouds200ResponseAllOfZoneConfigAnyOf3 {
-	return v.value
-}
-
-func (v *NullableAddClouds200ResponseAllOfZoneConfigAnyOf3) Set(val *AddClouds200ResponseAllOfZoneConfigAnyOf3) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneConfigAnyOf3) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClouds200ResponseAllOfZoneConfigAnyOf3) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClouds200ResponseAllOfZoneConfigAnyOf3(val *AddClouds200ResponseAllOfZoneConfigAnyOf3) *NullableAddClouds200ResponseAllOfZoneConfigAnyOf3 {
-	return &NullableAddClouds200ResponseAllOfZoneConfigAnyOf3{value: val, isSet: true}
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneConfigAnyOf3) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClouds200ResponseAllOfZoneConfigAnyOf3) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClouds200ResponseAllOfZoneConfigAnyOf3) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddClouds200ResponseAllOfZoneConfigAnyOf3) UnmarshalJSON(data []byte) (err error) {

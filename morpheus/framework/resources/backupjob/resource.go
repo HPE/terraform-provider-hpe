@@ -12,6 +12,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -174,13 +175,17 @@ func (r *backupJobResource) Update(ctx context.Context, req resource.UpdateReque
 	if !plan.Code.IsNull() {
 		body.Code = plan.Code.ValueStringPointer()
 	}
-	if !plan.RetentionCount.IsNull() {
-		body.RetentionCount = plan.RetentionCount.ValueInt64Pointer()
+
+	// Attributes removed from the configuration, to be cleared: sent when
+	// known, null when being cleared, not sent otherwise.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if !plan.ScheduleId.IsNull() {
-		scheduleID := plan.ScheduleId.ValueInt64()
-		body.ScheduleId = *sdk.NewNullableInt64(&scheduleID)
-	}
+
+	clearable.NullableInt64(pending, "retention_count", plan.RetentionCount, &body.RetentionCount)
+	clearable.NullableInt64(pending, "schedule_id", plan.ScheduleId, &body.ScheduleId)
 
 	_, httpResp, err := client.BackupsAPI.UpdateBackupJobs(ctx, id).
 		UpdateBackupJobsRequest(sdk.UpdateBackupJobsRequest{
@@ -225,8 +230,8 @@ func (r *backupJobResource) Delete(ctx context.Context, req resource.DeleteReque
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.BackupsAPI.RemoveBackupJobs(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.BackupsAPI.RemoveBackupJobs(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "backup_job", "", err, httpResp)
 
 		return

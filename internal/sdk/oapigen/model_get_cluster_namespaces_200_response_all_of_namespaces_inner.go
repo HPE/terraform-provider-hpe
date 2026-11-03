@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -73,51 +73,6 @@ func (o GetClusterNamespaces200ResponseAllOfNamespacesInner) ToMap() (map[string
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClusterNamespaces200ResponseAllOfNamespacesInner struct {
-	value *GetClusterNamespaces200ResponseAllOfNamespacesInner
-	isSet bool
-}
-
-func (v NullableGetClusterNamespaces200ResponseAllOfNamespacesInner) Get() *GetClusterNamespaces200ResponseAllOfNamespacesInner {
-	return v.value
-}
-
-func (v *NullableGetClusterNamespaces200ResponseAllOfNamespacesInner) Set(val *GetClusterNamespaces200ResponseAllOfNamespacesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterNamespaces200ResponseAllOfNamespacesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterNamespaces200ResponseAllOfNamespacesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterNamespaces200ResponseAllOfNamespacesInner(val *GetClusterNamespaces200ResponseAllOfNamespacesInner) *NullableGetClusterNamespaces200ResponseAllOfNamespacesInner {
-	return &NullableGetClusterNamespaces200ResponseAllOfNamespacesInner{value: val, isSet: true}
-}
-
-func (v NullableGetClusterNamespaces200ResponseAllOfNamespacesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterNamespaces200ResponseAllOfNamespacesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterNamespaces200ResponseAllOfNamespacesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClusterNamespaces200ResponseAllOfNamespacesInner) UnmarshalJSON(data []byte) (err error) {

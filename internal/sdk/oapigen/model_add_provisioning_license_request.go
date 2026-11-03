@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,8 +20,9 @@ var _ MappedNullable = &AddProvisioningLicenseRequest{}
 
 // AddProvisioningLicenseRequest struct for AddProvisioningLicenseRequest
 type AddProvisioningLicenseRequest struct {
-	License              *AddProvisioningLicenseRequestLicense `json:"license,omitempty"`
-	AdditionalProperties map[string]interface{}                `json:",remain"`
+	License              AddProvisioningLicenseRequestLicense            `json:"license"`
+	TenantPermissions    *AddProvisioningLicenseRequestTenantPermissions `json:"tenantPermissions,omitempty"`
+	AdditionalProperties map[string]interface{}                          `json:",remain"`
 }
 
 type _AddProvisioningLicenseRequest AddProvisioningLicenseRequest
@@ -36,8 +37,9 @@ func (o AddProvisioningLicenseRequest) MarshalJSON() ([]byte, error) {
 
 func (o AddProvisioningLicenseRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.License) {
-		toSerialize["license"] = o.License
+	toSerialize["license"] = o.License
+	if !IsNil(o.TenantPermissions) {
+		toSerialize["tenantPermissions"] = o.TenantPermissions
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -45,51 +47,6 @@ func (o AddProvisioningLicenseRequest) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddProvisioningLicenseRequest struct {
-	value *AddProvisioningLicenseRequest
-	isSet bool
-}
-
-func (v NullableAddProvisioningLicenseRequest) Get() *AddProvisioningLicenseRequest {
-	return v.value
-}
-
-func (v *NullableAddProvisioningLicenseRequest) Set(val *AddProvisioningLicenseRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddProvisioningLicenseRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddProvisioningLicenseRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddProvisioningLicenseRequest(val *AddProvisioningLicenseRequest) *NullableAddProvisioningLicenseRequest {
-	return &NullableAddProvisioningLicenseRequest{value: val, isSet: true}
-}
-
-func (v NullableAddProvisioningLicenseRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddProvisioningLicenseRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddProvisioningLicenseRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddProvisioningLicenseRequest) UnmarshalJSON(data []byte) (err error) {

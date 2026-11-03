@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -76,51 +76,6 @@ func (o CloneInstanceRequest) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCloneInstanceRequest struct {
-	value *CloneInstanceRequest
-	isSet bool
-}
-
-func (v NullableCloneInstanceRequest) Get() *CloneInstanceRequest {
-	return v.value
-}
-
-func (v *NullableCloneInstanceRequest) Set(val *CloneInstanceRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCloneInstanceRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCloneInstanceRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCloneInstanceRequest(val *CloneInstanceRequest) *NullableCloneInstanceRequest {
-	return &NullableCloneInstanceRequest{value: val, isSet: true}
-}
-
-func (v NullableCloneInstanceRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCloneInstanceRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCloneInstanceRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CloneInstanceRequest) UnmarshalJSON(data []byte) (err error) {

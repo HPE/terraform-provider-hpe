@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o GetClusterLayout200ResponseLayoutGroupType) ToMap() (map[string]interfac
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetClusterLayout200ResponseLayoutGroupType struct {
-	value *GetClusterLayout200ResponseLayoutGroupType
-	isSet bool
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutGroupType) Get() *GetClusterLayout200ResponseLayoutGroupType {
-	return v.value
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutGroupType) Set(val *GetClusterLayout200ResponseLayoutGroupType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutGroupType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutGroupType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterLayout200ResponseLayoutGroupType(val *GetClusterLayout200ResponseLayoutGroupType) *NullableGetClusterLayout200ResponseLayoutGroupType {
-	return &NullableGetClusterLayout200ResponseLayoutGroupType{value: val, isSet: true}
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutGroupType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutGroupType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutGroupType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetClusterLayout200ResponseLayoutGroupType) UnmarshalJSON(data []byte) (err error) {

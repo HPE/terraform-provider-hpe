@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -51,51 +51,6 @@ func (o AddBackups200ResponseAllOfBackupStorageProvider) ToMap() (map[string]int
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddBackups200ResponseAllOfBackupStorageProvider struct {
-	value *AddBackups200ResponseAllOfBackupStorageProvider
-	isSet bool
-}
-
-func (v NullableAddBackups200ResponseAllOfBackupStorageProvider) Get() *AddBackups200ResponseAllOfBackupStorageProvider {
-	return v.value
-}
-
-func (v *NullableAddBackups200ResponseAllOfBackupStorageProvider) Set(val *AddBackups200ResponseAllOfBackupStorageProvider) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddBackups200ResponseAllOfBackupStorageProvider) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddBackups200ResponseAllOfBackupStorageProvider) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddBackups200ResponseAllOfBackupStorageProvider(val *AddBackups200ResponseAllOfBackupStorageProvider) *NullableAddBackups200ResponseAllOfBackupStorageProvider {
-	return &NullableAddBackups200ResponseAllOfBackupStorageProvider{value: val, isSet: true}
-}
-
-func (v NullableAddBackups200ResponseAllOfBackupStorageProvider) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddBackups200ResponseAllOfBackupStorageProvider) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddBackups200ResponseAllOfBackupStorageProvider) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddBackups200ResponseAllOfBackupStorageProvider) UnmarshalJSON(data []byte) (err error) {

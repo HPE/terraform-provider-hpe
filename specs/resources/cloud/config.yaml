@@ -16,17 +16,44 @@ cloud:
       string:
         description: CHANGE ME
         computed_optional_required: optional
+    aws_backup_provider:
+      string:
+        computed_optional_required: computed_optional
+        description: |-
+          Deprecated. The per-cloud AWS backup mode (stored as config.backupMode)
+          has no effect on Morpheus 9.x, which assigns backup providers at the
+          cloud level. Use backup_provider_ids instead. The value is retained in
+          Terraform state only and is no longer sent to the appliance.
+        deprecation_message: "config_aws.backup_provider has no effect on Morpheus 9.x: backup providers are assigned at the cloud level. Use backup_provider_ids instead. The value is retained in Terraform state only and is no longer sent to the appliance."
     vmware_password_version:
       int64:
         computed_optional_required: optional
-        description: Password version. Used to determine if password has been updated.
+        description: |-
+          Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.6 release. Changing it still re-sends config_vmware.password.
+        deprecation_message: "No longer needed: changes to config_vmware.password are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     azure_client_secret_version:
       int64:
         computed_optional_required: optional
-        description: Client secret version. Used to determine if client secret has been updated.
+        description: |-
+          Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.6 release. Changing it still re-sends config_azure.client_secret.
+        deprecation_message: "No longer needed: changes to config_azure.client_secret are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which a write-only value (config_vmware.password or config_azure.client_secret) was last
+          sent to Morpheus. Changes whenever one of those values changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
   moves:
     - zone: "" # unnest zone
     - account_id: tenant_id
+    - backup_providers: backup_provider_ids   # rename the spec's top-level backupProviders array
     - agent_mode: agent_install_mode
     - timezone: time_zone
     - config.appliance_url: appliance_url
@@ -43,7 +70,7 @@ cloud:
     - template-bool: config_aws.cmdb_discovery
     - template-string: config_aws.credentials
     - config_aws.sts_assume_role: config_aws.role_arn
-    - config_aws.backup_mode: config_aws.backup_provider
+    - template-aws_backup_provider: config_aws.backup_provider
     - config_aws.replication_mode: config_aws.replication_provider
     - config_aws.user_data_linux: config_aws.user_data
     # HVM static config
@@ -63,6 +90,7 @@ cloud:
     - template-bool: config_azure.cmdb_discovery
     - template-azure-region: config_azure.azure_region
     - template-azure_client_secret_version: config_azure.client_secret_version
+    - template-write_only_revision: write_only_revision
     - config_azure.rpc_mode.oneof0: config_azure.rpc_mode
     # Generic config
     - template-config: config
@@ -200,6 +228,12 @@ cloud:
   overrides:
     visibility:
       description: The visibility of the cloud (private or public). Setting "public" requires the master tenant.
+    backup_provider_ids:
+      computed_optional_required: computed_optional
+      description: |-
+        IDs of the backup provider integrations assigned to this cloud. Morpheus
+        defaults to the internal backup provider when none is supplied, so this
+        attribute is server-defaulted: leave it unset to accept the default.
     agent_install_mode:
       description: The method used to install the Morpheus agent on virtual machines provisioned in the cloud (ssh, cloudInit)
       computed_optional_required: computed_optional
@@ -228,9 +262,6 @@ cloud:
       # conflicts_with: [config_aws.access_key, config_aws.secret_key]
     config_aws.replication_provider:
       description: The replication provider for the cloud
-      computed_optional_required: computed_optional
-    config_aws.backup_provider:
-      description: The backup provider for the cloud
       computed_optional_required: computed_optional
     config_hvm:
       computed_optional_required: optional
@@ -264,7 +295,7 @@ cloud:
               modifiers.NullableStringUpdateModifier{}
     config_azure.client_secret_version:
       computed_optional_required: optional
-      description: Client secret version. Used to determine if client secret has been updated.
+      description: Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
     config_azure.resource_group:
       description: The Azure resource group
       computed_optional_required: required
@@ -300,7 +331,7 @@ cloud:
               modifiers.NullableStringUpdateModifier{}
     config_vmware.password_version:
       computed_optional_required: optional
-      description: Password version. Used to determine if password has been updated.
+      description: Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
     costing_mode:
       description: Whether to enable costing on the cloud (off, costing, reservations, full)
       one_of: [off, costing, reservations, full]

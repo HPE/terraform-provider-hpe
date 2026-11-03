@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,25 +21,25 @@ var _ MappedNullable = &UpdateTasks200ResponseAllOfTask{}
 
 // UpdateTasks200ResponseAllOfTask struct for UpdateTasks200ResponseAllOfTask
 type UpdateTasks200ResponseAllOfTask struct {
-	Id                   *int64                                      `json:"id,omitempty"`
-	AccountId            *int64                                      `json:"accountId,omitempty"`
-	Name                 *string                                     `json:"name,omitempty"`
-	Code                 NullableString                              `json:"code,omitempty"`
-	TaskType             *UpdateTasks200ResponseAllOfTaskTaskType    `json:"taskType,omitempty"`
-	Labels               []string                                    `json:"labels,omitempty"`
-	Visibility           *string                                     `json:"visibility,omitempty"`
-	TaskOptions          *UpdateTasks200ResponseAllOfTaskTaskOptions `json:"taskOptions,omitempty"`
-	File                 *UpdateTasks200ResponseAllOfTaskFile        `json:"file,omitempty"`
-	ResultType           NullableString                              `json:"resultType,omitempty"`
-	ExecuteTarget        *string                                     `json:"executeTarget,omitempty"`
-	Retryable            *bool                                       `json:"retryable,omitempty"`
-	RetryCount           *int64                                      `json:"retryCount,omitempty"`
-	RetryDelaySeconds    *int64                                      `json:"retryDelaySeconds,omitempty"`
-	AllowCustomConfig    *bool                                       `json:"allowCustomConfig,omitempty"`
-	Credential           *UpdateTasks200ResponseAllOfTaskCredential  `json:"credential,omitempty"`
-	DateCreated          *time.Time                                  `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time                                  `json:"lastUpdated,omitempty"`
-	AdditionalProperties map[string]interface{}                      `json:",remain"`
+	Id                   *int64                                          `json:"id,omitempty"`
+	AccountId            *int64                                          `json:"accountId,omitempty"`
+	Name                 *string                                         `json:"name,omitempty"`
+	Code                 NullableString                                  `json:"code,omitempty"`
+	TaskType             NullableUpdateTasks200ResponseAllOfTaskTaskType `json:"taskType,omitempty"`
+	Labels               []string                                        `json:"labels,omitempty"`
+	Visibility           *string                                         `json:"visibility,omitempty"`
+	TaskOptions          *UpdateTasks200ResponseAllOfTaskTaskOptions     `json:"taskOptions,omitempty"`
+	File                 *UpdateTasks200ResponseAllOfTaskFile            `json:"file,omitempty"`
+	ResultType           NullableString                                  `json:"resultType,omitempty"`
+	ExecuteTarget        *string                                         `json:"executeTarget,omitempty"`
+	Retryable            *bool                                           `json:"retryable,omitempty"`
+	RetryCount           *int64                                          `json:"retryCount,omitempty"`
+	RetryDelaySeconds    *int64                                          `json:"retryDelaySeconds,omitempty"`
+	AllowCustomConfig    *bool                                           `json:"allowCustomConfig,omitempty"`
+	Credential           *UpdateTasks200ResponseAllOfTaskCredential      `json:"credential,omitempty"`
+	DateCreated          *time.Time                                      `json:"dateCreated,omitempty"`
+	LastUpdated          *time.Time                                      `json:"lastUpdated,omitempty"`
+	AdditionalProperties map[string]interface{}                          `json:",remain"`
 }
 
 type _UpdateTasks200ResponseAllOfTask UpdateTasks200ResponseAllOfTask
@@ -66,8 +66,8 @@ func (o UpdateTasks200ResponseAllOfTask) ToMap() (map[string]interface{}, error)
 	if o.Code.IsSet() {
 		toSerialize["code"] = o.Code.Get()
 	}
-	if !IsNil(o.TaskType) {
-		toSerialize["taskType"] = o.TaskType
+	if o.TaskType.IsSet() {
+		toSerialize["taskType"] = o.TaskType.Get()
 	}
 	if !IsNil(o.Labels) {
 		toSerialize["labels"] = o.Labels
@@ -114,51 +114,6 @@ func (o UpdateTasks200ResponseAllOfTask) ToMap() (map[string]interface{}, error)
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateTasks200ResponseAllOfTask struct {
-	value *UpdateTasks200ResponseAllOfTask
-	isSet bool
-}
-
-func (v NullableUpdateTasks200ResponseAllOfTask) Get() *UpdateTasks200ResponseAllOfTask {
-	return v.value
-}
-
-func (v *NullableUpdateTasks200ResponseAllOfTask) Set(val *UpdateTasks200ResponseAllOfTask) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateTasks200ResponseAllOfTask) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateTasks200ResponseAllOfTask) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateTasks200ResponseAllOfTask(val *UpdateTasks200ResponseAllOfTask) *NullableUpdateTasks200ResponseAllOfTask {
-	return &NullableUpdateTasks200ResponseAllOfTask{value: val, isSet: true}
-}
-
-func (v NullableUpdateTasks200ResponseAllOfTask) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateTasks200ResponseAllOfTask) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateTasks200ResponseAllOfTask) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateTasks200ResponseAllOfTask) UnmarshalJSON(data []byte) (err error) {

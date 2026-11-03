@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) ToMap() (
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain struct {
-	value *AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain
-	isSet bool
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) Get() *AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain {
-	return v.value
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) Set(val *AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain(val *AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain {
-	return &NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain{value: val, isSet: true}
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) UnmarshalJSON(data []byte) (err error) {

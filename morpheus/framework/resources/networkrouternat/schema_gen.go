@@ -28,8 +28,9 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"action_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Version marker for the write-only action attribute. Because action is write-only it is never stored in state, so editing action on its own produces no plan diff. Increment this value whenever action changes: the change to action_version is what produces the plan diff, and the update then sends the current action value to the API.",
-				MarkdownDescription: "Version marker for the write-only action attribute. Because action is write-only it is never stored in state, so editing action on its own produces no plan diff. Increment this value whenever action changes: the change to action_version is what produces the plan diff, and the update then sends the current action value to the API.",
+				Description:         "Deprecated. Changes to action are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends action.",
+				MarkdownDescription: "Deprecated. Changes to action are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends action.",
+				DeprecationMessage:  "No longer needed: changes to action are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -69,8 +70,9 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"firewall_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Version marker for the write-only firewall attribute. Because firewall is write-only it is never stored in state, so editing firewall on its own produces no plan diff. Increment this value whenever firewall changes: the change to firewall_version is what produces the plan diff, and the update then sends the current firewall value to the API. Leaving this value alone preserves the firewall setting currently held by the provider.",
-				MarkdownDescription: "Version marker for the write-only firewall attribute. Because firewall is write-only it is never stored in state, so editing firewall on its own produces no plan diff. Increment this value whenever firewall changes: the change to firewall_version is what produces the plan diff, and the update then sends the current firewall value to the API. Leaving this value alone preserves the firewall setting currently held by the provider.",
+				Description:         "Deprecated. Changes to firewall are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends firewall.",
+				MarkdownDescription: "Deprecated. Changes to firewall are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends firewall.",
+				DeprecationMessage:  "No longer needed: changes to firewall are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
@@ -115,8 +117,9 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"service_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Version marker for the write-only service attribute. Because service is write-only it is never stored in state, so editing service on its own produces no plan diff. Increment this value whenever service changes: the change to service_version is what produces the plan diff, and the update then sends the current service value to the API. Leaving this value alone preserves the service setting currently held by the provider.",
-				MarkdownDescription: "Version marker for the write-only service attribute. Because service is write-only it is never stored in state, so editing service on its own produces no plan diff. Increment this value whenever service changes: the change to service_version is what produces the plan diff, and the update then sends the current service value to the API. Leaving this value alone preserves the service setting currently held by the provider.",
+				Description:         "Deprecated. Changes to service are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends service.",
+				MarkdownDescription: "Deprecated. Changes to service are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends service.",
+				DeprecationMessage:  "No longer needed: changes to service are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"source_network": schema.StringAttribute{
 				Optional:            true,
@@ -135,6 +138,14 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Translated ports for the NAT rule",
 				MarkdownDescription: "Translated ports for the NAT rule",
+			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which action, firewall or service were last\nsent to Morpheus. Changes whenever one of those values changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which action, firewall or service were last\nsent to Morpheus. Changes whenever one of those values changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -159,4 +170,5 @@ type NetworkRouterNatModel struct {
 	SourceNetwork      types.String `tfsdk:"source_network"`
 	TranslatedNetwork  types.String `tfsdk:"translated_network"`
 	TranslatedPorts    types.String `tfsdk:"translated_ports"`
+	WriteOnlyRevision  types.Int64  `tfsdk:"write_only_revision"`
 }

@@ -1,0 +1,66 @@
+plugin:
+  templates:
+    config:
+      dynamic:
+        computed_optional_required: computed
+        description: Plugin configuration values keyed by the plugin's option type field names.
+    providers:
+      list_nested:
+        computed_optional_required: computed
+        description: The capabilities (providers) contributed by the plugin.
+        nested_object:
+          attributes:
+          - name: name
+            string:
+              computed_optional_required: computed
+              description: The display name of the provider.
+          - name: type
+            string:
+              computed_optional_required: computed
+              description: The provider type, for example `Cloud`, `IPAM` or `Task`.
+  moves:
+    - plugin: "" # unnest wrapper (components/schemas/plugin.yaml)
+    - template-config: config
+    - template-providers: providers
+  removes:
+    - success # response envelope flag (components/schemas/plugin.yaml)
+    - option_types # UI form metadata (components/schemas/plugin.yaml)
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      conflicts_with: ["code"]
+      description: Morpheus ID of the plugin
+    code:
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+      description: Unique code of the plugin (as reported by the plugin, for example `morpheus-infoblox-plugin`).
+    name:
+      computed_optional_required: computed
+    version:
+      computed_optional_required: computed
+    description:
+      computed_optional_required: computed
+    enabled:
+      computed_optional_required: computed
+    status:
+      computed_optional_required: computed
+    status_message:
+      computed_optional_required: computed
+    author:
+      computed_optional_required: computed
+    website_url:
+      computed_optional_required: computed
+    source_code_location_url:
+      computed_optional_required: computed
+    issue_tracker_url:
+      computed_optional_required: computed
+    valid:
+      computed_optional_required: computed
+    has_valid_update:
+      computed_optional_required: computed
+    is_prepackaged:
+      computed_optional_required: computed
+    date_created:
+      computed_optional_required: computed
+    last_updated:
+      computed_optional_required: computed

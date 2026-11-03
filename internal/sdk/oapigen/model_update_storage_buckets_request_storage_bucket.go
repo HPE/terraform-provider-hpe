@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -34,8 +34,8 @@ type UpdateStorageBucketsRequestStorageBucket struct {
 	DefaultVirtualImageTarget *bool `json:"defaultVirtualImageTarget,omitempty"`
 	// Cleanup mode. `backup` - Move old files to a backup provider. `delete` - Delete old files. `none` - Keep all files.
 	RetentionPolicyType *string `json:"retentionPolicyType,omitempty"`
-	// The number of days old a file must be before it is deleted.
-	RetentionPolicyDays *int64 `json:"retentionPolicyDays,omitempty"`
+	// The number of days old a file must be before it is deleted; null clears it
+	RetentionPolicyDays NullableInt64 `json:"retentionPolicyDays,omitempty"`
 	// The backup Storage Bucket where old files are moved to.
 	RetentionProvider *string `json:"retentionProvider,omitempty"`
 	// The name of the bucket. Only applies to `Amazon`, `Azure`, `CIFS`, `NFSv3`, `Openstack Swift`, and `Rackspace CDN`.
@@ -79,8 +79,8 @@ func (o UpdateStorageBucketsRequestStorageBucket) ToMap() (map[string]interface{
 	if !IsNil(o.RetentionPolicyType) {
 		toSerialize["retentionPolicyType"] = o.RetentionPolicyType
 	}
-	if !IsNil(o.RetentionPolicyDays) {
-		toSerialize["retentionPolicyDays"] = o.RetentionPolicyDays
+	if o.RetentionPolicyDays.IsSet() {
+		toSerialize["retentionPolicyDays"] = o.RetentionPolicyDays.Get()
 	}
 	if !IsNil(o.RetentionProvider) {
 		toSerialize["retentionProvider"] = o.RetentionProvider
@@ -100,51 +100,6 @@ func (o UpdateStorageBucketsRequestStorageBucket) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateStorageBucketsRequestStorageBucket struct {
-	value *UpdateStorageBucketsRequestStorageBucket
-	isSet bool
-}
-
-func (v NullableUpdateStorageBucketsRequestStorageBucket) Get() *UpdateStorageBucketsRequestStorageBucket {
-	return v.value
-}
-
-func (v *NullableUpdateStorageBucketsRequestStorageBucket) Set(val *UpdateStorageBucketsRequestStorageBucket) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateStorageBucketsRequestStorageBucket) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateStorageBucketsRequestStorageBucket) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateStorageBucketsRequestStorageBucket(val *UpdateStorageBucketsRequestStorageBucket) *NullableUpdateStorageBucketsRequestStorageBucket {
-	return &NullableUpdateStorageBucketsRequestStorageBucket{value: val, isSet: true}
-}
-
-func (v NullableUpdateStorageBucketsRequestStorageBucket) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateStorageBucketsRequestStorageBucket) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateStorageBucketsRequestStorageBucket) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateStorageBucketsRequestStorageBucket) UnmarshalJSON(data []byte) (err error) {

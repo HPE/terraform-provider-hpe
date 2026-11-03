@@ -18,6 +18,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/provisionhint"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -121,16 +122,15 @@ func (r *Resource) Create(
 		// ErrorBody takes the body from the SDK error, or reads hresp.Body and
 		// puts it back, so ErrMsg below still sees the full response. When
 		// Morpheus rejected a network as "Invalid network", say which network,
-		// which pool it belongs to and which pool was requested. A clone
-		// carries no cloud of its own, so the cloud check is skipped. Any
-		// failure to explain leaves the API's error as it is.
+		// which pool it belongs to and which pool was requested, and which
+		// networks would have been accepted. A clone inherits the cloud, group
+		// and layout it does not set from its source, so the source is named
+		// for the explanation to read them. Any failure to explain leaves the
+		// API's error as it is.
 		body := provisionhint.ErrorBody(err, hresp)
 		msg := fmt.Sprintf("clone request failed for instance %d: %s", sourceID, errfmt.ErrMsg(err, hresp))
 
-		if hint := provisionhint.InvalidNetwork(ctx, client, body, provisionhint.Request{
-			Config:     cloneReq.Config,
-			Interfaces: cloneReq.NetworkInterfaces,
-		}); hint != "" {
+		if hint := provisionhint.InvalidNetwork(ctx, client, body, cloneHintRequest(cloneReq, sourceID)); hint != "" {
 			msg += "\n\n" + hint
 		}
 
@@ -191,10 +191,8 @@ func (r *Resource) Create(
 			// not select is reported here, by the failed process, not by the
 			// request. Explain it the same way; on failure to explain, the
 			// process's own text stands.
-			if hint := provisionhint.InvalidNetworkReason(ctx, client, failure, provisionhint.Request{
-				Config:     cloneReq.Config,
-				Interfaces: cloneReq.NetworkInterfaces,
-			}); hint != "" {
+			if hint := provisionhint.InvalidNetworkReason(ctx, client, failure,
+				cloneHintRequest(cloneReq, sourceID)); hint != "" {
 				failure += "\n\n" + hint
 			}
 
@@ -288,11 +286,23 @@ func (r *Resource) Create(
 	// Post-clone resize: some clouds (notably VMware) only resize the root
 	// disk during clone, leaving data disks at the source size. If any
 	// requested volume is larger than the actual provisioned volume, issue a
-	// resize so the clone matches the configuration.
+	// resize so the clone matches the configuration. The request pairs the
+	// planned volumes and interfaces with the ones the clone actually got so
+	// that each carries its id (see resizeVolumes).
 	getResp, _, gErr := client.InstancesAPI.GetInstance(ctx, cloneID).Execute()
 	needsResize := false
+
+	var actualVolumes []VolumesValue
+	var actualIfaces []NetworkInterfacesValue
+
 	if gErr == nil && getResp != nil && getResp.Instance != nil {
-		resize, nrDiags := cloneNeedsResize(ctx, plan.Volumes, getResp.Instance.Volumes)
+		actualVolumes = volumesFromAPI(getResp.Instance.Volumes)
+
+		var ldiags diag.Diagnostics
+		actualIfaces, ldiags = interfacesFromAPI(ctx, getResp.Instance.Interfaces)
+		resp.Diagnostics.Append(ldiags...)
+
+		resize, nrDiags := cloneNeedsResize(ctx, plan.Volumes, actualVolumes)
 		resp.Diagnostics.Append(nrDiags...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -301,9 +311,9 @@ func (r *Resource) Create(
 	}
 
 	if needsResize {
-		resizeVolumes, rvDiags := buildResizeVolumes(ctx, plan.Volumes)
+		resizeVolumes, _, rvDiags := resizeVolumes(ctx, plan.Volumes, actualVolumes)
 		resp.Diagnostics.Append(rvDiags...)
-		resizeIfaces, riDiags := buildResizeNetworkInterfaces(ctx, plan.NetworkInterfaces)
+		resizeIfaces, _, riDiags := resizeNetworkInterfaces(ctx, plan.NetworkInterfaces, actualIfaces)
 		resp.Diagnostics.Append(riDiags...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -371,6 +381,9 @@ func (r *Resource) Create(
 
 		return
 	}
+
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -448,6 +461,12 @@ func buildCloneConfig(
 
 		if !plan.ConfigHvm.KvmHostId.IsNull() {
 			configHvm.KvmHostId = plan.ConfigHvm.KvmHostId.ValueInt64Pointer()
+		}
+
+		// Cloud-init user data: provision-time only (RequiresReplace in the
+		// schema). Morpheus trims it; the practitioner is told to trimspace().
+		if !plan.ConfigHvm.UserData.IsNull() && !plan.ConfigHvm.UserData.IsUnknown() {
+			configHvm.UserData = *sdk.NewNullableString(plan.ConfigHvm.UserData.ValueStringPointer())
 		}
 
 		return &sdk.CloneInstanceRequestConfig{HVMInstanceConfiguration1: configHvm}, diags
@@ -820,4 +839,24 @@ func cloneProcessStatus(
 	}
 
 	return *p.Status
+}
+
+// cloneHintRequest describes a clone request to provisionhint: what it set
+// itself, and the source instance for whatever it did not.
+func cloneHintRequest(cloneReq sdk.CloneInstanceRequest, sourceID int64) provisionhint.Request {
+	req := provisionhint.Request{
+		SourceInstanceID: sourceID,
+		Config:           cloneReq.Config,
+		Interfaces:       cloneReq.NetworkInterfaces,
+	}
+
+	if cloneReq.Cloud != nil && cloneReq.Cloud.Id != nil {
+		req.CloudID = *cloneReq.Cloud.Id
+	}
+
+	if cloneReq.Group != nil && cloneReq.Group.Id != nil {
+		req.GroupID = *cloneReq.Group.Id
+	}
+
+	return req
 }

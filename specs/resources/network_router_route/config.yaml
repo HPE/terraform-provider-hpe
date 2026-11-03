@@ -35,10 +35,12 @@ network_router_route:
       computed_optional_required: computed_optional
       description: Name of the route
       requires_replace: true
+      state_for_unknown: true
     description:
       computed_optional_required: computed_optional
       description: Description of the route
       requires_replace: true
+      state_for_unknown: true
     source:
       computed_optional_required: required
       description: Source network (CIDR)
@@ -59,3 +61,4 @@ network_router_route:
       computed_optional_required: computed_optional
       description: Priority of the route rule
       requires_replace: true
+      state_for_unknown: true

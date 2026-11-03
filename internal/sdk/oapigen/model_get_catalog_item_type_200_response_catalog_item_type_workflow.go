@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetCatalogItemType200ResponseCatalogItemTypeWorkflow) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetCatalogItemType200ResponseCatalogItemTypeWorkflow struct {
-	value *GetCatalogItemType200ResponseCatalogItemTypeWorkflow
-	isSet bool
-}
-
-func (v NullableGetCatalogItemType200ResponseCatalogItemTypeWorkflow) Get() *GetCatalogItemType200ResponseCatalogItemTypeWorkflow {
-	return v.value
-}
-
-func (v *NullableGetCatalogItemType200ResponseCatalogItemTypeWorkflow) Set(val *GetCatalogItemType200ResponseCatalogItemTypeWorkflow) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCatalogItemType200ResponseCatalogItemTypeWorkflow) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCatalogItemType200ResponseCatalogItemTypeWorkflow) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCatalogItemType200ResponseCatalogItemTypeWorkflow(val *GetCatalogItemType200ResponseCatalogItemTypeWorkflow) *NullableGetCatalogItemType200ResponseCatalogItemTypeWorkflow {
-	return &NullableGetCatalogItemType200ResponseCatalogItemTypeWorkflow{value: val, isSet: true}
-}
-
-func (v NullableGetCatalogItemType200ResponseCatalogItemTypeWorkflow) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCatalogItemType200ResponseCatalogItemTypeWorkflow) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCatalogItemType200ResponseCatalogItemTypeWorkflow) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetCatalogItemType200ResponseCatalogItemTypeWorkflow) UnmarshalJSON(data []byte) (err error) {

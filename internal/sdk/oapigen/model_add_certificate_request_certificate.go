@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,8 @@ var _ MappedNullable = &AddCertificateRequestCertificate{}
 type AddCertificateRequestCertificate struct {
 	// A unique name scoped to your account for the key
 	Name *string `json:"name,omitempty"`
-	// A description of the certificate
-	Description *string `json:"description,omitempty"`
+	// A description of the certificate; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// The contents of the certificate file
 	CertFile *string `json:"certFile,omitempty"`
 	// The contents of the key file
@@ -56,8 +56,8 @@ func (o AddCertificateRequestCertificate) ToMap() (map[string]interface{}, error
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.CertFile) {
 		toSerialize["certFile"] = o.CertFile
@@ -86,51 +86,6 @@ func (o AddCertificateRequestCertificate) ToMap() (map[string]interface{}, error
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddCertificateRequestCertificate struct {
-	value *AddCertificateRequestCertificate
-	isSet bool
-}
-
-func (v NullableAddCertificateRequestCertificate) Get() *AddCertificateRequestCertificate {
-	return v.value
-}
-
-func (v *NullableAddCertificateRequestCertificate) Set(val *AddCertificateRequestCertificate) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddCertificateRequestCertificate) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddCertificateRequestCertificate) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddCertificateRequestCertificate(val *AddCertificateRequestCertificate) *NullableAddCertificateRequestCertificate {
-	return &NullableAddCertificateRequestCertificate{value: val, isSet: true}
-}
-
-func (v NullableAddCertificateRequestCertificate) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddCertificateRequestCertificate) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddCertificateRequestCertificate) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddCertificateRequestCertificate) UnmarshalJSON(data []byte) (err error) {

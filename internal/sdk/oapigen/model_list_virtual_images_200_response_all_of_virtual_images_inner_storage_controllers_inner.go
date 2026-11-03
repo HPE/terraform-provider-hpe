@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,17 +20,17 @@ var _ MappedNullable = &ListVirtualImages200ResponseAllOfVirtualImagesInnerStora
 
 // ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner struct for ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner
 type ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner struct {
-	Id                   *int64                                                                          `json:"id,omitempty"`
-	Name                 *string                                                                         `json:"name,omitempty"`
-	Active               *bool                                                                           `json:"active,omitempty"`
-	Type                 *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType `json:"type,omitempty"`
-	BusNumber            *int64                                                                          `json:"busNumber,omitempty"`
-	MaxDevices           *int64                                                                          `json:"maxDevices,omitempty"`
-	Removable            *bool                                                                           `json:"removable,omitempty"`
-	Editable             *bool                                                                           `json:"editable,omitempty"`
-	ReservedUnitNumber   *int64                                                                          `json:"reservedUnitNumber,omitempty"`
-	Category             *string                                                                         `json:"category,omitempty"`
-	AdditionalProperties map[string]interface{}                                                          `json:",remain"`
+	Id                   *int64                                                                                 `json:"id,omitempty"`
+	Name                 *string                                                                                `json:"name,omitempty"`
+	Active               *bool                                                                                  `json:"active,omitempty"`
+	Type                 NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType `json:"type,omitempty"`
+	BusNumber            *int64                                                                                 `json:"busNumber,omitempty"`
+	MaxDevices           *int64                                                                                 `json:"maxDevices,omitempty"`
+	Removable            *bool                                                                                  `json:"removable,omitempty"`
+	Editable             *bool                                                                                  `json:"editable,omitempty"`
+	ReservedUnitNumber   *int64                                                                                 `json:"reservedUnitNumber,omitempty"`
+	Category             *string                                                                                `json:"category,omitempty"`
+	AdditionalProperties map[string]interface{}                                                                 `json:",remain"`
 }
 
 type _ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner
@@ -54,8 +54,8 @@ func (o ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInn
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if !IsNil(o.BusNumber) {
 		toSerialize["busNumber"] = o.BusNumber
@@ -81,51 +81,6 @@ func (o ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInn
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner struct {
-	value *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner
-	isSet bool
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) Get() *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner {
-	return v.value
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) Set(val *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner(val *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner {
-	return &NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner{value: val, isSet: true}
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) UnmarshalJSON(data []byte) (err error) {

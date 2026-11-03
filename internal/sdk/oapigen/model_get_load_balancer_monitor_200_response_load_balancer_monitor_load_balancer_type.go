@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType) To
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType struct {
-	value *GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType
-	isSet bool
-}
-
-func (v NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType) Get() *GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType {
-	return v.value
-}
-
-func (v *NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType) Set(val *GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType(val *GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType) *NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType {
-	return &NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType{value: val, isSet: true}
-}
-
-func (v NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancerType) UnmarshalJSON(data []byte) (err error) {

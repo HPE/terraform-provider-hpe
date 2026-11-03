@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner) ToMap() (map[s
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner struct {
-	value *GetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner
-	isSet bool
-}
-
-func (v NullableGetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner) Get() *GetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner {
-	return v.value
-}
-
-func (v *NullableGetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner) Set(val *GetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner(val *GetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner) *NullableGetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner {
-	return &NullableGetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner{value: val, isSet: true}
-}
-
-func (v NullableGetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetLoadBalancerPool200ResponseLoadBalancerPoolNodesInner) UnmarshalJSON(data []byte) (err error) {

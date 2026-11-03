@@ -4,12 +4,14 @@ package loadbalancer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -30,6 +32,11 @@ func mapTenant(in sdk.GetLoadBalancer200ResponseLoadBalancerTenantsInner) Tenant
 	}
 }
 
+// errLoadBalancerNotFound signals that the load balancer GET returned 404.
+// Read uses it to remove the resource from state; Create/Update treat any
+// read-back failure, including this one, as an error.
+var errLoadBalancerNotFound = errors.New("load balancer not found")
+
 func getLoadBalancerAsState(
 	ctx context.Context,
 	id int64,
@@ -39,6 +46,9 @@ func getLoadBalancerAsState(
 	var state LoadBalancerModel
 
 	lb, hresp, err := client.LoadBalancersAPI.GetLoadBalancer(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, errLoadBalancerNotFound
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return state, fmt.Errorf(
 			"load balancer %d GET failed: %s", id, errfmt.ErrMsg(err, hresp),
@@ -71,6 +81,7 @@ func getLoadBalancerAsState(
 	// Carry forward the write-only version companions from plan/state.
 	state.GroupIdVersion = plan.GroupIdVersion
 	state.NetworkServerIdVersion = plan.NetworkServerIdVersion
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
 	// Check if load balancer is HAProxy or NSX-T based on returned type code
 	isHAProxy := data.Type.Code != nil && *data.Type.Code == typeCodeHAProxy
@@ -322,6 +333,14 @@ func (r *Resource) Read(
 	id := plan.Id.ValueInt64()
 
 	state, err := getLoadBalancerAsState(ctx, id, client, plan)
+	if errors.Is(err, errLoadBalancerNotFound) {
+		// The load balancer was deleted out of band (Morpheus returned 404);
+		// remove it from state so the next plan recreates it instead of erroring.
+		tflog.Info(ctx, fmt.Sprintf("load balancer %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
+
+		return
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("read load balancer resource", err.Error())
 

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o GetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy) ToMap() (map[st
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy struct {
-	value *GetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy
-	isSet bool
-}
-
-func (v NullableGetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy) Get() *GetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy {
-	return v.value
-}
-
-func (v *NullableGetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy) Set(val *GetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy(val *GetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy) *NullableGetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy {
-	return &NullableGetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy{value: val, isSet: true}
-}
-
-func (v NullableGetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetLoadBalancerPool200ResponseLoadBalancerPoolCreatedBy) UnmarshalJSON(data []byte) (err error) {

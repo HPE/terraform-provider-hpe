@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,7 +20,9 @@ var _ MappedNullable = &UploadPlugin200ResponseAllOfPluginProvidersInner{}
 
 // UploadPlugin200ResponseAllOfPluginProvidersInner struct for UploadPlugin200ResponseAllOfPluginProvidersInner
 type UploadPlugin200ResponseAllOfPluginProvidersInner struct {
-	Name                 *string                `json:"name,omitempty"`
+	// The display name of the provider.
+	Name *string `json:"name,omitempty"`
+	// The provider type, for example `Cloud`, `IPAM` or `Task`.
 	Type                 *string                `json:"type,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
@@ -49,51 +51,6 @@ func (o UploadPlugin200ResponseAllOfPluginProvidersInner) ToMap() (map[string]in
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUploadPlugin200ResponseAllOfPluginProvidersInner struct {
-	value *UploadPlugin200ResponseAllOfPluginProvidersInner
-	isSet bool
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginProvidersInner) Get() *UploadPlugin200ResponseAllOfPluginProvidersInner {
-	return v.value
-}
-
-func (v *NullableUploadPlugin200ResponseAllOfPluginProvidersInner) Set(val *UploadPlugin200ResponseAllOfPluginProvidersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginProvidersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUploadPlugin200ResponseAllOfPluginProvidersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUploadPlugin200ResponseAllOfPluginProvidersInner(val *UploadPlugin200ResponseAllOfPluginProvidersInner) *NullableUploadPlugin200ResponseAllOfPluginProvidersInner {
-	return &NullableUploadPlugin200ResponseAllOfPluginProvidersInner{value: val, isSet: true}
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginProvidersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUploadPlugin200ResponseAllOfPluginProvidersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginProvidersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UploadPlugin200ResponseAllOfPluginProvidersInner) UnmarshalJSON(data []byte) (err error) {

@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package policy
 
@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -206,6 +208,16 @@ func (r *Resource) ModifyPlan(
 		return
 	}
 
+	// Attributes removed from the configuration since they were last applied
+	// are planned as clears; see clearableAttributes.
+	if !req.State.Raw.IsNull() {
+		_, cdiags := clearable.Plan(ctx, req, resp, clearableAttributes)
+		resp.Diagnostics.Append(cdiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	var plan PolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -319,6 +331,45 @@ func (r *Resource) ModifyPlan(
 						"Remove the tenants attribute or choose a different policy type.",
 					policyTypeName, policyTypeCode,
 				),
+			)
+		}
+	}
+
+	// MORPH-17518: tenant scoping via `tenants` is only honored for
+	// master-tenant callers, EXCEPT on Group-scoped policies. Morpheus'
+	// PolicyService only processes the request `accounts` when the owner is the
+	// master account (a persist gap on both create and update); the GET echo is
+	// faithful. Group (ComputeSite) scope round-trips only because the API
+	// force-sets accounts to the group's account, which for a sub-tenant-owned
+	// group equals the caller's tenant. Any other scope (Global, Cloud, ...)
+	// silently drops `tenants` for sub-tenants, yielding an "inconsistent
+	// result after apply" (was cty.SetVal([...]), but now null). Fail fast.
+	//
+	// Only guard when tenants is set (non-null, non-empty) and the scope is
+	// known and not Group. Fail open (warn) if tenancy cannot be determined.
+	if !config.Tenants.IsNull() && !config.Tenants.IsUnknown() &&
+		len(config.Tenants.Elements()) > 0 &&
+		!plan.AssociatedResourceType.IsUnknown() &&
+		resourceType != AssociatedResourceTypeGroup {
+		isMaster, terr := tenancy.CallerIsMaster(ctx, client)
+		if terr != nil {
+			resp.Diagnostics.AddAttributeWarning(
+				path.Root("tenants"),
+				"Could not validate tenants at plan time",
+				"Unable to determine whether the authenticated tenant is the "+
+					"master tenant, so tenants was not validated; Morpheus will "+
+					"enforce it on apply. Error: "+terr.Error(),
+			)
+		} else if !isMaster {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("tenants"),
+				"tenants can only be set by the master tenant for this scope",
+				"Tenant scoping via `tenants` is only honored for master-tenant "+
+					"callers, except on Group-scoped policies. Morpheus silently "+
+					"discards tenants for sub-tenant callers on '"+resourceType+
+					"'-scoped policies, so the value is never stored and the "+
+					"read-back is null. Run as the master tenant, use a "+
+					"Group-scoped policy, or remove the tenants attribute.",
 			)
 		}
 	}

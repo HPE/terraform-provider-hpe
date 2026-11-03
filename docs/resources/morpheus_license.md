@@ -2,16 +2,20 @@
 page_title: "hpe_morpheus_license Resource - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
-  Provides a Morpheus license resource.
+  Provides a Morpheus license resource: installs the licence key on the appliance and keeps it installed. The resource reads the installed licences back and compares them with key. A change to key is an in-place update that installs the new key. When the configured key is no longer installed -- the appliance was rebuilt, or someone uninstalled it or installed a different key -- the next refresh removes the resource from state and the next apply re-installs the key. The licence's details are exposed as read-only attributes; a detail the licence does not specify (or, for the limits, an unlimited one) is null. The key is write-only and never stored in state; a change to it is detected from a digest kept in the resource's private state.
+  ~> Destroying this resource uninstalls the licence (the one matching key; other installed licences are kept), leaving the appliance unlicensed if it was the only one. To stop managing a licence without uninstalling it, remove it from state instead: terraform state rm hpe_morpheus_license.example.
 ---
 # hpe_morpheus_license (Resource)
 
-Provides a Morpheus license resource.
+Provides a Morpheus license resource: installs the licence key on the appliance and keeps it installed. The resource reads the installed licences back and compares them with key. A change to key is an in-place update that installs the new key. When the configured key is no longer installed -- the appliance was rebuilt, or someone uninstalled it or installed a different key -- the next refresh removes the resource from state and the next apply re-installs the key. The licence's details are exposed as read-only attributes; a detail the licence does not specify (or, for the limits, an unlimited one) is null. The key is write-only and never stored in state; a change to it is detected from a digest kept in the resource's private state.
+
+~> **Destroying this resource uninstalls the licence** (the one matching key; other installed licences are kept), leaving the appliance unlicensed if it was the only one. To stop managing a licence without uninstalling it, remove it from state instead: `terraform state rm hpe_morpheus_license.example`.
 
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_license" "tf_example_license" {
+resource "hpe_morpheus_license" "example" {
+  # key is write-only: it is sent to the appliance and never stored in state.
   key = "22324FEF3WMCDMMSWE"
 }
 ```
@@ -21,16 +25,37 @@ resource "hpe_morpheus_license" "tf_example_license" {
 
 ### Required
 
-- `key` (String, Sensitive) The Morpheus license key
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The Morpheus licence key. Write-only: it is sent to the appliance and never stored in state, so an ephemeral value may be used. Surrounding whitespace is ignored. A change to the key is detected from a digest the provider keeps in the resource's private state and plans an in-place update that installs the new key.
 
 ### Read-Only
 
-- `id` (String) The ID of the license
+- `account_name` (String) The account the licence was issued to; null when the licence does not name one.
+- `end_date` (String) When the licence expires (RFC 3339); null for a perpetual licence.
+- `free_trial` (Boolean) Whether the licence is a free trial. Current Morpheus releases do not report this detail, so it is null.
+- `hard_limit` (Boolean) Whether Morpheus refuses to provision beyond the licence's limits rather than warning; null when the licence does not specify it.
+- `id` (String) The licence's key id: the first eight characters of the key, which is how Morpheus identifies an installed licence (keyId in GET /api/license, DELETE /api/license?keyId=). Stable for as long as the same key is used -- unlike Morpheus's internal record id, which changes each time the key is re-installed.
+- `max_instances` (Number) The maximum number of instances the licence allows; null when unlimited.
+- `max_memory` (Number) The maximum managed memory, in bytes, the licence allows; null when unlimited.
+- `max_storage` (Number) The maximum managed storage, in bytes, the licence allows; null when unlimited.
+- `multi_tenant` (Boolean) Whether the licence allows sub-tenants.
+- `product_tier` (String) The product tier the licence grants (for example enterprise, capacity).
+- `start_date` (String) When the licence becomes valid (RFC 3339).
+- `support_level` (String) The support level the licence carries; null when the licence does not specify one.
 
 ## Import
 
-Import is supported using the following syntax:
+Import is supported using the licence key id: the first eight characters of the
+key, which is how Morpheus identifies an installed licence.
 
 ```shell
-terraform import hpe_morpheus_license.tf_example_license 1
+terraform import hpe_morpheus_license.example 22324FEF
 ```
+
+The licence key is write-only and never stored in state, so it is not needed to
+import. After the import, the first refresh records a digest of the installed
+licence (from the appliance's own licence hash), so the key in your
+configuration is recognised and the plan after import is empty -- no
+`#key=<sha256>` import form is required. A later change to the key is detected
+from that digest and plans an in-place update that installs the new key.

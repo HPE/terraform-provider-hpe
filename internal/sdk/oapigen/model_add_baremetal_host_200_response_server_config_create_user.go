@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj AddBaremetalHost200ResponseServerConfigCreateUser) GetActualInstanceVa
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableAddBaremetalHost200ResponseServerConfigCreateUser struct {
-	value *AddBaremetalHost200ResponseServerConfigCreateUser
-	isSet bool
-}
-
-func (v NullableAddBaremetalHost200ResponseServerConfigCreateUser) Get() *AddBaremetalHost200ResponseServerConfigCreateUser {
-	return v.value
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerConfigCreateUser) Set(val *AddBaremetalHost200ResponseServerConfigCreateUser) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddBaremetalHost200ResponseServerConfigCreateUser) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerConfigCreateUser) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddBaremetalHost200ResponseServerConfigCreateUser(val *AddBaremetalHost200ResponseServerConfigCreateUser) *NullableAddBaremetalHost200ResponseServerConfigCreateUser {
-	return &NullableAddBaremetalHost200ResponseServerConfigCreateUser{value: val, isSet: true}
-}
-
-func (v NullableAddBaremetalHost200ResponseServerConfigCreateUser) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerConfigCreateUser) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddBaremetalHost200ResponseServerConfigCreateUser) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

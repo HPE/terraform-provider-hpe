@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o AddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain) ToMap() (ma
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain struct {
-	value *AddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain
-	isSet bool
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain) Get() *AddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain {
-	return v.value
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain) Set(val *AddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain(val *AddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain) *NullableAddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain {
-	return &NullableAddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain{value: val, isSet: true}
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddInstance200ResponseAllOfOneOfInstanceConfigNetworkDomain) UnmarshalJSON(data []byte) (err error) {

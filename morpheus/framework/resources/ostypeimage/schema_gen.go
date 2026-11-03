@@ -23,6 +23,7 @@ func OsTypeImageResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "ID of the cloud",
 				MarkdownDescription: "ID of the cloud",
 				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 					int64planmodifier.RequiresReplace(),
 				},
 			},
@@ -49,6 +50,7 @@ func OsTypeImageResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "ID of the provision type",
 				MarkdownDescription: "ID of the provision type",
 				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 					int64planmodifier.RequiresReplace(),
 				},
 			},

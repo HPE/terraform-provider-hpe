@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -51,51 +51,6 @@ func (o UpdateLoadBalancerRequestLoadBalancerResourcePermission) ToMap() (map[st
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateLoadBalancerRequestLoadBalancerResourcePermission struct {
-	value *UpdateLoadBalancerRequestLoadBalancerResourcePermission
-	isSet bool
-}
-
-func (v NullableUpdateLoadBalancerRequestLoadBalancerResourcePermission) Get() *UpdateLoadBalancerRequestLoadBalancerResourcePermission {
-	return v.value
-}
-
-func (v *NullableUpdateLoadBalancerRequestLoadBalancerResourcePermission) Set(val *UpdateLoadBalancerRequestLoadBalancerResourcePermission) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateLoadBalancerRequestLoadBalancerResourcePermission) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateLoadBalancerRequestLoadBalancerResourcePermission) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateLoadBalancerRequestLoadBalancerResourcePermission(val *UpdateLoadBalancerRequestLoadBalancerResourcePermission) *NullableUpdateLoadBalancerRequestLoadBalancerResourcePermission {
-	return &NullableUpdateLoadBalancerRequestLoadBalancerResourcePermission{value: val, isSet: true}
-}
-
-func (v NullableUpdateLoadBalancerRequestLoadBalancerResourcePermission) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateLoadBalancerRequestLoadBalancerResourcePermission) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateLoadBalancerRequestLoadBalancerResourcePermission) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateLoadBalancerRequestLoadBalancerResourcePermission) UnmarshalJSON(data []byte) (err error) {

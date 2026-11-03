@@ -27,11 +27,11 @@ var (
 	datastoreTypeClusterFunc = func() *sdk.SaveClusterDatastoreRequestDatastoreDatastoreType {
 		return &sdk.SaveClusterDatastoreRequestDatastoreDatastoreType{}
 	}
-	nfsConfigClusterFunc = func() *sdk.NFSDatastoreConfiguration {
-		return &sdk.NFSDatastoreConfiguration{}
+	nfsConfigClusterFunc = func() *sdk.NFSDatastoreConfiguration1 {
+		return &sdk.NFSDatastoreConfiguration1{}
 	}
-	alletrampHvmConfigClusterFunc = func() *sdk.AlletraMPHVMDatastoreConfiguration {
-		return &sdk.AlletraMPHVMDatastoreConfiguration{}
+	alletrampHvmConfigClusterFunc = func() *sdk.AlletraMPHVMDatastoreConfiguration1 {
+		return &sdk.AlletraMPHVMDatastoreConfiguration1{}
 	}
 )
 
@@ -82,7 +82,7 @@ func datastoreCreateCluster(ctx context.Context,
 			nfsConfig.SourceVersion = plan.ConfigNfs.SourceVersion.ValueStringPointer()
 		}
 
-		createConfig.NFSDatastoreConfiguration = nfsConfig
+		createConfig.NFSDatastoreConfiguration1 = nfsConfig
 
 	case !plan.ConfigAlletrampHvm.IsNull() && !plan.ConfigAlletrampHvm.IsUnknown():
 		alletrampHvmConfig := alletrampHvmConfigClusterFunc()
@@ -90,7 +90,7 @@ func datastoreCreateCluster(ctx context.Context,
 		if !plan.ConfigAlletrampHvm.EnableRansomware.IsNull() &&
 			!plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
 			enableRansomwareString := convert.BoolToStringOnOff(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
-			alletrampHvmConfig.Enableransomware = enableRansomwareString.ValueStringPointer()
+			alletrampHvmConfig.Enableransomware = enableRansomwareString.ValueString()
 		}
 
 		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() &&
@@ -98,7 +98,7 @@ func datastoreCreateCluster(ctx context.Context,
 			alletrampHvmConfig.ProtocolType = plan.ConfigAlletrampHvm.ProtocolType.ValueString()
 		}
 
-		createConfig.AlletraMPHVMDatastoreConfiguration = alletrampHvmConfig
+		createConfig.AlletraMPHVMDatastoreConfiguration1 = alletrampHvmConfig
 
 		// removing for now
 		/*

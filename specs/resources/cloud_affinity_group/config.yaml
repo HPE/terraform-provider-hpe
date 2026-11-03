@@ -63,6 +63,29 @@ cloud_affinity_group:
     - success                                          # (response envelope) success flag
 
   overrides:
+    # host_group / vm_group / owner are read-only server state describing the
+    # rule shape: owner is the tenant that owns the group, and host_group/vm_group
+    # are the two sides of a combined VM-to-Host rule (MORPH-12801). This resource
+    # manages the legacy VM-to-VM form (servers + affinity_group_member), so the
+    # combined-rule create path is not offered here; the spec marks host_group/
+    # vm_group Optional+Computed, so pin them to computed and expose all three as
+    # read-only state.
+    host_group:
+      computed_optional_required: computed
+    host_group.id:
+      computed_optional_required: computed
+    host_group.name:
+      computed_optional_required: computed
+    vm_group:
+      computed_optional_required: computed
+    vm_group.id:
+      computed_optional_required: computed
+    vm_group.name:
+      computed_optional_required: computed
+    owner:
+      computed_optional_required: computed
+    owner.id:
+      computed_optional_required: computed
     id:
       computed_optional_required: computed
       description: The ID of the cloud affinity group.

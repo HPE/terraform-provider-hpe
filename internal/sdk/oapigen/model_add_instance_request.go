@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -34,6 +34,8 @@ type AddInstanceRequest struct {
 	SecurityGroups []AddInstanceRequestSecurityGroupsInner `json:"securityGroups,omitempty"`
 	// The (optional) volumes parameter is for LV configuration, can create additional LVs at provision It should be passed as an array of
 	Volumes []AddInstanceRequestVolumesInner `json:"volumes,omitempty"`
+	// Optional array of storage controller configurations. When provided, additional disk controllers will be created and volumes may be attached to specific controllers by index. Supported on VMware and MVM.
+	StorageControllers []AddInstanceRequestStorageControllersInner `json:"storageControllers,omitempty"`
 	// The networkInterfaces parameter is for network configuration.  The Options API `/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10` can be used to see which options are available.
 	NetworkInterfaces []InstancesNetworkInterfaces2 `json:"networkInterfaces,omitempty"`
 	Config            AddInstanceRequestConfig      `json:"config"`
@@ -88,6 +90,9 @@ func (o AddInstanceRequest) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Volumes) {
 		toSerialize["volumes"] = o.Volumes
 	}
+	if !IsNil(o.StorageControllers) {
+		toSerialize["storageControllers"] = o.StorageControllers
+	}
 	if !IsNil(o.NetworkInterfaces) {
 		toSerialize["networkInterfaces"] = o.NetworkInterfaces
 	}
@@ -119,51 +124,6 @@ func (o AddInstanceRequest) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddInstanceRequest struct {
-	value *AddInstanceRequest
-	isSet bool
-}
-
-func (v NullableAddInstanceRequest) Get() *AddInstanceRequest {
-	return v.value
-}
-
-func (v *NullableAddInstanceRequest) Set(val *AddInstanceRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstanceRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstanceRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstanceRequest(val *AddInstanceRequest) *NullableAddInstanceRequest {
-	return &NullableAddInstanceRequest{value: val, isSet: true}
-}
-
-func (v NullableAddInstanceRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstanceRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstanceRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddInstanceRequest) UnmarshalJSON(data []byte) (err error) {

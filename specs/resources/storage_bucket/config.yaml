@@ -16,7 +16,10 @@ storage_bucket:
     access_key_version:
       int64:
         computed_optional_required: optional
-        description: Access key version. Used to determine if access_key has been updated.
+        description: |-
+          Deprecated. Changes to access_key are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.6 release. Changing it still re-sends access_key.
+        deprecation_message: "No longer needed: changes to access_key are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     secret_key:
       string:
         computed_optional_required: optional
@@ -32,7 +35,10 @@ storage_bucket:
     secret_key_version:
       int64:
         computed_optional_required: optional
-        description: Secret key version. Used to determine if secret_key has been updated.
+        description: |-
+          Deprecated. Changes to secret_key are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.6 release. Changing it still re-sends secret_key.
+        deprecation_message: "No longer needed: changes to secret_key are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     endpoint:
       string:
         computed_optional_required: optional
@@ -41,12 +47,24 @@ storage_bucket:
       int64:
         computed_optional_required: optional
         description: The number of days to retain backups.
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which one of the write-only values (access_key, secret_key) was last
+          sent to Morpheus. Changes whenever one of those values changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
   moves:
     - storage_bucket: ""
     - template-access_key: access_key
     - template-access_key_version: access_key_version
     - template-secret_key: secret_key
     - template-secret_key_version: secret_key_version
+    - template-write_only_revision: write_only_revision
     - template-endpoint: endpoint
     - template-retention_days: retention_days
   removes:
@@ -71,7 +89,7 @@ storage_bucket:
       write_only: true
     access_key_version:
       computed_optional_required: optional
-      description: Access key version. Used to determine if access_key has been updated.
+      description: Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
     bucket_name:
       computed_optional_required: optional
       description: The name of the bucket.
@@ -102,4 +120,4 @@ storage_bucket:
       write_only: true
     secret_key_version:
       computed_optional_required: optional
-      description: Secret key version. Used to determine if secret_key has been updated.
+      description: Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.

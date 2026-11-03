@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -134,51 +134,6 @@ func (o InstanceTypeInstanceTypeLayoutsInner) ToMap() (map[string]interface{}, e
 	}
 
 	return toSerialize, nil
-}
-
-type NullableInstanceTypeInstanceTypeLayoutsInner struct {
-	value *InstanceTypeInstanceTypeLayoutsInner
-	isSet bool
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInner) Get() *InstanceTypeInstanceTypeLayoutsInner {
-	return v.value
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInner) Set(val *InstanceTypeInstanceTypeLayoutsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceTypeInstanceTypeLayoutsInner(val *InstanceTypeInstanceTypeLayoutsInner) *NullableInstanceTypeInstanceTypeLayoutsInner {
-	return &NullableInstanceTypeInstanceTypeLayoutsInner{value: val, isSet: true}
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *InstanceTypeInstanceTypeLayoutsInner) UnmarshalJSON(data []byte) (err error) {

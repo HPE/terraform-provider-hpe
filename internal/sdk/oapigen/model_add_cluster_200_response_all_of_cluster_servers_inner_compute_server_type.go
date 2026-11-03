@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o AddCluster200ResponseAllOfClusterServersInnerComputeServerType) ToMap() 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddCluster200ResponseAllOfClusterServersInnerComputeServerType struct {
-	value *AddCluster200ResponseAllOfClusterServersInnerComputeServerType
-	isSet bool
-}
-
-func (v NullableAddCluster200ResponseAllOfClusterServersInnerComputeServerType) Get() *AddCluster200ResponseAllOfClusterServersInnerComputeServerType {
-	return v.value
-}
-
-func (v *NullableAddCluster200ResponseAllOfClusterServersInnerComputeServerType) Set(val *AddCluster200ResponseAllOfClusterServersInnerComputeServerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddCluster200ResponseAllOfClusterServersInnerComputeServerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddCluster200ResponseAllOfClusterServersInnerComputeServerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddCluster200ResponseAllOfClusterServersInnerComputeServerType(val *AddCluster200ResponseAllOfClusterServersInnerComputeServerType) *NullableAddCluster200ResponseAllOfClusterServersInnerComputeServerType {
-	return &NullableAddCluster200ResponseAllOfClusterServersInnerComputeServerType{value: val, isSet: true}
-}
-
-func (v NullableAddCluster200ResponseAllOfClusterServersInnerComputeServerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddCluster200ResponseAllOfClusterServersInnerComputeServerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddCluster200ResponseAllOfClusterServersInnerComputeServerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddCluster200ResponseAllOfClusterServersInnerComputeServerType) UnmarshalJSON(data []byte) (err error) {

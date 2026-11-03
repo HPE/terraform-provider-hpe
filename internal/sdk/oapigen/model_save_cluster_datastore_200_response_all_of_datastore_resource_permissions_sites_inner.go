@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInn
 	}
 
 	return toSerialize, nil
-}
-
-type NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner struct {
-	value *SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) Get() *SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) Set(val *SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner(val *SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) *NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner {
-	return &NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {

@@ -3,6 +3,7 @@
 package task_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -28,13 +29,30 @@ func TestAccMorpheusTaskGroovyScriptGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// MORPH-16489: the groovy git task pins repository_id to a master-owned git
+	// integration (id 1), so a sub-tenant stores 0 and the plan never
+	// converges. Create a per-run git integration in the current tenant and
+	// reference the discovered git repository id (not the integration id — the
+	// task's file.repository.id is the SCM content-source id exposed via the
+	// integration's computed repository_ids map). A public repository needs no
+	// credentials.
+	gitConfig := fmt.Sprintf(`
+resource "hpe_morpheus_integration_git" "repo" {
+  name           = %q
+  url            = "https://github.com/gomorpheus/morpheus-cli.git"
+  default_branch = "master"
+}
+`, name+"-repo")
+
 	resourceConfig, err := task.RenderTaskGroovyScriptGitConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
+		"Name":         name,
+		"Code":         name,
+		"RepositoryId": "one(values(hpe_morpheus_integration_git.repo.repository_ids))",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
+	resourceConfig = gitConfig + resourceConfig
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -103,14 +121,18 @@ func TestAccMorpheusTaskGroovyScriptGitExampleOk(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Plan
+			// MORPH-16489: create the git integration first, on its own, so the
+			// appliance scans the repository and populates repository_ids before
+			// the task that references a discovered repository id is created. If
+			// the integration and the task are created in the same apply, the
+			// scan has not completed when the task is created and the task
+			// stores repository_id = 0 (the drift the ticket describes).
 			{
-				Config:             providerConfig + resourceConfig,
-				ExpectNonEmptyPlan: true,
-				Check:              checkFn,
-				PlanOnly:           true,
+				Config:             providerConfig + gitConfig,
+				ExpectNonEmptyPlan: false,
 			},
-			// Apply - Note: repository_id will drift if repository doesn't exist
+			// Apply - repository_id references the per-run git integration's
+			// discovered repository id, so the plan converges cleanly.
 			{
 				Config:             providerConfig + resourceConfig,
 				Check:              checkFn,

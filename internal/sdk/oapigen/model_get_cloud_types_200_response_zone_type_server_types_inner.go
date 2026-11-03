@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -129,51 +129,6 @@ func (o GetCloudTypes200ResponseZoneTypeServerTypesInner) ToMap() (map[string]in
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetCloudTypes200ResponseZoneTypeServerTypesInner struct {
-	value *GetCloudTypes200ResponseZoneTypeServerTypesInner
-	isSet bool
-}
-
-func (v NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) Get() *GetCloudTypes200ResponseZoneTypeServerTypesInner {
-	return v.value
-}
-
-func (v *NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) Set(val *GetCloudTypes200ResponseZoneTypeServerTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCloudTypes200ResponseZoneTypeServerTypesInner(val *GetCloudTypes200ResponseZoneTypeServerTypesInner) *NullableGetCloudTypes200ResponseZoneTypeServerTypesInner {
-	return &NullableGetCloudTypes200ResponseZoneTypeServerTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetCloudTypes200ResponseZoneTypeServerTypesInner) UnmarshalJSON(data []byte) (err error) {

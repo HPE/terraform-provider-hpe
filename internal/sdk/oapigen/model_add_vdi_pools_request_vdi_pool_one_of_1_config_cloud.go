@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -140,49 +140,4 @@ func (obj AddVDIPoolsRequestVdiPoolOneOf1ConfigCloud) GetActualInstanceValue() i
 
 	// all schemas are nil
 	return nil
-}
-
-type NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigCloud struct {
-	value *AddVDIPoolsRequestVdiPoolOneOf1ConfigCloud
-	isSet bool
-}
-
-func (v NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigCloud) Get() *AddVDIPoolsRequestVdiPoolOneOf1ConfigCloud {
-	return v.value
-}
-
-func (v *NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigCloud) Set(val *AddVDIPoolsRequestVdiPoolOneOf1ConfigCloud) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigCloud) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigCloud) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVDIPoolsRequestVdiPoolOneOf1ConfigCloud(val *AddVDIPoolsRequestVdiPoolOneOf1ConfigCloud) *NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigCloud {
-	return &NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigCloud{value: val, isSet: true}
-}
-
-func (v NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigCloud) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigCloud) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVDIPoolsRequestVdiPoolOneOf1ConfigCloud) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }

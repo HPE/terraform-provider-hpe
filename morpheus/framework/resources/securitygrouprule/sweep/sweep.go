@@ -19,9 +19,11 @@ import (
 const sweeperName = "hpe_morpheus_security_group_rule"
 
 // securityGroupRuleSweepItem pairs a rule with its parent security group ID.
-// RemoveSecurityGroupRules takes the security group ID as float32 (SDK quirk).
+// RemoveSecurityGroupRules takes the security group first and the rule
+// second — the path is /api/security-groups/{id}/rules/{sgId}, where the
+// misleadingly named sgId is the rule.
 type securityGroupRuleSweepItem struct {
-	securityGroupID float32
+	securityGroupID int64
 	id              int64
 	name            string
 }
@@ -70,7 +72,7 @@ func init() {
 					}
 
 					items = append(items, securityGroupRuleSweepItem{
-						securityGroupID: float32(*sgID),
+						securityGroupID: *sgID,
 						id:              *id,
 						name:            *name,
 					})
@@ -94,7 +96,7 @@ func init() {
 			}
 
 			_, hresp, err := client.SecurityGroupsAPI.
-				RemoveSecurityGroupRules(ctx, item.id, item.securityGroupID).Execute()
+				RemoveSecurityGroupRules(ctx, item.securityGroupID, item.id).Execute()
 
 			return hresp, err
 		},

@@ -27,11 +27,11 @@ var (
 	tenantsFunc = func() *sdk.SaveDatastoreRequestDatastoreTenantPermissions {
 		return &sdk.SaveDatastoreRequestDatastoreTenantPermissions{}
 	}
-	nfsConfigFunc = func() *sdk.NFSDatastoreConfiguration1 {
-		return &sdk.NFSDatastoreConfiguration1{}
+	nfsConfigFunc = func() *sdk.NFSDatastoreConfiguration2 {
+		return &sdk.NFSDatastoreConfiguration2{}
 	}
-	alletrampHvmConfigFunc = func() *sdk.AlletraMPHVMDatastoreConfiguration1 {
-		return &sdk.AlletraMPHVMDatastoreConfiguration1{}
+	alletrampHvmConfigFunc = func() *sdk.AlletraMPHVMDatastoreConfiguration2 {
+		return &sdk.AlletraMPHVMDatastoreConfiguration2{}
 	}
 	alletrampBmaasConfigFunc = func() *sdk.AlletraMPBMAASDatastoreConfiguration {
 		return &sdk.AlletraMPBMAASDatastoreConfiguration{}
@@ -96,21 +96,21 @@ func datastoreCreateDatastore(ctx context.Context,
 			nfsConfig.SourceVersion = plan.ConfigNfs.SourceVersion.ValueStringPointer()
 		}
 
-		createConfig.NFSDatastoreConfiguration1 = nfsConfig
+		createConfig.NFSDatastoreConfiguration2 = nfsConfig
 	case !plan.ConfigAlletrampHvm.IsNull() && !plan.ConfigAlletrampHvm.IsUnknown():
 		alletrampHvmConfig := alletrampHvmConfigFunc()
 
 		if !plan.ConfigAlletrampHvm.EnableRansomware.IsNull() &&
 			!plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
 			enableRansomwareString := convert.BoolToStringOnOff(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
-			alletrampHvmConfig.Enableransomware = enableRansomwareString.ValueStringPointer()
+			alletrampHvmConfig.Enableransomware = enableRansomwareString.ValueString()
 		}
 
 		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() &&
 			!plan.ConfigAlletrampHvm.ProtocolType.IsUnknown() {
 			alletrampHvmConfig.ProtocolType = plan.ConfigAlletrampHvm.ProtocolType.ValueString()
 		}
-		createConfig.AlletraMPHVMDatastoreConfiguration1 = alletrampHvmConfig
+		createConfig.AlletraMPHVMDatastoreConfiguration2 = alletrampHvmConfig
 	case !plan.ConfigAlletrampBmaas.IsNull() && !plan.ConfigAlletrampBmaas.IsUnknown():
 		alletrampBmaasConfig := alletrampBmaasConfigFunc()
 

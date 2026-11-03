@@ -10,7 +10,9 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
@@ -76,7 +78,12 @@ func (r *backupHostResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	id := *result.Backup.Id
 
-	state, diags := getBackupAsState(ctx, id, client, plan)
+	state, found, diags := getBackupAsState(ctx, id, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError(createOperation, "backup not found immediately after create")
+	}
+	state.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		// The backup was created, but reading it back failed. Taint the resource
@@ -91,5 +98,6 @@ func (r *backupHostResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

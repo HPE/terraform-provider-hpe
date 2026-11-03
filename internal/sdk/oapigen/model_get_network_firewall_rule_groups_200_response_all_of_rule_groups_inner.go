@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -73,51 +73,6 @@ func (o GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) ToMap() (ma
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner struct {
-	value *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner
-	isSet bool
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) Get() *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) Set(val *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner(val *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner {
-	return &NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) UnmarshalJSON(data []byte) (err error) {

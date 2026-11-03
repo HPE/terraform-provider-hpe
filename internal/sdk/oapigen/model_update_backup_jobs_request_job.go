@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -26,8 +26,8 @@ type UpdateBackupJobsRequestJob struct {
 	Code *string `json:"code,omitempty"`
 	// Execute Schedule ID to use for the backup job
 	ScheduleId NullableInt64 `json:"scheduleId,omitempty"`
-	// Retention Count
-	RetentionCount       *int64                 `json:"retentionCount,omitempty"`
+	// Retention Count; null clears it
+	RetentionCount       NullableInt64          `json:"retentionCount,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -52,8 +52,8 @@ func (o UpdateBackupJobsRequestJob) ToMap() (map[string]interface{}, error) {
 	if o.ScheduleId.IsSet() {
 		toSerialize["scheduleId"] = o.ScheduleId.Get()
 	}
-	if !IsNil(o.RetentionCount) {
-		toSerialize["retentionCount"] = o.RetentionCount
+	if o.RetentionCount.IsSet() {
+		toSerialize["retentionCount"] = o.RetentionCount.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {
@@ -61,51 +61,6 @@ func (o UpdateBackupJobsRequestJob) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateBackupJobsRequestJob struct {
-	value *UpdateBackupJobsRequestJob
-	isSet bool
-}
-
-func (v NullableUpdateBackupJobsRequestJob) Get() *UpdateBackupJobsRequestJob {
-	return v.value
-}
-
-func (v *NullableUpdateBackupJobsRequestJob) Set(val *UpdateBackupJobsRequestJob) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateBackupJobsRequestJob) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateBackupJobsRequestJob) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateBackupJobsRequestJob(val *UpdateBackupJobsRequestJob) *NullableUpdateBackupJobsRequestJob {
-	return &NullableUpdateBackupJobsRequestJob{value: val, isSet: true}
-}
-
-func (v NullableUpdateBackupJobsRequestJob) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateBackupJobsRequestJob) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateBackupJobsRequestJob) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateBackupJobsRequestJob) UnmarshalJSON(data []byte) (err error) {

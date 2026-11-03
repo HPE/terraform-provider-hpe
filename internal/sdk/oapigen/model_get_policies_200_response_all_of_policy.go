@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,7 @@ type GetPolicies200ResponseAllOfPolicy struct {
 	Id                   *int64                                                   `json:"id,omitempty"`
 	Name                 *string                                                  `json:"name,omitempty"`
 	Description          NullableString                                           `json:"description,omitempty"`
-	PolicyType           *GetPolicies200ResponseAllOfPolicyPolicyType             `json:"policyType,omitempty"`
+	PolicyType           NullableGetPolicies200ResponseAllOfPolicyPolicyType      `json:"policyType,omitempty"`
 	Zone                 *GetPolicies200ResponseAllOfPolicyZone                   `json:"zone,omitempty"`
 	Site                 *GetPolicies200ResponseAllOfPolicySite                   `json:"site,omitempty"`
 	User                 *GetPolicies200ResponseAllOfPolicyUser                   `json:"user,omitempty"`
@@ -59,8 +59,8 @@ func (o GetPolicies200ResponseAllOfPolicy) ToMap() (map[string]interface{}, erro
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.PolicyType) {
-		toSerialize["policyType"] = o.PolicyType
+	if o.PolicyType.IsSet() {
+		toSerialize["policyType"] = o.PolicyType.Get()
 	}
 	if !IsNil(o.Zone) {
 		toSerialize["zone"] = o.Zone
@@ -101,51 +101,6 @@ func (o GetPolicies200ResponseAllOfPolicy) ToMap() (map[string]interface{}, erro
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetPolicies200ResponseAllOfPolicy struct {
-	value *GetPolicies200ResponseAllOfPolicy
-	isSet bool
-}
-
-func (v NullableGetPolicies200ResponseAllOfPolicy) Get() *GetPolicies200ResponseAllOfPolicy {
-	return v.value
-}
-
-func (v *NullableGetPolicies200ResponseAllOfPolicy) Set(val *GetPolicies200ResponseAllOfPolicy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetPolicies200ResponseAllOfPolicy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetPolicies200ResponseAllOfPolicy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetPolicies200ResponseAllOfPolicy(val *GetPolicies200ResponseAllOfPolicy) *NullableGetPolicies200ResponseAllOfPolicy {
-	return &NullableGetPolicies200ResponseAllOfPolicy{value: val, isSet: true}
-}
-
-func (v NullableGetPolicies200ResponseAllOfPolicy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetPolicies200ResponseAllOfPolicy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetPolicies200ResponseAllOfPolicy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetPolicies200ResponseAllOfPolicy) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,8 @@ var _ MappedNullable = &UpdateInstanceRequestInstance{}
 type UpdateInstanceRequestInstance struct {
 	// Unique name scoped to your account for the instance.
 	Name *string `json:"name,omitempty"`
-	// Optional description field.
-	Description *string `json:"description,omitempty"`
+	// Optional description field; null clears it.
+	Description NullableString `json:"description,omitempty"`
 	// Environment
 	InstanceContext *string `json:"instanceContext,omitempty"`
 	// Array of strings (keywords).
@@ -59,8 +59,8 @@ func (o UpdateInstanceRequestInstance) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.InstanceContext) {
 		toSerialize["instanceContext"] = o.InstanceContext
@@ -95,51 +95,6 @@ func (o UpdateInstanceRequestInstance) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateInstanceRequestInstance struct {
-	value *UpdateInstanceRequestInstance
-	isSet bool
-}
-
-func (v NullableUpdateInstanceRequestInstance) Get() *UpdateInstanceRequestInstance {
-	return v.value
-}
-
-func (v *NullableUpdateInstanceRequestInstance) Set(val *UpdateInstanceRequestInstance) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateInstanceRequestInstance) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateInstanceRequestInstance) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateInstanceRequestInstance(val *UpdateInstanceRequestInstance) *NullableUpdateInstanceRequestInstance {
-	return &NullableUpdateInstanceRequestInstance{value: val, isSet: true}
-}
-
-func (v NullableUpdateInstanceRequestInstance) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateInstanceRequestInstance) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateInstanceRequestInstance) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateInstanceRequestInstance) UnmarshalJSON(data []byte) (err error) {

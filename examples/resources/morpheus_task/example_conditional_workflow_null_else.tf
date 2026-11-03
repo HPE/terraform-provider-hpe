@@ -9,7 +9,7 @@ resource "hpe_morpheus_task" "example_task" {
 
         return false;
         EOT
-    if_operational_workflow_id   = "4090"
+    if_operational_workflow_id   = 4090
     if_operational_workflow_name = "Example If Workflow"
 
     else_operational_workflow_id   = null

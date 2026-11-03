@@ -88,11 +88,10 @@ resource "hpe_morpheus_network" "aws" {
   cloud_id    = var.cloud_id
   pool_id     = var.pool_id
   group_id    = var.group_id
-  type_id     = var.type_id
-  config = {
-    assignPublicIp   = var.config_assign_public_ip
-    availabilityZone = var.config_availability_zone
-  }
+  type_code   = "amazonSubnet"
+  # An Amazon subnet has no config block: these are attributes of the network.
+  assign_public_ip           = var.config_assign_public_ip
+  availability_zone          = var.config_availability_zone
   active                     = var.active
   dhcp_server                = var.dhcp_server
   appliance_url_proxy_bypass = var.appliance_url_proxy_bypass

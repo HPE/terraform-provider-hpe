@@ -9,6 +9,53 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// StringUnknownIfEmpty returns a plan modifier that marks the planned value as
+// unknown when the configuration is null, deferring to whatever value the
+// provider resolves (e.g. an API-side default) during apply. It intentionally
+// does not treat an explicit "" config the same as null: Terraform requires the
+// planned value to equal the config value whenever the config is non-null (even
+// ""), so substituting a different value/unknown there produces an invalid plan.
+//
+// When prior state already holds a concrete value (i.e. this isn't the initial
+// create), that value is carried forward instead of being marked unknown, so a
+// resource with a null config doesn't show a perpetual "known after apply" diff
+// once the API-resolved value has been read into state.
+func StringUnknownIfEmpty() planmodifier.String {
+	return stringUnknownIfEmptyModifier{}
+}
+
+type stringUnknownIfEmptyModifier struct{}
+
+func (m stringUnknownIfEmptyModifier) Description(_ context.Context) string {
+	return "Defer to the provider-resolved value when the value is null."
+}
+
+func (m stringUnknownIfEmptyModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (m stringUnknownIfEmptyModifier) PlanModifyString(
+	_ context.Context,
+	req planmodifier.StringRequest,
+	resp *planmodifier.StringResponse,
+) {
+	if req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	if !req.ConfigValue.IsNull() {
+		return
+	}
+
+	if !req.StateValue.IsNull() && !req.StateValue.IsUnknown() {
+		resp.PlanValue = req.StateValue
+
+		return
+	}
+
+	resp.PlanValue = types.StringUnknown()
+}
+
 // RequireOnCreateModifier can be used for corner cases where
 // an attribute is optional for import, but required for create
 type RequireOnCreateModifier struct{}

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -49,51 +49,6 @@ func (o ListSubnets200ResponseAllOfSubnetsInnerNetworkDomain) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableListSubnets200ResponseAllOfSubnetsInnerNetworkDomain struct {
-	value *ListSubnets200ResponseAllOfSubnetsInnerNetworkDomain
-	isSet bool
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerNetworkDomain) Get() *ListSubnets200ResponseAllOfSubnetsInnerNetworkDomain {
-	return v.value
-}
-
-func (v *NullableListSubnets200ResponseAllOfSubnetsInnerNetworkDomain) Set(val *ListSubnets200ResponseAllOfSubnetsInnerNetworkDomain) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerNetworkDomain) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListSubnets200ResponseAllOfSubnetsInnerNetworkDomain) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListSubnets200ResponseAllOfSubnetsInnerNetworkDomain(val *ListSubnets200ResponseAllOfSubnetsInnerNetworkDomain) *NullableListSubnets200ResponseAllOfSubnetsInnerNetworkDomain {
-	return &NullableListSubnets200ResponseAllOfSubnetsInnerNetworkDomain{value: val, isSet: true}
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerNetworkDomain) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListSubnets200ResponseAllOfSubnetsInnerNetworkDomain) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerNetworkDomain) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *ListSubnets200ResponseAllOfSubnetsInnerNetworkDomain) UnmarshalJSON(data []byte) (err error) {

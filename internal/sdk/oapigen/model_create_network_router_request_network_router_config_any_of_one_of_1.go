@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -89,51 +89,6 @@ func (o CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1) ToMap() (map[s
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1 struct {
-	value *CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1
-	isSet bool
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1) Get() *CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1 {
-	return v.value
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1) Set(val *CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1(val *CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1) *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1 {
-	return &NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1) UnmarshalJSON(data []byte) (err error) {

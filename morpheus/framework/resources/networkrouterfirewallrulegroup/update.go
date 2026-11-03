@@ -11,6 +11,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -41,6 +42,14 @@ func (r *Resource) Update(
 	id := plan.Id.ValueInt64()
 	routerID := plan.RouterId.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// The SDK's UpdateNetworkRouterFirewallRuleGroupRequest.RuleGroup is typed
 	// as map[string]interface{} — build it manually.
 	ruleGroup := map[string]interface{}{
@@ -48,7 +57,11 @@ func (r *Resource) Update(
 		"externalType": "GatewayPolicy",
 	}
 
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+	// Sent when known, null when being cleared, not sent otherwise.
+	switch {
+	case pending.Clears("description"):
+		ruleGroup["description"] = nil
+	case !plan.Description.IsNull() && !plan.Description.IsUnknown():
 		ruleGroup["description"] = plan.Description.ValueString()
 	}
 
@@ -113,5 +126,6 @@ func (r *Resource) Update(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -51,51 +51,6 @@ func (o GetDatastores200ResponseAllOfDatastoreDatastoresInner) ToMap() (map[stri
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetDatastores200ResponseAllOfDatastoreDatastoresInner struct {
-	value *GetDatastores200ResponseAllOfDatastoreDatastoresInner
-	isSet bool
-}
-
-func (v NullableGetDatastores200ResponseAllOfDatastoreDatastoresInner) Get() *GetDatastores200ResponseAllOfDatastoreDatastoresInner {
-	return v.value
-}
-
-func (v *NullableGetDatastores200ResponseAllOfDatastoreDatastoresInner) Set(val *GetDatastores200ResponseAllOfDatastoreDatastoresInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetDatastores200ResponseAllOfDatastoreDatastoresInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetDatastores200ResponseAllOfDatastoreDatastoresInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetDatastores200ResponseAllOfDatastoreDatastoresInner(val *GetDatastores200ResponseAllOfDatastoreDatastoresInner) *NullableGetDatastores200ResponseAllOfDatastoreDatastoresInner {
-	return &NullableGetDatastores200ResponseAllOfDatastoreDatastoresInner{value: val, isSet: true}
-}
-
-func (v NullableGetDatastores200ResponseAllOfDatastoreDatastoresInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetDatastores200ResponseAllOfDatastoreDatastoresInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetDatastores200ResponseAllOfDatastoreDatastoresInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetDatastores200ResponseAllOfDatastoreDatastoresInner) UnmarshalJSON(data []byte) (err error) {

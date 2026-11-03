@@ -13,6 +13,12 @@ network_pool_server:
       bool:
         computed_optional_required: computed_optional
         description: Whether to inventory existing networks from the pool server.
+    app_id:
+      string:
+        computed_optional_required: optional
+        description: >-
+          The phpIPAM application ID (API app). Required when `type_code` is `phpipam` and rejected
+          for other pool server types.
     credential_id:
       int64:
         computed_optional_required: optional
@@ -32,15 +38,31 @@ network_pool_server:
     service_password_wo_version:
       int64:
         computed_optional_required: optional
-        description: Service password version. Used to determine if service_password_wo has been updated.
+        description: |-
+          Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.6 release. Changing it still re-sends service_password_wo.
+        deprecation_message: "No longer needed: changes to service_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which a write-only value (service_password_wo) was last
+          sent to Morpheus. Changes whenever that value changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
   moves:
     - network_pool_server: ""
     - template-type_id: type_id
     - template-type_code: type_code
     - template-inventory_existing: inventory_existing
+    - template-app_id: app_id
     - template-credential_id: credential_id
     - template-service_password_wo: service_password_wo
     - template-service_password_wo_version: service_password_wo_version
+    - template-write_only_revision: write_only_revision
   removes:
     - account
     - bluecat_network_pool_server
@@ -87,7 +109,7 @@ network_pool_server:
       conflicts_with: [credential_id]
     service_password_wo_version:
       computed_optional_required: optional
-      description: Service password version. Used to determine if service_password_wo has been updated.
+      description: Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
     service_url:
       computed_optional_required: optional
       description: The service URL for the IPAM integration.

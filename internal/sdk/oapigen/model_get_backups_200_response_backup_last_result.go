@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,51 +57,6 @@ func (o GetBackups200ResponseBackupLastResult) ToMap() (map[string]interface{}, 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetBackups200ResponseBackupLastResult struct {
-	value *GetBackups200ResponseBackupLastResult
-	isSet bool
-}
-
-func (v NullableGetBackups200ResponseBackupLastResult) Get() *GetBackups200ResponseBackupLastResult {
-	return v.value
-}
-
-func (v *NullableGetBackups200ResponseBackupLastResult) Set(val *GetBackups200ResponseBackupLastResult) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetBackups200ResponseBackupLastResult) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetBackups200ResponseBackupLastResult) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetBackups200ResponseBackupLastResult(val *GetBackups200ResponseBackupLastResult) *NullableGetBackups200ResponseBackupLastResult {
-	return &NullableGetBackups200ResponseBackupLastResult{value: val, isSet: true}
-}
-
-func (v NullableGetBackups200ResponseBackupLastResult) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetBackups200ResponseBackupLastResult) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetBackups200ResponseBackupLastResult) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetBackups200ResponseBackupLastResult) UnmarshalJSON(data []byte) (err error) {

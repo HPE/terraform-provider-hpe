@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -33,7 +33,7 @@ type AddInstance200ResponseAllOfOneOfInstance struct {
 	Servers                          []int64                                                       `json:"servers,omitempty"`
 	ConnectionInfo                   []AddInstance200ResponseAllOfOneOfInstanceConnectionInfoInner `json:"connectionInfo,omitempty"`
 	Layout                           *AddInstance200ResponseAllOfOneOfInstanceLayout               `json:"layout,omitempty"`
-	Plan                             *AddInstance200ResponseAllOfOneOfInstancePlan                 `json:"plan,omitempty"`
+	Plan                             NullableAddInstance200ResponseAllOfOneOfInstancePlan          `json:"plan,omitempty"`
 	Name                             *string                                                       `json:"name,omitempty"`
 	DisplayName                      *string                                                       `json:"displayName,omitempty"`
 	Description                      NullableString                                                `json:"description,omitempty"`
@@ -154,8 +154,8 @@ func (o AddInstance200ResponseAllOfOneOfInstance) ToMap() (map[string]interface{
 	if !IsNil(o.Layout) {
 		toSerialize["layout"] = o.Layout
 	}
-	if !IsNil(o.Plan) {
-		toSerialize["plan"] = o.Plan
+	if o.Plan.IsSet() {
+		toSerialize["plan"] = o.Plan.Get()
 	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
@@ -370,51 +370,6 @@ func (o AddInstance200ResponseAllOfOneOfInstance) ToMap() (map[string]interface{
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddInstance200ResponseAllOfOneOfInstance struct {
-	value *AddInstance200ResponseAllOfOneOfInstance
-	isSet bool
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstance) Get() *AddInstance200ResponseAllOfOneOfInstance {
-	return v.value
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstance) Set(val *AddInstance200ResponseAllOfOneOfInstance) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstance) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstance) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstance200ResponseAllOfOneOfInstance(val *AddInstance200ResponseAllOfOneOfInstance) *NullableAddInstance200ResponseAllOfOneOfInstance {
-	return &NullableAddInstance200ResponseAllOfOneOfInstance{value: val, isSet: true}
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstance) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstance) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstance) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddInstance200ResponseAllOfOneOfInstance) UnmarshalJSON(data []byte) (err error) {

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -45,51 +45,6 @@ func (o GetOptionList200ResponseOptionTypesInnerConfig) ToMap() (map[string]inte
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetOptionList200ResponseOptionTypesInnerConfig struct {
-	value *GetOptionList200ResponseOptionTypesInnerConfig
-	isSet bool
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInnerConfig) Get() *GetOptionList200ResponseOptionTypesInnerConfig {
-	return v.value
-}
-
-func (v *NullableGetOptionList200ResponseOptionTypesInnerConfig) Set(val *GetOptionList200ResponseOptionTypesInnerConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInnerConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetOptionList200ResponseOptionTypesInnerConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetOptionList200ResponseOptionTypesInnerConfig(val *GetOptionList200ResponseOptionTypesInnerConfig) *NullableGetOptionList200ResponseOptionTypesInnerConfig {
-	return &NullableGetOptionList200ResponseOptionTypesInnerConfig{value: val, isSet: true}
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInnerConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetOptionList200ResponseOptionTypesInnerConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInnerConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetOptionList200ResponseOptionTypesInnerConfig) UnmarshalJSON(data []byte) (err error) {

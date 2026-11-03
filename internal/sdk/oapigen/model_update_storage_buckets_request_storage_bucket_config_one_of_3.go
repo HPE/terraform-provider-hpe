@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -46,51 +46,6 @@ func (o UpdateStorageBucketsRequestStorageBucketConfigOneOf3) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableUpdateStorageBucketsRequestStorageBucketConfigOneOf3 struct {
-	value *UpdateStorageBucketsRequestStorageBucketConfigOneOf3
-	isSet bool
-}
-
-func (v NullableUpdateStorageBucketsRequestStorageBucketConfigOneOf3) Get() *UpdateStorageBucketsRequestStorageBucketConfigOneOf3 {
-	return v.value
-}
-
-func (v *NullableUpdateStorageBucketsRequestStorageBucketConfigOneOf3) Set(val *UpdateStorageBucketsRequestStorageBucketConfigOneOf3) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateStorageBucketsRequestStorageBucketConfigOneOf3) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateStorageBucketsRequestStorageBucketConfigOneOf3) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateStorageBucketsRequestStorageBucketConfigOneOf3(val *UpdateStorageBucketsRequestStorageBucketConfigOneOf3) *NullableUpdateStorageBucketsRequestStorageBucketConfigOneOf3 {
-	return &NullableUpdateStorageBucketsRequestStorageBucketConfigOneOf3{value: val, isSet: true}
-}
-
-func (v NullableUpdateStorageBucketsRequestStorageBucketConfigOneOf3) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateStorageBucketsRequestStorageBucketConfigOneOf3) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateStorageBucketsRequestStorageBucketConfigOneOf3) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *UpdateStorageBucketsRequestStorageBucketConfigOneOf3) UnmarshalJSON(data []byte) (err error) {

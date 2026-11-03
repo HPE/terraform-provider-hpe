@@ -323,13 +323,57 @@ func affinityGroupToValue(
 		rpVal = v
 	}
 
+	// host_group / vm_group / owner — read-only rule-shape state (MORPH-12801).
+	hostGroupVal := types.ObjectNull(HostGroupValue{}.AttributeTypes(ctx))
+
+	if ag.HostGroup != nil {
+		v, d := types.ObjectValue(
+			HostGroupValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"id":   convert.Int64ToType(ag.HostGroup.Id),
+				"name": convert.StrToType(ag.HostGroup.Name),
+			},
+		)
+		diags.Append(d...)
+		hostGroupVal = v
+	}
+
+	vmGroupVal := types.ObjectNull(VmGroupValue{}.AttributeTypes(ctx))
+
+	if ag.VmGroup != nil {
+		v, d := types.ObjectValue(
+			VmGroupValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"id":   convert.Int64ToType(ag.VmGroup.Id),
+				"name": convert.StrToType(ag.VmGroup.Name),
+			},
+		)
+		diags.Append(d...)
+		vmGroupVal = v
+	}
+
+	ownerVal := types.ObjectNull(OwnerValue{}.AttributeTypes(ctx))
+
+	if ag.Owner != nil {
+		v, d := types.ObjectValue(
+			OwnerValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"id": convert.Int64ToType(ag.Owner.Id),
+			},
+		)
+		diags.Append(d...)
+		ownerVal = v
+	}
+
 	v, d := NewAffinityGroupsValue(
 		AffinityGroupsValue{}.AttributeTypes(ctx),
 		map[string]attr.Value{
 			"active":               convert.BoolToType(ag.Active),
 			"affinity_type":        convert.StrToType(ag.AffinityType),
+			"host_group":           hostGroupVal,
 			"id":                   convert.Int64ToType(ag.Id),
 			"name":                 convert.StrToType(ag.Name),
+			"owner":                ownerVal,
 			"pool":                 poolVal,
 			"ref_id":               convert.Int64ToType(ag.RefId),
 			"ref_type":             convert.StrToType(ag.RefType),
@@ -338,6 +382,7 @@ func affinityGroupToValue(
 			"source":               convert.StrToType(ag.Source),
 			"tenant_ids":           tenantIdsVal,
 			"visibility":           convert.StrToType(ag.Visibility),
+			"vm_group":             vmGroupVal,
 		},
 	)
 	diags.Append(d...)

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,51 +53,6 @@ func (o CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) 
 	}
 
 	return toSerialize, nil
-}
-
-type NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType struct {
-	value *CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType
-	isSet bool
-}
-
-func (v NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) Get() *CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType {
-	return v.value
-}
-
-func (v *NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) Set(val *CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType(val *CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) *NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType {
-	return &NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType{value: val, isSet: true}
-}
-
-func (v NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) UnmarshalJSON(data []byte) (err error) {

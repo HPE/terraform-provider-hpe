@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,9 +20,10 @@ var _ MappedNullable = &AddUser200Response{}
 
 // AddUser200Response struct for AddUser200Response
 type AddUser200Response struct {
-	User                 *AddUser200ResponseAllOfUser `json:"user,omitempty"`
-	Success              *bool                        `json:"success,omitempty"`
-	AdditionalProperties map[string]interface{}       `json:",remain"`
+	User                 *UpdateUserTenant200ResponseAllOfUser `json:"user,omitempty"`
+	Errors               map[string]string                     `json:"errors,omitempty"`
+	Success              *bool                                 `json:"success,omitempty"`
+	AdditionalProperties map[string]interface{}                `json:",remain"`
 }
 
 type _AddUser200Response AddUser200Response
@@ -40,6 +41,9 @@ func (o AddUser200Response) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.User) {
 		toSerialize["user"] = o.User
 	}
+	if !IsNil(o.Errors) {
+		toSerialize["errors"] = o.Errors
+	}
 	if !IsNil(o.Success) {
 		toSerialize["success"] = o.Success
 	}
@@ -49,51 +53,6 @@ func (o AddUser200Response) ToMap() (map[string]interface{}, error) {
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddUser200Response struct {
-	value *AddUser200Response
-	isSet bool
-}
-
-func (v NullableAddUser200Response) Get() *AddUser200Response {
-	return v.value
-}
-
-func (v *NullableAddUser200Response) Set(val *AddUser200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddUser200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddUser200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddUser200Response(val *AddUser200Response) *NullableAddUser200Response {
-	return &NullableAddUser200Response{value: val, isSet: true}
-}
-
-func (v NullableAddUser200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddUser200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddUser200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddUser200Response) UnmarshalJSON(data []byte) (err error) {

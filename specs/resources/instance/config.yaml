@@ -580,16 +580,58 @@ instance:
             imports:
             - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
             schema_definition: int64planmodifier.RequiresReplace()
+    userData:
+      string:
+        computed_optional_required: optional
+        description: |-
+          Cloud-init user data for the virtual machine: cloud-config YAML (starting `#cloud-config`)
+          or a plain script. Applied once, when the virtual machine is first provisioned, so changing
+          it replaces the instance; use `lifecycle { ignore_changes }` to update the stored value for
+          later clones without replacing the VM. Your `bootcmd` and `runcmd` entries run *before* the
+          ones Morpheus generates (which install the agent), so `bootcmd` is the place for guest
+          network fix-ups that must precede the agent install. Other keys are merged over the user
+          data of the cloud, OS type, image, layout and type set; list values (for example
+          `write_files`, `packages`) *replace* Morpheus's rather than append to them. All `runcmd`
+          entries run as one shell script, so a failing command of yours stops Morpheus's: guard
+          with `|| true` where a failure is acceptable. Morpheus trims the value, so wrap it in
+          `trimspace()` to avoid a perpetual diff. Honoured by HVM; the generic `config` block carries
+          `userData` for other clouds, where support depends on the appliance's cloud plugin.
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+            schema_definition: stringvalidator.LengthAtLeast(1)
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+            schema_definition: stringplanmodifier.RequiresReplace()
     vmwareFolderID:
       string:
         computed_optional_required: optional
         description: VMware folder external ID.
+    # MORPH-17657. Plain Optional, deliberately without a schema Default: a
+    # Default on an attribute INSIDE a set element makes the framework fill the
+    # element with the default, which then no longer correlates with the
+    # configured element and plans a change on every run. The appliance
+    # defaults (export true, masked false) are applied in the provider when the
+    # attribute is omitted, and the read keeps an omitted attribute null.
+    evar_export:
+      bool:
+        computed_optional_required: optional
+        description: Whether the variable is exported to the instance environment. Defaults to true when omitted.
+    evar_masked:
+      bool:
+        computed_optional_required: optional
+        description: Whether the value is masked in the Morpheus UI and API. Defaults to false when omitted.
     interfaceName:
       string:
         computed_optional_required: computed
         description: The name of the interface, e.g. 'eth0', 'eth1'
   moves:
     - instance: "" # unnest instance wrapper to root
+    - template-evar_export: evars.export
+    - template-evar_masked: evars.masked
     - template-id: id
     - template-host_name: host_name
     - template-labels: labels
@@ -613,6 +655,7 @@ instance:
     - template-nestedVirtualization: config_hvm.nested_virtualization
     - template-resourcePoolId: config_hvm.resource_pool_id
     - template-kvmHostId: config_hvm.kvm_host_id
+    - template-userData: config_hvm.user_data
     - template-affinityGroupId: config_hvm.affinity_group_id
     - template-virtualImageId: config_hvm.image_id
     - template-configVMware: config_vmware
@@ -767,7 +810,19 @@ instance:
       description: Whether to create a user when provisioning the bare metal instance.
       computed_optional_required: computed_optional
     evars:
-      state_for_unknown: true
+      description: |-
+        Environment variables for the instance. Each has a name and value, plus optional export
+        (default true) and masked (default false). Variables can be added, changed and removed in
+        place.
+      # MORPH-612: plain Optional, like tags. As Optional+Computed with
+      # UseStateForUnknown, omitting the block planned the PRIOR state back in,
+      # so "remove all evars" could never be expressed -- the plan always equalled
+      # the state and nothing was deleted. Optional-only makes an omitted block
+      # null, which the update path applies as remove-all. Computed is not needed:
+      # the read maps only the user-defined variables, so the API never adds
+      # values the practitioner did not set.
+      computed_optional_required: optional
+      state_for_unknown: false
     network_domain_id:
       requires_replace: true
     user_group:
@@ -776,6 +831,18 @@ instance:
       computed_optional_required: optional
     ports:
       computed_optional_required: optional
+      # MORPH-612: ports are create-only in Morpheus. The instance update API
+      # does not read them and there is no post-provisioning ports endpoint, so
+      # an in-place change cannot be applied. Replacing the instance is the only
+      # way to honour a changed or removed ports block; previously the change
+      # was accepted and silently never applied.
+      requires_replace: true
+      description: |
+        The ports parameter is for port configuration.
+
+        The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.
+
+        Ports can only be set when the instance is created. Changing or removing them forces a new instance to be created.
     evars.name:
       computed_optional_required: required
     evars.value:

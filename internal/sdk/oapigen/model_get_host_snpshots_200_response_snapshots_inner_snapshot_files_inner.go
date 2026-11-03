@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,15 +20,17 @@ var _ MappedNullable = &GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInn
 
 // GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner struct for GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner
 type GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner struct {
-	Id                   *int64                                                            `json:"id,omitempty"`
-	Name                 *string                                                           `json:"name,omitempty"`
-	Type                 *string                                                           `json:"type,omitempty"`
-	ExternalId           *string                                                           `json:"externalId,omitempty"`
-	Path                 *string                                                           `json:"path,omitempty"`
-	ExportPath           *string                                                           `json:"exportPath,omitempty"`
-	Volume               *GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInnerVolume `json:"volume,omitempty"`
-	DiskIndex            *int32                                                            `json:"diskIndex,omitempty"`
-	AdditionalProperties map[string]interface{}                                            `json:",remain"`
+	Id         *int64                                                            `json:"id,omitempty"`
+	Name       *string                                                           `json:"name,omitempty"`
+	Type       *string                                                           `json:"type,omitempty"`
+	ExternalId *string                                                           `json:"externalId,omitempty"`
+	Path       *string                                                           `json:"path,omitempty"`
+	ExportPath *string                                                           `json:"exportPath,omitempty"`
+	Volume     *GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInnerVolume `json:"volume,omitempty"`
+	DiskIndex  *int32                                                            `json:"diskIndex,omitempty"`
+	// Size of the snapshot file in bytes. Null when not populated.
+	FileSize             NullableInt64          `json:"fileSize,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner
@@ -67,57 +69,15 @@ func (o GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner) ToMap() (map
 	if !IsNil(o.DiskIndex) {
 		toSerialize["diskIndex"] = o.DiskIndex
 	}
+	if o.FileSize.IsSet() {
+		toSerialize["fileSize"] = o.FileSize.Get()
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
 	}
 
 	return toSerialize, nil
-}
-
-type NullableGetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner struct {
-	value *GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner
-	isSet bool
-}
-
-func (v NullableGetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner) Get() *GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner {
-	return v.value
-}
-
-func (v *NullableGetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner) Set(val *GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner(val *GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner) *NullableGetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner {
-	return &NullableGetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner{value: val, isSet: true}
-}
-
-func (v NullableGetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *GetHostSnpshots200ResponseSnapshotsInnerSnapshotFilesInner) UnmarshalJSON(data []byte) (err error) {
