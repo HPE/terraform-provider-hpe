@@ -15,19 +15,19 @@ import (
 	"encoding/json"
 )
 
-// checks if the ApplianceSettingsEnabledZoneTypesInner type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &ApplianceSettingsEnabledZoneTypesInner{}
+// checks if the ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner{}
 
-// ApplianceSettingsEnabledZoneTypesInner struct for ApplianceSettingsEnabledZoneTypesInner
-type ApplianceSettingsEnabledZoneTypesInner struct {
+// ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner struct for ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner
+type ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner struct {
 	Id                   *int64                 `json:"id,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
-type _ApplianceSettingsEnabledZoneTypesInner ApplianceSettingsEnabledZoneTypesInner
+type _ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner
 
-func (o ApplianceSettingsEnabledZoneTypesInner) MarshalJSON() ([]byte, error) {
+func (o ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -35,7 +35,7 @@ func (o ApplianceSettingsEnabledZoneTypesInner) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o ApplianceSettingsEnabledZoneTypesInner) ToMap() (map[string]interface{}, error) {
+func (o ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
@@ -51,7 +51,7 @@ func (o ApplianceSettingsEnabledZoneTypesInner) ToMap() (map[string]interface{},
 	return toSerialize, nil
 }
 
-func (o *ApplianceSettingsEnabledZoneTypesInner) UnmarshalJSON(data []byte) (err error) {
+func (o *ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }
 

@@ -126,7 +126,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_scale_threshold":                  automation.ResourceScaleThreshold(),
 			"hpe_morpheus_script_template":                  template.ResourceScriptTemplate(),
 			"hpe_morpheus_security_package":                 template.ResourceSecurityPackage(),
-			"hpe_morpheus_setting_appliance":                setting.ResourceSettingAppliance(),
 			"hpe_morpheus_setting_backup":                   setting.ResourceSettingBackup(),
 			"hpe_morpheus_setting_guidance":                 setting.ResourceSettingGuidance(),
 			"hpe_morpheus_setting_monitoring":               setting.ResourceSettingMonitoring(),

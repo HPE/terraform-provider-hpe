@@ -63,6 +63,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/securitygroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/securitygrouprule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/serviceplan"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/settingappliance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/settingwhitelabel"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storagebucket"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storageserver"
@@ -170,6 +171,10 @@ func (p *MorpheusProvider) Resources(
 		// Appliance licence: ported from SDKv2 to the plugin framework so the
 		// key can be write-only, with its digest kept in private state.
 		license.NewResource,
+
+		// Appliance settings: ported from SDKv2 to the plugin framework so the
+		// SMTP and proxy passwords and the currency key can be write-only.
+		settingappliance.NewResource,
 
 		// Plugin lifecycle management (Plugin Framework)
 		plugin.NewResource,

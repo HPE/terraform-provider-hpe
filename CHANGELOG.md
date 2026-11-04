@@ -18,6 +18,18 @@ surgery is needed.
 that set `organization_matching_type = "EXCLUDE"` must be changed to scope the policy with `ALL` or
 with `INCLUDE` and an explicit `included_clients` list.
 
+### `hpe_morpheus_setting_appliance`: `stats_retainment_period` applied; credentials need Terraform 1.11
+
+The resource is rebuilt on the plugin framework (see *Improvements*). Existing state is upgraded in
+place, and configurations carry over, with two exceptions:
+
+- `stats_retainment_period` now takes effect: the previous resource accepted it but never sent it.
+  A configuration that sets it changes the appliance's stats retention on the first apply after
+  upgrading. It accepts 30, 60 or 90.
+- `smtp_password`, `proxy_password` and `currency_provider_api_key` keep their names but are now
+  write-only. A configuration that sets any of them, or the new `twilio_auth_token`, needs
+  **Terraform 1.11 or later, or OpenTofu 1.11 or later**.
+
 ## Deprecations
 
 - `hpe_morpheus_network_router_nat` data source: `action` and `firewall` are deprecated and scheduled
@@ -26,6 +38,52 @@ with `INCLUDE` and an explicit `included_clients` list.
   The `hpe_morpheus_network_router_nat` resource is unaffected — it already treats both as write-only.
 
 ## Improvements
+
+### `hpe_morpheus_setting_appliance` moves to the plugin framework
+
+The appliance settings resource is rebuilt on the plugin framework. The type name and the attribute
+names are unchanged, `id` included (still always `"1"`), and it gains the settings the previous
+resource did not have (see below). Existing state is upgraded in place: the first plan after
+upgrading shows one `~ write_only_revision` update, which re-sends the configured credentials, plus
+any change to `stats_retainment_period` the configuration asks for (see *Breaking changes*).
+
+- **The credentials are write-only.** `smtp_password`, `proxy_password` and
+  `currency_provider_api_key` are sent to Morpheus and no longer stored in state. A change is
+  detected from a digest kept in the resource's private state and plans an update through
+  `write_only_revision`, the computed attribute every resource with write-only values has: the time
+  they were last sent to Morpheus. A credential changed on the appliance outside Terraform is detected
+  from the hash Morpheus reports for it, and re-sent. Before, a configured password planned a change
+  on every run (the resource compared a plain SHA-256 of it with the appliance's HMAC), and the
+  currency key was kept in state in clear.
+- **Only the settings that change are sent.** A first apply no longer switches tenant registration
+  and Docker privileged mode off when the configuration does not set them, and a plan lists only the
+  settings that change.
+- **`stats_retainment_period` takes effect.** The previous resource declared it but never sent or
+  read it. It is now sent when it changes and read back, and a value other than 30, 60 or 90 fails
+  when planning.
+- **Every setting the endpoint takes.** The resource also manages the password policy
+  (`password_min_length`, `password_min_upper_case`, `password_min_numbers`,
+  `password_min_symbols`), browser sessions (`user_browser_session_timeout`,
+  `user_browser_session_warning`), user deactivation (`expire_password_after_days`,
+  `disable_user_after_attempts`, `disable_user_after_days_inactive`,
+  `warn_user_days_before_disable`), Twilio (`twilio_account_sid`, `twilio_sms_from`,
+  `twilio_auth_token`), the sync intervals (`cloud_sync_interval_seconds`,
+  `cluster_sync_interval_seconds`), the other retention periods (`usage_retainment_period`,
+  `invoice_retainment_period`, `incident_retainment_period`, `reports_retainment_period`), the HTTP
+  task hosts (`http_blacklist_hosts`, `http_approvelist_hosts`), the Agent and SSH flags
+  (`no_agent`, `agent_ssl_verify`, `disable_ssh_password_auth`), `default_locale`,
+  `default_vdi_gateway_id`, `max_option_list_size`, `dashboards_to_display` and `enable_murph`.
+  Each is read from the appliance and sent only when configured. The four user-deactivation
+  settings are named after the appliance settings page, with the unit where it is days.
+  `twilio_auth_token` is write-only like the other credentials; Morpheus reports no hash
+  for it, so a change made to it outside Terraform is not detected.
+- **`registration_enabled` changes in place** rather than replacing the resource; the outcome on the
+  appliance is the same.
+- **Import and types.** Import takes any ID, optionally with the digests of the configured
+  credentials (`1#smtp_password=<sha256>`); without them the configured credentials are taken as
+  already applied, so a later change to one is only detected once the settings are next updated for
+  another reason. `smtp_port`, `proxy_port`, `default_role_id` and `default_user_role_id` are numbers
+  in state; quoted values in a configuration keep working.
 
 ### `hpe_morpheus_license`: the `key` description says what the attribute is
 

@@ -1,0 +1,45 @@
+{
+  "schema_version": 0,
+  "attributes": {
+    "api_allowed_origins": "demo",
+    "appliance_url": "https://morpheus.test.local",
+    "currency_provider": "fixer",
+    "currency_provider_api_key": "example",
+    "default_role_id": "5",
+    "default_user_role_id": "10",
+    "docker_privileged_mode": false,
+    "id": "1",
+    "internal_appliance_url": "https://pxemorpheus.test.local",
+    "no_proxy": "10.0.0.0/8,localhost,127.0.0.1",
+    "proxy_domain": "test.local",
+    "proxy_host": "10.0.0.100",
+    "proxy_password": "example-proxy-hash",
+    "proxy_port": "3128",
+    "proxy_user": "jsmith",
+    "proxy_workstation": "work123",
+    "registration_enabled": true,
+    "smtp_from_address": "testemail@test.local",
+    "smtp_password": "example-smtp-hash",
+    "smtp_port": "465",
+    "smtp_server": "smtp01.test.local",
+    "smtp_use_ssl": true,
+    "smtp_use_tls": true,
+    "smtp_username": "jsmith",
+    "stats_retainment_period": null
+  },
+  "sensitive_attributes": [
+    [
+      {
+        "type": "get_attr",
+        "value": "proxy_password"
+      }
+    ],
+    [
+      {
+        "type": "get_attr",
+        "value": "smtp_password"
+      }
+    ]
+  ],
+  "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjAifQ=="
+}

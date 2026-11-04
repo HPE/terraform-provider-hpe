@@ -19,15 +19,15 @@ import (
 // very silly way of avoiding `"fmt" imported and not used` errors
 var _ fmt.Stringer
 
-// ApplianceSettingsStatsRetainmentPeriod struct for ApplianceSettingsStatsRetainmentPeriod
-type ApplianceSettingsStatsRetainmentPeriod struct {
+// ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod struct for ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod
+type ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod struct {
 	Int32  *int32
 	String *string
 }
 
-func (dst *ApplianceSettingsStatsRetainmentPeriod) UnmarshalMapstructure(data any) (any, error) {
+func (dst *ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) UnmarshalMapstructure(data any) (any, error) {
 	if dst == nil {
-		dst = &ApplianceSettingsStatsRetainmentPeriod{}
+		dst = &ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod{}
 	}
 
 	mapstructDecode(data, &dst.Int32)
@@ -46,7 +46,7 @@ func (dst *ApplianceSettingsStatsRetainmentPeriod) UnmarshalMapstructure(data an
 }
 
 // Unmarshal JSON data into any of the pointers in the struct
-func (dst *ApplianceSettingsStatsRetainmentPeriod) UnmarshalJSON(data []byte) error {
+func (dst *ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) UnmarshalJSON(data []byte) error {
 	var err error
 	// this object is nullable so check if the payload is null or empty string
 	if string(data) == "" || string(data) == "{}" {
@@ -99,11 +99,11 @@ func (dst *ApplianceSettingsStatsRetainmentPeriod) UnmarshalJSON(data []byte) er
 	if string(data) == "{}" || string(data) == "" {
 		return nil
 	}
-	return NewResponseValidationError("data failed to match schemas in anyOf(ApplianceSettingsStatsRetainmentPeriod)")
+	return NewResponseValidationError("data failed to match schemas in anyOf(ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod)")
 }
 
 // Marshal data from the first non-nil pointers in the struct to JSON
-func (src ApplianceSettingsStatsRetainmentPeriod) MarshalJSON() ([]byte, error) {
+func (src ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) MarshalJSON() ([]byte, error) {
 	if src.Int32 != nil {
 		return json.Marshal(&src.Int32)
 	}
@@ -115,43 +115,43 @@ func (src ApplianceSettingsStatsRetainmentPeriod) MarshalJSON() ([]byte, error) 
 	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
-type NullableApplianceSettingsStatsRetainmentPeriod struct {
-	value *ApplianceSettingsStatsRetainmentPeriod
+type NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod struct {
+	value *ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod
 	isSet bool
 }
 
-func (v NullableApplianceSettingsStatsRetainmentPeriod) Get() *ApplianceSettingsStatsRetainmentPeriod {
+func (v NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) Get() *ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod {
 	return v.value
 }
 
-func (v *NullableApplianceSettingsStatsRetainmentPeriod) Set(val *ApplianceSettingsStatsRetainmentPeriod) {
+func (v *NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) Set(val *ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableApplianceSettingsStatsRetainmentPeriod) IsSet() bool {
+func (v NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableApplianceSettingsStatsRetainmentPeriod) Unset() {
+func (v *NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableApplianceSettingsStatsRetainmentPeriod(val *ApplianceSettingsStatsRetainmentPeriod) *NullableApplianceSettingsStatsRetainmentPeriod {
-	return &NullableApplianceSettingsStatsRetainmentPeriod{value: val, isSet: true}
+func NewNullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod(val *ListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) *NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod {
+	return &NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod{value: val, isSet: true}
 }
 
-func (v NullableApplianceSettingsStatsRetainmentPeriod) MarshalJSON() ([]byte, error) {
+func (v NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableApplianceSettingsStatsRetainmentPeriod) UnmarshalJSON(src []byte) error {
+func (v *NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
 
-func (v NullableApplianceSettingsStatsRetainmentPeriod) UnmarshalMapstructure(data any) (any, error) {
+func (v NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod) UnmarshalMapstructure(data any) (any, error) {
 	if err := mapstructDecode(data, &v.value); err != nil {
 		return nil, err
 	}
