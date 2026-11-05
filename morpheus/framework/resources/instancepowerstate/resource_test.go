@@ -7,8 +7,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
@@ -20,44 +22,57 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// TestAccMorpheusInstancePowerStateResourceRunning tests transitioning an
-// instance to the running state. Requires TF_VAR_instance_id to reference
-// an existing instance.
+// TestAccMorpheusInstancePowerStateResourceRunning takes an instance through
+// running -> stopped -> running. The instance is the test's own: it is
+// provisioned from the HVM fixture (testhelpers/hvm_fixture.go, every object
+// named by environment variables), so no existing instance is stopped -- a
+// borrowed one would be a gateway, a fixture or somebody's workload -- and
+// the test skips cleanly where there is no HVM cluster to provision into.
+// Destroying the power-state resource performs no power action; the instance
+// is destroyed with it.
 func TestAccMorpheusInstancePowerStateResourceRunning(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All, capabilities.HVM)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	instanceID := os.Getenv("TF_VAR_instance_id")
-	if instanceID == "" {
-		t.Skip("TF_VAR_instance_id not set; skipping acceptance test")
+	// A short instance name: Morpheus derives the guest's hostname from it,
+	// and a test name with a random suffix is longer than a hostname label.
+	instanceConfig, err := instance.RenderInstanceHVMConfig(t, map[string]string{
+		"Name": acctest.RandomWithPrefix("TestAccMorpheusPower"),
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
 
+	t.Parallel()
+
 	providerConfig := testhelpers.ProviderBlock()
+
+	const instanceIDRef = "hpe_morpheus_instance.example.id"
 
 	resourceConfig := fmt.Sprintf(`
 resource "hpe_morpheus_instance_power_state" "test" {
   instance_id   = %s
   desired_state = "running"
 }
-`, instanceID)
+`, instanceIDRef)
 
 	resourceConfigStopped := fmt.Sprintf(`
 resource "hpe_morpheus_instance_power_state" "test" {
   instance_id   = %s
   desired_state = "stopped"
 }
-`, instanceID)
+`, instanceIDRef)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + instanceConfig + resourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_instance_power_state.test",
@@ -69,16 +84,15 @@ resource "hpe_morpheus_instance_power_state" "test" {
 						"current_state",
 						"running",
 					),
-					resource.TestCheckResourceAttr(
-						"hpe_morpheus_instance_power_state.test",
-						"instance_id",
-						instanceID,
+					resource.TestCheckResourceAttrPair(
+						"hpe_morpheus_instance_power_state.test", "instance_id",
+						"hpe_morpheus_instance.example", "id",
 					),
 				),
 			},
 			// Update: running → stopped
 			{
-				Config: providerConfig + resourceConfigStopped,
+				Config: providerConfig + instanceConfig + resourceConfigStopped,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_instance_power_state.test",
@@ -94,7 +108,7 @@ resource "hpe_morpheus_instance_power_state" "test" {
 			},
 			// Re-start to clean state
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + instanceConfig + resourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_instance_power_state.test",
