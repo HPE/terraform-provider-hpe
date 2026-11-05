@@ -58,6 +58,22 @@ Verified against the built-in Morpheus pool type and an Infoblox-backed pool.
 
 ## Improvements
 
+### `hpe_morpheus_network_pool`: every IP range of a pool, with `ip_address_ranges` (MORPH-15713)
+
+A Morpheus pool can have any number of IP ranges, but the resource could only express one: `ip_ranges`
+was a single `{ starting_address, ending_address }` object. Read kept the first range and dropped the
+rest, and — because Morpheus deletes any range missing from an update — applying the resource to a pool
+that had several ranges silently deleted the others. The new `ip_address_ranges` attribute is a list of
+`{ id, starting_address, ending_address }` holding every range. Each range is edited in place by its
+`id`, so reservations in it (including `hpe_morpheus_network_pool_ip` resources) survive a change to its
+addresses; a range removed from the list is deleted, and when Morpheus refuses because addresses in it
+are still reserved, the provider reports which range rather than returning an inconsistent result. The
+`hpe_morpheus_network_pool` data source exposes the same list.
+
+`ip_ranges` is deprecated and is removed in the 2.6 release. Moving a configuration to the same values
+under `ip_address_ranges` plans no change. While `ip_ranges` is still in use on a pool that has several
+ranges, the provider refuses the update instead of deleting the other ranges.
+
 ### `hpe_morpheus_setting_appliance` moves to the plugin framework
 
 The appliance settings resource is rebuilt on the plugin framework. The type name and the attribute

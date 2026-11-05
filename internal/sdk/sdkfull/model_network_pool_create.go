@@ -25,7 +25,7 @@ type NetworkPoolCreate struct {
 	// Name
 	Name *string                `json:"name,omitempty"`
 	Type *NetworkPoolCreateType `json:"type,omitempty"`
-	// Array of IP range objects. Type 'morpheus' expects startAddress and endAddress. Type 'morpheusipv6' expects a cidrIPv6.
+	// Array of IP range objects. Type 'morpheus' expects startAddress and endAddress. Type 'morpheusipv6' expects a cidrIPv6. On update the list is reconciled by id: a range sent with its id is edited in place, a range without an id is created, and a range of the pool that is absent from the list is deleted (refused if it has reservations).
 	IpRanges []NetworkPoolCreateIpRangesInner `json:"ipRanges,omitempty"`
 	// Configuration object with parameters that vary by pool type.
 	Config               map[string]interface{} `json:"config,omitempty"`

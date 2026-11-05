@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -59,25 +62,55 @@ func (d *DataSource) Schema(
 }
 
 func networkPoolAsState(
+	ctx context.Context,
 	pool *sdk.GetNetworkPool200ResponseNetworkPool,
-) NetworkPoolModel {
+) (NetworkPoolModel, diag.Diagnostics) {
+	ranges, diags := ipAddressRangesAsSet(ctx, pool)
+
 	return NetworkPoolModel{
-		Id:            convert.Int64ToType(pool.Id),
-		Name:          convert.StrToType(pool.Name),
-		Category:      convert.StrToType(pool.Category.Get()),
-		Code:          convert.StrToType(pool.Code.Get()),
-		DhcpIp:        convert.StrToType(pool.DhcpIp.Get()),
-		DhcpServer:    convert.BoolToType(pool.DhcpServer),
-		DisplayName:   convert.StrToType(pool.DisplayName.Get()),
-		DnsDomain:     convert.StrToType(pool.DnsDomain.Get()),
-		ExternalId:    convert.StrToType(pool.ExternalId.Get()),
-		FreeCount:     convert.Int64ToType(pool.FreeCount),
-		Gateway:       convert.StrToType(pool.Gateway.Get()),
-		IpCount:       convert.Int64ToType(pool.IpCount),
-		Netmask:       convert.StrToType(pool.Netmask.Get()),
-		PoolEnabled:   convert.BoolToType(pool.PoolEnabled),
-		SubnetAddress: convert.StrToType(pool.SubnetAddress.Get()),
+		IpAddressRanges: ranges,
+		Id:              convert.Int64ToType(pool.Id),
+		Name:            convert.StrToType(pool.Name),
+		Category:        convert.StrToType(pool.Category.Get()),
+		Code:            convert.StrToType(pool.Code.Get()),
+		DhcpIp:          convert.StrToType(pool.DhcpIp.Get()),
+		DhcpServer:      convert.BoolToType(pool.DhcpServer),
+		DisplayName:     convert.StrToType(pool.DisplayName.Get()),
+		DnsDomain:       convert.StrToType(pool.DnsDomain.Get()),
+		ExternalId:      convert.StrToType(pool.ExternalId.Get()),
+		FreeCount:       convert.Int64ToType(pool.FreeCount),
+		Gateway:         convert.StrToType(pool.Gateway.Get()),
+		IpCount:         convert.Int64ToType(pool.IpCount),
+		Netmask:         convert.StrToType(pool.Netmask.Get()),
+		PoolEnabled:     convert.BoolToType(pool.PoolEnabled),
+		SubnetAddress:   convert.StrToType(pool.SubnetAddress.Get()),
+	}, diags
+}
+
+// ipAddressRangesAsSet maps the pool's ranges, as the API returns them, into
+// the ip_address_ranges set.
+func ipAddressRangesAsSet(ctx context.Context, pool *sdk.GetNetworkPool200ResponseNetworkPool) (types.Set, diag.Diagnostics) {
+	elemType := IpAddressRangesValue{}.Type(ctx)
+	elems := make([]attr.Value, 0, len(pool.IpRanges))
+	for _, r := range pool.IpRanges {
+		elems = append(elems, IpAddressRangesValue{
+			Active:          convert.BoolToType(r.Active),
+			AddressCount:    convert.Int64ToType(r.AddressCount),
+			Cidr:            convert.StrToType(r.Cidr.Get()),
+			CidrIpv6:        convert.StrToType(r.CidrIPv6.Get()),
+			DateCreated:     convert.TimeToType(r.DateCreated),
+			Description:     convert.StrToType(r.Description.Get()),
+			EndingAddress:   convert.StrToType(r.EndAddress.Get()),
+			ExternalId:      convert.StrToType(r.ExternalId.Get()),
+			Id:              convert.Int64ToType(r.Id),
+			InternalId:      convert.StrToType(r.InternalId.Get()),
+			LastUpdated:     convert.TimeToType(r.LastUpdated),
+			StartingAddress: convert.StrToType(r.StartAddress.Get()),
+			state:           attr.ValueStateKnown,
+		})
 	}
+
+	return types.SetValue(elemType, elems)
 }
 
 func getNetworkPoolByID(
@@ -196,7 +229,10 @@ func (d *DataSource) Read(
 		return
 	}
 
-	state := networkPoolAsState(pool)
+	state, sdiags := networkPoolAsState(ctx, pool)
+	if resp.Diagnostics.Append(sdiags...); resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

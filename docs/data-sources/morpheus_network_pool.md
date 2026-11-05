@@ -41,7 +41,26 @@ data "hpe_morpheus_network_pool" "example" {
 - `external_id` (String) The external identifier of the network pool
 - `free_count` (Number) The number of free IPs in the pool
 - `gateway` (String) The gateway address for the network pool
+- `ip_address_ranges` (Attributes Set) The IP address ranges of the pool. (see [below for nested schema](#nestedatt--ip_address_ranges))
 - `ip_count` (Number) The total number of IPs in the pool
 - `netmask` (String) The netmask for the network pool
 - `pool_enabled` (Boolean) Whether the pool is enabled
 - `subnet_address` (String) The subnet address for the network pool
+
+<a id="nestedatt--ip_address_ranges"></a>
+### Nested Schema for `ip_address_ranges`
+
+Read-Only:
+
+- `active` (Boolean)
+- `address_count` (Number)
+- `cidr` (String)
+- `cidr_ipv6` (String)
+- `date_created` (String)
+- `description` (String)
+- `ending_address` (String)
+- `external_id` (String)
+- `id` (Number)
+- `internal_id` (String)
+- `last_updated` (String)
+- `starting_address` (String)

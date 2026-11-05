@@ -49,8 +49,12 @@ func TestAccMorpheusNetworkPoolResourceExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(resourceName, "netmask", "255.255.255.0"),
 		resource.TestCheckResourceAttr(resourceName, "gateway", "10.0.1.1"),
 		resource.TestCheckResourceAttr(resourceName, "dns_domain", "example.com"),
-		resource.TestCheckResourceAttr(resourceName, "ip_ranges.starting_address", "10.0.1.10"),
-		resource.TestCheckResourceAttr(resourceName, "ip_ranges.ending_address", "10.0.1.50"),
+		resource.TestCheckResourceAttr(resourceName, "ip_address_ranges.#", "2"),
+		resource.TestCheckResourceAttr(resourceName, "ip_address_ranges.0.starting_address", "10.0.1.10"),
+		resource.TestCheckResourceAttr(resourceName, "ip_address_ranges.0.ending_address", "10.0.1.50"),
+		resource.TestCheckResourceAttrSet(resourceName, "ip_address_ranges.0.id"),
+		resource.TestCheckResourceAttr(resourceName, "ip_address_ranges.1.starting_address", "10.0.1.100"),
+		resource.TestCheckResourceAttr(resourceName, "ip_address_ranges.1.ending_address", "10.0.1.150"),
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 	)
 
@@ -90,12 +94,23 @@ func TestAccMorpheusNetworkPoolResourceUpdateOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_pool.example"
 
-	createConfig, err := networkpool.RenderNetworkPoolConfig(t, map[string]string{
-		"Name": name,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	// The deprecated single-range attribute keeps working end to end: create,
+	// in-place update of the one range, clean plan.
+	createConfig := `
+resource "hpe_morpheus_network_pool" "example" {
+  name           = "` + name + `"
+  type_code      = "morpheus"
+  subnet_address = "10.0.1.0"
+  netmask        = "255.255.255.0"
+  gateway        = "10.0.1.1"
+  dns_domain     = "example.com"
+
+  ip_ranges = {
+    starting_address = "10.0.1.10"
+    ending_address   = "10.0.1.50"
+  }
+}
+`
 
 	updateConfig := `
 resource "hpe_morpheus_network_pool" "example" {
@@ -122,6 +137,9 @@ resource "hpe_morpheus_network_pool" "example" {
 		resource.TestCheckResourceAttr(resourceName, "dns_domain", "example.com"),
 		resource.TestCheckResourceAttr(resourceName, "ip_ranges.starting_address", "10.0.1.10"),
 		resource.TestCheckResourceAttr(resourceName, "ip_ranges.ending_address", "10.0.1.50"),
+		// ip_address_ranges mirrors the appliance even when ip_ranges is used.
+		resource.TestCheckResourceAttr(resourceName, "ip_address_ranges.#", "1"),
+		resource.TestCheckResourceAttr(resourceName, "ip_address_ranges.0.starting_address", "10.0.1.10"),
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
@@ -133,6 +151,8 @@ resource "hpe_morpheus_network_pool" "example" {
 		resource.TestCheckResourceAttr(resourceName, "dns_domain", "updated.example.com"),
 		resource.TestCheckResourceAttr(resourceName, "ip_ranges.starting_address", "10.0.1.20"),
 		resource.TestCheckResourceAttr(resourceName, "ip_ranges.ending_address", "10.0.1.100"),
+		resource.TestCheckResourceAttr(resourceName, "ip_address_ranges.#", "1"),
+		resource.TestCheckResourceAttr(resourceName, "ip_address_ranges.0.ending_address", "10.0.1.100"),
 	)
 
 	checkInPlaceUpdate := resource.ConfigPlanChecks{

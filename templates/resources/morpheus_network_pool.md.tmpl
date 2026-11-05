@@ -12,6 +12,39 @@ description: |-
 
 {{ tffile "examples/resources/morpheus_network_pool/example.tf" }}
 
+## Ranges
+
+`ip_address_ranges` lists every range of the pool. Morpheus edits a range in place when only its
+addresses change (the provider sends the range's `id`), so reservations in the range — including
+`hpe_morpheus_network_pool_ip` resources — survive the edit. A range removed from the list is deleted;
+Morpheus refuses when the range still has reserved addresses, and the provider reports which range.
+
+### Migrating from `ip_ranges`
+
+`ip_ranges` (a single `{ starting_address, ending_address }` object) is deprecated and is removed in
+the 2.6 release. Replace it with the same values inside a one-element `ip_address_ranges` list:
+
+```hcl
+# before
+ip_ranges = {
+  starting_address = "10.0.1.10"
+  ending_address   = "10.0.1.50"
+}
+
+# after
+ip_address_ranges = [
+  {
+    starting_address = "10.0.1.10"
+    ending_address   = "10.0.1.50"
+  },
+]
+```
+
+The plan after the change is empty: `ip_address_ranges` is always read from the appliance, so the
+existing range is recognised. A pool that already has several ranges (created in the Morpheus UI, or
+by another tool) cannot be managed through `ip_ranges`; the provider refuses the update rather than
+delete the other ranges.
+
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import
