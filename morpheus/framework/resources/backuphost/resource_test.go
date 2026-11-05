@@ -30,12 +30,16 @@ func TestAccMorpheusBackupHostResourceExampleOk(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.Backup)
 
+	serverName := testhelpers.BackupServerName(t)
+	bucketName := testhelpers.BackupBucketName(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	fixtureConfig := testhelpers.BackupFixtureBlock("", serverName, bucketName, "")
 	name := acctest.RandomWithPrefix(t.Name())
 
 	dependencyConfig, err := backupjob.RenderBackupJobConfig(t, map[string]string{
@@ -48,9 +52,9 @@ func TestAccMorpheusBackupHostResourceExampleOk(t *testing.T) {
 
 	resourceConfig, err := backuphost.RenderBackupHostConfig(t, map[string]string{
 		"Name":              name,
-		"HostId":            "139",
+		"HostId":            testhelpers.BackupServerIDRef,
 		"JobId":             "hpe_morpheus_backup_job.example.id",
-		"StorageProviderId": "1",
+		"StorageProviderId": testhelpers.BackupBucketIDRef,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -59,14 +63,14 @@ func TestAccMorpheusBackupHostResourceExampleOk(t *testing.T) {
 	resourceName := "hpe_morpheus_backup_host.example"
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "host_id", "139"),
+		resource.TestCheckResourceAttrPair(resourceName, "host_id", testhelpers.BackupServerDataSource, "id"),
 		resource.TestCheckResourceAttrPair(
 			resourceName, "job_id",
 			"hpe_morpheus_backup_job.example", "id",
 		),
 		resource.TestCheckResourceAttr(resourceName, "backup_type_code", "fileBackup"),
 		resource.TestCheckResourceAttr(resourceName, "path", "/etc/hostname"),
-		resource.TestCheckResourceAttr(resourceName, "storage_provider_id", "1"),
+		resource.TestCheckResourceAttrPair(resourceName, "storage_provider_id", testhelpers.BackupBucketDataSource, "id"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 	)
 
@@ -74,16 +78,16 @@ func TestAccMorpheusBackupHostResourceExampleOk(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dependencyConfig + resourceConfig,
+				Config: providerConfig + fixtureConfig + dependencyConfig + resourceConfig,
 				Check:  checks,
 			},
 			{
-				Config:             providerConfig + dependencyConfig + resourceConfig,
+				Config:             providerConfig + fixtureConfig + dependencyConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
 			{
-				Config:                  providerConfig + dependencyConfig + resourceConfig,
+				Config:                  providerConfig + fixtureConfig + dependencyConfig + resourceConfig,
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"write_only_revision"},
@@ -91,7 +95,7 @@ func TestAccMorpheusBackupHostResourceExampleOk(t *testing.T) {
 			},
 			// Do this to destroy the backup_host (backup_job destroyed as side-effect of backup_host destroy)...
 			{
-				Config:             providerConfig + dependencyConfig,
+				Config:             providerConfig + fixtureConfig + dependencyConfig,
 				ExpectNonEmptyPlan: true,
 			},
 			// ...followed by a call to terraform apply -refresh-only
@@ -108,12 +112,16 @@ func TestAccMorpheusBackupHostResourceUpdateOk(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.Backup)
 
+	serverName := testhelpers.BackupServerName(t)
+	bucketName, otherBucketName := testhelpers.BackupBucketNames(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	fixtureConfig := testhelpers.BackupFixtureBlock("", serverName, bucketName, otherBucketName)
 	name := acctest.RandomWithPrefix(t.Name())
 
 	dependencyConfig, err := backupjob.RenderBackupJobConfig(t, map[string]string{
@@ -126,9 +134,9 @@ func TestAccMorpheusBackupHostResourceUpdateOk(t *testing.T) {
 
 	createConfig, err := backuphost.RenderBackupHostConfig(t, map[string]string{
 		"Name":              name,
-		"HostId":            "139",
+		"HostId":            testhelpers.BackupServerIDRef,
 		"JobId":             "hpe_morpheus_backup_job.example.id",
-		"StorageProviderId": "1",
+		"StorageProviderId": testhelpers.BackupBucketIDRef,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -138,11 +146,11 @@ func TestAccMorpheusBackupHostResourceUpdateOk(t *testing.T) {
 	updateConfig := `
 resource "hpe_morpheus_backup_host" "example" {
   name                = "` + updatedName + `"
-  host_id             = 139
+  host_id             = ` + testhelpers.BackupServerIDRef + `
   job_id              = hpe_morpheus_backup_job.example.id
   backup_type_code    = "fileBackup"
   path                = "/etc/hosts"
-  storage_provider_id = 2
+  storage_provider_id = ` + testhelpers.BackupOtherBucketIDRef + `
   enabled             = false
 }
 `
@@ -150,26 +158,26 @@ resource "hpe_morpheus_backup_host" "example" {
 	resourceName := "hpe_morpheus_backup_host.example"
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "host_id", "139"),
+		resource.TestCheckResourceAttrPair(resourceName, "host_id", testhelpers.BackupServerDataSource, "id"),
 		resource.TestCheckResourceAttrPair(
 			resourceName, "job_id",
 			"hpe_morpheus_backup_job.example", "id",
 		),
 		resource.TestCheckResourceAttr(resourceName, "backup_type_code", "fileBackup"),
 		resource.TestCheckResourceAttr(resourceName, "path", "/etc/hostname"),
-		resource.TestCheckResourceAttr(resourceName, "storage_provider_id", "1"),
+		resource.TestCheckResourceAttrPair(resourceName, "storage_provider_id", testhelpers.BackupBucketDataSource, "id"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 	)
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", updatedName),
-		resource.TestCheckResourceAttr(resourceName, "host_id", "139"),
+		resource.TestCheckResourceAttrPair(resourceName, "host_id", testhelpers.BackupServerDataSource, "id"),
 		resource.TestCheckResourceAttrPair(
 			resourceName, "job_id",
 			"hpe_morpheus_backup_job.example", "id",
 		),
 		resource.TestCheckResourceAttr(resourceName, "backup_type_code", "fileBackup"),
 		resource.TestCheckResourceAttr(resourceName, "path", "/etc/hosts"),
-		resource.TestCheckResourceAttr(resourceName, "storage_provider_id", "2"),
+		resource.TestCheckResourceAttrPair(resourceName, "storage_provider_id", testhelpers.BackupOtherBucketDataSource, "id"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
 	)
 	checkInPlaceUpdate := resource.ConfigPlanChecks{
@@ -182,22 +190,22 @@ resource "hpe_morpheus_backup_host" "example" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dependencyConfig + createConfig,
+				Config: providerConfig + fixtureConfig + dependencyConfig + createConfig,
 				Check:  createChecks,
 			},
 			{
-				Config:           providerConfig + dependencyConfig + updateConfig,
+				Config:           providerConfig + fixtureConfig + dependencyConfig + updateConfig,
 				Check:            updateChecks,
 				ConfigPlanChecks: checkInPlaceUpdate,
 			},
 			{
-				Config:             providerConfig + dependencyConfig + updateConfig,
+				Config:             providerConfig + fixtureConfig + dependencyConfig + updateConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
 			// Do this to destroy the backup_host (backup_job destroyed as side-effect of backup_host destroy)...
 			{
-				Config:             providerConfig + dependencyConfig,
+				Config:             providerConfig + fixtureConfig + dependencyConfig,
 				ExpectNonEmptyPlan: true,
 			},
 			// ...followed by a call to terraform apply -refresh-only

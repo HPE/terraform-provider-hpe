@@ -112,6 +112,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | Capability | Env Value | Description |
 |------------|-----------|-------------|
 | `Alletra` | `alletra` | HPE Alletra storage |
+| `Backup` | `backup` | Backup jobs, instance backups and host (file) backups, created and destroyed against the objects the `TF_VAR_testacc_morpheus_backup_*` variables name (`testhelpers/backup_fixture.go`). Nothing is scheduled, so no backup runs; backups have to be enabled on the appliance |
 | `Metal` | `metal` | HPE Bare Metal cloud (iLO/Redfish servers). Gates the bare-metal instance-node tests and, paired with `alletra`, the HPE Alletra MP Bare Metal (BMaaS) datastore test, which reads its cloud, storage server, resource pool, group and tenant from the `TF_VAR_testacc_morpheus_metal_*` fixture below and skips when one is unset |
 | `VDI` | `vdi` | VDI pools/apps/gateways |
 
@@ -263,6 +264,9 @@ Exit codes:
 | `TF_VAR_testacc_morpheus_affinity_cloud_id` | ID of a cloud that supports affinity groups. Required by the `affinity_group` + `vmware` tests, which skip without it |
 | `TF_VAR_testacc_morpheus_affinity_cluster_id` | ID of an HVM cluster that supports affinity groups. Required by the cluster affinity-group resource/data-source tests, which skip without it (the instance placement tests use the HVM fixture's cluster by name instead) |
 | `TF_VAR_testacc_morpheus_affinity_pool_id` | ID of a resource pool of type Cluster on the cloud above. Morpheus rejects a cloud affinity group created without a pool, so the `affinity_group` + `vmware` resource tests skip without it |
+| `TF_VAR_testacc_morpheus_backup_instance_name` | Name of an instance the `backup` tests attach backup records to (`testhelpers/backup_fixture.go`); resolved with the `hpe_morpheus_instance` data source. Its cloud has to offer a backup type for it (a KVM/HVM instance: `kvm`) |
+| `TF_VAR_testacc_morpheus_backup_server_name` | Name of a managed compute server for the host backup tests, which back up a file path on it; resolved with `hpe_morpheus_compute_server` |
+| `TF_VAR_testacc_morpheus_backup_bucket_name`, `TF_VAR_testacc_morpheus_backup_other_bucket_name` | Two storage buckets a backup can target; the update tests move a backup from the first to the other. Resolved with `hpe_morpheus_storage_bucket` |
 | `TF_VAR_testacc_morpheus_hvm_cloud_name` | Name of the Morpheus private cloud an HVM cluster is in. The HVM fixture (`testhelpers/hvm_fixture.go`): the objects the HVM/KVM instance and data-source tests provision against, **by name**, resolved by data sources inside the test configuration — never by id. Tests skip when a variable they need is unset |
 | `TF_VAR_testacc_morpheus_hvm_cluster_name` | Name of the HVM cluster to provision into; its resource pool, networks and datastores are what the other names are looked up in |
 | `TF_VAR_testacc_morpheus_hvm_network_name` | Name of a network of that cluster (`GET /api/networks?clusterId=`) |

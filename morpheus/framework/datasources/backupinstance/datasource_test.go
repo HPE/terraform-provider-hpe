@@ -36,8 +36,8 @@ func backupInstanceDataSourceChecks(name string) resource.TestCheckFunc {
 		),
 		resource.TestCheckResourceAttr(dataSourceName, "name", name),
 		resource.TestCheckResourceAttr(dataSourceName, "enabled", "true"),
-		resource.TestCheckResourceAttr(dataSourceName, "instance_id", "26"),
-		resource.TestCheckResourceAttr(dataSourceName, "storage_provider_id", "1"),
+		resource.TestCheckResourceAttrPair(dataSourceName, "instance_id", testhelpers.BackupInstanceDataSource, "id"),
+		resource.TestCheckResourceAttrPair(dataSourceName, "storage_provider_id", testhelpers.BackupBucketDataSource, "id"),
 		resource.TestCheckResourceAttrPair(
 			dataSourceName, "job_id",
 			"hpe_morpheus_backup_job.example", "id",
@@ -53,12 +53,16 @@ func TestAccMorpheusFindBackupInstanceById(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.Backup)
 
+	instanceName := testhelpers.BackupInstanceName(t)
+	bucketName := testhelpers.BackupBucketName(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	fixtureConfig := testhelpers.BackupFixtureBlock(instanceName, "", bucketName, "")
 	name := acctest.RandomWithPrefix(t.Name())
 
 	dependencyConfig, err := backupjob.RenderBackupJobConfig(t, map[string]string{
@@ -71,9 +75,9 @@ func TestAccMorpheusFindBackupInstanceById(t *testing.T) {
 
 	resourceConfig, err := backupinstance.RenderBackupInstanceConfig(t, map[string]string{
 		"Name":              name,
-		"InstanceId":        "26",
+		"InstanceId":        testhelpers.BackupInstanceIDRef,
 		"JobId":             "hpe_morpheus_backup_job.example.id",
-		"StorageProviderId": "1",
+		"StorageProviderId": testhelpers.BackupBucketIDRef,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -90,12 +94,12 @@ func TestAccMorpheusFindBackupInstanceById(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dependencyConfig + resourceConfig + dataSourceConfig,
+				Config: providerConfig + fixtureConfig + dependencyConfig + resourceConfig + dataSourceConfig,
 				Check:  backupInstanceDataSourceChecks(name),
 			},
 			// Tear down the backup_instance (backup_job destroyed as side-effect)...
 			{
-				Config:             providerConfig + dependencyConfig,
+				Config:             providerConfig + fixtureConfig + dependencyConfig,
 				ExpectNonEmptyPlan: true,
 			},
 			// ...followed by a call to terraform apply -refresh-only.
@@ -114,12 +118,16 @@ func TestAccMorpheusFindBackupInstanceByName(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.Backup)
 
+	instanceName := testhelpers.BackupInstanceName(t)
+	bucketName := testhelpers.BackupBucketName(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	fixtureConfig := testhelpers.BackupFixtureBlock(instanceName, "", bucketName, "")
 	name := acctest.RandomWithPrefix(t.Name())
 
 	dependencyConfig, err := backupjob.RenderBackupJobConfig(t, map[string]string{
@@ -132,9 +140,9 @@ func TestAccMorpheusFindBackupInstanceByName(t *testing.T) {
 
 	resourceConfig, err := backupinstance.RenderBackupInstanceConfig(t, map[string]string{
 		"Name":              name,
-		"InstanceId":        "26",
+		"InstanceId":        testhelpers.BackupInstanceIDRef,
 		"JobId":             "hpe_morpheus_backup_job.example.id",
-		"StorageProviderId": "1",
+		"StorageProviderId": testhelpers.BackupBucketIDRef,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -152,16 +160,16 @@ func TestAccMorpheusFindBackupInstanceByName(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create the backup job + instance backup first.
 			{
-				Config: providerConfig + dependencyConfig + resourceConfig,
+				Config: providerConfig + fixtureConfig + dependencyConfig + resourceConfig,
 			},
 			// Read the backup back by name.
 			{
-				Config: providerConfig + dependencyConfig + resourceConfig + dataSourceConfig,
+				Config: providerConfig + fixtureConfig + dependencyConfig + resourceConfig + dataSourceConfig,
 				Check:  backupInstanceDataSourceChecks(name),
 			},
 			// Tear down the backup_instance (backup_job destroyed as side-effect)...
 			{
-				Config:             providerConfig + dependencyConfig,
+				Config:             providerConfig + fixtureConfig + dependencyConfig,
 				ExpectNonEmptyPlan: true,
 			},
 			// ...followed by a call to terraform apply -refresh-only.
