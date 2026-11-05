@@ -2,13 +2,19 @@ cluster_affinity_group:
   templates:
     servers:
       set:
-        computed_optional_required: computed
+        computed_optional_required: computed_optional
         description: |-
-          The compute servers currently in this affinity group, reported by the
-          API. Read-only: membership is managed with
-          hpe_morpheus_cluster_affinity_group_member, one resource per member, so
-          that servers added by other means -- an instance provisioned into the
-          group, or a node added to one -- are not evicted.
+          The compute servers in this affinity group, as the API reports them.
+          Set it to make this resource the owner of the group's membership: the
+          group is created with these members and every apply re-asserts exactly
+          this set, so a server added by other means -- an instance provisioned
+          into the group, a node added to one -- plans a correction. Leave it out
+          to manage membership one server at a time with
+          hpe_morpheus_cluster_affinity_group_member (never both on one group).
+          Morpheus 9.1 refuses to create an affinity group with no members: a
+          VM-to-VM rule needs this set, and the other shape it accepts -- a
+          VM-to-host rule from a VM group and a host group -- is read-only on
+          this resource, so against 9.1 a group can only be created with this set.
         element_type:
           int64: {}
     tenantIds:
@@ -130,7 +136,9 @@ cluster_affinity_group:
       one_of: [public, private]
     tenant_ids:
       state_for_unknown: true
-    # NOTE: servers deliberately does NOT get state_for_unknown.
-    # Affinity group membership mutates out-of-band (DRS sync, instance provisioning,
-    # ComputeServer deletion). Pinning a stale set causes "Provider produced
-    # inconsistent result after apply". A noisy plan is better than a broken apply.
+    # NOTE: servers deliberately does NOT get state_for_unknown. When it is not
+    # configured, affinity group membership mutates out-of-band (DRS sync, instance
+    # provisioning, ComputeServer deletion), and pinning a stale set causes
+    # "Provider produced inconsistent result after apply". A noisy plan is better
+    # than a broken apply. When it is configured the plan carries the configured
+    # set and the question does not arise.

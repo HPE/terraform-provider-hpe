@@ -59,25 +59,40 @@ func (r *clusterAffinityGroupResource) Update(
 
 	// CRITICAL BEHAVIOUR 2: servers is WHOLESALE REPLACE on update.
 	//
-	// The API has no encoding for "leave membership alone": omitting servers and
-	// sending an empty array both empty the group. Every update therefore has to
-	// re-assert the current membership, even when the practitioner is only
-	// renaming the group.
+	// The API has no encoding for "leave membership alone" that holds across
+	// the versions this resource supports: on 9.0 omitting servers and sending
+	// an empty array both empty the group (9.1 keeps the members when the field
+	// is omitted, but an empty array still means empty). Every update therefore
+	// sends the full membership, even when the practitioner is only renaming
+	// the group. Which membership depends on whether servers is configured.
 	//
-	// That membership is read live rather than taken from Terraform state.
-	// State records what this resource last saw, which is not the same thing: a
-	// server added since then -- by an instance provisioned into the group, or
-	// by a membership resource -- is absent from state, and echoing state back
-	// would evict it. The read and the write happen under the group's lock so
-	// they cannot interleave with a membership resource doing the same thing.
+	// Configured, the practitioner owns the membership and the plan's set is
+	// what the group should contain, whatever is in it now: a server that
+	// arrived by other means is removed, which is the documented contract.
+	//
+	// Unconfigured, the current membership is re-asserted, and it is read live
+	// rather than taken from Terraform state. State records what this resource
+	// last saw, which is not the same thing: a server added since then -- by an
+	// instance provisioned into the group, or by a membership resource -- is
+	// absent from state, and echoing state back would evict it.
+	//
+	// Either way the write happens under the group's lock, so it cannot
+	// interleave with a membership resource doing the same thing.
 	defer affinitylock.Acquire(affinitylock.Cluster, clusterID, id)()
 
-	currentServers, ok := readCurrentServers(ctx, client, clusterID, id, &resp.Diagnostics)
-	if !ok {
-		return
-	}
+	if !plan.Servers.IsNull() && !plan.Servers.IsUnknown() {
+		resp.Diagnostics.Append(plan.Servers.ElementsAs(ctx, &ag.Servers, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	} else {
+		currentServers, ok := readCurrentServers(ctx, client, clusterID, id, &resp.Diagnostics)
+		if !ok {
+			return
+		}
 
-	ag.Servers = currentServers
+		ag.Servers = currentServers
+	}
 
 	// ResourcePermissions.
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {

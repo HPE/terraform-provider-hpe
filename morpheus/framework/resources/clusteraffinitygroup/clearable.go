@@ -19,4 +19,5 @@ var notClearable = clearable.NotClearable{
 	"affinity_type":        "set when the affinity group is created; a change replaces it, and the current value is kept when it is removed",
 	"description":          "deprecated; not backed by the API",
 	"tenant_ids":           "not sent to the API, which manages the tenants",
+	"servers":              "removing it hands the membership back to hpe_morpheus_cluster_affinity_group_member and provisioning; the current members are kept, not evicted",
 }
