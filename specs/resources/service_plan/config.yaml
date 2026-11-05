@@ -16,6 +16,7 @@ service_plan:
     price_set_ids:
       set:
         computed_optional_required: computed_optional
+        description: The IDs of the price sets included in the service plan
         element_type:
           int64: {}
         plan_modifiers:
@@ -80,7 +81,7 @@ service_plan:
   overrides:
     id:
       computed_optional_required: computed_optional
-      description: The ID of the role
+      description: The ID of the service plan
       state_for_unknown: true
     name:
       computed_optional_required: required

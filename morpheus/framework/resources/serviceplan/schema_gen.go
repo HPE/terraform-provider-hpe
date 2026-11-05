@@ -157,8 +157,8 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The ID of the role",
-				MarkdownDescription: "The ID of the role",
+				Description:         "The ID of the service plan",
+				MarkdownDescription: "The ID of the service plan",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
@@ -219,9 +219,11 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Service plan name",
 			},
 			"price_set_ids": schema.SetAttribute{
-				ElementType: types.Int64Type,
-				Optional:    true,
-				Computed:    true,
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Computed:            true,
+				Description:         "The IDs of the price sets included in the service plan",
+				MarkdownDescription: "The IDs of the price sets included in the service plan",
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 				},

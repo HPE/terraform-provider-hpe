@@ -186,8 +186,10 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"price_set_ids": schema.SetAttribute{
-				ElementType: types.Int64Type,
-				Computed:    true,
+				ElementType:         types.Int64Type,
+				Computed:            true,
+				Description:         "The IDs of the price sets included in the service plan",
+				MarkdownDescription: "The IDs of the price sets included in the service plan",
 			},
 			"provision_type_code": schema.StringAttribute{
 				Optional:            true,

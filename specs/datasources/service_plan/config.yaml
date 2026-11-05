@@ -30,6 +30,7 @@ service_plan:
     price_set_ids:
       set:
         computed_optional_required: computed
+        description: The IDs of the price sets included in the service plan
         element_type:
           int64: {}
     config_ranges:
