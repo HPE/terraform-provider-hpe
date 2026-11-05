@@ -39,6 +39,7 @@ resource "hpe_morpheus_integration_puppet" "tf_example_puppet_integration" {
 ### Read-Only
 
 - `id` (String) The ID of the puppet integration
+- `puppet_master_ssh_password_hash` (String, Sensitive) The appliance's hash of puppet_master_ssh_password as read back when Terraform last set it. Each read compares the hash the appliance reports with it; a difference means the value was changed outside Terraform, and the next plan sets the configured value again.
 
 ## Import
 

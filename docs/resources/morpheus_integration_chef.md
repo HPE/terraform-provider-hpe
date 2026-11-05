@@ -49,6 +49,8 @@ resource "hpe_morpheus_integration_chef" "tf_example_chef_integration" {
 ### Read-Only
 
 - `id` (String) The ID of the Chef integration
+- `organization_validator_key_hash` (String, Sensitive) The appliance's hash of organization_validator_key as read back when Terraform last set it. Each read compares the hash the appliance reports with it; a difference means the value was changed outside Terraform, and the next plan sets the configured value again.
+- `private_key_hash` (String, Sensitive) The appliance's hash of private_key as read back when Terraform last set it. Each read compares the hash the appliance reports with it; a difference means the value was changed outside Terraform, and the next plan sets the configured value again.
 
 ## Import
 

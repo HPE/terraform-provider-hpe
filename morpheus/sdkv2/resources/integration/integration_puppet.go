@@ -4,10 +4,7 @@ package integration
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -29,6 +26,7 @@ func ResourceIntegrationPuppet() *schema.Resource {
 		ReadContext:   resourceIntegrationPuppetRead,
 		UpdateContext: resourceIntegrationPuppetUpdate,
 		DeleteContext: resourceIntegrationPuppetDelete,
+		CustomizeDiff: helpers.SecretHashUnknownWhenSent("puppet_master_ssh_password", "puppet_master_ssh_password_hash"),
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -72,15 +70,8 @@ func ResourceIntegrationPuppet() *schema.Resource {
 				Optional:  true,
 				Computed:  true,
 				Sensitive: true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
-				DiffSuppressOnRefresh: true,
 			},
+			"puppet_master_ssh_password_hash": helpers.SecretHashSchema("puppet_master_ssh_password"),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -252,7 +243,12 @@ func resourceIntegrationPuppetRead(ctx context.Context, d *schema.ResourceData, 
 		d.Set("allow_immediate_execution", false)
 	}
 	d.Set("puppet_master_ssh_username", integration.Config.PuppetSshUser)
-	d.Set("puppet_master_ssh_password", integration.Config.PuppetSshPasswordHash)
+	if err := helpers.TrackSecret(
+		d, "puppet_master_ssh_password", "puppet_master_ssh_password_hash",
+		integration.Config.PuppetSshPasswordHash, helpers.SecretSent(d, "puppet_master_ssh_password"),
+	); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }

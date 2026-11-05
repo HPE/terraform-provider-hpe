@@ -38,6 +38,7 @@ resource "hpe_morpheus_integration_ansible_tower" "tf_example_ansible_tower_inte
 ### Read-Only
 
 - `id` (String) The ID of the Ansible Tower integration
+- `password_hash` (String, Sensitive) The appliance's hash of password as read back when Terraform last set it. Each read compares the hash the appliance reports with it; a difference means the value was changed outside Terraform, and the next plan sets the configured value again.
 
 ## Import
 

@@ -4,13 +4,11 @@ package integration
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -85,7 +83,10 @@ func ResourceIntegrationVRO() *schema.Resource {
 		ReadContext:   resourceIntegrationVRORead,
 		UpdateContext: resourceIntegrationVROUpdate,
 		DeleteContext: resourceIntegrationVRODelete,
-		CustomizeDiff: validateVROAuthConfig,
+		CustomizeDiff: customdiff.All(
+			validateVROAuthConfig,
+			helpers.SecretHashUnknownWhenSent("password", "password_hash"),
+		),
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -125,15 +126,8 @@ func ResourceIntegrationVRO() *schema.Resource {
 				Description: "The password of the account used to connect to vRO (required for non-aria auth types)",
 				Optional:    true,
 				Sensitive:   true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
-				DiffSuppressOnRefresh: true,
 			},
+			"password_hash": helpers.SecretHashSchema("password"),
 			"tenant": {
 				Type:        schema.TypeString,
 				Description: "The tenant of the account used to connect to vRO (required for non-aria auth types)",
@@ -333,13 +327,18 @@ func resourceIntegrationVRORead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("enabled", integration.Enabled)
 	d.Set("url", integration.URL)
 	d.Set("username", integration.Username)
-	// password is write-only: the API returns only a salted hash
-	// (passwordHash) that cannot be reproduced from the configured plaintext.
-	//
+	// The API reports the password only as a hash; TrackSecret records the
+	// one read back when the password was sent and compares later reads with
+	// it (see helpers.TrackSecret).
+	if err := helpers.TrackSecret(
+		d, "password", "password_hash", integration.PasswordHash, helpers.SecretSent(d, "password"),
+	); err != nil {
+		return diag.FromErr(err)
+	}
 	// tenant is sent as the service token, and the API likewise returns only
 	// tokenHash. Reading that back stored a 64-character hash in a
 	// non-sensitive attribute, so a plan showed the tenant changing from e.g.
-	// "vsphere.local" to a hash. Leave both as configured.
+	// "vsphere.local" to a hash. Leave it as configured.
 	// d.Set("auth_type", integration.Config)
 
 	return diags

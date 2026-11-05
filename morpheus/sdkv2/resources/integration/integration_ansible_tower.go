@@ -4,13 +4,11 @@ package integration
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	morpheus "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
@@ -60,7 +58,10 @@ func ResourceIntegrationAnsibleTower() *schema.Resource {
 		ReadContext:   resourceIntegrationAnsibleTowerRead,
 		UpdateContext: resourceIntegrationAnsibleTowerUpdate,
 		DeleteContext: resourceIntegrationAnsibleTowerDelete,
-		CustomizeDiff: validateAnsibleTowerAuth,
+		CustomizeDiff: customdiff.All(
+			validateAnsibleTowerAuth,
+			helpers.SecretHashUnknownWhenSent("password", "password_hash"),
+		),
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -91,19 +92,13 @@ func ResourceIntegrationAnsibleTower() *schema.Resource {
 				ConflictsWith: []string{"credential_id"},
 			},
 			"password": {
-				Type:        schema.TypeString,
-				Description: "The password of the account used to connect to Ansible Tower",
-				Optional:    true,
-				Sensitive:   true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
+				Type:          schema.TypeString,
+				Description:   "The password of the account used to connect to Ansible Tower",
+				Optional:      true,
+				Sensitive:     true,
 				ConflictsWith: []string{"credential_id"},
 			},
+			"password_hash": helpers.SecretHashSchema("password"),
 			"credential_id": {
 				Description:   "The ID of the credential store entry used for authentication",
 				Type:          schema.TypeInt,
@@ -290,7 +285,11 @@ func resourceIntegrationAnsibleTowerRead(ctx context.Context, d *schema.Resource
 
 	if integration.Credential.ID == 0 {
 		d.Set("username", integration.Username)
-		d.Set("password", integration.PasswordHash)
+		if err := helpers.TrackSecret(
+			d, "password", "password_hash", integration.PasswordHash, helpers.SecretSent(d, "password"),
+		); err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
 		d.Set("credential_id", integration.Credential.ID)
 	}

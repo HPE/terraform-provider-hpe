@@ -5,7 +5,6 @@ package integration_test
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
@@ -15,10 +14,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
+// TestAccMorpheusDataSourceAnsibleTowerJobTemplateExampleOk looks a job
+// template up by name on the Ansible Tower integration the environment names
+// (testhelpers/tower_fixture.go); the integration is resolved by name too.
 func TestAccMorpheusDataSourceAnsibleTowerJobTemplateExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.AnsibleTower)
+
+	integrationName := testhelpers.AnsibleTowerIntegrationName(t)
+	jobTemplateName := testhelpers.AnsibleTowerJobTemplateName(t)
 
 	t.Parallel()
 
@@ -28,30 +33,29 @@ func TestAccMorpheusDataSourceAnsibleTowerJobTemplateExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix(t.Name())
-
-	var dependenciesConfig string
+	dependenciesConfig := testhelpers.AnsibleTowerIntegrationBlock(integrationName)
 
 	datasourceConfig, err := dsintegration.RenderAnsibleTowerJobTemplateConfig(t, map[string]string{
-		"Name":                      name,
-		"AnsibleTowerIntegrationId": "1",
+		"Name":                      testhelpers.HCLQuote(jobTemplateName),
+		"AnsibleTowerIntegrationId": testhelpers.AnsibleTowerIntegrationIDRef,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	t.Log(providerConfig + dependenciesConfig + datasourceConfig)
-
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_ansible_tower_job_template.example",
 			"name",
-			"Demo Job Template",
+			jobTemplateName,
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_ansible_tower_job_template.example",
-			"ansible_tower_integration_id",
-			"1",
+			"id",
+		),
+		resource.TestCheckResourceAttrPair(
+			"data.hpe_morpheus_ansible_tower_job_template.example", "ansible_tower_integration_id",
+			"data.hpe_morpheus_integration.ansible_tower", "id",
 		),
 	}
 

@@ -4,12 +4,10 @@ package integration
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	morpheus "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
@@ -25,6 +23,10 @@ func ResourceIntegrationAnsible() *schema.Resource {
 		ReadContext:   resourceIntegrationAnsibleRead,
 		UpdateContext: resourceIntegrationAnsibleUpdate,
 		DeleteContext: resourceIntegrationAnsibleDelete,
+		CustomizeDiff: customdiff.All(
+			helpers.SecretHashUnknownWhenSent("password", "password_hash"),
+			helpers.SecretHashUnknownWhenSent("access_token", "access_token_hash"),
+		),
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -108,29 +110,16 @@ func ResourceIntegrationAnsible() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Sensitive:   true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
-				DiffSuppressOnRefresh: true,
 			},
+			"password_hash": helpers.SecretHashSchema("password"),
 			"access_token": {
 				Type:        schema.TypeString,
 				Description: "The access token of the account used to authenticate to the ansible repository",
 				Optional:    true,
 				Computed:    true,
 				Sensitive:   true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
 			},
+			"access_token_hash": helpers.SecretHashSchema("access_token"),
 			"key_pair_id": {
 				Type:        schema.TypeInt,
 				Description: "The ID of the key pair used to authenticate to the ansible repository",
@@ -421,8 +410,16 @@ func resourceIntegrationAnsibleRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("enabled", integration.Enabled)
 	d.Set("url", integration.URL)
 	d.Set("username", integration.Username)
-	d.Set("password", integration.PasswordHash)
-	d.Set("access_token", integration.TokenHash)
+	if err := helpers.TrackSecret(
+		d, "password", "password_hash", integration.PasswordHash, helpers.SecretSent(d, "password"),
+	); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := helpers.TrackSecret(
+		d, "access_token", "access_token_hash", integration.TokenHash, helpers.SecretSent(d, "access_token"),
+	); err != nil {
+		return diag.FromErr(err)
+	}
 
 	if integration.ServiceKey.ID != 0 {
 		d.Set("key_pair_id", integration.ServiceKey.ID)

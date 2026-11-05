@@ -44,6 +44,7 @@ resource "hpe_morpheus_integration_vro" "tf_example_vro_integration" {
 ### Read-Only
 
 - `id` (String) The ID of the vRO integration
+- `password_hash` (String, Sensitive) The appliance's hash of password as read back when Terraform last set it. Each read compares the hash the appliance reports with it; a difference means the value was changed outside Terraform, and the next plan sets the configured value again.
 
 ## Import
 

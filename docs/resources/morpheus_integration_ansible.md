@@ -59,7 +59,9 @@ resource "hpe_morpheus_integration_ansible" "tf_example_ansible_integration" {
 
 ### Read-Only
 
+- `access_token_hash` (String, Sensitive) The appliance's hash of access_token as read back when Terraform last set it. Each read compares the hash the appliance reports with it; a difference means the value was changed outside Terraform, and the next plan sets the configured value again.
 - `id` (String) The ID of the ansible integration
+- `password_hash` (String, Sensitive) The appliance's hash of password as read back when Terraform last set it. Each read compares the hash the appliance reports with it; a difference means the value was changed outside Terraform, and the next plan sets the configured value again.
 
 ## Import
 

@@ -54,6 +54,7 @@ resource "hpe_morpheus_integration_servicenow" "tf_example_servicenow_integratio
 ### Read-Only
 
 - `id` (String) The id of the ServiceNow integration
+- `password_hash` (String, Sensitive) The appliance's hash of password as read back when Terraform last set it. Each read compares the hash the appliance reports with it; a difference means the value was changed outside Terraform, and the next plan sets the configured value again.
 
 ## Import
 

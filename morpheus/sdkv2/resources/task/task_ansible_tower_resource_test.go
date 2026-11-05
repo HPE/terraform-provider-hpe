@@ -3,6 +3,7 @@
 package task_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -15,10 +16,18 @@ import (
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
+// TestAccMorpheusTaskAnsibleTowerExampleOk creates a Tower task against the
+// Ansible Tower integration the environment names (testhelpers/tower_fixture.go):
+// the integration, the inventory and the job template are all resolved by name
+// through data sources, and the task takes their ids from those.
 func TestAccMorpheusTaskAnsibleTowerExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.Ansible, capabilities.AnsibleTower)
+
+	integrationName := testhelpers.AnsibleTowerIntegrationName(t)
+	inventoryName := testhelpers.AnsibleTowerInventoryName(t)
+	jobTemplateName := testhelpers.AnsibleTowerJobTemplateName(t)
 
 	t.Parallel()
 
@@ -26,19 +35,30 @@ func TestAccMorpheusTaskAnsibleTowerExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	// t.Skip("Skipping due to API error")
-	// t.Skip("Skipping due to missing infrastructure in test environment")
-	// t.Skip("Skipping due to missing resource implementation")
-	// t.Skip("Skipping due to mismatch between Morpheus API and Terraform schema")
-
 	providerConfig := testhelpers.ProviderBlock()
 	visibility := testhelpers.TenantVisibility(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	dependenciesConfig := testhelpers.AnsibleTowerIntegrationBlock(integrationName) + fmt.Sprintf(`
+data "hpe_morpheus_ansible_tower_inventory" "example" {
+  name                         = %s
+  ansible_tower_integration_id = %s
+}
+
+data "hpe_morpheus_ansible_tower_job_template" "example" {
+  name                         = %s
+  ansible_tower_integration_id = %s
+}
+`, testhelpers.HCLQuote(inventoryName), testhelpers.AnsibleTowerIntegrationIDRef,
+		testhelpers.HCLQuote(jobTemplateName), testhelpers.AnsibleTowerIntegrationIDRef)
+
 	resourceConfig, err := task.RenderTaskAnsibleTowerConfig(t, map[string]string{
-		"Name":       name,
-		"Visibility": visibility,
+		"Name":                      name,
+		"Visibility":                visibility,
+		"AnsibleTowerIntegrationId": testhelpers.AnsibleTowerIntegrationIDRef,
+		"AnsibleTowerInventoryId":   "data.hpe_morpheus_ansible_tower_inventory.example.id",
+		"JobTemplateId":             "data.hpe_morpheus_ansible_tower_job_template.example.id",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -51,16 +71,14 @@ func TestAccMorpheusTaskAnsibleTowerExampleOk(t *testing.T) {
 			"true",
 		),
 
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_task_ansible_tower.example",
-			"ansible_tower_integration_id",
-			"1",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_task_ansible_tower.example", "ansible_tower_integration_id",
+			"data.hpe_morpheus_integration.ansible_tower", "id",
 		),
 
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_task_ansible_tower.example",
-			"ansible_tower_inventory_id",
-			"5",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_task_ansible_tower.example", "ansible_tower_inventory_id",
+			"data.hpe_morpheus_ansible_tower_inventory.example", "id",
 		),
 
 		resource.TestCheckResourceAttr(
@@ -87,10 +105,9 @@ func TestAccMorpheusTaskAnsibleTowerExampleOk(t *testing.T) {
 			"demo",
 		),
 
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_task_ansible_tower.example",
-			"job_template_id",
-			"3",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_task_ansible_tower.example", "job_template_id",
+			"data.hpe_morpheus_ansible_tower_job_template.example", "id",
 		),
 
 		resource.TestCheckResourceAttr(
@@ -142,13 +159,13 @@ func TestAccMorpheusTaskAnsibleTowerExampleOk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 			// Plan after apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

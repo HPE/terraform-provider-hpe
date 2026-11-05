@@ -95,7 +95,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | Capability | Env Value | Description |
 |------------|-----------|-------------|
 | `Ansible` | `ansible` | Ansible integration |
-| `AnsibleTower` | `ansible_tower` | Ansible Tower/AWX |
+| `AnsibleTower` | `ansible_tower` | Ansible Tower/AWX, reachable from the appliance, with an integration for it on the appliance -- both named by the `TF_VAR_testacc_morpheus_ansible_tower_*` variables below (`testhelpers/tower_fixture.go`) |
 | `Chef` | `chef` | Chef integration |
 | `Puppet` | `puppet` | Puppet integration |
 
@@ -275,6 +275,9 @@ Exit codes:
 | `TF_VAR_testacc_morpheus_hvm_no_agent` | `true` to provision the test VMs without the Morpheus agent (default: with it). Without the agent Morpheus SSHes from the appliance into the guest to report its address and apply environment variables, so set this only where the appliance can reach the test VMs |
 | `TF_VAR_testacc_morpheus_hvm_other_cluster_name` | A second HVM cluster in the same cloud, for the wrong-pool test (an instance targeting one cluster's pool with a network of the other's) |
 | `TF_VAR_testacc_morpheus_hvm_poolless_network_name` | A network of the HVM cloud that belongs to no resource pool (a docker bridge, say), for the test that lists the networks Morpheus would accept instead |
+| `TF_VAR_testacc_morpheus_ansible_tower_integration_name` | Name of the appliance's Ansible Tower integration, for the inventory, job template and Tower task tests (`testhelpers/tower_fixture.go`); resolved with the `hpe_morpheus_integration` data source |
+| `TF_VAR_testacc_morpheus_ansible_tower_inventory_name`, `TF_VAR_testacc_morpheus_ansible_tower_job_template_name` | An inventory and a job template that integration has synced from the Tower, as `GET /api/options/ansibleTowerInventory` and `ansibleTowerJobTemplate` list them |
+| `TF_VAR_testacc_morpheus_ansible_tower_url`, `TF_VAR_testacc_morpheus_ansible_tower_username`, `TF_VAR_testacc_morpheus_ansible_tower_password` | A Tower (or a stand-in serving its API) and an account on it, for the integration resource test: Morpheus verifies the URL on create (TCP, `/api/v2/ping/`, `/api/v2/me/`) and refuses the save otherwise |
 | `TF_VAR_testacc_morpheus_metal_cloud_name` | Name of an HPE Bare Metal cloud. The bare-metal fixture (`testhelpers/metal_fixture.go`) for the `metal` + `alletra` BMaaS datastore test: like the HVM fixture, everything is resolved **by name** by data sources inside the test configuration -- never by id. The test skips when a variable it needs is unset |
 | `TF_VAR_testacc_morpheus_metal_storage_server_name` | Name of an HPE Alletra MP storage server (type `alletra-mp`) reachable from that cloud. The storage plugin refuses a second *online* BMaaS datastore for the same cloud, storage server and protocol, so the cloud must not already have an iSCSI BMaaS datastore on this server |
 | `TF_VAR_testacc_morpheus_metal_pool_name` | Name of a resource pool of that cloud, as listed by `GET /api/clouds/<cloud>/resource-pools` -- `Default`, the pool an HPE Bare Metal cloud creates on initialisation, unless another was added. Resolved through the `zonePools` option source (`hpe_morpheus_option_source_value`), since there is no resource-pool data source. BMaaS datastores are created in a pool of their cloud; an id that names no pool is rejected by Morpheus as `zonePool.id: Required fields are missing` |
