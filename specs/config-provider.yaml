@@ -1082,6 +1082,19 @@ resources:
     delete:
       path: /api/networks/pools/{id}
       method: DELETE
+  network_pool_ip:
+    create:
+      path: /api/networks/pools/{id}/ips
+      method: POST
+    read:
+      path: /api/networks/pools/{networkPoolId}/ips/{id}
+      method: GET
+    update:
+      path: /api/networks/pools/{networkPoolId}/ips/{id}
+      method: PUT
+    delete:
+      path: /api/networks/pools/{networkPoolId}/ips/{id}
+      method: DELETE
   network_pool_server:
     create:
       path: /api/networks/pool-servers
@@ -1542,6 +1555,10 @@ data_sources:
   network_pool:
     read:
       path: /api/networks/pools/{id}
+      method: GET
+  network_pool_ip:
+    read:
+      path: /api/networks/pools/{networkPoolId}/ips/{id}
       method: GET
   network_pool_server_type:
     read:

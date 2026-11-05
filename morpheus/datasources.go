@@ -37,6 +37,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpool"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpoolip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpoolservertype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterbgpneighbor"
@@ -152,6 +153,7 @@ func (p *MorpheusProvider) DataSources(
 		networkedgecluster.NewDataSource,
 		networktransportzone.NewDataSource,
 		networkpool.NewDataSource,
+		networkpoolip.NewDataSource,
 		networktype.NewDataSource,
 		optionsourcevalue.NewDataSource,
 		optionsourcevalues.NewDataSource,

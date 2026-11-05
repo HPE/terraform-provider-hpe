@@ -37,6 +37,25 @@ place, and configurations carry over, with two exceptions:
   they have always been null; a configuration that references them now gets a deprecation warning.
   The `hpe_morpheus_network_router_nat` resource is unaffected — it already treats both as write-only.
 
+## New resources
+
+### `hpe_morpheus_network_pool_ip` resource and data source (MORPH-15704)
+
+A single IP address can now be reserved from a network pool. Until now the provider could define
+pools (`hpe_morpheus_network_pool`, `hpe_morpheus_ip_pool_ipv4`) but not take an address out of one;
+that needed the API or the UI.
+
+- **`hpe_morpheus_network_pool_ip`**: give `network_pool_id` and a `hostname` and the pool's IPAM
+  allocates its next free address, returned in `ip_address`; set `ip_address` to reserve a specific
+  one, and an address outside the pool's ranges is refused with Morpheus's own message. `hostname`,
+  `ref_type` and `ref_id` (for example `ComputeServer` and a server id) change in place; the address,
+  `description`, `domain_id` and `create_dns` (DNS A and PTR records in a network domain) replace the
+  reservation. Destroying it releases the address. Import with `<network_pool_id>:<id>`.
+- **`hpe_morpheus_network_pool_ip` data source**: read a reservation by `id`, `ip_address` or
+  `hostname` within a pool.
+
+Verified against the built-in Morpheus pool type and an Infoblox-backed pool.
+
 ## Improvements
 
 ### `hpe_morpheus_setting_appliance` moves to the plugin framework

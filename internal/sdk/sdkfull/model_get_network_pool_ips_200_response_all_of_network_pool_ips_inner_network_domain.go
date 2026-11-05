@@ -17,19 +17,19 @@ import (
 	"encoding/json"
 )
 
-// checks if the CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain{}
+// checks if the GetNetworkPoolIps200ResponseAllOfNetworkPoolIpsInnerNetworkDomain type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &GetNetworkPoolIps200ResponseAllOfNetworkPoolIpsInnerNetworkDomain{}
 
-// CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain struct for CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain
-type CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain struct {
+// GetNetworkPoolIps200ResponseAllOfNetworkPoolIpsInnerNetworkDomain struct for GetNetworkPoolIps200ResponseAllOfNetworkPoolIpsInnerNetworkDomain
+type GetNetworkPoolIps200ResponseAllOfNetworkPoolIpsInnerNetworkDomain struct {
 	Id                   *int64                 `json:"id,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
-type _CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain
+type _GetNetworkPoolIps200ResponseAllOfNetworkPoolIpsInnerNetworkDomain GetNetworkPoolIps200ResponseAllOfNetworkPoolIpsInnerNetworkDomain
 
-func (o CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain) MarshalJSON() ([]byte, error) {
+func (o GetNetworkPoolIps200ResponseAllOfNetworkPoolIpsInnerNetworkDomain) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -37,7 +37,7 @@ func (o CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain) MarshalJSON() ([
 	return json.Marshal(toSerialize)
 }
 
-func (o CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain) ToMap() (map[string]interface{}, error) {
+func (o GetNetworkPoolIps200ResponseAllOfNetworkPoolIpsInnerNetworkDomain) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
@@ -53,7 +53,7 @@ func (o CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain) ToMap() (map[str
 	return toSerialize, nil
 }
 
-func (o *CreateNetworkPoolIp200ResponseNetworkPoolNetworkDomain) UnmarshalJSON(data []byte) (err error) {
+func (o *GetNetworkPoolIps200ResponseAllOfNetworkPoolIpsInnerNetworkDomain) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }
 

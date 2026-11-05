@@ -804,6 +804,226 @@ func (a *NetworksAPIService) CreateNetworkPoolExecute(r ApiCreateNetworkPoolRequ
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
+type ApiCreateNetworkPoolIpRequest struct {
+	ctx                        context.Context
+	ApiService                 *NetworksAPIService
+	id                         int64
+	createNetworkPoolIpRequest *CreateNetworkPoolIpRequest
+}
+
+func (r ApiCreateNetworkPoolIpRequest) CreateNetworkPoolIpRequest(createNetworkPoolIpRequest CreateNetworkPoolIpRequest) ApiCreateNetworkPoolIpRequest {
+	r.createNetworkPoolIpRequest = &createNetworkPoolIpRequest
+	return r
+}
+
+func (r ApiCreateNetworkPoolIpRequest) Execute() (*CreateNetworkPoolIp200Response, *http.Response, error) {
+	return r.ApiService.CreateNetworkPoolIpExecute(r)
+}
+
+/*
+CreateNetworkPoolIp Create a Network Pool IP Address
+
+# Create an IP Address for a Specific Network Pool
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id Morpheus ID of the Object being referenced
+	@return ApiCreateNetworkPoolIpRequest
+*/
+func (a *NetworksAPIService) CreateNetworkPoolIp(ctx context.Context, id int64) ApiCreateNetworkPoolIpRequest {
+	return ApiCreateNetworkPoolIpRequest{
+		ApiService: a,
+		ctx:        ctx,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return CreateNetworkPoolIp200Response
+func (a *NetworksAPIService) CreateNetworkPoolIpExecute(r ApiCreateNetworkPoolIpRequest) (*CreateNetworkPoolIp200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *CreateNetworkPoolIp200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NetworksAPIService.CreateNetworkPoolIp")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/networks/pools/{id}/ips"
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.createNetworkPoolIpRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v CreateNetworkPoolIp400Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v CreateNetworkPoolIp401Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 403 {
+			var v CreateNetworkPoolIp403Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v CreateNetworkPoolIp404Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 405 {
+			var v CreateNetworkPoolIp405Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 406 {
+			var v CreateNetworkPoolIp406Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 410 {
+			var v CreateNetworkPoolIp410Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 429 {
+			var v CreateNetworkPoolIp429Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v CreateNetworkPoolIp500Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 503 {
+			var v CreateNetworkPoolIp503Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiCreateNetworkPoolServerRequest struct {
 	ctx                            context.Context
 	ApiService                     *NetworksAPIService
@@ -2961,6 +3181,222 @@ func (a *NetworksAPIService) DeleteNetworkPoolExecute(r ApiDeleteNetworkPoolRequ
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
 			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiDeleteNetworkPoolIpRequest struct {
+	ctx           context.Context
+	ApiService    *NetworksAPIService
+	networkPoolId int64
+	id            int64
+}
+
+func (r ApiDeleteNetworkPoolIpRequest) Execute() (*DeleteNetworkPoolIp200Response, *http.Response, error) {
+	return r.ApiService.DeleteNetworkPoolIpExecute(r)
+}
+
+/*
+DeleteNetworkPoolIp Delete a host record associated with an IP Address for a Specific Network Pool
+
+Will delete a host record associated with an IP address for a specific network pool and free up the address
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param networkPoolId Morpheus Network Pool ID of the Object being referenced
+	@param id Morpheus ID of the Object being referenced
+	@return ApiDeleteNetworkPoolIpRequest
+*/
+func (a *NetworksAPIService) DeleteNetworkPoolIp(ctx context.Context, networkPoolId int64, id int64) ApiDeleteNetworkPoolIpRequest {
+	return ApiDeleteNetworkPoolIpRequest{
+		ApiService:    a,
+		ctx:           ctx,
+		networkPoolId: networkPoolId,
+		id:            id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return DeleteNetworkPoolIp200Response
+func (a *NetworksAPIService) DeleteNetworkPoolIpExecute(r ApiDeleteNetworkPoolIpRequest) (*DeleteNetworkPoolIp200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *DeleteNetworkPoolIp200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NetworksAPIService.DeleteNetworkPoolIp")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/networks/pools/{networkPoolId}/ips/{id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"networkPoolId"+"}", url.PathEscape(parameterValueToString(r.networkPoolId, "networkPoolId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v CreateNetworkPoolIp400Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v CreateNetworkPoolIp401Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 403 {
+			var v CreateNetworkPoolIp403Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v CreateNetworkPoolIp404Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 405 {
+			var v CreateNetworkPoolIp405Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 406 {
+			var v CreateNetworkPoolIp406Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 410 {
+			var v CreateNetworkPoolIp410Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 429 {
+			var v CreateNetworkPoolIp429Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v CreateNetworkPoolIp500Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 503 {
+			var v CreateNetworkPoolIp503Response
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -6109,6 +6545,464 @@ func (a *NetworksAPIService) GetNetworkPoolExecute(r ApiGetNetworkPoolRequest) (
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
 			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiGetNetworkPoolIpRequest struct {
+	ctx           context.Context
+	ApiService    *NetworksAPIService
+	networkPoolId int64
+	id            int64
+}
+
+func (r ApiGetNetworkPoolIpRequest) Execute() (*GetNetworkPoolIp200Response, *http.Response, error) {
+	return r.ApiService.GetNetworkPoolIpExecute(r)
+}
+
+/*
+GetNetworkPoolIp Get a Specific IP Address for a Specific Network Pool
+
+This endpoint retrieves a specific IP address for a specific Network Pool.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param networkPoolId Morpheus Network Pool ID of the Object being referenced
+	@param id Morpheus ID of the Object being referenced
+	@return ApiGetNetworkPoolIpRequest
+*/
+func (a *NetworksAPIService) GetNetworkPoolIp(ctx context.Context, networkPoolId int64, id int64) ApiGetNetworkPoolIpRequest {
+	return ApiGetNetworkPoolIpRequest{
+		ApiService:    a,
+		ctx:           ctx,
+		networkPoolId: networkPoolId,
+		id:            id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return GetNetworkPoolIp200Response
+func (a *NetworksAPIService) GetNetworkPoolIpExecute(r ApiGetNetworkPoolIpRequest) (*GetNetworkPoolIp200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *GetNetworkPoolIp200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NetworksAPIService.GetNetworkPoolIp")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/networks/pools/{networkPoolId}/ips/{id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"networkPoolId"+"}", url.PathEscape(parameterValueToString(r.networkPoolId, "networkPoolId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v CreateNetworkPoolIp400Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v CreateNetworkPoolIp401Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 403 {
+			var v CreateNetworkPoolIp403Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v CreateNetworkPoolIp404Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 405 {
+			var v CreateNetworkPoolIp405Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 406 {
+			var v CreateNetworkPoolIp406Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 410 {
+			var v CreateNetworkPoolIp410Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 429 {
+			var v CreateNetworkPoolIp429Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v CreateNetworkPoolIp500Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 503 {
+			var v CreateNetworkPoolIp503Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiGetNetworkPoolIpsRequest struct {
+	ctx        context.Context
+	ApiService *NetworksAPIService
+	id         int64
+	phrase     *string
+	ipAddress  *string
+	hostname   *string
+}
+
+// Search phrase for partial matches on ipAddress or hostname
+func (r ApiGetNetworkPoolIpsRequest) Phrase(phrase string) ApiGetNetworkPoolIpsRequest {
+	r.phrase = &phrase
+	return r
+}
+
+// If specified will return an exact match on ipAddress
+func (r ApiGetNetworkPoolIpsRequest) IpAddress(ipAddress string) ApiGetNetworkPoolIpsRequest {
+	r.ipAddress = &ipAddress
+	return r
+}
+
+// If specified will return an exact match on hostname
+func (r ApiGetNetworkPoolIpsRequest) Hostname(hostname string) ApiGetNetworkPoolIpsRequest {
+	r.hostname = &hostname
+	return r
+}
+
+func (r ApiGetNetworkPoolIpsRequest) Execute() (*GetNetworkPoolIps200Response, *http.Response, error) {
+	return r.ApiService.GetNetworkPoolIpsExecute(r)
+}
+
+/*
+GetNetworkPoolIps Get all IP Addresses for a Specific Network Pool
+
+This endpoint retrieves a list of IP addresses for a specific Network Pool.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id Morpheus ID of the Object being referenced
+	@return ApiGetNetworkPoolIpsRequest
+*/
+func (a *NetworksAPIService) GetNetworkPoolIps(ctx context.Context, id int64) ApiGetNetworkPoolIpsRequest {
+	return ApiGetNetworkPoolIpsRequest{
+		ApiService: a,
+		ctx:        ctx,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return GetNetworkPoolIps200Response
+func (a *NetworksAPIService) GetNetworkPoolIpsExecute(r ApiGetNetworkPoolIpsRequest) (*GetNetworkPoolIps200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *GetNetworkPoolIps200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NetworksAPIService.GetNetworkPoolIps")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/networks/pools/{id}/ips"
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	if r.phrase != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
+	}
+	if r.ipAddress != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "ipAddress", r.ipAddress, "form", "")
+	}
+	if r.hostname != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "hostname", r.hostname, "form", "")
+	}
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v GetNetworkPoolIps400Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v GetNetworkPoolIps401Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 403 {
+			var v GetNetworkPoolIps403Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v GetNetworkPoolIps404Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 405 {
+			var v GetNetworkPoolIps405Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 406 {
+			var v GetNetworkPoolIps406Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 410 {
+			var v GetNetworkPoolIps410Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 429 {
+			var v GetNetworkPoolIps429Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v GetNetworkPoolIps500Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 503 {
+			var v GetNetworkPoolIps503Response
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -11710,6 +12604,231 @@ func (a *NetworksAPIService) UpdateNetworkPoolExecute(r ApiUpdateNetworkPoolRequ
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
 			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiUpdateNetworkPoolIpRequest struct {
+	ctx                        context.Context
+	ApiService                 *NetworksAPIService
+	networkPoolId              int64
+	id                         int64
+	updateNetworkPoolIpRequest *UpdateNetworkPoolIpRequest
+}
+
+func (r ApiUpdateNetworkPoolIpRequest) UpdateNetworkPoolIpRequest(updateNetworkPoolIpRequest UpdateNetworkPoolIpRequest) ApiUpdateNetworkPoolIpRequest {
+	r.updateNetworkPoolIpRequest = &updateNetworkPoolIpRequest
+	return r
+}
+
+func (r ApiUpdateNetworkPoolIpRequest) Execute() (*CreateNetworkPoolIp200Response, *http.Response, error) {
+	return r.ApiService.UpdateNetworkPoolIpExecute(r)
+}
+
+/*
+UpdateNetworkPoolIp Update a Network Pool IP Address
+
+Update the hostname or the associated resource of an IP address reserved in a specific Network Pool.
+The address itself cannot be changed.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param networkPoolId Morpheus Network Pool ID of the Object being referenced
+	@param id Morpheus ID of the Object being referenced
+	@return ApiUpdateNetworkPoolIpRequest
+*/
+func (a *NetworksAPIService) UpdateNetworkPoolIp(ctx context.Context, networkPoolId int64, id int64) ApiUpdateNetworkPoolIpRequest {
+	return ApiUpdateNetworkPoolIpRequest{
+		ApiService:    a,
+		ctx:           ctx,
+		networkPoolId: networkPoolId,
+		id:            id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return CreateNetworkPoolIp200Response
+func (a *NetworksAPIService) UpdateNetworkPoolIpExecute(r ApiUpdateNetworkPoolIpRequest) (*CreateNetworkPoolIp200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *CreateNetworkPoolIp200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NetworksAPIService.UpdateNetworkPoolIp")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/networks/pools/{networkPoolId}/ips/{id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"networkPoolId"+"}", url.PathEscape(parameterValueToString(r.networkPoolId, "networkPoolId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.updateNetworkPoolIpRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v CreateNetworkPoolIp400Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v CreateNetworkPoolIp401Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 403 {
+			var v CreateNetworkPoolIp403Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v CreateNetworkPoolIp404Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 405 {
+			var v CreateNetworkPoolIp405Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 406 {
+			var v CreateNetworkPoolIp406Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 410 {
+			var v CreateNetworkPoolIp410Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 429 {
+			var v CreateNetworkPoolIp429Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v CreateNetworkPoolIp500Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 503 {
+			var v CreateNetworkPoolIp503Response
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

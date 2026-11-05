@@ -45,6 +45,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkgroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkpool"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkpoolip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkpoolserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
@@ -127,6 +128,7 @@ func (p *MorpheusProvider) Resources(
 		// Sprint 2: Networking
 		networkgroup.NewResource,
 		networkpool.NewResource,
+		networkpoolip.NewResource,
 		networkpoolserver.NewResource,
 		networkrouternat.NewResource,
 		networkrouterfirewallrule.NewResource,

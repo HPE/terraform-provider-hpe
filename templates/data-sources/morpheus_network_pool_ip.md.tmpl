@@ -1,0 +1,17 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+  Reads a single IP address reservation (host record) from a Morpheus network pool, by id, by address or by hostname.
+---
+# {{.Name}} ({{.Type}})
+
+Reads a single IP address reservation (host record) from a Morpheus network pool, by id, by address or by hostname.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_network_pool_ip/example-id.tf" }}
+
+{{ tffile "examples/data-sources/morpheus_network_pool_ip/example-ip-address.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
