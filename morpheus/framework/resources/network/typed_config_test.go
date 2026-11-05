@@ -4,6 +4,7 @@ package network_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -127,22 +128,81 @@ func attr(name, key, value string) resource.TestCheckFunc {
 	return resource.TestCheckResourceAttr(name, key, value)
 }
 
-// --- OVS port group (HVM standard network) ---------------------------------
+// --- HVM networks (OVS port group, HVM data network) -----------------------
 
-func ovsPortGroupConfig(name, trunks, switchID string) string {
-	return testhelpers.ProviderBlock() + fmt.Sprintf(`
+// hvmNetworkFixture is the HVM fixture (testhelpers/hvm_fixture.go,
+// testhelpers/network_server_fixture.go) the typed HVM network tests resolve by
+// name: the cloud, the cluster whose resource pool the network belongs to,
+// the cluster's network server, two of its virtual switches and a host
+// interface, plus the caller's tenant and a group of the test's own. Every id
+// in the network configuration comes from these.
+type hvmNetworkFixture struct {
+	cloudName, clusterName, networkServerName string
+	switchName, switchName2, hostInterface    string
+}
+
+// loadHVMNetworkFixture reads the fixture from the environment, skipping the
+// test for the first variable that is unset.
+func loadHVMNetworkFixture(t *testing.T) hvmNetworkFixture {
+	t.Helper()
+
+	f := hvmNetworkFixture{
+		cloudName:         testhelpers.HVMCloudName(t),
+		clusterName:       testhelpers.HVMClusterName(t),
+		networkServerName: testhelpers.HVMNetworkServerName(t),
+		hostInterface:     testhelpers.HVMHostInterface(t),
+	}
+	f.switchName, f.switchName2 = testhelpers.HVMSwitchNames(t)
+
+	return f
+}
+
+const (
+	hvmCloudIDRef         = "data.hpe_morpheus_cloud.hvm_cloud.id"
+	hvmPoolIDRef          = "data.hpe_morpheus_cluster.hvm.permissions.resource_pool.id"
+	hvmNetworkServerIDRef = "data.hpe_morpheus_network_server.hvm.id"
+	hvmGroupIDRef         = "hpe_morpheus_group.hvm_network.id"
+)
+
+// config renders the fixture's data sources and the test's group, to go
+// before a network resource. groupName is the test's name.
+func (f hvmNetworkFixture) config(groupName string) string {
+	return testhelpers.ProviderBlock() + testhelpers.WhoamiBlock() + fmt.Sprintf(`
+data "hpe_morpheus_cloud" "hvm_cloud" {
+  name = %s
+}
+
+data "hpe_morpheus_cluster" "hvm" {
+  name = %s
+}
+
+resource "hpe_morpheus_group" "hvm_network" {
+  name = %q
+  code = %q
+}
+
+`, testhelpers.HCLQuote(f.cloudName), testhelpers.HCLQuote(f.clusterName), groupName, strings.ToLower(groupName)) +
+		testhelpers.NetworkServerBlock("hvm", f.networkServerName) +
+		testhelpers.HVMSwitchBlock("switch", f.switchName, hvmCloudIDRef, hvmPoolIDRef) +
+		testhelpers.HVMSwitchBlock("switch_2", f.switchName2, hvmCloudIDRef, hvmPoolIDRef)
+}
+
+// ovsPortGroupConfig is an OVS port group on one of the cluster's switches,
+// switchRef being the option-source data source for it.
+func (f hvmNetworkFixture) ovsPortGroupConfig(name, trunks, switchRef string) string {
+	return f.config(name) + fmt.Sprintf(`
 resource "hpe_morpheus_network" "ovs" {
   name              = %q
-  cloud_id          = 17
-  group_id          = 1
+  cloud_id          = %s
+  group_id          = %s
   type_code         = "ovsPortGroup"
-  switch_id         = %q
-  zone_pool_id      = 153047
-  network_server_id = 7834
+  switch_id         = %s.value
+  zone_pool_id      = %s
+  network_server_id = %s
   vlan_id           = 2103
   cidr              = "10.209.103.0/24"
   visibility        = "private"
-  tenant_ids        = [1]
+  tenant_ids        = [%s]
   labels            = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 
   config_ovs_port_group = {
@@ -154,13 +214,16 @@ resource "hpe_morpheus_network" "ovs" {
     ignore_changes = [display_name]
   }
 }
-`, name, switchID, trunks)
+`, name, hvmCloudIDRef, hvmGroupIDRef, switchRef, hvmPoolIDRef, hvmNetworkServerIDRef,
+		testhelpers.WhoamiTenantIDRef, trunks)
 }
 
 func TestAccMorpheusNetworkTypedOVSPortGroupLifecycle(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.NetworkServer)
+
+	f := loadHVMNetworkFixture(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 	const rn = "hpe_morpheus_network.ovs"
@@ -169,45 +232,45 @@ func TestAccMorpheusNetworkTypedOVSPortGroupLifecycle(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: typedLifecycle{
 			resourceName: rn,
-			create:       ovsPortGroupConfig(name, "100,200", "Compute"),
+			create:       f.ovsPortGroupConfig(name, "100,200", "data.hpe_morpheus_option_source_value.switch"),
 			createChecks: []resource.TestCheckFunc{
-				attr(rn, "type_id", "63"),
+				// The type's id is per appliance; that it is populated is what matters.
+				resource.TestCheckResourceAttrSet(rn, "type_id"),
 				attr(rn, "type_code", "ovsPortGroup"),
 				attr(rn, "config_from_api.hvmVlanTrunks", "100,200"),
 				attr(rn, "config_from_api.hvmTrunkOnly", "false"),
 				resource.TestCheckNoResourceAttr(rn, "config_ovs_port_group"),
 			},
-			update: ovsPortGroupConfig(name, "100,200,300", "Compute"),
+			update: f.ovsPortGroupConfig(name, "100,200,300", "data.hpe_morpheus_option_source_value.switch"),
 			updateChecks: []resource.TestCheckFunc{
 				attr(rn, "config_from_api.hvmVlanTrunks", "100,200,300"),
 			},
 			// switchId is an option type Morpheus does not edit after create;
-			// the cluster's other bridge is a real alternative.
-			replace:      ovsPortGroupConfig(name, "100,200,300", "Management"),
+			// the cluster's other switch is a real alternative.
+			replace:      f.ovsPortGroupConfig(name, "100,200,300", "data.hpe_morpheus_option_source_value.switch_2"),
 			importIgnore: []string{"network_server_id"},
 		}.steps(),
 	})
 }
 
-// --- HVM data network -------------------------------------------------------
-
-func hvmDataConfig(name, iface string, vlan int) string {
-	return testhelpers.ProviderBlock() + fmt.Sprintf(`
+// hvmDataConfig is an HVM data network on one of the hosts' interfaces.
+func (f hvmNetworkFixture) hvmDataConfig(name string, vlan int) string {
+	return f.config(name) + fmt.Sprintf(`
 resource "hpe_morpheus_network" "hvm_data" {
   name              = %q
-  cloud_id          = 17
-  group_id          = 1
+  cloud_id          = %s
+  group_id          = %s
   type_code         = "hvmPortGroupDataNetwork"
-  zone_pool_id      = 153047
-  network_server_id = 7834
+  zone_pool_id      = %s
+  network_server_id = %s
   vlan_id           = %d
   visibility        = "private"
-  tenant_ids        = [1]
+  tenant_ids        = [%s]
   labels            = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 
   config_hvm_data = {
     cluster_network_layout = "HOST_INTERFACE"
-    host_network_interface = %q
+    host_network_interface = %s
     mtu                    = 1500
   }
 
@@ -215,13 +278,16 @@ resource "hpe_morpheus_network" "hvm_data" {
     ignore_changes = [display_name]
   }
 }
-`, name, vlan, iface)
+`, name, hvmCloudIDRef, hvmGroupIDRef, hvmPoolIDRef, hvmNetworkServerIDRef, vlan,
+		testhelpers.WhoamiTenantIDRef, testhelpers.HCLQuote(f.hostInterface))
 }
 
 func TestAccMorpheusNetworkTypedHVMDataNetwork(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.NetworkServer)
+
+	f := loadHVMNetworkFixture(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 	const rn = "hpe_morpheus_network.hvm_data"
@@ -233,13 +299,14 @@ func TestAccMorpheusNetworkTypedHVMDataNetwork(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: typedLifecycle{
 			resourceName: rn,
-			create:       hvmDataConfig(name, "bond0", 2104),
+			create:       f.hvmDataConfig(name, 2104),
 			createChecks: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttrSet(rn, "type_id"),
 				attr(rn, "type_code", "hvmPortGroupDataNetwork"),
-				attr(rn, "config_from_api.hvmHostNetworkInterface", "bond0"),
+				attr(rn, "config_from_api.hvmHostNetworkInterface", f.hostInterface),
 				attr(rn, "config_from_api.hvmMtu", "1500"),
 			},
-			replace:      hvmDataConfig(name, "bond0", 2105),
+			replace:      f.hvmDataConfig(name, 2105),
 			importIgnore: []string{"network_server_id"},
 		}.steps(),
 	})

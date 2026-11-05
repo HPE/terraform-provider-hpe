@@ -77,7 +77,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | `Network` | `network` | Basic network create/update on a network-service-capable cloud |
 | `NetworkDHCP` | `network_dhcp` | DHCP server/relay |
 | `NetworkPool` | `network_pool` | Network (IP) pools |
-| `NetworkServer` | `network_server` | Network server / service integration (e.g. NSX-T) |
+| `NetworkServer` | `network_server` | A network server (network-service integration: SDN, NSX-T, an HVM cluster's own) on the appliance, named by the `TF_VAR_testacc_morpheus_*network_server_name` variables below (`testhelpers/network_server_fixture.go`). The typed HVM network tests also need the HVM fixture and skip until the HVM cluster's hidden network server can be resolved by name (MORPH-20056) |
 | `NetworkRouter` | `network_router` | Network routers |
 | `NetworkFirewall` | `network_firewall` | Firewall rules |
 | `NetworkLoadBalancer` | `network_loadbalancer` | Load balancers (general API: NSX-T, config validation, data sources) |
@@ -287,6 +287,10 @@ Exit codes:
 | `TF_VAR_testacc_pce_identity_space` | GreenLake space containing the PCE instance. Required by the `pce` test — the `pce_identity` block rejects a null `space` |
 | `TF_VAR_testacc_pce_identity_broker_url` | PCE broker URL override. Optional; leave unset to use the HPE-hosted cloud broker |
 | `TF_ACC_PCE_IDENTITY_CLOUD_NAME` | Name of a cloud to read back through the PCE token exchange. Required by the `pce` test; there is no default, as the reachable clouds differ per GreenLake tenant. Not a `TF_VAR_`, because the test renders it into HCL rather than passing it through a Terraform variable |
+| `TF_VAR_testacc_morpheus_network_server_name` | Name of a network server `GET /api/networks/servers` lists (an SDN or NSX-T integration), for the network server data-source tests (`testhelpers/network_server_fixture.go`) |
+| `TF_VAR_testacc_morpheus_hvm_network_server_name` | Name of the HVM cluster's network server (`<cluster> HVM Network Server`), on which the typed HVM network tests create their networks. The list API returns it only with `showHidden=true`, which the data source cannot ask for until MORPH-20056; the tests skip while this is unset |
+| `TF_VAR_testacc_morpheus_hvm_switch_name`, `TF_VAR_testacc_morpheus_hvm_switch_name_2` | Two virtual switches of the HVM cluster as the `hvm-vswitch-or-router` option source lists them (`vs0`, `vs1`); the OVS port group test creates on the first and moves to the second, a replacement |
+| `TF_VAR_testacc_morpheus_hvm_host_interface` | A host network interface the HVM hosts have (`bond0`, `hvmnet2`, ...), for the HVM data network test |
 | `TF_ACC_IPAM_TYPE` | Pool server type code (e.g. `infoblox`, `phpipam`, `bluecat`) of a reachable IPAM. Required by the network pool server create-based tests — Morpheus 9.1.2 verifies the service URL on create, so these tests skip without a reachable IPAM |
 | `TF_ACC_IPAM_URL` | Reachable IPAM service URL. Required by the network pool server create-based tests (9.1.2 reachability check) |
 | `TF_ACC_IPAM_USERNAME` | IPAM service username. Required by the network pool server create-based tests (9.1.2 reachability check) |

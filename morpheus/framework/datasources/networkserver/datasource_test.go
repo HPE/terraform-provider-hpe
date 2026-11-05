@@ -31,10 +31,14 @@ provider "hpe" {
 }
 `
 
+// TestAccMorpheusFindNetworkServerByName looks the network server the
+// environment names up by name (testhelpers/network_server_fixture.go).
 func TestAccMorpheusFindNetworkServerByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.NetworkServer)
+
+	serverName := testhelpers.NetworkServerName(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -44,9 +48,10 @@ func TestAccMorpheusFindNetworkServerByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	// The template quotes the name itself, so it is escaped, not quoted again.
 	dataSourceConfig, err := testhelpers.RenderExample(t,
 		"example-name.tf.tmpl",
-		"Name", "NSX-T",
+		"Name", testhelpers.HCLEscape(serverName),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -60,7 +65,7 @@ func TestAccMorpheusFindNetworkServerByName(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_network_server.example",
 			"name",
-			"NSX-T",
+			serverName,
 		),
 	}
 
@@ -77,10 +82,15 @@ func TestAccMorpheusFindNetworkServerByName(t *testing.T) {
 	})
 }
 
+// TestAccMorpheusFindNetworkServerById looks a network server up by id. The
+// id is not assumed: a by-name lookup of the server the environment names
+// supplies it, and the by-id lookup has to land on the same server.
 func TestAccMorpheusFindNetworkServerById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.NetworkServer)
+
+	serverName := testhelpers.NetworkServerName(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -90,23 +100,25 @@ func TestAccMorpheusFindNetworkServerById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	byNameConfig := testhelpers.NetworkServerBlock("by_name", serverName)
+
 	dataSourceConfig, err := testhelpers.RenderExample(t,
 		"example-id.tf.tmpl",
-		"Id", "1",
+		"Id", "data.hpe_morpheus_network_server.by_name.id",
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttrPair(
+			"data.hpe_morpheus_network_server.example", "id",
+			"data.hpe_morpheus_network_server.by_name", "id",
+		),
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_network_server.example",
-			"id",
-			"1",
-		),
-		resource.TestCheckResourceAttrSet(
-			"data.hpe_morpheus_network_server.example",
 			"name",
+			serverName,
 		),
 	}
 
@@ -116,7 +128,7 @@ func TestAccMorpheusFindNetworkServerById(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + byNameConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
