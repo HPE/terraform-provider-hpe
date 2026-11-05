@@ -58,6 +58,9 @@ var Blocks = []Block{
 			{Attr: "vlan_ids", Key: "vlanIDs"},
 			{Attr: "subnet_ip_management_type", Key: "subnetIpManagementType"},
 			{Attr: "subnet_ip_server_id", Key: "subnetIpServerId"},
+			// Both set the key. The schema rejects setting both; should that ever be
+			// bypassed, Route writes them in this order, so the path is what is sent.
+			{Attr: "subnet_ip_server_path", Key: "subnetIpServerId"},
 			{Attr: "subnet_dhcp_server_address", Key: "subnetDhcpServerAddress"},
 			{Attr: "dhcp_range", Key: "dhcpRange"},
 			{Attr: "subnet_dhcp_lease_time", Key: "subnetDhcpLeaseTime"},
@@ -79,6 +82,9 @@ var Blocks = []Block{
 			{Attr: "vlan_ids", Key: "vlanIDs"},
 			{Attr: "subnet_ip_management_type", Key: "subnetIpManagementType"},
 			{Attr: "subnet_ip_server_id", Key: "subnetIpServerId"},
+			// Both set the key. The schema rejects setting both; should that ever be
+			// bypassed, Route writes them in this order, so the path is what is sent.
+			{Attr: "subnet_ip_server_path", Key: "subnetIpServerId"},
 			{Attr: "subnet_dhcp_server_address", Key: "subnetDhcpServerAddress"},
 			{Attr: "dhcp_range", Key: "dhcpRange"},
 			{Attr: "subnet_dhcp_lease_time", Key: "subnetDhcpLeaseTime"},

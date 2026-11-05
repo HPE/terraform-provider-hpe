@@ -158,6 +158,34 @@ func TestUnitRouteOvsPortGroup(t *testing.T) {
 	}
 }
 
+func TestUnitRouteDhcpProfilePathOverDeprecatedId(t *testing.T) {
+	t.Parallel()
+
+	// subnet_ip_server_id (deprecated, int64) and subnet_ip_server_path both
+	// set the config key subnetIpServerId. The schema's ConflictsWith rejects
+	// a configuration carrying both; this pins the fallback should a value
+	// for each ever reach Route: the path is sent, not the id.
+	for _, attr := range []string{"config_nsxt", "config_nsx_cloud"} {
+		b, ok := BlockFor(attr)
+		if !ok {
+			t.Fatalf("%s must be declared", attr)
+		}
+
+		all, _ := Route(nil, &b, nil, map[string]any{
+			"subnet_ip_server_id":   int64(7),
+			"subnet_ip_server_path": "/infra/dhcp-server-configs/x",
+		})
+
+		if all["subnetIpServerId"] != "/infra/dhcp-server-configs/x" {
+			t.Errorf("%s: the path must take precedence over the deprecated id, got %v", attr, all["subnetIpServerId"])
+		}
+
+		if len(all) != 1 {
+			t.Errorf("%s: both attributes route to the one key, got %v", attr, all)
+		}
+	}
+}
+
 func TestUnitRouteImmutableSubset(t *testing.T) {
 	t.Parallel()
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/networkconfig"
 )
@@ -95,6 +96,84 @@ func TestUnitResolveConfigInputsRoutesTheBlockForTheType(t *testing.T) {
 
 	if empty.digests.Equal(inputs.digests) {
 		t.Error("different configurations must digest differently")
+	}
+}
+
+// nsxtBlock is a config_nsxt block with every attribute null except the given
+// ones (a configuration that sets only those).
+func nsxtBlock(ctx context.Context, set map[string]attr.Value) ConfigNsxtValue {
+	attrTypes := ConfigNsxtValue{}.AttributeTypes(ctx)
+	attrs := make(map[string]attr.Value, len(attrTypes))
+
+	for name, typ := range attrTypes {
+		attrs[name] = tftypesNull(typ)
+	}
+
+	for name, v := range set {
+		attrs[name] = v
+	}
+
+	return NewConfigNsxtValueMust(attrTypes, attrs)
+}
+
+func tftypesNull(typ attr.Type) attr.Value {
+	switch typ.(type) {
+	case basetypes.Int64Type:
+		return types.Int64Null()
+	case basetypes.BoolType:
+		return types.BoolNull()
+	default:
+		return types.StringNull()
+	}
+}
+
+// subnet_ip_server_id (deprecated) and subnet_ip_server_path share the config
+// key subnetIpServerId. A null attribute is dropped before routing (blockValues
+// skips null and unknown values), so the unset one of the pair never reaches
+// the wire map -- an unset path does not clobber a set id, nor the reverse.
+func TestUnitResolveConfigInputsNullDhcpProfileAttributeIsNotSent(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	nsxt := typeSpecFor("nsxtLogicalSwitch")
+
+	if nsxt == nil {
+		t.Fatal("the catalogue must know nsxtLogicalSwitch")
+	}
+
+	cases := []struct {
+		name string
+		set  map[string]attr.Value
+		want any
+	}{
+		{
+			"deprecated id only",
+			map[string]attr.Value{"subnet_ip_server_id": types.Int64Value(7)},
+			int64(7),
+		},
+		{
+			"path only",
+			map[string]attr.Value{"subnet_ip_server_path": types.StringValue("/infra/dhcp-server-configs/x")},
+			"/infra/dhcp-server-configs/x",
+		},
+	}
+
+	for _, tc := range cases {
+		model := seedModel(t, ctx, nil)
+		model.ConfigNsxt = nsxtBlock(ctx, tc.set)
+
+		inputs, diags := resolveConfigInputs(ctx, model, nsxt)
+		if diags.HasError() {
+			t.Fatalf("%s: %v", tc.name, diags)
+		}
+
+		if got := inputs.all["subnetIpServerId"]; got != tc.want {
+			t.Errorf("%s: subnetIpServerId = %#v, want %#v (all=%v)", tc.name, got, tc.want, inputs.all)
+		}
+
+		if len(inputs.all) != 1 {
+			t.Errorf("%s: only the set attribute may be sent, got %v", tc.name, inputs.all)
+		}
 	}
 }
 

@@ -319,8 +319,18 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 					"subnet_ip_server_id": schema.Int64Attribute{
 						Optional:            true,
 						WriteOnly:           true,
-						Description:         "Id of the DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).",
-						MarkdownDescription: "Id of the DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).",
+						Description:         "Deprecated: Morpheus identifies the DHCP profile by its NSX-T policy path (a string such as `/infra/dhcp-server-configs/<id>`), never by a number, so no value of this attribute is accepted and none is converted. Use `subnet_ip_server_path`. This attribute will be removed in a future release.",
+						MarkdownDescription: "Deprecated: Morpheus identifies the DHCP profile by its NSX-T policy path (a string such as `/infra/dhcp-server-configs/<id>`), never by a number, so no value of this attribute is accepted and none is converted. Use `subnet_ip_server_path`. This attribute will be removed in a future release.",
+						DeprecationMessage:  "Use subnet_ip_server_path: the DHCP profile is identified by its NSX-T policy path (a string), not a numeric id, and no value here is converted. This attribute will be removed in a future release.",
+					},
+					"subnet_ip_server_path": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "The DHCP server or relay profile for `dhcpLocal` or `dhcpRelay`, identified by its NSX-T **policy path** -- the profile's `path`, e.g. `/infra/dhcp-server-configs/<id>` or `/infra/dhcp-relay-configs/<id>` -- not its NSX-T `id`. Morpheus stores and sends the value as given (it becomes the segment's `dhcp_config_path`; the Morpheus key is `subnetIpServerId` although it holds a path), so pass the full path: nothing converts an id into one. The `hpe_morpheus_network_dhcp_server` data source returns it as `provider_id`.",
+						MarkdownDescription: "The DHCP server or relay profile for `dhcpLocal` or `dhcpRelay`, identified by its NSX-T **policy path** -- the profile's `path`, e.g. `/infra/dhcp-server-configs/<id>` or `/infra/dhcp-relay-configs/<id>` -- not its NSX-T `id`. Morpheus stores and sends the value as given (it becomes the segment's `dhcp_config_path`; the Morpheus key is `subnetIpServerId` although it holds a path), so pass the full path: nothing converts an id into one. The `hpe_morpheus_network_dhcp_server` data source returns it as `provider_id`.",
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("subnet_ip_server_id")),
+						},
 					},
 					"vlan_ids": schema.StringAttribute{
 						Optional:            true,
@@ -419,8 +429,18 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 					"subnet_ip_server_id": schema.Int64Attribute{
 						Optional:            true,
 						WriteOnly:           true,
-						Description:         "Id of the NSX-T DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).",
-						MarkdownDescription: "Id of the NSX-T DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).",
+						Description:         "Deprecated: Morpheus identifies the DHCP profile by its NSX-T policy path (a string such as `/infra/dhcp-server-configs/<id>`), never by a number, so no value of this attribute is accepted and none is converted. Use `subnet_ip_server_path`. This attribute will be removed in a future release.",
+						MarkdownDescription: "Deprecated: Morpheus identifies the DHCP profile by its NSX-T policy path (a string such as `/infra/dhcp-server-configs/<id>`), never by a number, so no value of this attribute is accepted and none is converted. Use `subnet_ip_server_path`. This attribute will be removed in a future release.",
+						DeprecationMessage:  "Use subnet_ip_server_path: the DHCP profile is identified by its NSX-T policy path (a string), not a numeric id, and no value here is converted. This attribute will be removed in a future release.",
+					},
+					"subnet_ip_server_path": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "The DHCP server or relay profile for `dhcpLocal` or `dhcpRelay`, identified by its NSX-T **policy path** -- the profile's `path`, e.g. `/infra/dhcp-server-configs/<id>` or `/infra/dhcp-relay-configs/<id>` -- not its NSX-T `id`. Morpheus stores and sends the value as given (it becomes the segment's `dhcp_config_path`; the Morpheus key is `subnetIpServerId` although it holds a path), so pass the full path: nothing converts an id into one. The `hpe_morpheus_network_dhcp_server` data source returns it as `provider_id`.",
+						MarkdownDescription: "The DHCP server or relay profile for `dhcpLocal` or `dhcpRelay`, identified by its NSX-T **policy path** -- the profile's `path`, e.g. `/infra/dhcp-server-configs/<id>` or `/infra/dhcp-relay-configs/<id>` -- not its NSX-T `id`. Morpheus stores and sends the value as given (it becomes the segment's `dhcp_config_path`; the Morpheus key is `subnetIpServerId` although it holds a path), so pass the full path: nothing converts an id into one. The `hpe_morpheus_network_dhcp_server` data source returns it as `provider_id`.",
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("subnet_ip_server_id")),
+						},
 					},
 					"vlan_ids": schema.StringAttribute{
 						Optional:            true,
@@ -3475,6 +3495,24 @@ func (t ConfigNsxCloudType) ValueFromObject(ctx context.Context, in basetypes.Ob
 			fmt.Sprintf(`subnet_ip_server_id expected to be basetypes.Int64Value, was: %T`, subnetIpServerIdAttribute))
 	}
 
+	subnetIpServerPathAttribute, ok := attributes["subnet_ip_server_path"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_server_path is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetIpServerPathVal, ok := subnetIpServerPathAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_server_path expected to be basetypes.StringValue, was: %T`, subnetIpServerPathAttribute))
+	}
+
 	vlanIdsAttribute, ok := attributes["vlan_ids"]
 
 	if !ok {
@@ -3504,6 +3542,7 @@ func (t ConfigNsxCloudType) ValueFromObject(ctx context.Context, in basetypes.Ob
 		SubnetDhcpServerAddress: subnetDhcpServerAddressVal,
 		SubnetIpManagementType:  subnetIpManagementTypeVal,
 		SubnetIpServerId:        subnetIpServerIdVal,
+		SubnetIpServerPath:      subnetIpServerPathVal,
 		VlanIds:                 vlanIdsVal,
 		state:                   attr.ValueStateKnown,
 	}, diags
@@ -3680,6 +3719,24 @@ func NewConfigNsxCloudValue(attributeTypes map[string]attr.Type, attributes map[
 			fmt.Sprintf(`subnet_ip_server_id expected to be basetypes.Int64Value, was: %T`, subnetIpServerIdAttribute))
 	}
 
+	subnetIpServerPathAttribute, ok := attributes["subnet_ip_server_path"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_server_path is missing from object`)
+
+		return NewConfigNsxCloudValueUnknown(), diags
+	}
+
+	subnetIpServerPathVal, ok := subnetIpServerPathAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_server_path expected to be basetypes.StringValue, was: %T`, subnetIpServerPathAttribute))
+	}
+
 	vlanIdsAttribute, ok := attributes["vlan_ids"]
 
 	if !ok {
@@ -3709,6 +3766,7 @@ func NewConfigNsxCloudValue(attributeTypes map[string]attr.Type, attributes map[
 		SubnetDhcpServerAddress: subnetDhcpServerAddressVal,
 		SubnetIpManagementType:  subnetIpManagementTypeVal,
 		SubnetIpServerId:        subnetIpServerIdVal,
+		SubnetIpServerPath:      subnetIpServerPathVal,
 		VlanIds:                 vlanIdsVal,
 		state:                   attr.ValueStateKnown,
 	}, diags
@@ -3786,12 +3844,13 @@ type ConfigNsxCloudValue struct {
 	SubnetDhcpServerAddress basetypes.StringValue `tfsdk:"subnet_dhcp_server_address"`
 	SubnetIpManagementType  basetypes.StringValue `tfsdk:"subnet_ip_management_type"`
 	SubnetIpServerId        basetypes.Int64Value  `tfsdk:"subnet_ip_server_id"`
+	SubnetIpServerPath      basetypes.StringValue `tfsdk:"subnet_ip_server_path"`
 	VlanIds                 basetypes.StringValue `tfsdk:"vlan_ids"`
 	state                   attr.ValueState
 }
 
 func (v ConfigNsxCloudValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 7)
+	attrTypes := make(map[string]tftypes.Type, 8)
 
 	var val tftypes.Value
 	var err error
@@ -3802,13 +3861,14 @@ func (v ConfigNsxCloudValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 	attrTypes["subnet_dhcp_server_address"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["subnet_ip_management_type"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["subnet_ip_server_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["subnet_ip_server_path"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["vlan_ids"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 7)
+		vals := make(map[string]tftypes.Value, 8)
 
 		val, err = v.ConnectedGateway.ToTerraformValue(ctx)
 		if err != nil {
@@ -3851,6 +3911,13 @@ func (v ConfigNsxCloudValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 		}
 
 		vals["subnet_ip_server_id"] = val
+
+		val, err = v.SubnetIpServerPath.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_ip_server_path"] = val
 
 		val, err = v.VlanIds.ToTerraformValue(ctx)
 		if err != nil {
@@ -3895,6 +3962,7 @@ func (v ConfigNsxCloudValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 		"subnet_dhcp_server_address": basetypes.StringType{},
 		"subnet_ip_management_type":  basetypes.StringType{},
 		"subnet_ip_server_id":        basetypes.Int64Type{},
+		"subnet_ip_server_path":      basetypes.StringType{},
 		"vlan_ids":                   basetypes.StringType{},
 	}
 
@@ -3915,6 +3983,7 @@ func (v ConfigNsxCloudValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 			"subnet_dhcp_server_address": v.SubnetDhcpServerAddress,
 			"subnet_ip_management_type":  v.SubnetIpManagementType,
 			"subnet_ip_server_id":        v.SubnetIpServerId,
+			"subnet_ip_server_path":      v.SubnetIpServerPath,
 			"vlan_ids":                   v.VlanIds,
 		})
 
@@ -3960,6 +4029,10 @@ func (v ConfigNsxCloudValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.SubnetIpServerPath.Equal(other.SubnetIpServerPath) {
+		return false
+	}
+
 	if !v.VlanIds.Equal(other.VlanIds) {
 		return false
 	}
@@ -3983,6 +4056,7 @@ func (v ConfigNsxCloudValue) AttributeTypes(ctx context.Context) map[string]attr
 		"subnet_dhcp_server_address": basetypes.StringType{},
 		"subnet_ip_management_type":  basetypes.StringType{},
 		"subnet_ip_server_id":        basetypes.Int64Type{},
+		"subnet_ip_server_path":      basetypes.StringType{},
 		"vlan_ids":                   basetypes.StringType{},
 	}
 }
@@ -4254,6 +4328,24 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 			fmt.Sprintf(`subnet_ip_server_id expected to be basetypes.Int64Value, was: %T`, subnetIpServerIdAttribute))
 	}
 
+	subnetIpServerPathAttribute, ok := attributes["subnet_ip_server_path"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_server_path is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetIpServerPathVal, ok := subnetIpServerPathAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_server_path expected to be basetypes.StringValue, was: %T`, subnetIpServerPathAttribute))
+	}
+
 	vlanIdsAttribute, ok := attributes["vlan_ids"]
 
 	if !ok {
@@ -4290,6 +4382,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 		SubnetDhcpServerAddressIpv6: subnetDhcpServerAddressIpv6Val,
 		SubnetIpManagementType:      subnetIpManagementTypeVal,
 		SubnetIpServerId:            subnetIpServerIdVal,
+		SubnetIpServerPath:          subnetIpServerPathVal,
 		VlanIds:                     vlanIdsVal,
 		state:                       attr.ValueStateKnown,
 	}, diags
@@ -4592,6 +4685,24 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 			fmt.Sprintf(`subnet_ip_server_id expected to be basetypes.Int64Value, was: %T`, subnetIpServerIdAttribute))
 	}
 
+	subnetIpServerPathAttribute, ok := attributes["subnet_ip_server_path"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_server_path is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	subnetIpServerPathVal, ok := subnetIpServerPathAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_server_path expected to be basetypes.StringValue, was: %T`, subnetIpServerPathAttribute))
+	}
+
 	vlanIdsAttribute, ok := attributes["vlan_ids"]
 
 	if !ok {
@@ -4628,6 +4739,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 		SubnetDhcpServerAddressIpv6: subnetDhcpServerAddressIpv6Val,
 		SubnetIpManagementType:      subnetIpManagementTypeVal,
 		SubnetIpServerId:            subnetIpServerIdVal,
+		SubnetIpServerPath:          subnetIpServerPathVal,
 		VlanIds:                     vlanIdsVal,
 		state:                       attr.ValueStateKnown,
 	}, diags
@@ -4712,12 +4824,13 @@ type ConfigNsxtValue struct {
 	SubnetDhcpServerAddressIpv6 basetypes.StringValue `tfsdk:"subnet_dhcp_server_address_ipv6"`
 	SubnetIpManagementType      basetypes.StringValue `tfsdk:"subnet_ip_management_type"`
 	SubnetIpServerId            basetypes.Int64Value  `tfsdk:"subnet_ip_server_id"`
+	SubnetIpServerPath          basetypes.StringValue `tfsdk:"subnet_ip_server_path"`
 	VlanIds                     basetypes.StringValue `tfsdk:"vlan_ids"`
 	state                       attr.ValueState
 }
 
 func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 14)
+	attrTypes := make(map[string]tftypes.Type, 15)
 
 	var val tftypes.Value
 	var err error
@@ -4735,13 +4848,14 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 	attrTypes["subnet_dhcp_server_address_ipv6"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["subnet_ip_management_type"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["subnet_ip_server_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["subnet_ip_server_path"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["vlan_ids"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 14)
+		vals := make(map[string]tftypes.Value, 15)
 
 		val, err = v.ConnectedGateway.ToTerraformValue(ctx)
 		if err != nil {
@@ -4834,6 +4948,13 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 
 		vals["subnet_ip_server_id"] = val
 
+		val, err = v.SubnetIpServerPath.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_ip_server_path"] = val
+
 		val, err = v.VlanIds.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -4884,6 +5005,7 @@ func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 		"subnet_dhcp_server_address_ipv6": basetypes.StringType{},
 		"subnet_ip_management_type":       basetypes.StringType{},
 		"subnet_ip_server_id":             basetypes.Int64Type{},
+		"subnet_ip_server_path":           basetypes.StringType{},
 		"vlan_ids":                        basetypes.StringType{},
 	}
 
@@ -4911,6 +5033,7 @@ func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 			"subnet_dhcp_server_address_ipv6": v.SubnetDhcpServerAddressIpv6,
 			"subnet_ip_management_type":       v.SubnetIpManagementType,
 			"subnet_ip_server_id":             v.SubnetIpServerId,
+			"subnet_ip_server_path":           v.SubnetIpServerPath,
 			"vlan_ids":                        v.VlanIds,
 		})
 
@@ -4984,6 +5107,10 @@ func (v ConfigNsxtValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.SubnetIpServerPath.Equal(other.SubnetIpServerPath) {
+		return false
+	}
+
 	if !v.VlanIds.Equal(other.VlanIds) {
 		return false
 	}
@@ -5014,6 +5141,7 @@ func (v ConfigNsxtValue) AttributeTypes(ctx context.Context) map[string]attr.Typ
 		"subnet_dhcp_server_address_ipv6": basetypes.StringType{},
 		"subnet_ip_management_type":       basetypes.StringType{},
 		"subnet_ip_server_id":             basetypes.Int64Type{},
+		"subnet_ip_server_path":           basetypes.StringType{},
 		"vlan_ids":                        basetypes.StringType{},
 	}
 }
