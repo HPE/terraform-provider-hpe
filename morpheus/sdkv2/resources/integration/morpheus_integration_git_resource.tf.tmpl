@@ -1,0 +1,7 @@
+resource "hpe_morpheus_integration_git" "tf_example_git_integration" {
+  name               = "{{.Name}}"
+  enabled            = {{.Enabled}}
+  url                = {{.Url}}
+  default_branch     = {{.DefaultBranch}}
+  enable_git_caching = {{.EnableGitCaching}}
+}

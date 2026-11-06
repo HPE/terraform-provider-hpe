@@ -97,6 +97,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | `Ansible` | `ansible` | Ansible integration |
 | `AnsibleTower` | `ansible_tower` | Ansible Tower/AWX, reachable from the appliance, with an integration for it on the appliance -- both named by the `TF_VAR_testacc_morpheus_ansible_tower_*` variables below (`testhelpers/tower_fixture.go`) |
 | `Chef` | `chef` | Chef integration |
+| `Git` | `git` | Git integration. The tests that create a Git or Ansible integration also need a repository the appliance can clone, from the `TF_VAR_testacc_morpheus_git_repository_*` variables below, and skip without one |
 | `Puppet` | `puppet` | Puppet integration |
 
 ### Container/Orchestration
@@ -121,6 +122,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | Capability | Env Value | Description |
 |------------|-----------|-------------|
 | `PCE` | `pce` | A live PCE (Private Cloud Enterprise) instance reachable via GreenLake IAM. Gates the end-to-end `pce_identity` auth-flow test, which authenticates through GreenLake rather than the main appliance credentials. The test skips unless `TF_VAR_testacc_pce_identity_client_id`, `_client_secret`, `_issuer_url`, `_location`, `_space` and `TF_ACC_PCE_IDENTITY_CLOUD_NAME` are all set |
+| `LDAP` | `ldap` | An Active Directory / LDAP directory the appliance can bind to. Gates the Active Directory identity source test, which reads the directory from the `TF_VAR_testacc_active_directory_*` variables below and skips without them. Morpheus binds to the directory and looks its groups up when the identity source is saved, so the test cannot run against a placeholder |
 | `Plugins` | `plugins` | Plugin install/remove -- appliance-wide, needs admin-plugins permission |
 
 ### Tenancy
@@ -298,6 +300,14 @@ Exit codes:
 | `TF_VAR_testacc_morpheus_hvm_network_server_name` | Name of the HVM cluster's network server (`<cluster> HVM Network Server`), on which the typed HVM network tests create their networks. The list API returns it only with `showHidden=true`, which the data source cannot ask for until MORPH-20056; the tests skip while this is unset |
 | `TF_VAR_testacc_morpheus_hvm_switch_name`, `TF_VAR_testacc_morpheus_hvm_switch_name_2` | Two virtual switches of the HVM cluster as the `hvm-vswitch-or-router` option source lists them (`vs0`, `vs1`); the OVS port group test creates on the first and moves to the second, a replacement |
 | `TF_VAR_testacc_morpheus_hvm_host_interface` | A host network interface the HVM hosts have (`bond0`, `hvmnet2`, ...), for the HVM data network test |
+| `TF_VAR_testacc_morpheus_git_repository_url` | URL of a Git repository Morpheus can clone without credentials, for the tests that create a Git or Ansible integration (`sdkv2/resources/integration`): Morpheus clones the repository when the integration is saved and rejects one it cannot reach, so the documented example's public repository cannot be relied on from every appliance. The tests skip when it is unset |
+| `TF_VAR_testacc_morpheus_git_repository_branch` | A branch of that repository. The tests skip when it is unset |
+| `TF_VAR_testacc_active_directory_server` | Host name of an Active Directory domain controller the appliance can bind to, for the Active Directory identity source test (`sdkv2/resources/identitysource`; needs the `ldap` capability). Morpheus binds to it as the binding user when the identity source is saved and rejects the save if that fails. The test skips when any of the five `TF_VAR_testacc_active_directory_*` variables below is unset |
+| `TF_VAR_testacc_active_directory_domain` | That directory's domain, e.g. `example.com` |
+| `TF_VAR_testacc_active_directory_binding_username` | A user that can bind to the directory |
+| `TF_VAR_testacc_active_directory_binding_password` | That user's password |
+| `TF_VAR_testacc_active_directory_group_name` | A group in the directory to map a Morpheus role to, spelt as its `sAMAccountName`: Morpheus looks the group up when the identity source is saved and rewrites the mapping to the name and distinguished name the directory reports |
+| `TF_VAR_testacc_active_directory_group_fqn` | Optional: that group's distinguished name. When set it is configured and asserted; when unset the test leaves the attribute to Morpheus and only asserts that it was filled in |
 | `TF_ACC_IPAM_TYPE` | Pool server type code (e.g. `infoblox`, `phpipam`, `bluecat`) of a reachable IPAM. Required by the network pool server create-based tests — Morpheus 9.1.2 verifies the service URL on create, so these tests skip without a reachable IPAM |
 | `TF_ACC_IPAM_URL` | Reachable IPAM service URL. Required by the network pool server create-based tests (9.1.2 reachability check) |
 | `TF_ACC_IPAM_USERNAME` | IPAM service username. Required by the network pool server create-based tests (9.1.2 reachability check) |
