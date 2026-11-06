@@ -20,6 +20,10 @@ func TestAccMorpheusAppBlueprintTerraformGitExampleOk(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.Git)
 
+	integrationName := testhelpers.GitIntegrationName(t)
+	repositoryName := testhelpers.GitRepositoryName(t)
+	branch := testhelpers.GitRepositoryBranch(t)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -31,75 +35,78 @@ func TestAccMorpheusAppBlueprintTerraformGitExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := blueprint.RenderAppBlueprintTerraformGitConfig(t, map[string]string{
-		"Name": name,
+		"Name":          name,
+		"IntegrationId": testhelpers.GitIntegrationIDRef,
+		"RepositoryId":  testhelpers.GitRepositoryIDRef(repositoryName),
+		"VersionRef":    testhelpers.HCLEscape(branch),
 	})
+
+	dependenciesConfig := testhelpers.GitIntegrationBlock(integrationName)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_terraform.example",
+			"hpe_morpheus_app_blueprint_terraform.tfapp_blueprint_git",
 			"category",
 			"terraformdemo",
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_terraform.example",
+			"hpe_morpheus_app_blueprint_terraform.tfapp_blueprint_git",
 			"description",
 			"testing terraform",
 		),
 
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_terraform.example",
-			"integration_id",
-			"3",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_app_blueprint_terraform.tfapp_blueprint_git", "integration_id",
+			"data.hpe_morpheus_integration_git.git", "id",
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_terraform.example",
+			"hpe_morpheus_app_blueprint_terraform.tfapp_blueprint_git",
 			"name",
-			"tfappbluedemogit",
+			name,
+		),
+
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_app_blueprint_terraform.tfapp_blueprint_git", "repository_id",
+			"data.hpe_morpheus_integration_git.git", "repository_ids."+repositoryName,
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_terraform.example",
-			"repository_id",
-			"1",
-		),
-
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_terraform.example",
+			"hpe_morpheus_app_blueprint_terraform.tfapp_blueprint_git",
 			"source_type",
 			"repository",
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_terraform.example",
+			"hpe_morpheus_app_blueprint_terraform.tfapp_blueprint_git",
 			"terraform_options",
 			"-var foo=bar",
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_terraform.example",
+			"hpe_morpheus_app_blueprint_terraform.tfapp_blueprint_git",
 			"terraform_version",
 			"1.1.1",
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_terraform.example",
+			"hpe_morpheus_app_blueprint_terraform.tfapp_blueprint_git",
 			"tfvar_secret",
 			"tfvars/rdsdemo-secrets",
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_terraform.example",
+			"hpe_morpheus_app_blueprint_terraform.tfapp_blueprint_git",
 			"version_ref",
-			"main",
+			branch,
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_terraform.example",
+			"hpe_morpheus_app_blueprint_terraform.tfapp_blueprint_git",
 			"working_path",
 			"./test",
 		),
@@ -111,13 +118,13 @@ func TestAccMorpheusAppBlueprintTerraformGitExampleOk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 			// Plan after apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

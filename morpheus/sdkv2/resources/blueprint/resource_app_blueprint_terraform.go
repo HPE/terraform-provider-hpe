@@ -378,15 +378,20 @@ func resourceAppBlueprintTerraformRead(ctx context.Context, d *schema.ResourceDa
 		d.Set("version_ref", terraformBlueprint.Blueprint.Config.Terraform.Git.Branch)
 	case "spec":
 		d.Set("source_type", "spec")
-		var specTemplates []int64
-		if terraformBlueprint.Blueprint.Config.Config.Specs != nil {
-			for i := 0; i < len(terraformBlueprint.Blueprint.Config.Config.Specs); i++ {
-				specTemplate := terraformBlueprint.Blueprint.Config.Config.Specs[i]
-				specTemplates = append(specTemplates, int64(specTemplate.ID))
-			}
-		}
-		d.Set("spec_template_ids", specTemplates)
 	}
+
+	// spec_template_ids is Optional+Computed and belongs to the spec source
+	// only. It has to be set for every source type, to what the blueprint
+	// has -- none, for hcl, json and git -- or it stays unknown in state and
+	// every plan after the apply wants to compute it ("known after apply").
+	specTemplates := []int64{}
+	if terraformBlueprint.Blueprint.Config.Config.Specs != nil {
+		for i := 0; i < len(terraformBlueprint.Blueprint.Config.Config.Specs); i++ {
+			specTemplate := terraformBlueprint.Blueprint.Config.Config.Specs[i]
+			specTemplates = append(specTemplates, int64(specTemplate.ID))
+		}
+	}
+	d.Set("spec_template_ids", specTemplates)
 
 	return diags
 }
