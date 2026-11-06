@@ -75,6 +75,48 @@ func ResourceSettingBackup() *schema.Resource {
 	}
 }
 
+// backupSettingsRequest builds the body of PUT /api/backup-settings from the resource
+// data. Everything -- the default storage bucket and the default schedule included --
+// goes under "backupSettings": the appliance reads only that key, and a field placed
+// beside it is accepted and silently ignored (MORPH-20485). Shared by create and
+// update, which send the same body.
+func backupSettingsRequest(d *schema.ResourceData) (*morpheus.Request, diag.Diagnostics) {
+	settings := map[string]any{}
+
+	for key, attr := range map[string]string{
+		"backupsEnabled":  "scheduled_backups",
+		"createBackups":   "create_backups",
+		"backupAppliance": "backup_appliance",
+	} {
+		v, ok := d.Get(attr).(bool)
+		if !ok {
+			return nil, diag.FromErr(helpers.TypeAssertFailError(attr, d.Get(attr)))
+		}
+		settings[key] = v
+	}
+
+	retentionDays, ok := d.Get("retention_days").(int)
+	if !ok {
+		return nil, diag.FromErr(helpers.TypeAssertFailError("retention_days", d.Get("retention_days")))
+	}
+	settings["retentionCount"] = retentionDays
+
+	for key, attr := range map[string]string{
+		"defaultStorageBucket": "default_backup_storage_bucket_id",
+		"defaultSchedule":      "default_backup_schedule_id",
+	} {
+		id, ok := d.Get(attr).(int)
+		if !ok {
+			return nil, diag.FromErr(helpers.TypeAssertFailError(attr, d.Get(attr)))
+		}
+		if id != 0 {
+			settings[key] = map[string]any{"id": id}
+		}
+	}
+
+	return &morpheus.Request{Body: map[string]any{"backupSettings": settings}}, nil
+}
+
 func resourceSettingBackupCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
@@ -85,73 +127,9 @@ func resourceSettingBackupCreate(ctx context.Context, d *schema.ResourceData, me
 
 	var diags diag.Diagnostics
 
-	var scheduledBackups bool
-	if v, ok := d.Get("scheduled_backups").(bool); ok {
-		scheduledBackups = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("scheduled_backups", d.Get("scheduled_backups")))
-	}
-
-	var createBackups bool
-	if v, ok := d.Get("create_backups").(bool); ok {
-		createBackups = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("create_backups", d.Get("create_backups")))
-	}
-
-	var backupAppliance bool
-	if v, ok := d.Get("backup_appliance").(bool); ok {
-		backupAppliance = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("backup_appliance", d.Get("backup_appliance")))
-	}
-
-	var retentionDays int
-	if v, ok := d.Get("retention_days").(int); ok {
-		retentionDays = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("retention_days", d.Get("retention_days")))
-	}
-
-	req := &morpheus.Request{
-		Body: map[string]any{
-			"backupSettings": map[string]any{
-				"backupsEnabled":  scheduledBackups,
-				"createBackups":   createBackups,
-				"backupAppliance": backupAppliance,
-				"retentionCount":  retentionDays,
-			},
-		},
-	}
-
-	var defaultStorageBucketID int
-	if v, ok := d.Get("default_backup_storage_bucket_id").(int); ok {
-		defaultStorageBucketID = v
-	} else {
-		return diag.FromErr(
-			helpers.TypeAssertFailError("default_backup_storage_bucket_id", d.Get("default_backup_storage_bucket_id")),
-		)
-	}
-
-	if defaultStorageBucketID != 0 {
-		req.Body["defaultStorageBucket"] = map[string]any{
-			"id": defaultStorageBucketID,
-		}
-	}
-
-	var defaultBackupScheduleID int
-	if v, ok := d.Get("default_backup_schedule_id").(int); ok {
-		defaultBackupScheduleID = v
-	} else {
-		return diag.FromErr(
-			helpers.TypeAssertFailError("default_backup_schedule_id", d.Get("default_backup_schedule_id")),
-		)
-	}
-
-	if defaultBackupScheduleID != 0 {
-		req.Body["defaultSchedule"] = map[string]any{
-			"id": defaultBackupScheduleID,
-		}
+	req, bodyDiags := backupSettingsRequest(d)
+	if bodyDiags.HasError() {
+		return bodyDiags
 	}
 
 	resp, err := client.UpdateBackupSettings(req)
@@ -248,73 +226,9 @@ func resourceSettingBackupUpdate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
-	var scheduledBackups bool
-	if v, ok := d.Get("scheduled_backups").(bool); ok {
-		scheduledBackups = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("scheduled_backups", d.Get("scheduled_backups")))
-	}
-
-	var createBackups bool
-	if v, ok := d.Get("create_backups").(bool); ok {
-		createBackups = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("create_backups", d.Get("create_backups")))
-	}
-
-	var backupAppliance bool
-	if v, ok := d.Get("backup_appliance").(bool); ok {
-		backupAppliance = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("backup_appliance", d.Get("backup_appliance")))
-	}
-
-	var retentionDays int
-	if v, ok := d.Get("retention_days").(int); ok {
-		retentionDays = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("retention_days", d.Get("retention_days")))
-	}
-
-	req := &morpheus.Request{
-		Body: map[string]any{
-			"backupSettings": map[string]any{
-				"backupsEnabled":  scheduledBackups,
-				"createBackups":   createBackups,
-				"backupAppliance": backupAppliance,
-				"retentionCount":  retentionDays,
-			},
-		},
-	}
-
-	var defaultStorageBucketID int
-	if v, ok := d.Get("default_backup_storage_bucket_id").(int); ok {
-		defaultStorageBucketID = v
-	} else {
-		return diag.FromErr(
-			helpers.TypeAssertFailError("default_backup_storage_bucket_id", d.Get("default_backup_storage_bucket_id")),
-		)
-	}
-
-	if defaultStorageBucketID != 0 {
-		req.Body["defaultStorageBucket"] = map[string]any{
-			"id": defaultStorageBucketID,
-		}
-	}
-
-	var defaultBackupScheduleID int
-	if v, ok := d.Get("default_backup_schedule_id").(int); ok {
-		defaultBackupScheduleID = v
-	} else {
-		return diag.FromErr(
-			helpers.TypeAssertFailError("default_backup_schedule_id", d.Get("default_backup_schedule_id")),
-		)
-	}
-
-	if defaultBackupScheduleID != 0 {
-		req.Body["defaultSchedule"] = map[string]any{
-			"id": defaultBackupScheduleID,
-		}
+	req, bodyDiags := backupSettingsRequest(d)
+	if bodyDiags.HasError() {
+		return bodyDiags
 	}
 
 	log.Printf("API Update: %s", req)

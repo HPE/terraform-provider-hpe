@@ -3,6 +3,7 @@
 package setting_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -27,19 +28,25 @@ func TestAccMorpheusSettingBackupExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	// This example asserts environment-specific resource IDs (default backup
-	// schedule and storage bucket) that must be pre-seeded, and it mutates
-	// global backup settings. Skip unless explicitly opted in.
+	// The default backup schedule and storage bucket must exist on the appliance
+	// (TF_ACC_BACKUP_SCHEDULE_ID / TF_ACC_BACKUP_BUCKET_ID; the rendered example's
+	// ids otherwise), and the test mutates global backup settings. Skip unless
+	// explicitly opted in.
 	if skip.SkipByDefault(t) {
-		t.Skip("set RUN_SKIPPED_BY_DEFAULT to run; needs seeded backup schedule/storage bucket IDs and mutates global settings")
+		t.Skip("set RUN_SKIPPED_BY_DEFAULT to run; needs an existing backup schedule and storage bucket (TF_ACC_BACKUP_SCHEDULE_ID, TF_ACC_BACKUP_BUCKET_ID) and mutates global settings")
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	scheduleID := envOr("TF_ACC_BACKUP_SCHEDULE_ID", "3")
+	bucketID := envOr("TF_ACC_BACKUP_BUCKET_ID", "17")
+
 	resourceConfig, err := setting.RenderSettingBackupConfig(t, map[string]string{
-		"Name": name,
+		"Name":                         name,
+		"DefaultBackupScheduleId":      scheduleID,
+		"DefaultBackupStorageBucketId": bucketID,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -61,13 +68,13 @@ func TestAccMorpheusSettingBackupExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_setting_backup.example",
 			"default_backup_schedule_id",
-			"3",
+			scheduleID,
 		),
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_setting_backup.example",
 			"default_backup_storage_bucket_id",
-			"17",
+			bucketID,
 		),
 
 		resource.TestCheckResourceAttr(
@@ -101,4 +108,13 @@ func TestAccMorpheusSettingBackupExampleOk(t *testing.T) {
 			},
 		},
 	})
+}
+
+// envOr returns the environment variable's value, or the fallback when it is unset or empty.
+func envOr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+
+	return fallback
 }

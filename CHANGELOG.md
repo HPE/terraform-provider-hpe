@@ -127,6 +127,17 @@ appliance and never read back — and leaves how the provider tracks a change (w
 digest in private state, the in-place update) to the resource description, so that documentation
 generated from the provider specification for other tools does not inherit Terraform's state and
 plan vocabulary for an argument. No behaviour changes.
+## Bug fixes
+
+### `hpe_morpheus_setting_backup`: the default storage bucket and schedule are applied (MORPH-20485)
+
+`default_backup_storage_bucket_id` and `default_backup_schedule_id` were sent beside the
+`backupSettings` object in the request instead of inside it, where the appliance reads them, so
+both were accepted and silently ignored: the setting applied without error, the appliance kept no
+default bucket or schedule, and every plan proposed the same change again. Both now travel inside
+`backupSettings` and take effect on the first apply. A configuration that set either attribute
+sees the appliance change accordingly after upgrading.
+
 # v2.2.0 Release Notes
 
 ## Breaking changes
