@@ -601,9 +601,9 @@ func (r *Resource) Update(
 		servicePlan.MaxCores = plan.MaxCores.ValueInt64Pointer()
 	}
 
-	if !plan.MaxDisks.IsNull() && !plan.MaxDisks.IsUnknown() {
-		servicePlan.MaxDisks = plan.MaxDisks.ValueInt64Pointer()
-	}
+	// Sent when known, null when being cleared (no disk count limit), not
+	// sent otherwise.
+	clearable.NullableInt64(pending, "max_disks", plan.MaxDisks, &servicePlan.MaxDisks)
 
 	if !plan.CoresPerSocket.IsNull() && !plan.CoresPerSocket.IsUnknown() {
 		servicePlan.CoresPerSocket = plan.CoresPerSocket.ValueInt64Pointer()

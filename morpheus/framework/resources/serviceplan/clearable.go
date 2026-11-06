@@ -5,12 +5,18 @@ package serviceplan
 import "github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 
 // clearableAttributes are the optional attributes a user can remove from the
-// configuration to clear on the service plan: the description (sent as
-// null) and the price sets (sent as an empty list). price_set_ids is
-// Optional+Computed, so ModifyPlan plans the clear once an apply has recorded
-// it as configured; description is Optional-only and needs no record.
+// configuration to clear on the service plan: the description and the disk
+// count limit (sent as null) and the price sets (sent as an empty list).
+// price_set_ids and max_disks are Optional+Computed, so ModifyPlan plans the
+// clear once an apply has recorded them as configured; description is
+// Optional-only and needs no record.
+//
+// A cleared max_disks is sent as null, never as 0: Morpheus stores a literal
+// 0 as a limit that rejects every instance on the plan (MORPH-18341), while
+// null is "no limit", the same as a plan created without one.
 var clearableAttributes = clearable.Attributes{
 	{Name: "description", Mode: clearable.Clear},
+	{Name: "max_disks", Mode: clearable.Clear},
 	{Name: "price_set_ids", Mode: clearable.Clear},
 }
 
@@ -28,6 +34,5 @@ var notClearable = clearable.NotClearable{
 	"id":                 "the plan's identifier, configured only to adopt an existing plan",
 	"max_cores":          "a plan limit Morpheus keeps a value for; the current value is kept when it is removed",
 	"max_cpu":            "a plan limit Morpheus keeps a value for; the current value is kept when it is removed",
-	"max_disks":          "a plan limit Morpheus keeps a value for; the current value is kept when it is removed",
 	"sort_order":         "Morpheus assigns an order; the current value is kept when it is removed",
 }

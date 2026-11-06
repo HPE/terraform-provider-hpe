@@ -17,8 +17,13 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
-// Removing the description clears it on the service plan (MORPH-17990). It
-// is Optional-only: Terraform plans the null, and Update now sends it.
+// Removing the description or the disk count limit clears it on the service
+// plan (MORPH-17990). The description is Optional-only: Terraform plans the
+// null, and Update sends it. max_disks is Optional+Computed: ModifyPlan plans
+// the clear once an apply has recorded it as configured, and Update sends
+// null -- never 0, which Morpheus stores as a limit that rejects every
+// instance on the plan (MORPH-18341); a cleared limit reads back unset, like
+// one never configured.
 func TestAccMorpheusServicePlanRemovedAttributesAreCleared(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -45,8 +50,11 @@ resource "hpe_morpheus_service_plan" "test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: config(`  description = "to be cleared"`),
-				Check:  resource.TestCheckResourceAttr(rn, "description", "to be cleared"),
+				Config: config("  description = \"to be cleared\"\n  max_disks   = 2"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(rn, "description", "to be cleared"),
+					resource.TestCheckResourceAttr(rn, "max_disks", "2"),
+				),
 			},
 			{
 				Config: config(""),
@@ -54,9 +62,13 @@ resource "hpe_morpheus_service_plan" "test" {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(rn, plancheck.ResourceActionUpdate),
 						plancheck.ExpectKnownValue(rn, tfjsonpath.New("description"), knownvalue.Null()),
+						plancheck.ExpectKnownValue(rn, tfjsonpath.New("max_disks"), knownvalue.Null()),
 					},
 				},
-				Check: resource.TestCheckNoResourceAttr(rn, "description"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(rn, "description"),
+					resource.TestCheckNoResourceAttr(rn, "max_disks"),
+				),
 			},
 			{
 				Config:   config(""),

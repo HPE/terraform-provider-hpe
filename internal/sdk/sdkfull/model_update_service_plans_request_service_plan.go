@@ -37,8 +37,8 @@ type UpdateServicePlansRequestServicePlan struct {
 	MaxCpu    *int64 `json:"maxCpu,omitempty"`
 	// Max cores
 	MaxCores *int64 `json:"maxCores,omitempty"`
-	// Max disks allowed
-	MaxDisks       *int64                                             `json:"maxDisks,omitempty"`
+	// Max disks allowed; null clears the limit
+	MaxDisks       NullableInt64                                      `json:"maxDisks,omitempty"`
 	ProvisionType  *UpdateServicePlansRequestServicePlanProvisionType `json:"provisionType,omitempty"`
 	CoresPerSocket *int64                                             `json:"coresPerSocket,omitempty"`
 	// Can be used to enable / disable customizable cpu
@@ -97,8 +97,8 @@ func (o UpdateServicePlansRequestServicePlan) ToMap() (map[string]interface{}, e
 	if !IsNil(o.MaxCores) {
 		toSerialize["maxCores"] = o.MaxCores
 	}
-	if !IsNil(o.MaxDisks) {
-		toSerialize["maxDisks"] = o.MaxDisks
+	if o.MaxDisks.IsSet() {
+		toSerialize["maxDisks"] = o.MaxDisks.Get()
 	}
 	if !IsNil(o.ProvisionType) {
 		toSerialize["provisionType"] = o.ProvisionType
