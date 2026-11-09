@@ -6,6 +6,8 @@ import (
 	"context"
 	"slices"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/affinityshape"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/affinitylock"
@@ -49,6 +51,15 @@ func (r *Resource) Delete(
 	// Already absent: nothing to do, and rewriting the list would touch other
 	// members for no reason.
 	if !slices.Contains(servers, serverID) {
+		return
+	}
+
+	// Morpheus 9.1 refuses to leave a group with no servers (MORPH-20083): the
+	// last member is left in place with a warning rather than failing the
+	// destroy -- the group's own destroy, which usually follows, removes it.
+	skip, d := affinityshape.SkipLastMemberRemoval(ctx, client, servers, serverID)
+	resp.Diagnostics.Append(d...)
+	if skip {
 		return
 	}
 

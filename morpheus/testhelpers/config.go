@@ -316,3 +316,21 @@ provider "hpe" {
 func ProviderBlockPceIdentity() string {
 	return providerConfigPceIdentity
 }
+
+// EnvAffinityMemberServerID names an existing compute server, on the affinity
+// fixture's cluster/cloud, that tests may place in an affinity group. Morpheus
+// 9.1 refuses a group with no members, so the group tests need it as well as
+// the member tests.
+const EnvAffinityMemberServerID = "TF_VAR_testacc_morpheus_affinity_member_server_id"
+
+// AffinityMemberServerID returns EnvAffinityMemberServerID or skips the test.
+func AffinityMemberServerID(t *testing.T) string {
+	t.Helper()
+
+	v := os.Getenv(EnvAffinityMemberServerID)
+	if v == "" {
+		t.Skip(EnvAffinityMemberServerID + " not set; skipping test that needs an existing compute server to place in an affinity group")
+	}
+
+	return v
+}

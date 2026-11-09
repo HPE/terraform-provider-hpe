@@ -14,7 +14,8 @@ import (
 )
 
 type ResourceWithMorpheusConfigure struct {
-	cf clientfactory.ClientFactory
+	cf         clientfactory.ClientFactory
+	configured bool
 }
 
 func (r *ResourceWithMorpheusConfigure) BlockName() string {
@@ -51,10 +52,18 @@ provider "hpe" {
 	}
 
 	r.cf = *cf
+	r.configured = true
 }
 
 func (r *ResourceWithMorpheusConfigure) NewClient(
 	ctx context.Context,
 ) (*sdk.APIClient, error) {
 	return r.cf.NewClient(ctx)
+}
+
+// Configured reports whether Configure has run with provider data, so plan
+// modifiers that need a client can skip quietly when it has not (the
+// framework does not configure a resource for every RPC).
+func (r *ResourceWithMorpheusConfigure) Configured() bool {
+	return r.configured
 }

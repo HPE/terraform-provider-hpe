@@ -35,11 +35,15 @@ func TestAccMorpheusClusterAffinityGroupResourceExampleOk(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
 
 	clusterID := testhelpers.AffinityClusterID(t)
+	serverID := testhelpers.AffinityMemberServerID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
+	// Serialised with the cloud tests: all of them seed their group with the
+	// same fixture VM (TF_VAR_testacc_morpheus_affinity_member_server_id), and
+	// a VMware DRS cluster refuses the same VM in two KEEP_TOGETHER rules.
+	testhelpers.LockFixture(t, "affinity-member-server")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -47,6 +51,7 @@ func TestAccMorpheusClusterAffinityGroupResourceExampleOk(t *testing.T) {
 	resourceConfig, err := clusteraffinitygroup.RenderClusterAffinityGroupConfig(t, map[string]string{
 		"ClusterId": clusterID,
 		"Name":      name,
+		"Servers":   "[" + serverID + "]",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -100,11 +105,15 @@ func TestAccMorpheusClusterAffinityGroupResourceUpdateOk(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
 
 	clusterID := testhelpers.AffinityClusterID(t)
+	serverID := testhelpers.AffinityMemberServerID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
+	// Serialised with the cloud tests: all of them seed their group with the
+	// same fixture VM (TF_VAR_testacc_morpheus_affinity_member_server_id), and
+	// a VMware DRS cluster refuses the same VM in two KEEP_TOGETHER rules.
+	testhelpers.LockFixture(t, "affinity-member-server")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -113,6 +122,7 @@ func TestAccMorpheusClusterAffinityGroupResourceUpdateOk(t *testing.T) {
 	createConfig, err := clusteraffinitygroup.RenderClusterAffinityGroupConfig(t, map[string]string{
 		"ClusterId": clusterID,
 		"Name":      name,
+		"Servers":   "[" + serverID + "]",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -121,6 +131,7 @@ func TestAccMorpheusClusterAffinityGroupResourceUpdateOk(t *testing.T) {
 	updateConfig, err := clusteraffinitygroup.RenderClusterAffinityGroupConfig(t, map[string]string{
 		"ClusterId": clusterID,
 		"Name":      updatedName,
+		"Servers":   "[" + serverID + "]",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -166,11 +177,15 @@ func TestAccMorpheusClusterAffinityGroupResourceRequiresReplace(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
 
 	clusterID := testhelpers.AffinityClusterID(t)
+	serverID := testhelpers.AffinityMemberServerID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
+	// Serialised with the cloud tests: all of them seed their group with the
+	// same fixture VM (TF_VAR_testacc_morpheus_affinity_member_server_id), and
+	// a VMware DRS cluster refuses the same VM in two KEEP_TOGETHER rules.
+	testhelpers.LockFixture(t, "affinity-member-server")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -178,6 +193,7 @@ func TestAccMorpheusClusterAffinityGroupResourceRequiresReplace(t *testing.T) {
 	createConfig, err := clusteraffinitygroup.RenderClusterAffinityGroupConfig(t, map[string]string{
 		"ClusterId": clusterID,
 		"Name":      name,
+		"Servers":   "[" + serverID + "]",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -189,8 +205,9 @@ resource "hpe_morpheus_cluster_affinity_group" "example" {
   cluster_id    = %s
   name          = "%s"
   affinity_type = "KEEP_SEPARATE"
+  servers       = [%s]
 }
-`, clusterID, name)
+`, clusterID, name, serverID)
 
 	resourceName := "hpe_morpheus_cluster_affinity_group.example"
 
@@ -241,7 +258,10 @@ func TestAccMorpheusClusterAffinityGroupResourceMembersOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
+	// Serialised with the cloud tests: all of them seed their group with the
+	// same fixture VM (TF_VAR_testacc_morpheus_affinity_member_server_id), and
+	// a VMware DRS cluster refuses the same VM in two KEEP_TOGETHER rules.
+	testhelpers.LockFixture(t, "affinity-member-server")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())

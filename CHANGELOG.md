@@ -149,6 +149,30 @@ both were accepted and silently ignored: the setting applied without error, the 
 default bucket or schedule, and every plan proposed the same change again. Both now travel inside
 `backupSettings` and take effect on the first apply. A configuration that set either attribute
 sees the appliance change accordingly after upgrading.
+### Affinity groups on Morpheus 9.1 (MORPH-20061, MORPH-20083)
+
+Morpheus 9.1 refuses an affinity group with no servers (its new rule-shape validation: a group is a
+VM-to-VM rule with at least one server, or a VM-to-Host rule), on create and when the last server is
+removed, so the provider could no longer create an affinity group against 9.1 at all.
+
+`servers` on `hpe_morpheus_cluster_affinity_group` and `hpe_morpheus_cloud_affinity_group` is settable
+again: set, this resource owns the membership — the group is created with those servers and every
+apply re-asserts exactly that set; unset, nothing is sent on create and the live membership is
+re-asserted on update, so the `*_affinity_group_member` resources and provisioning-time placement are
+not evicted. A group should use one of the two, never both. On a 9.1 or later appliance both group
+resources refuse **at plan time** a create or replacement with no `servers`, with a message naming the
+fix, instead of failing mid-apply with the API's error (or, on some 9.1 releases, a bare 403); on
+older appliances an empty group is still created, and the check fails open when the appliance version
+cannot be read. A member-managed group is bootstrapped on 9.1 by creating it with its first member in
+`servers` and then dropping `servers` from the configuration, which plans empty. Destroying a member
+that is the group's last server on 9.1 no longer fails: the server is left in place with a warning,
+so `terraform destroy` of a group and its members works (the group's own destroy removes the
+membership).
+
+Known issue (Morpheus core, MORPH-20098): on a VMware cloud, renaming a cloud affinity group and then
+destroying it leaves the DRS rule behind in vCenter under its original name, after which later
+`KEEP_TOGETHER` groups containing the same VMs are refused by vCenter. Until that is fixed, avoid
+renaming VMware cloud affinity groups that will later be destroyed.
 
 # v2.2.0 Release Notes
 

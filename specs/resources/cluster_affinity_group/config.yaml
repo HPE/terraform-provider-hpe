@@ -14,7 +14,8 @@ cluster_affinity_group:
           Morpheus 9.1 refuses to create an affinity group with no members: a
           VM-to-VM rule needs this set, and the other shape it accepts -- a
           VM-to-host rule from a VM group and a host group -- is read-only on
-          this resource, so against 9.1 a group can only be created with this set.
+          this resource, so against 9.1 a group can only be created with this set
+          (the provider refuses such a plan up front on 9.1 and later).
         element_type:
           int64: {}
     tenantIds:

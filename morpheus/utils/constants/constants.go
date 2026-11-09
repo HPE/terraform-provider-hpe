@@ -24,6 +24,12 @@ const NetworkDeleteTimeout = 5 * time.Minute
 // (MORPH-15506.)
 const AffinityGroupMinVersion = ">= 8.0.10"
 
+// AffinityRuleShapeMinVersion is the appliance version from which an affinity
+// group must have at least one server (or a VM Group and Host Group): Morpheus
+// 9.1 validates the group's "rule shape" and refuses empty groups, on create and
+// when the last server is removed (MORPH-20083). See utils/affinityshape.
+const AffinityRuleShapeMinVersion = ">= 9.1.0"
+
 // TenantParentMinVersion is the minimum Morpheus appliance version on which
 // the tenant resource's parent_id attribute is honoured.
 //
