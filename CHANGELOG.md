@@ -37,6 +37,18 @@ place, and configurations carry over, with two exceptions:
   they have always been null; a configuration that references them now gets a deprecation warning.
   The `hpe_morpheus_network_router_nat` resource is unaffected — it already treats both as write-only.
 
+## New functions
+
+### `morpheus_sha512_crypt` (MORPH-20062)
+
+`provider::hpe::morpheus_sha512_crypt(password, salt, rounds)` derives deterministic
+Linux SHA-512 crypt password hashes for cloud-init without an external command or
+an appliance connection. Terraform 1.8 or later is required. Salt and rounds are
+explicit; 5000 rounds preserves the output of `openssl passwd -6`. Passwords are
+limited to 4096 bytes and rounds to 1000 through 1000000 to bound computation.
+Sensitive arguments retain sensitivity, but sensitive hashes can still be stored
+in Terraform state. The compatibility round count is not a security recommendation.
+
 ## New resources
 
 ### `hpe_morpheus_network_pool_ip` resource and data source (MORPH-15704)

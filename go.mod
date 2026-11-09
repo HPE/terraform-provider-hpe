@@ -3,6 +3,7 @@ module github.com/HPE/terraform-provider-hpe
 go 1.26.10
 
 require (
+	github.com/GehirnInc/crypt v0.0.0-20230320061759-8cc1b52080c5
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/go-jose/go-jose/v3 v3.0.5
 	github.com/go-viper/mapstructure/v2 v2.5.1-0.20260127154234-41eafd1297d5
