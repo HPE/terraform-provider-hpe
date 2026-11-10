@@ -44,3 +44,9 @@ image:
       description: ID of the OS Type
     storage_provider_id:
       description: ID of the storage provider where the image will be uploaded
+    # The API reports these in bytes; the data source converts them to GB, as
+    # the hpe_morpheus_image resource takes and reports them.
+    min_disk:
+      description: Minimum required disk size in GB
+    min_ram:
+      description: Minimum required RAM in GB

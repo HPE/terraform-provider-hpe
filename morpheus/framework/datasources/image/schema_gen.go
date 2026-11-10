@@ -115,13 +115,13 @@ func ImageDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"min_disk": schema.Int64Attribute{
 				Computed:            true,
-				Description:         "Minimum required disk size in bytes",
-				MarkdownDescription: "Minimum required disk size in bytes",
+				Description:         "Minimum required disk size in GB",
+				MarkdownDescription: "Minimum required disk size in GB",
 			},
 			"min_ram": schema.Int64Attribute{
 				Computed:            true,
-				Description:         "Minimum required RAM in bytes",
-				MarkdownDescription: "Minimum required RAM in bytes",
+				Description:         "Minimum required RAM in GB",
+				MarkdownDescription: "Minimum required RAM in GB",
 			},
 			"name": schema.StringAttribute{
 				Optional:            true,

@@ -57,8 +57,8 @@ data "hpe_morpheus_image" "test" {
 - `id` (Number) The ID of this resource.
 - `install_agent` (Boolean) Install Agent?
 - `labels` (Set of String) Array of label strings, can be used for filtering.
-- `min_disk` (Number) Minimum required disk size in bytes
-- `min_ram` (Number) Minimum required RAM in bytes
+- `min_disk` (Number) Minimum required disk size in GB
+- `min_ram` (Number) Minimum required RAM in GB
 - `os_type_id` (Number) ID of the OS Type
 - `owner_id` (Number) Owner of the image
 - `raw_size` (Number) Size of image in bytes
