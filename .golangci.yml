@@ -1,6 +1,12 @@
 version: "2"
 run:
   tests: true
+  # Cap the linter workers. golangci-lint defaults to every CPU, which on a
+  # developer laptop starves everything else while the pre-push hook runs
+  # (a cold run type-checks the whole module, in-tree SDK included). Four
+  # keeps a warm run at seconds and a cold run usable. Override for a one-off
+  # with `golangci-lint run --concurrency N`.
+  concurrency: 4
 linters:
   default: none
   enable:
