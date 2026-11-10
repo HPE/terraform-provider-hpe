@@ -134,9 +134,9 @@ same way until its first apply.
 
 Network types managed by a network plugin — the HVM port group types among them — belong to a
 **network server**, and Morpheus 9.1 requires it on create: `network_server_id`. For an HVM cluster
-the network server is the cluster's own, hidden from the ordinary listing; find it with
-`GET /api/networks/servers?showHidden=true` (it is named after the cluster, `<cluster> HVM Network
-Server`). Morpheus does not return it on a network, so the configured value is kept in state.
+the network server is the cluster's own, hidden from the ordinary listing but found by the
+`hpe_morpheus_network_server` data source by its name, `<cluster> HVM Network Server`. Morpheus
+does not return it on a network, so the configured value is kept in state.
 
 ### Visibility and tenants
 

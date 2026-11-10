@@ -138,7 +138,11 @@ func attr(name, key, value string) resource.TestCheckFunc {
 // in the network configuration comes from these.
 type hvmNetworkFixture struct {
 	cloudName, clusterName, networkServerName string
-	switchName, switchName2, hostInterface    string
+	switchName, switchName2                   string
+	// hostInterface is a host interface for the HOST_INTERFACE layout, which
+	// only a cluster without virtual switches (HVM layout before 2.0) accepts;
+	// it is read only by the test that needs it.
+	hostInterface string
 }
 
 // loadHVMNetworkFixture reads the fixture from the environment, skipping the
@@ -150,7 +154,6 @@ func loadHVMNetworkFixture(t *testing.T) hvmNetworkFixture {
 		cloudName:         testhelpers.HVMCloudName(t),
 		clusterName:       testhelpers.HVMClusterName(t),
 		networkServerName: testhelpers.HVMNetworkServerName(t),
-		hostInterface:     testhelpers.HVMHostInterface(t),
 	}
 	f.switchName, f.switchName2 = testhelpers.HVMSwitchNames(t)
 
@@ -288,6 +291,10 @@ func TestAccMorpheusNetworkTypedHVMDataNetwork(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.NetworkServer)
 
 	f := loadHVMNetworkFixture(t)
+	// The HOST_INTERFACE layout is for a cluster without virtual switches; on
+	// an HVM 2.0 cluster Morpheus requires a segment instead, so leave the
+	// interface unset there.
+	f.hostInterface = testhelpers.HVMHostInterface(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 	const rn = "hpe_morpheus_network.hvm_data"

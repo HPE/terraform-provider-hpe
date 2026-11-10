@@ -67,7 +67,9 @@ func HVMSwitchNames(t *testing.T) (first, second string) {
 }
 
 // HVMHostInterface returns the name of a host network interface of the HVM
-// hosts, skipping the test when EnvHVMHostInterface is unset.
+// hosts, for the HOST_INTERFACE network layout, skipping the test when
+// EnvHVMHostInterface is unset. Leave it unset for an HVM 2.0 cluster, whose
+// networks attach to virtual switches instead.
 func HVMHostInterface(t *testing.T) string {
 	t.Helper()
 

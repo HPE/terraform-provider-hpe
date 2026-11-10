@@ -157,6 +157,19 @@ and imported again; the resource warns on every refresh while a credential key r
 configuration that writes such a key into the resource's own `config` is stored as written — that
 is what a typed block with write-only attributes is for.
 
+### `hpe_morpheus_network_server` data source: a cluster's hidden network server is found by name (MORPH-20649)
+
+An HVM cluster's own network server — `<cluster> HVM Network Server`, the one every network on
+the cluster must name in `network_server_id` — is hidden from the ordinary listing, and the data
+source listed without hidden servers and then re-read its match by id, which Morpheus refuses for
+a hidden server. A lookup by name now includes hidden servers and uses the listing's own record,
+so `data "hpe_morpheus_network_server" "hvm" { name = "<cluster> HVM Network Server" }` resolves.
+An exact name is unambiguous, so there is no flag to set. A lookup by `id` that the appliance
+refuses — it answers 404 for a hidden server regardless of `showHidden` — is likewise satisfied from
+the listing, so hidden servers resolve either way. The data source's `config` description now
+says what it holds: the configuration as Morpheus returns it, with only the top-level
+`service_password` and `service_token` masked.
+
 ### `hpe_morpheus_setting_backup`: the default storage bucket and schedule are applied (MORPH-20485)
 
 `default_backup_storage_bucket_id` and `default_backup_schedule_id` were sent beside the
