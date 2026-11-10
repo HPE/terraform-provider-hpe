@@ -56,8 +56,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config": schema.DynamicAttribute{
 				Optional:            true,
-				Description:         "Generic Cluster Configuration",
-				MarkdownDescription: "Generic Cluster Configuration",
+				Description:         "Generic cluster configuration, for cluster types without a typed block; kept in state as configured. On import the appliance's configuration is adopted, less any credential it carries (an External Kubernetes cluster's `apiToken` and `serviceAccess`, `serviceToken`, `kubeToken`, `kubeConfig`, `joinCommand`, and any key whose name ends in `token`, `password`, `passwd`, `secret`, `passphrase`, `privateKey`, `kubeconfig` or `serviceAccess`), so no credential reaches state. A cluster imported before this was so keeps what it imported until it is removed from state and imported again, and the resource warns while a credential key remains. Credentials written here by the configuration itself are stored like any other value; a typed block with write-only attributes is the way to supply them.",
+				MarkdownDescription: "Generic cluster configuration, for cluster types without a typed block; kept in state as configured. On import the appliance's configuration is adopted, less any credential it carries (an External Kubernetes cluster's `apiToken` and `serviceAccess`, `serviceToken`, `kubeToken`, `kubeConfig`, `joinCommand`, and any key whose name ends in `token`, `password`, `passwd`, `secret`, `passphrase`, `privateKey`, `kubeconfig` or `serviceAccess`), so no credential reaches state. A cluster imported before this was so keeps what it imported until it is removed from state and imported again, and the resource warns while a credential key remains. Credentials written here by the configuration itself are stored like any other value; a typed block with write-only attributes is the way to supply them.",
 				Validators: []validator.Dynamic{
 					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm")}...),
 				},

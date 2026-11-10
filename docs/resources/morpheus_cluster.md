@@ -185,7 +185,7 @@ resource "hpe_morpheus_cluster" "example_generic_hvm" {
 ### Optional
 
 - `cluster_type_code` (String) Code of type of cluster to be created. Automatically set to the appropriate code by the provider when using a static config.
-- `config` (Dynamic) Generic Cluster Configuration
+- `config` (Dynamic) Generic cluster configuration, for cluster types without a typed block; kept in state as configured. On import the appliance's configuration is adopted, less any credential it carries (an External Kubernetes cluster's `apiToken` and `serviceAccess`, `serviceToken`, `kubeToken`, `kubeConfig`, `joinCommand`, and any key whose name ends in `token`, `password`, `passwd`, `secret`, `passphrase`, `privateKey`, `kubeconfig` or `serviceAccess`), so no credential reaches state. A cluster imported before this was so keeps what it imported until it is removed from state and imported again, and the resource warns while a credential key remains. Credentials written here by the configuration itself are stored like any other value; a typed block with write-only attributes is the way to supply them.
 - `config_hvm` (Attributes) Configuration for HVM cluster servers (see [below for nested schema](#nestedatt--config_hvm))
 - `description` (String) Description of the cluster to be created
 - `labels` (Set of String) Array of strings (keywords).

@@ -141,6 +141,22 @@ generated from the provider specification for other tools does not inherit Terra
 plan vocabulary for an argument. No behaviour changes.
 ## Bug fixes
 
+### `hpe_morpheus_cluster`: an External Kubernetes cluster's token and kubeconfig no longer reach state (MORPH-19991)
+
+For an External Kubernetes cluster the appliance returns `config.apiToken` — a cluster-admin
+service-account token — and `config.serviceAccess` — the kubeconfig carrying it — in clear, and
+the `hpe_morpheus_cluster` data source copied the whole map into its `config` attribute, as did
+the resource on import. Reading such a cluster, even just for its id, put live cluster
+credentials into `terraform.tfstate` and plan output, unmarked. Both now withhold credential
+keys from `config` before it is stored: `apiToken`, `serviceAccess`, `serviceToken`, `kubeToken`,
+`kubeConfig`, `joinCommand`, and any key whose name ends in `token`, `password`, `passwd`,
+`secret`, `passphrase`, `privateKey`, `kubeconfig` or `serviceAccess`, at any depth. The keys are
+removed rather than masked, so nothing about them is in state; the rest of `config` is unchanged.
+A cluster imported with an earlier release keeps what it imported until it is removed from state
+and imported again; the resource warns on every refresh while a credential key remains. A
+configuration that writes such a key into the resource's own `config` is stored as written — that
+is what a typed block with write-only attributes is for.
+
 ### `hpe_morpheus_setting_backup`: the default storage bucket and schedule are applied (MORPH-20485)
 
 `default_backup_storage_bucket_id` and `default_backup_schedule_id` were sent beside the

@@ -13,10 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/configredact"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -117,7 +119,17 @@ func populateClusterData(
 	data.WorkersCount = convert.Int64ToType(cluster.WorkersCount)
 	data.ServicesCount = convert.Int64ToType(cluster.ServicesCount)
 
-	config, err := convert.MapToDynamic(ctx, cluster.Config)
+	// An External Kubernetes cluster's config carries its cluster-admin token
+	// and kubeconfig, which the appliance returns in clear; they are withheld
+	// from state (MORPH-19991).
+	safeConfig, withheld := configredact.Cluster(cluster.Config)
+	if len(withheld) > 0 {
+		tflog.Debug(ctx, "cluster config: credential keys withheld from state", map[string]any{
+			"cluster": cluster.Id, "keys": withheld,
+		})
+	}
+
+	config, err := convert.MapToDynamic(ctx, safeConfig)
 	if err != nil {
 		return fmt.Errorf("cluster config mapping failed: %w", err)
 	}
