@@ -26,14 +26,14 @@ plugin:
     jar_sha256:
       string:
         computed_optional_required: computed_optional
-        description: Hex-encoded SHA-256 of the plugin jar. Set it (for example with `filesha256()` or the Morpheus Exchange `shaHash`) to have the jar verified before upload and re-uploaded when its contents change; computed from the uploaded jar when omitted.
+        description: Hex-encoded SHA-256 of the plugin jar, for example the Morpheus Exchange `shaHash`. When set, the jar is verified against it before it is uploaded; when omitted, it is computed from the jar.
         plan_modifiers:
           - custom:
               schema_definition: jarSha256PlanModifier{}
     config:
       dynamic:
         computed_optional_required: optional
-        description: Plugin configuration values keyed by the plugin's option type field names. Wrap secret values with `sensitive()`.
+        description: Plugin configuration values keyed by the plugin's option type field names.
     providers:
       list_nested:
         computed_optional_required: computed

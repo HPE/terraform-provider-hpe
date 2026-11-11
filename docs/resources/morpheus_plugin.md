@@ -10,6 +10,8 @@ Manages a Morpheus plugin. A plugin is a `.jar` uploaded to the appliance that c
 
 -> Set `jar_sha256` (for example with `filesha256()` for a local jar, or the Morpheus Exchange `shaHash` for an Exchange download) to have the jar verified before upload and re-uploaded whenever its contents change. When omitted it is computed from the uploaded jar.
 
+-> `config` is not marked sensitive as a whole, so wrap secret values in it with `sensitive()` to keep them out of plan output.
+
 ~> A jar's plugin `code` identifies the plugin. Uploading a jar whose code differs from the one this resource manages would install a *separate* plugin rather than update this one, so such an update is rejected.
 
 ## Example Usage
@@ -37,10 +39,10 @@ resource "hpe_morpheus_plugin" "from_exchange" {
 
 ### Optional
 
-- `config` (Dynamic) Plugin configuration values keyed by the plugin's option type field names. Wrap secret values with `sensitive()`.
+- `config` (Dynamic) Plugin configuration values keyed by the plugin's option type field names.
 - `enabled` (Boolean) Whether the plugin is enabled.
 - `jar_path` (String) Local path to the plugin .jar to upload. Exactly one of `jar_path` or `jar_url` must be set.
-- `jar_sha256` (String) Hex-encoded SHA-256 of the plugin jar. Set it (for example with `filesha256()` or the Morpheus Exchange `shaHash`) to have the jar verified before upload and re-uploaded when its contents change; computed from the uploaded jar when omitted.
+- `jar_sha256` (String) Hex-encoded SHA-256 of the plugin jar, for example the Morpheus Exchange `shaHash`. When set, the jar is verified against it before it is uploaded; when omitted, it is computed from the jar.
 - `jar_url` (String) HTTP(S) URL of the plugin .jar to download and upload (for example a Morpheus Exchange `/api/packages/pull?code=...&version=...` link). Exactly one of `jar_path` or `jar_url` must be set.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
