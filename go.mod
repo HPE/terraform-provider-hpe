@@ -22,7 +22,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/stretchr/testify v1.12.1
-	github.com/zclconf/go-cty v1.19.0
+	github.com/zclconf/go-cty v1.20.0
 	golang.org/x/text v0.43.0
 	gopkg.in/validator.v2 v2.0.1
 )
