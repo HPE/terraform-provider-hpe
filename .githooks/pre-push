@@ -23,11 +23,13 @@
 #                                   see .github/workflows/test.yaml. This hook
 #                                   is therefore the ONLY unit-test gate.
 #
-# COST: with warm caches a push costs two to three minutes: lint is seconds
+# COST: with warm caches a push costs four to five minutes: lint is seconds
 # (the golangci-lint cache is content-addressed and user-global), docs is
 # about a minute (builds bin/render, runs go generate + tfplugindocs), and
-# the unit tests are a minute or two. The first run on a machine, or the
-# first after a toolchain upgrade, rebuilds caches and takes longer.
+# the unit tests are three to four minutes (every package but the generated
+# SDK is included; a few hermetic tests drive Terraform itself).
+# The first run on a machine, or the first after a toolchain upgrade,
+# rebuilds caches and takes longer.
 #
 # ACTIVATION: git does not run hooks from a tracked directory by default.
 # `init.sh` in the tooling workspace wires this up automatically; for a
@@ -185,7 +187,7 @@ fi
 if [ -n "${SKIP_TESTS:-}" ]; then
   echo "pre-push: SKIP_TESTS set -- skipping unit-test gate" >&2
 else
-  echo "pre-push: running 'make unit-tests' (a minute or two)..." >&2
+  echo "pre-push: running 'make unit-tests' (three to four minutes)..." >&2
   if ! make unit-tests; then
     cat >&2 <<'EOF'
 

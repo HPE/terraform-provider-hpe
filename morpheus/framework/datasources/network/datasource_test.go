@@ -39,13 +39,13 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// TestNetworkDataSourceExample creates a plain host network and reads it back
+// TestAccMorpheusNetworkDataSourceExample creates a plain host network and reads it back
 // through the data source. It is gated as the host-network resource tests
 // are (network_dhcp), not on network_server: it uses no network server, and
 // a cloud with a network server of its own routes a plain host network to
 // that server's provider, which refuses it. Its cloud, pool and group are
 // still the QA fixture's ids.
-func TestNetworkDataSourceExample(t *testing.T) {
+func TestAccMorpheusNetworkDataSourceExample(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.NetworkDHCP)
@@ -65,7 +65,7 @@ func TestNetworkDataSourceExample(t *testing.T) {
 variable "name" {
   description = "Network name"
   type        = string
-  default     = "TestNetworkDataSourceExample"
+  default     = "TestAccMorpheusNetworkDataSourceExample"
 }
 
 variable "description" {
