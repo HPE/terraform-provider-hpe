@@ -1,0 +1,104 @@
+setting_backup:
+  description: "Manages the Morpheus backup settings. This is a singleton resource — only one instance exists and it cannot be deleted; attributes left unset are left as they are on the appliance. Most of the settings are appliance-wide, one value shared by every tenant; the default storage bucket is per tenant, and the appliance backup is managed by the master tenant only."
+  # Every setting the PUT /api/backup-settings takes is an attribute, bar the
+  # three one-shot commands noted under `removes`. The read-only echoes of the
+  # GET response and the PUT's success envelope are removed.
+  #
+  # There is no `id`: the settings are a singleton the API identifies by
+  # nothing, and the Ansible generator treats a resource without a root `id`
+  # as a singleton (no `state` argument). The Terraform resource adds the `id`
+  # the sdkv2 resource had (always "1") itself, in Go.
+  #
+  # The optional+computed attributes use the prior state when unconfigured
+  # (state_for_unknown): the provider sends only the settings that change, so
+  # the others keep their values and a plan shows only what changes.
+  #
+  # Tenancy, as Morpheus implements it (the descriptions say so, since they
+  # are also the Ansible module's): backupsEnabled, createBackups,
+  # retentionCount and defaultSchedule are ApplianceInstance settings -- one
+  # value, read and written by every tenant whose role has the backup-settings
+  # permission. defaultStorageBucket is per tenant. backupAppliance is one
+  # object for the whole appliance: Morpheus applies another tenant's `true`
+  # to the master tenant's appliance backup, ignores its `false`, and reports
+  # the flag as false to it, so the Terraform resource and the Ansible module
+  # refuse `true` from a tenant that is not the master tenant.
+  #
+  # retention_days is the sdkv2 name, a misnomer kept for compatibility and
+  # deprecated: the API's retentionCount is a number of successful backups to
+  # retain, not days. The Ansible generator omits deprecated attributes, so the
+  # module only has retention_count. The Go resource forbids setting both;
+  # there is deliberately no conflicts_with here so the Ansible module never
+  # references the dropped attribute.
+  templates:
+    retention_days:
+      int64:
+        computed_optional_required: computed_optional
+        description: |-
+          Deprecated. Use retention_count: this is the number of successful backups to retain (1 or
+          more), not a number of days (the name is a misnomer). It is sent to the same setting as
+          retention_count, so the two must not both be set. This attribute will be removed in the 2.6
+          release.
+        deprecation_message: "Use retention_count instead; the value is a number of backups, not days. This attribute will be removed in the 2.6 release."
+        # The same lower bound as retention_count, so the alias cannot bypass it.
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            schema_definition: int64validator.AtLeast(1)
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
+  moves:
+    - backup_settings: ""                                        # unnest wrapper (components/schemas/backupSettingsUpdate.yaml)
+    - backups_enabled: scheduled_backups                         # (components/schemas/backupSettingsUpdate.yaml)
+    - default_storage_bucket.id: default_backup_storage_bucket_id # (components/schemas/backupSettingsUpdate.yaml)
+    - default_schedule.id: default_backup_schedule_id            # (components/schemas/backupSettingsUpdate.yaml)
+    - template-retention_days: retention_days
+  removes:
+    # The PUT's success envelope.
+    - success                                                    # (components/schemas/200-success.yaml)
+    # One-shot commands, not state: a clearable design is a follow-up.
+    - update_existing                                            # (components/schemas/backupSettingsUpdate.yaml)
+    - clear_default_schedule                                     # (components/schemas/backupSettingsUpdate.yaml)
+    - clear_default_storage_bucket                               # (components/schemas/backupSettingsUpdate.yaml)
+    # Nested objects left behind after the .id moves above.
+    - default_storage_bucket                                     # (components/schemas/backupSettingsUpdate.yaml)
+    - default_schedule                                           # (components/schemas/backupSettingsUpdate.yaml)
+    # GET-only, the PUT cannot set them.
+    - default_synthetic_full_backups_enabled                     # (components/schemas/backupSettings.yaml)
+    - default_synthetic_full_backup_schedule                     # (components/schemas/backupSettings.yaml)
+  overrides:
+    scheduled_backups:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: "Whether automatic backups are scheduled for provisioned instances. Appliance-wide: one value shared by every tenant."
+    create_backups:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: "Whether Morpheus automatically configures instances for manual or scheduled backups. Appliance-wide: one value shared by every tenant."
+    backup_appliance:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Whether a backup is created for the Morpheus appliance database. There is one appliance backup for the whole appliance and the master tenant manages it; only the master tenant can set this to true, and other tenants read it as false.
+    default_backup_storage_bucket_id:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The ID of the storage bucket used as the default backup target. Per tenant, chosen from the tenant's own storage buckets.
+    default_backup_schedule_id:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: "The ID of the execute schedule used as the default backup schedule. Appliance-wide: one value shared by every tenant."
+    retention_count:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: "The number of successful backups to retain (1 or more). Appliance-wide: one value shared by every tenant."
+      # Morpheus stores any value and treats 0 as unset where it reads the
+      # retention (the appliance backup job falls back to 10), so 0 and
+      # negatives are refused rather than stored.
+      validators:
+      - custom:
+          imports:
+          - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+          schema_definition: int64validator.AtLeast(1)

@@ -65,6 +65,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/securitygrouprule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/serviceplan"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/settingappliance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/settingbackup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/settingwhitelabel"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storagebucket"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storageserver"
@@ -177,6 +178,11 @@ func (p *MorpheusProvider) Resources(
 		// Appliance settings: ported from SDKv2 to the plugin framework so the
 		// SMTP and proxy passwords and the currency key can be write-only.
 		settingappliance.NewResource,
+
+		// Backup settings: ported from SDKv2 to the plugin framework, with
+		// retention_count beside the deprecated retention_days; the same spec
+		// generates the Ansible module.
+		settingbackup.NewResource,
 
 		// Plugin lifecycle management (Plugin Framework)
 		plugin.NewResource,

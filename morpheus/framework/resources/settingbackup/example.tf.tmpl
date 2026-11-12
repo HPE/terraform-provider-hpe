@@ -4,5 +4,5 @@ resource "hpe_morpheus_setting_backup" "example" {
   backup_appliance                 = {{.BackupAppliance}}
   default_backup_storage_bucket_id = {{.DefaultBackupStorageBucketId}}
   default_backup_schedule_id       = {{.DefaultBackupScheduleId}}
-  retention_days                   = {{.RetentionDays}}
+  retention_count                  = {{.RetentionCount}}
 }

@@ -12,6 +12,68 @@ description: |-
 
 {{tffile "examples/resources/morpheus_setting_backup/resource.tf"}}
 
+## How the resource behaves
+
+An appliance has exactly one set of backup settings, and it always exists (one setting is kept per
+tenant; see *Tenancy*):
+
+- **Create applies, destroy forgets.** Creating the resource applies the configured settings to the
+  appliance's. Destroying it removes it from Terraform state only: the appliance keeps its settings,
+  since there is nothing to delete or reset them to.
+- **Only what you set is managed.** The provider sends only the settings in the configuration, and
+  only those that change. An attribute you do not set keeps the appliance's value, and removing one
+  from the configuration leaves the value on the appliance as it is.
+- **Morpheus checks the values.** A default schedule or storage bucket id that does not exist is
+  refused, and the apply fails with Morpheus' message. A setting Morpheus accepts but does not apply
+  (see *Tenancy*) fails the apply with the setting's name and the value the appliance reports.
+- **The appliance database backup.** Setting `backup_appliance = true` makes Morpheus create a
+  backup job for the appliance database; `false` disables it. It is available to the master tenant
+  only (see *Tenancy*).
+
+## Tenancy
+
+Morpheus keeps most of these settings once for the whole appliance, and one of them per tenant:
+
+- **Appliance-wide** — `scheduled_backups`, `create_backups`, `retention_count` (and its alias
+  `retention_days`) and `default_backup_schedule_id` are one value shared by every tenant. Any tenant
+  whose role grants the backup-settings permission reads and changes the same value.
+- **Per tenant** — `default_backup_storage_bucket_id` is each tenant's own default, chosen from the
+  tenant's own storage buckets. It is the same flag as `hpe_morpheus_storage_bucket`'s
+  `default_backup_target`, which defaults to `false`: a bucket managed in the same configuration
+  must also set `default_backup_target = true`, or the two resources undo each other on every apply
+  (see *Example Usage*). Alternatively, manage the default from one of the two resources only.
+- **Master tenant only** — `backup_appliance`. There is one appliance backup for the whole appliance,
+  managed by the master tenant. Morpheus accepts the setting from any tenant but, for a tenant other
+  than the master, applies `true` to the master tenant's appliance backup, ignores `false`, and reports
+  the setting as `false`. The provider therefore refuses `backup_appliance = true` when planning as a
+  tenant other than the master (a warning instead, when it cannot determine the tenant), and fails an
+  apply whose read-back shows a sent setting was not applied.
+
+A bucket managed alongside the settings, with the flag set on both sides:
+
+```terraform
+resource "hpe_morpheus_storage_bucket" "backups" {
+  name                  = "backups"
+  provider_type         = "local"
+  base_path             = "/var/opt/morpheus/morpheus-ui/backups"
+  default_backup_target = true # the flag default_backup_storage_bucket_id sets below
+}
+
+resource "hpe_morpheus_setting_backup" "this" {
+  default_backup_storage_bucket_id = hpe_morpheus_storage_bucket.backups.id
+}
+```
+
+## Retention
+
+`retention_count` is the number of successful backups to retain, 1 or more: Morpheus would store a
+`0` but treats it as unset where it reads the retention (the appliance backup job falls back to 10),
+so `0` and negative values are refused when planning. `retention_days` is a deprecated alias for the
+same setting kept for compatibility with the previous version of the provider: despite its name it is
+a number of backups, not days, and it has the same lower bound. The two are sent to one setting, so
+they must not both be set, and whichever you set is mirrored into the other in state. `retention_days`
+will be removed in the 2.6 release; use `retention_count`.
+
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import
@@ -19,3 +81,13 @@ description: |-
 Import is supported using the following syntax:
 
 {{codefile "shell" "examples/resources/morpheus_setting_backup/import.sh" }}
+
+The settings are a singleton, so the import ID identifies nothing and any value works (for example
+`1`). The id is `"1"` whatever ID you give.
+
+## Upgrading from an earlier version
+
+Earlier versions of the provider implemented this resource with the legacy plugin SDK. Existing state
+is upgraded in place: an unset default storage bucket or schedule, which the previous version stored
+as `0`, becomes null, and the retention is carried into both `retention_count` and `retention_days`.
+The plan after upgrading is clean.

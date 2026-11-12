@@ -32,6 +32,11 @@ place, and configurations carry over, with two exceptions:
 
 ## Deprecations
 
+- `hpe_morpheus_setting_backup`: `retention_days` is deprecated in favour of `retention_count` and
+  scheduled for removal in **2.6**. Despite its name the value has always been the number of
+  successful backups to retain, not a number of days; `retention_count` names it correctly. Both are
+  sent to the same setting, so changing `retention_days = N` to `retention_count = N` plans no
+  change. A configuration that sets `retention_days` now gets a deprecation warning.
 - `hpe_morpheus_network_router_nat` data source: `action` and `firewall` are deprecated and scheduled
   for removal in **2.6** (MORPH-14596). The Morpheus NAT read API does not return either value, so
   they have always been null; a configuration that references them now gets a deprecation warning.
@@ -131,6 +136,36 @@ any change to `stats_retainment_period` the configuration asks for (see *Breakin
   already applied, so a later change to one is only detected once the settings are next updated for
   another reason. `smtp_port`, `proxy_port`, `default_role_id` and `default_user_role_id` are numbers
   in state; quoted values in a configuration keep working.
+
+### `hpe_morpheus_setting_backup` moves to the plugin framework; `retention_count`
+
+The backup settings resource is rebuilt on the plugin framework. The type name and the attribute
+names are unchanged, `id` included (still always `"1"`), and existing state is upgraded in place: an
+unset default storage bucket or schedule, which the previous resource stored as `0`, becomes null, and
+the plan after upgrading is clean.
+
+- **`retention_count`** is the new name for the retention setting: the number of successful backups
+  to retain. `retention_days` is kept as a deprecated alias of the same setting (see *Deprecations*);
+  the two must not both be set, and whichever is set is mirrored into the other in state, so a
+  configuration can move from one to the other without a change being planned. Both must be at
+  least 1: Morpheus stores a `0` but treats it as unset where it reads the retention, so `0` and
+  negative values, which the previous resource passed through, are refused when planning.
+- **Only the settings that change are sent.** A first apply sends the configured settings only, so
+  an attribute left out of the configuration keeps the appliance's value instead of being reset, and
+  a plan lists only the settings that change.
+- **A refused update fails the apply.** Morpheus answers a default schedule or storage bucket that
+  does not exist with a success flag of `false`; the resource reports Morpheus' message instead of
+  recording the settings as applied. A setting Morpheus accepts but does not apply fails the apply
+  too, naming the setting and the value the appliance reports, instead of Terraform's generic
+  "inconsistent result" error.
+- **`backup_appliance` is guarded for the master tenant.** Morpheus keeps one appliance backup for
+  the whole appliance: a request from any other tenant to enable it is accepted but applied to the
+  master tenant's appliance backup, which that tenant then reads as `false`, and a request to disable
+  it is ignored. The resource refuses `backup_appliance = true` at plan time when the provider is not
+  configured as the master tenant (with a warning instead, when it cannot determine the tenant). The
+  attribute descriptions now say which settings are appliance-wide, which is per tenant, and which is
+  the master tenant's.
+- **Import takes any ID** (for example `1`); the settings are a singleton.
 
 ### `hpe_morpheus_license`: the `key` description says what the attribute is
 

@@ -14,16 +14,6 @@ resources:
     delete:
       path: /api/user-sources/{id}
       method: DELETE
-  backup_setting:
-    create:
-      path: /api/backup-settings
-      method: PUT
-    read:
-      path: /api/backup-settings
-      method: GET
-    update:
-      path: /api/backup-settings
-      method: PUT
   blueprint:
     create:
       path: /api/blueprints
@@ -1303,6 +1293,18 @@ resources:
       method: GET
     update:
       path: /api/appliance-settings
+      method: PUT
+  # The appliance's backup settings: the same shape -- one object, no DELETE,
+  # create and update the same PUT -- and the same two consumers.
+  setting_backup:
+    create:
+      path: /api/backup-settings
+      method: PUT
+    read:
+      path: /api/backup-settings
+      method: GET
+    update:
+      path: /api/backup-settings
       method: PUT
   setting_whitelabel:
     create:
