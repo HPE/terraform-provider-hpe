@@ -41,12 +41,13 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	// Wait until the image can no longer be read; a successful GET means it is
-	// still there and the loop tries again (see errfmt.PollDeleted).
+	// still there and the loop tries again (see errfmt.DeletePoller).
 	what := fmt.Sprintf("virtual image %d", id)
+	poller := &errfmt.DeletePoller{What: what}
 	waitForDeleted := func() (struct{}, error) {
 		_, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, id).Execute()
 
-		return struct{}{}, errfmt.PollDeleted(what, err, httpResp)
+		return struct{}{}, poller.Poll(ctx, err, httpResp)
 	}
 
 	if _, err := backoff.Retry(

@@ -4,10 +4,15 @@ package errfmt_test
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -15,6 +20,7 @@ import (
 	"github.com/cenkalti/backoff/v5"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/auth"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -182,53 +188,210 @@ func TestUnitRetryRefusedDelete(t *testing.T) {
 	}
 }
 
+// clientErr wraps a cause the way http.Client.Do does: in a *url.Error.
+func clientErr(cause error) error {
+	return &url.Error{Op: "Get", URL: "https://m/api/clusters/3", Err: cause}
+}
+
+// timeoutErr stands in for the unexported net.Error the client returns when
+// Client.Timeout is exceeded (Timeout() true, and errors.Is DeadlineExceeded).
+type timeoutErr struct{}
+
+func (timeoutErr) Error() string        { return "Get: context deadline exceeded (Client.Timeout exceeded)" }
+func (timeoutErr) Timeout() bool        { return true }
+func (timeoutErr) Temporary() bool      { return true }
+func (timeoutErr) Is(target error) bool { return target == context.DeadlineExceeded }
+
+// refusedLogin / incompleteLogin are what the round-tripper returns when the
+// re-login after an expired token is answered with a 401, or never completes.
+func refusedLogin() error {
+	return &auth.AuthenticationError{
+		Err:     fmt.Errorf("could not authenticate: %w", errors.New("401 Unauthorized")),
+		Refused: true,
+	}
+}
+
+func incompleteLogin(cause error) error {
+	return &auth.AuthenticationError{Err: fmt.Errorf("could not authenticate: %w", clientErr(cause))}
+}
+
+// tokenEndpointDown is the re-login answered 503 by the token endpoint.
+func tokenEndpointDown() error {
+	return &auth.AuthenticationError{
+		Err:        fmt.Errorf("could not authenticate: %w", errors.New("503 Service Unavailable")),
+		StatusCode: 503,
+	}
+}
+
 // TestUnitPollDeleted: the operation of the wait-for-delete loops. A
-// successful GET must be retryable (the resource is still there), only a 404
-// ends the wait, and any other failure is permanent. Returning nil on a 200
-// ended the cluster's wait on its first poll and let a replacement race the
-// deletion job (MORPH-18379).
+// successful GET is StillExistsError (poll again), only a 404 ends the wait, a
+// connection failure or a 5xx is TransientError (poll again), and every other
+// failure -- a 4xx, a refused login, a certificate error, a done context, an
+// error the client never produces for a network blip -- is permanent. The
+// no-response rows use the shapes http.Client.Do returns (a *url.Error around
+// the cause). Returning nil on a 200 ended the cluster's wait on its first
+// poll and let a replacement race the deletion job (MORPH-18379).
 func TestUnitPollDeleted(t *testing.T) {
 	t.Parallel()
 
+	const (
+		done = iota
+		still
+		transient
+		permanent
+	)
+
+	doneCtx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	refused := clientErr(&net.OpError{Op: "dial", Net: "tcp", Err: errors.New("connection refused")})
+	reset := clientErr(&net.OpError{Op: "read", Err: errors.New("connection reset by peer")})
+	badCert := &tls.CertificateVerificationError{Err: x509.UnknownAuthorityError{}}
+	plainPort := tls.RecordHeaderError{Msg: "first record does not look like a TLS handshake"}
+	blipLogin := incompleteLogin(&net.OpError{Op: "dial", Err: errors.New("refused")})
+	badURL := &url.Error{Op: "parse", URL: "::bad", Err: errors.New("missing protocol scheme")}
+
 	cases := []struct {
-		name      string
-		err       error
-		resp      *http.Response
-		wantDone  bool // nil error: the wait is over
-		wantRetry bool // StillExistsError: poll again
-		wantPerm  bool // backoff.Permanent: give up
+		name string
+		ctx  context.Context
+		err  error
+		resp *http.Response
+		want int
 	}{
-		{"404 ends the wait", errors.New("404 Not Found"), resp(404, `{"success":false}`), true, false, false},
-		{"200 still exists: retry", nil, resp(200, `{"cluster":{"status":"deprovisioning"}}`), false, true, false},
-		{"transport error is permanent", errors.New("dial tcp: connection refused"), nil, false, false, true},
-		{"500 is permanent", errors.New("500"), resp(500, `{"msg":"boom"}`), false, false, true},
-		{"403 is permanent", errors.New("403"), resp(403, `{"msg":"forbidden"}`), false, false, true},
+		{"404 ends the wait", nil, errors.New("404 Not Found"), resp(404, `{"success":false}`), done},
+		{"200 still exists", nil, nil, resp(200, `{"cluster":{"status":"deprovisioning"}}`), still},
+		{"connection refused is transient", nil, refused, nil, transient},
+		{"connection reset is transient", nil, reset, nil, transient},
+		{"DNS failure is transient", nil, clientErr(&net.DNSError{Err: "no such host", Name: "m"}), nil, transient},
+		{"client timeout is transient", nil, clientErr(timeoutErr{}), nil, transient},
+		{"dial timeout is transient", nil, clientErr(&net.OpError{Op: "dial", Err: timeoutErr{}}), nil, transient},
+		{"server closed before answering is transient", nil, clientErr(io.EOF), nil, transient},
+		{"truncated response is transient", nil, clientErr(io.ErrUnexpectedEOF), nil, transient},
+		{"500 is transient", nil, errors.New("500"), resp(500, `{"msg":"boom"}`), transient},
+		{"502 is transient", nil, errors.New("502"), resp(502, `<html>bad gateway</html>`), transient},
+		{"503 is transient", nil, errors.New("503"), resp(503, ``), transient},
+		{"incomplete re-login with a blip is transient", nil, blipLogin, nil, transient},
+		{"re-login answered 503 is transient", nil, tokenEndpointDown(), nil, transient},
+		{"wrapped re-login answered 503 is transient", nil, fmt.Errorf("get: %w", tokenEndpointDown()), nil, transient},
+		{"400 is permanent", nil, errors.New("400"), resp(400, `{"msg":"bad"}`), permanent},
+		{"401 is permanent", nil, errors.New("401"), resp(401, `{"error":"invalid_token"}`), permanent},
+		{"403 is permanent", nil, errors.New("403"), resp(403, `{"msg":"forbidden"}`), permanent},
+		{"refused re-login is permanent", nil, refusedLogin(), nil, permanent},
+		{"wrapped refused re-login is permanent", nil, fmt.Errorf("get: %w", refusedLogin()), nil, permanent},
+		{"incomplete re-login with a certificate error is permanent", nil, incompleteLogin(badCert), nil, permanent},
+		{"untrusted certificate is permanent", nil, clientErr(badCert), nil, permanent},
+		{"hostname mismatch is permanent", nil, clientErr(x509.HostnameError{Host: "m"}), nil, permanent},
+		{"TLS to a plain port is permanent", nil, clientErr(plainPort), nil, permanent},
+		{"done context makes a refused connection permanent", doneCtx, refused, nil, permanent},
+		{"done context makes a client timeout permanent", doneCtx, clientErr(timeoutErr{}), nil, permanent},
+		{"round-tripper error is permanent", nil, clientErr(errors.New("round trip failed")), nil, permanent},
+		{"unparsable URL is permanent", nil, badURL, nil, permanent},
+		{"bare error with no response is permanent", nil, errors.New("request could not be built"), nil, permanent},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := errfmt.PollDeleted("cluster 3", tc.err, tc.resp)
-
-			var still errfmt.StillExistsError
-			var perm *backoff.PermanentError
-			gotDone := err == nil
-			gotRetry := errors.As(err, &still)
-			gotPerm := errors.As(err, &perm)
-
-			if gotDone != tc.wantDone || gotRetry != tc.wantRetry || gotPerm != tc.wantPerm {
-				t.Fatalf("PollDeleted() = %v (done=%v retry=%v permanent=%v), want done=%v retry=%v permanent=%v",
-					err, gotDone, gotRetry, gotPerm, tc.wantDone, tc.wantRetry, tc.wantPerm)
+			ctx := tc.ctx
+			if ctx == nil {
+				ctx = context.Background()
 			}
 
-			if gotRetry && !strings.Contains(err.Error(), "cluster 3 still exists") {
-				t.Errorf("retryable error %q does not name the resource", err)
+			err := errfmt.PollDeleted(ctx, "cluster 3", tc.err, tc.resp)
+
+			var (
+				stillErr     errfmt.StillExistsError
+				transientErr errfmt.TransientError
+				permErr      *backoff.PermanentError
+			)
+
+			got := done
+			switch {
+			case err == nil:
+			case errors.As(err, &permErr):
+				got = permanent
+			case errors.As(err, &transientErr):
+				got = transient
+			case errors.As(err, &stillErr):
+				got = still
+			default:
+				t.Fatalf("PollDeleted() = %T %v: not one of the documented results", err, err)
 			}
 
-			if gotPerm && !strings.Contains(err.Error(), "cluster 3") {
-				t.Errorf("permanent error %q does not name the resource", err)
+			if got != tc.want {
+				t.Fatalf("PollDeleted() = %v (%d), want %d", err, got, tc.want)
+			}
+
+			if err != nil && !strings.Contains(err.Error(), "cluster 3") {
+				t.Errorf("error %q does not name the resource", err)
+			}
+
+			if got == transient && strings.Contains(err.Error(), "retry") {
+				t.Errorf("a transient error is also the final diagnostic when the wait runs out; it must not promise a retry: %q", err)
+			}
+
+			if got == transient {
+				// Unwrap reaches the (secret-scrubbed) failure CheckResponse built.
+				if inner := errors.Unwrap(err); inner == nil || !strings.Contains(err.Error(), inner.Error()) {
+					t.Errorf("TransientError does not unwrap to its cause: %v", err)
+				}
 			}
 		})
+	}
+}
+
+// TestUnitDeletePoller: a poller tolerates MaxConsecutiveTransient-1
+// transient failures in a row, gives up on the next, and a poll that reaches
+// the appliance resets the count -- so a blip is ridden out but a persistent
+// 500 (MORPH-18060) is reported after five intervals, not after the delete
+// timeout.
+func TestUnitDeletePoller(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	p := &errfmt.DeletePoller{What: "image 9"}
+
+	var perm *backoff.PermanentError
+
+	for i := 1; i < errfmt.MaxConsecutiveTransient; i++ {
+		err := p.Poll(ctx, errors.New("500"), resp(500, `{"msg":"boom"}`))
+
+		var transient errfmt.TransientError
+		if !errors.As(err, &transient) {
+			t.Fatalf("failure %d: got %T %v, want TransientError", i, err, err)
+		}
+	}
+
+	// A poll that reaches the appliance resets the count.
+	var still errfmt.StillExistsError
+	if err := p.Poll(ctx, nil, resp(200, `{"image":{}}`)); !errors.As(err, &still) {
+		t.Fatalf("200 after failures: got %T %v, want StillExistsError", err, err)
+	}
+
+	for i := 1; i < errfmt.MaxConsecutiveTransient; i++ {
+		if err := p.Poll(ctx, errors.New("500"), resp(500, `{"msg":"boom"}`)); errors.As(err, &perm) {
+			t.Fatalf("failure %d after a reset: gave up early: %v", i, err)
+		}
+	}
+
+	err := p.Poll(ctx, errors.New("500"), resp(500, `{"msg":"boom"}`))
+	if !errors.As(err, &perm) {
+		t.Fatalf("failure %d: got %T %v, want permanent", errfmt.MaxConsecutiveTransient, err, err)
+	}
+
+	for _, want := range []string{"image 9", "times in a row", "boom"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("final error %q should contain %q", err, want)
+		}
+	}
+
+	// Non-transient results pass through unchanged.
+	if err := p.Poll(ctx, errors.New("404"), resp(404, ``)); err != nil {
+		t.Errorf("404: got %v, want nil", err)
+	}
+
+	if err := p.Poll(ctx, errors.New("403"), resp(403, `{}`)); !errors.As(err, &perm) {
+		t.Errorf("403: got %T, want permanent", err)
 	}
 }
