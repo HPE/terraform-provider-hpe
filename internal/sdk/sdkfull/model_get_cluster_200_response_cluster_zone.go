@@ -22,10 +22,10 @@ var _ MappedNullable = &GetCluster200ResponseClusterZone{}
 
 // GetCluster200ResponseClusterZone struct for GetCluster200ResponseClusterZone
 type GetCluster200ResponseClusterZone struct {
-	Id                   *int64                                    `json:"id,omitempty"`
-	Name                 *string                                   `json:"name,omitempty"`
-	ZoneType             *GetCluster200ResponseClusterZoneZoneType `json:"zoneType,omitempty"`
-	AdditionalProperties map[string]interface{}                    `json:",remain"`
+	Id                   *int64                                         `json:"id,omitempty"`
+	Name                 *string                                        `json:"name,omitempty"`
+	ZoneType             *AddCluster200ResponseAllOfClusterZoneZoneType `json:"zoneType,omitempty"`
+	AdditionalProperties map[string]interface{}                         `json:",remain"`
 }
 
 type _GetCluster200ResponseClusterZone GetCluster200ResponseClusterZone

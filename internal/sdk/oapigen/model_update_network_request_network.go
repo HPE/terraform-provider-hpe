@@ -78,7 +78,7 @@ type UpdateNetworkRequestNetwork struct {
 	NoProxy NullableString `json:"noProxy,omitempty"`
 	// Visibility, private or public.
 	Visibility *string `json:"visibility,omitempty"`
-	// Configuration object. Settings vary by type.
+	// Configuration object. Settings vary by type: the keys are the network type's config-context option types (see the network type detail API). Merged into the network's existing configuration key by key.
 	Config map[string]interface{} `json:"config,omitempty"`
 	// Array of tenant account ids that are allowed access
 	Tenants              []UpdateNetworkRequestNetworkTenantsInner       `json:"tenants,omitempty"`

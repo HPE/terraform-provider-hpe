@@ -22,9 +22,9 @@ var _ MappedNullable = &ClusterPermissions{}
 
 // ClusterPermissions struct for ClusterPermissions
 type ClusterPermissions struct {
-	ResourcePool         *ClusterPermissionsResourcePool        `json:"resourcePool,omitempty"`
-	ResourcePermissions  *ClusterPermissionsResourcePermissions `json:"resourcePermissions,omitempty"`
-	AdditionalProperties map[string]interface{}                 `json:",remain"`
+	ResourcePool         *GetCluster200ResponseClusterPermissionsResourcePool        `json:"resourcePool,omitempty"`
+	ResourcePermissions  *GetCluster200ResponseClusterPermissionsResourcePermissions `json:"resourcePermissions,omitempty"`
+	AdditionalProperties map[string]interface{}                                      `json:",remain"`
 }
 
 type _ClusterPermissions ClusterPermissions

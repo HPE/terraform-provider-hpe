@@ -20,16 +20,19 @@ import (
 // checks if the ListNetworks200ResponseAllOfNetworksInnerConfig type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &ListNetworks200ResponseAllOfNetworksInnerConfig{}
 
-// ListNetworks200ResponseAllOfNetworksInnerConfig struct for ListNetworks200ResponseAllOfNetworksInnerConfig
+// ListNetworks200ResponseAllOfNetworksInnerConfig The network type's configuration, as stored: every key the type's option types read (for example hvmVlanTrunks, resourceGroupId, mtu) and the keys the server adds itself, with secrets masked. The keys below are the ones every network type may carry; the rest vary by type.
 type ListNetworks200ResponseAllOfNetworksInnerConfig struct {
-	VlanIDs                 NullableString         `json:"vlanIDs,omitempty"`
-	ConnectedGateway        *string                `json:"connectedGateway,omitempty"`
-	SubnetIpManagementType  *string                `json:"subnetIpManagementType,omitempty"`
-	SubnetIpServerId        *string                `json:"subnetIpServerId,omitempty"`
-	DhcpRange               *string                `json:"dhcpRange,omitempty"`
-	SubnetDhcpServerAddress *string                `json:"subnetDhcpServerAddress,omitempty"`
-	SubnetDhcpLeaseTime     *string                `json:"subnetDhcpLeaseTime,omitempty"`
-	AdditionalProperties    map[string]interface{} `json:",remain"`
+	VlanIDs          NullableString `json:"vlanIDs,omitempty"`
+	ConnectedGateway *string        `json:"connectedGateway,omitempty"`
+	// How addresses on an NSX-T segment's subnet are managed (`dhcpLocal`, `dhcpRelay`, `gatewayDhcp`); null on a segment without DHCP.
+	SubnetIpManagementType *string `json:"subnetIpManagementType,omitempty"`
+	// The DHCP server or relay profile of an NSX-T segment, identified by its NSX-T policy path -- the profile's `path`, for example `/infra/dhcp-server-configs/<id>` or `/infra/dhcp-relay-configs/<id>` -- not its NSX-T `id`, despite this key's name. Stored and sent as given: it is the segment's `dhcp_config_path`, and nothing converts an id into a path. The network DHCP server listing returns it as `providerId`.
+	SubnetIpServerId        *string `json:"subnetIpServerId,omitempty"`
+	DhcpRange               *string `json:"dhcpRange,omitempty"`
+	SubnetDhcpServerAddress *string `json:"subnetDhcpServerAddress,omitempty"`
+	// DHCP lease time in seconds.
+	SubnetDhcpLeaseTime  *string                `json:"subnetDhcpLeaseTime,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _ListNetworks200ResponseAllOfNetworksInnerConfig ListNetworks200ResponseAllOfNetworksInnerConfig

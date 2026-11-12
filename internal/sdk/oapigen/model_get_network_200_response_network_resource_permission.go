@@ -20,9 +20,9 @@ var _ MappedNullable = &GetNetwork200ResponseNetworkResourcePermission{}
 
 // GetNetwork200ResponseNetworkResourcePermission struct for GetNetwork200ResponseNetworkResourcePermission
 type GetNetwork200ResponseNetworkResourcePermission struct {
-	All                  *bool                                                      `json:"all,omitempty"`
-	Sites                []GetNetwork200ResponseNetworkResourcePermissionSitesInner `json:"sites,omitempty"`
-	AdditionalProperties map[string]interface{}                                     `json:",remain"`
+	All                  *bool                                                               `json:"all,omitempty"`
+	Sites                []CreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner `json:"sites,omitempty"`
+	AdditionalProperties map[string]interface{}                                              `json:",remain"`
 }
 
 type _GetNetwork200ResponseNetworkResourcePermission GetNetwork200ResponseNetworkResourcePermission

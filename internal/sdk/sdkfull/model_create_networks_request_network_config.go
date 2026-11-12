@@ -21,11 +21,12 @@ import (
 // very silly way of avoiding `"fmt" imported and not used` errors
 var _ fmt.Stringer
 
-// CreateNetworksRequestNetworkConfig Configuration object. Settings vary by type.
+// CreateNetworksRequestNetworkConfig Configuration object. Settings vary by type: the keys are the network type's config-context option types (see the network type detail API). Typed variants exist for the Azure, AWS, GCP and NSX-T segment types; any other type takes the generic map.
 type CreateNetworksRequestNetworkConfig struct {
 	CreateNetworksRequestNetworkConfigAnyOf  *CreateNetworksRequestNetworkConfigAnyOf
 	CreateNetworksRequestNetworkConfigAnyOf1 *CreateNetworksRequestNetworkConfigAnyOf1
 	CreateNetworksRequestNetworkConfigAnyOf2 *CreateNetworksRequestNetworkConfigAnyOf2
+	NSXTSegmentConfig                        *NSXTSegmentConfig
 	MapmapOfStringAny                        *map[string]interface{}
 }
 
@@ -50,6 +51,12 @@ func (dst *CreateNetworksRequestNetworkConfig) UnmarshalMapstructure(data any) (
 
 	if IsEmpty(dst.CreateNetworksRequestNetworkConfigAnyOf2) {
 		dst.CreateNetworksRequestNetworkConfigAnyOf2 = nil
+	}
+
+	mapstructDecode(data, &dst.NSXTSegmentConfig)
+
+	if IsEmpty(dst.NSXTSegmentConfig) {
+		dst.NSXTSegmentConfig = nil
 	}
 
 	mapstructDecode(data, &dst.MapmapOfStringAny)
@@ -124,6 +131,26 @@ func (dst *CreateNetworksRequestNetworkConfig) UnmarshalJSON(data []byte) error 
 		dst.CreateNetworksRequestNetworkConfigAnyOf2 = nil
 	}
 
+	// try to unmarshal JSON data into NSXTSegmentConfig
+	err = json.Unmarshal(data, &dst.NSXTSegmentConfig)
+	if err == nil {
+		jsonNSXTSegmentConfig, merrNSXTSegmentConfig := json.Marshal(dst.NSXTSegmentConfig)
+		var zeroNSXTSegmentConfig NSXTSegmentConfig
+		jsonZeroNSXTSegmentConfig, _ := json.Marshal(&zeroNSXTSegmentConfig)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNSXTSegmentConfig != nil || string(jsonNSXTSegmentConfig) == "{}" || (len(jsonNSXTSegmentConfig) > 0 && jsonNSXTSegmentConfig[0] == '{' && string(jsonNSXTSegmentConfig) == string(jsonZeroNSXTSegmentConfig)) {
+			dst.NSXTSegmentConfig = nil
+		} else {
+			return nil // data stored in dst.NSXTSegmentConfig, return on the first match
+		}
+	} else {
+		dst.NSXTSegmentConfig = nil
+	}
+
 	// try to unmarshal JSON data into MapmapOfStringAny
 	err = json.Unmarshal(data, &dst.MapmapOfStringAny)
 	if err == nil {
@@ -165,6 +192,10 @@ func (src CreateNetworksRequestNetworkConfig) MarshalJSON() ([]byte, error) {
 
 	if src.CreateNetworksRequestNetworkConfigAnyOf2 != nil {
 		return json.Marshal(&src.CreateNetworksRequestNetworkConfigAnyOf2)
+	}
+
+	if src.NSXTSegmentConfig != nil {
+		return json.Marshal(&src.NSXTSegmentConfig)
 	}
 
 	if src.MapmapOfStringAny != nil {

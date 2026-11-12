@@ -20,11 +20,11 @@ var _ MappedNullable = &ClusterServersInner{}
 
 // ClusterServersInner struct for ClusterServersInner
 type ClusterServersInner struct {
-	Id                   *int64                                `json:"id,omitempty"`
-	Name                 *string                               `json:"name,omitempty"`
-	TypeSet              *ClusterServersInnerTypeSet           `json:"typeSet,omitempty"`
-	ComputeServerType    *ClusterServersInnerComputeServerType `json:"computeServerType,omitempty"`
-	AdditionalProperties map[string]interface{}                `json:",remain"`
+	Id                   *int64                                                          `json:"id,omitempty"`
+	Name                 *string                                                         `json:"name,omitempty"`
+	TypeSet              *AddCluster200ResponseAllOfClusterServersInnerTypeSet           `json:"typeSet,omitempty"`
+	ComputeServerType    *AddCluster200ResponseAllOfClusterServersInnerComputeServerType `json:"computeServerType,omitempty"`
+	AdditionalProperties map[string]interface{}                                          `json:",remain"`
 }
 
 type _ClusterServersInner ClusterServersInner

@@ -145,10 +145,10 @@ func populateClusterData(
 	}
 
 	data.Group = NewGroupValueNull()
-	if cluster.Site != nil {
+	if site := cluster.Site.Get(); site != nil {
 		data.Group = GroupValue{
-			Id:    convert.Int64ToType(cluster.Site.Id),
-			Name:  convert.StrToType(cluster.Site.Name),
+			Id:    convert.Int64ToType(site.Id),
+			Name:  convert.StrToType(site.Name),
 			state: attr.ValueStateKnown,
 		}
 	}
@@ -164,19 +164,19 @@ func populateClusterData(
 	}
 
 	data.Owner = NewOwnerValueNull()
-	if cluster.Owner != nil {
+	if owner := cluster.Owner.Get(); owner != nil {
 		data.Owner = OwnerValue{
-			Id:    convert.Int64ToType(cluster.Owner.Id),
-			Name:  convert.StrToType(cluster.Owner.Name),
+			Id:    convert.Int64ToType(owner.Id),
+			Name:  convert.StrToType(owner.Name),
 			state: attr.ValueStateKnown,
 		}
 	}
 
 	data.Type = NewTypeValueNull()
-	if cluster.Type != nil {
+	if clusterType := cluster.Type.Get(); clusterType != nil {
 		data.Type = TypeValue{
-			Id:    convert.Int64ToType(cluster.Type.Id),
-			Name:  convert.StrToType(cluster.Type.Name),
+			Id:    convert.Int64ToType(clusterType.Id),
+			Name:  convert.StrToType(clusterType.Name),
 			state: attr.ValueStateKnown,
 		}
 	}

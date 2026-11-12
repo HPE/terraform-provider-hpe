@@ -164,8 +164,8 @@ func getClusterAsState(
 	state.Id = convert.Int64ToType(cluster.Id)
 
 	clusterTypeName := ""
-	if cluster.Type != nil && cluster.Type.Name != nil {
-		clusterTypeName = *cluster.Type.Name
+	if clusterType := cluster.Type.Get(); clusterType != nil && clusterType.Name != nil {
+		clusterTypeName = *clusterType.Name
 	}
 	clusterTypeCodeFromName := clusterTypeCodeForName(clusterTypeName)
 	state.ClusterTypeCode = convert.StrToType(&clusterTypeCodeFromName)
@@ -173,7 +173,13 @@ func getClusterAsState(
 	state.CloudId = convert.Int64ToType(cluster.Zone.Id)
 	state.Uuid = convert.StrToType(cluster.Uuid)
 	state.Description = convert.StrToType(cluster.Description.Get())
-	state.GroupId = convert.Int64ToType(cluster.Site.Id)
+
+	var siteID *int64
+	if site := cluster.Site.Get(); site != nil {
+		siteID = site.Id
+	}
+	state.GroupId = convert.Int64ToType(siteID)
+
 	state.LayoutId = convert.Int64ToType(cluster.Layout.Id)
 	state.Name = convert.StrToType(cluster.Name)
 	state.ServiceUrl = convert.StrToType(cluster.ServiceUrl.Get())

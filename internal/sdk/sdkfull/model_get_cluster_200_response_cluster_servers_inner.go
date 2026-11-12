@@ -22,11 +22,11 @@ var _ MappedNullable = &GetCluster200ResponseClusterServersInner{}
 
 // GetCluster200ResponseClusterServersInner struct for GetCluster200ResponseClusterServersInner
 type GetCluster200ResponseClusterServersInner struct {
-	Id                   *int64                                                     `json:"id,omitempty"`
-	Name                 *string                                                    `json:"name,omitempty"`
-	TypeSet              *GetCluster200ResponseClusterServersInnerTypeSet           `json:"typeSet,omitempty"`
-	ComputeServerType    *GetCluster200ResponseClusterServersInnerComputeServerType `json:"computeServerType,omitempty"`
-	AdditionalProperties map[string]interface{}                                     `json:",remain"`
+	Id                   *int64                                                          `json:"id,omitempty"`
+	Name                 *string                                                         `json:"name,omitempty"`
+	TypeSet              *AddCluster200ResponseAllOfClusterServersInnerTypeSet           `json:"typeSet,omitempty"`
+	ComputeServerType    *AddCluster200ResponseAllOfClusterServersInnerComputeServerType `json:"computeServerType,omitempty"`
+	AdditionalProperties map[string]interface{}                                          `json:",remain"`
 }
 
 type _GetCluster200ResponseClusterServersInner GetCluster200ResponseClusterServersInner
