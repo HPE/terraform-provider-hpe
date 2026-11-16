@@ -56,6 +56,19 @@ in Terraform state. The compatibility round count is not a security recommendati
 
 ## New resources
 
+### `hpe_morpheus_appliance_setup`: first-time setup of a new appliance (MORPH-20057)
+
+A freshly installed appliance could only be initialised through the setup wizard in a browser or
+a script against its unauthenticated setup endpoint, so a Terraform-built appliance needed a
+provisioner before the provider could log in. The new `hpe_morpheus_appliance_setup` resource waits
+for the appliance's API to come up (a first boot takes a good twenty minutes; the create timeout
+defaults to 40 minutes), then creates the master tenant and its first administrator in one call,
+installing `license_key_wo` when it is set. The password and licence key are write-only. An
+appliance already set up is adopted with `already_initialised = true` and a warning; a refresh that
+finds the appliance needing setup again (reinstalled behind the same URL) removes the resource so
+the next apply sets it up again. Destroying the resource leaves the appliance as it is. Import takes
+the appliance URL.
+
 ### `hpe_morpheus_network_pool_ip` resource and data source (MORPH-15704)
 
 A single IP address can now be reserved from a network pool. Until now the provider could define

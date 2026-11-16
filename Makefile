@@ -97,6 +97,7 @@ unit-tests:
 	# the `sweep` build tag and are not listed.
 	pkgs=$$(go list ./... | grep -Ev '/internal/sdk/(oapigen|sdkfull)(/|$$)'); \
 	go test -v -count=1 -short -skip '^TestAcc' $$pkgs
+	TF_ACC= go test -race -count=1 -short -run '^TestUnit' ./morpheus/framework/resources/appliancesetup
 
 collect-test-results:
 	./scripts/collect-test-results.bash

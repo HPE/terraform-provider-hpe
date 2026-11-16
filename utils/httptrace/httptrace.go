@@ -45,7 +45,7 @@ var (
 	// {"access_token":"...","refresh_token":"..."}.
 	secretJSONRE = regexp.MustCompile(
 		`(?i)"(password|clientSecret|client_secret|accessToken|access_token` +
-			`|refreshToken|refresh_token)"(\s*:\s*)"[^"]*"`,
+			`|refreshToken|refresh_token|licenseKey|license_key)"(\s*:\s*)"[^"]*"`,
 	)
 
 	// showSecretsWarning ensures the clear-text warning is emitted once per
