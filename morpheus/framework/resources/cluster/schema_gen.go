@@ -196,6 +196,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					int64planmodifier.RequiresReplace(),
 				},
 			},
+			"host_profile_id": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "ID of the host profile to attach to the cluster's hosts. Applied via the dedicated cluster host-profile attach/detach endpoints, not the cluster create body.",
+				MarkdownDescription: "ID of the host profile to attach to the cluster's hosts. Applied via the dedicated cluster host-profile attach/detach endpoints, not the cluster create body.",
+			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The ID of the cluster",
@@ -542,6 +547,7 @@ type ClusterModel struct {
 	CpuPlacementMode  types.String   `tfsdk:"cpu_placement_mode"`
 	Description       types.String   `tfsdk:"description"`
 	GroupId           types.Int64    `tfsdk:"group_id"`
+	HostProfileId     types.Int64    `tfsdk:"host_profile_id"`
 	Id                types.Int64    `tfsdk:"id"`
 	Labels            types.Set      `tfsdk:"labels"`
 	LayoutId          types.Int64    `tfsdk:"layout_id"`

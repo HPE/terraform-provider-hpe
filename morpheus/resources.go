@@ -24,6 +24,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/deployment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/hostprofile"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instanceclone"
@@ -92,6 +93,7 @@ func (p *MorpheusProvider) Resources(
 		cloud.NewResource,
 		datastore.NewResource,
 		group.NewResource,
+		hostprofile.NewResource,
 		image.NewResource,
 		loadbalancer.NewResource,
 		loadbalancermonitor.NewResource,

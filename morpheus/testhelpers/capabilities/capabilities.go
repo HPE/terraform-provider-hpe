@@ -93,6 +93,14 @@ const (
 	// more than the "hvm" capability advertises, so it is declared separately.
 	VirtualSwitch Capability = "virtual_switch"
 
+	// HostProfile marks tests that exercise the host profile API, introduced in
+	// Morpheus 9.1.0 (alongside HVM 2.0). Host profiles are an HVM/MVM feature --
+	// compliance enforcement runs only on MVM/KVM hosts -- but the profile
+	// document CRUD API lives in morpheus-core and does NOT require a live HVM
+	// cluster to exercise. Gate host profile tests on this so they skip (rather
+	// than 404) on appliances older than 9.1.0. Not paired with hvm.
+	HostProfile Capability = "host_profile"
+
 	// Automation Integrations
 	Ansible      Capability = "ansible"
 	AnsibleTower Capability = "ansible_tower"

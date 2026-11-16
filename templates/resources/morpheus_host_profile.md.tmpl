@@ -1,0 +1,29 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Manages a Morpheus HVM host profile — a reusable document of storage (iSCSI, multipath), system (CPU power, logging, timezone) and baseline package settings that can be attached to HVM clusters and hosts to drive compliance.
+
+### Compliance, extraction and remediation
+
+Managing the profile document (this resource) and reading compliance (the `hpe_morpheus_host_profile_compliance` data source) are the Terraform-native, declarative operations. To verify compliance on every plan and apply, wrap the compliance data source in a Terraform `check` block — see the `hpe_morpheus_host_profile_compliance` data source. Extracting a profile from a running host and remediating drift are performed directly in Morpheus; a host profile extracted in Morpheus can then be brought under Terraform management with `terraform import hpe_morpheus_host_profile.<name> <id>`.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_host_profile/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Host profiles can be imported using the `id`, e.g.
+
+```bash
+terraform import hpe_morpheus_host_profile.example 123
+```

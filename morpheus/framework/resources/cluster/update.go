@@ -229,6 +229,32 @@ func (r *Resource) Update(
 		plan.WriteOnlyRevision = wodigest.NewRevision()
 	}
 
+	// Reconcile the attached host profile when host_profile_id changed. This
+	// uses the dedicated attach/detach cluster host-profile endpoints.
+	if !plan.HostProfileId.Equal(state.HostProfileId) {
+		if resp.Diagnostics.Append(applyClusterHostProfile(
+			ctx, id, client, plan.HostProfileId,
+		)...); resp.Diagnostics.HasError() {
+			// The cluster PUT above already committed the other mutable
+			// fields (description, labels, config). Persist a fresh read so
+			// state reflects what landed on the appliance -- including the
+			// actual attached profile -- rather than leaving stale pre-update
+			// values that would reappear as spurious diffs. The host-profile
+			// reconcile failure is still surfaced through the diagnostics.
+			if rb, found, rdiag := getClusterAsState(
+				ctx, id, client, plan,
+			); found && !rdiag.HasError() {
+				resp.Diagnostics.Append(resp.State.Set(ctx, &rb)...)
+			} else {
+				// Read-back failed: surface its diagnostics instead of
+				// dropping them. State keeps the fields the PUT committed.
+				resp.Diagnostics.Append(rdiag...)
+			}
+
+			return
+		}
+	}
+
 	updatedState, found, diag := getClusterAsState(ctx, id, client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
@@ -238,6 +264,15 @@ func (r *Resource) Update(
 
 		return
 	}
+
+	// host_profile_id is a plain Optional attribute, so Terraform requires the
+	// value in the post-apply state to equal the planned value. getClusterAsState
+	// fills it from an unconditional live read, which is what we want on Read (so
+	// out-of-band attach/detach surfaces as drift) but which could diverge from
+	// the plan here and trip "provider produced inconsistent result after apply".
+	// We just reconciled the appliance to the plan, so pin the planned value in
+	// state and let the next Read detect any later drift.
+	updatedState.HostProfileId = plan.HostProfileId
 
 	// Record the digests once the read-back succeeded, so private state and
 	// state move together, and re-baseline the appliance-hash drift detection

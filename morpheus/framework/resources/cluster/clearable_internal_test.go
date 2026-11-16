@@ -40,6 +40,25 @@ func TestUnitClearableAttributesNeedNoRecord(t *testing.T) {
 	}
 }
 
+// Removing host_profile_id from the configuration detaches the profile: the
+// attribute is Optional without Computed, so the plan carries the null and
+// Update calls the detach endpoint. Making it Computed (with or without
+// UseStateForUnknown) would keep the prior value in the plan and turn a
+// removal into a silent no-op, so this test fails first.
+func TestUnitHostProfileIDRemovalPlansNull(t *testing.T) {
+	t.Parallel()
+
+	attr, ok := ClusterResourceSchema(context.Background()).Attributes["host_profile_id"]
+	if !ok {
+		t.Fatal("host_profile_id is missing from the cluster schema")
+	}
+
+	if !attr.IsOptional() || attr.IsComputed() {
+		t.Fatalf("host_profile_id: optional=%t computed=%t; want optional without computed",
+			attr.IsOptional(), attr.IsComputed())
+	}
+}
+
 // TestUnitWarnCredentialsInConfig pins that a config carried in state with a
 // credential key produces a warning naming the key, and a clean one none.
 func TestUnitWarnCredentialsInConfig(t *testing.T) {

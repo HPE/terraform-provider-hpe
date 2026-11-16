@@ -434,6 +434,21 @@ func getClusterAsState(
 	// write_only_revision is not in the API; carried from prior state.
 	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
+	// host_profile_id is managed via the dedicated cluster host-profile
+	// endpoints, not the cluster GET body. Read it unconditionally so state
+	// reflects the profile the appliance actually has attached -- including one
+	// attached or detached out of band -- and drift surfaces as a diff.
+	//
+	// The read degrades safely on appliances that predate host profiles: the
+	// GET route is only registered from 9.1.0 onward, so an older appliance
+	// leaves the path unmatched and returns 404, which readClusterHostProfile
+	// treats (via errfmt.IsNotFound) as "none attached" -> a null id rather
+	// than an error. Clusters managed against such appliances simply never
+	// carry a host_profile_id, which matches reality.
+	hpState, hpDiags := readClusterHostProfile(ctx, id, client)
+	diags.Append(hpDiags...)
+	state.HostProfileId = hpState
+
 	return state, true, diags
 }
 

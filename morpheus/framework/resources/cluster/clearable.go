@@ -23,6 +23,7 @@ var notClearable = clearable.NotClearable{
 	"cluster_type_code": "the cluster's type; the current one is kept when it is removed",
 	"config":            "free-form configuration; removing the whole map is not yet supported",
 	"config_hvm":        "nested block; removing a whole block is not yet supported",
+	"host_profile_id":   "removal is reconciled by detaching via the dedicated cluster host-profile endpoint (an id diff to null), not by clearing a field in the cluster update body",
 	"timeouts":          "nested block; removing a whole block is not yet supported",
 	"workflow_id":       "a change or removal replaces the cluster",
 }

@@ -1,0 +1,21 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Lists host profiles, optionally filtered by a search phrase, returning a summary of each matching profile.
+
+### Compliance, extraction and remediation
+
+Managing the profile document (the `hpe_morpheus_host_profile` resource) and reading compliance (the `hpe_morpheus_host_profile_compliance` data source) are the Terraform-native, declarative operations. To verify compliance on every plan and apply, wrap the compliance data source in a Terraform `check` block — see the `hpe_morpheus_host_profile_compliance` data source. Extracting a profile from a running host and remediating drift are performed directly in Morpheus; a host profile extracted in Morpheus can then be brought under Terraform management with `terraform import hpe_morpheus_host_profile.<name> <id>`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_host_profiles/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

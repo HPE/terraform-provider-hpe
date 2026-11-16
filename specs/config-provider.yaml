@@ -320,6 +320,19 @@ resources:
     update:
       path: /api/guidance-settings
       method: PUT
+  host_profile:
+    create:
+      path: /api/host-profiles
+      method: POST
+    read:
+      path: /api/host-profiles/{id}
+      method: GET
+    update:
+      path: /api/host-profiles/{id}
+      method: PUT
+    delete:
+      path: /api/host-profiles/{id}
+      method: DELETE
   image:
     create:
       path: /api/virtual-images
@@ -1750,6 +1763,18 @@ data_sources:
   vdi_pool:
     read:
       path: /api/vdi-pools/{id}
+      method: GET
+  host_profile:
+    read:
+      path: /api/host-profiles/{id}
+      method: GET
+  host_profiles:
+    read:
+      path: /api/host-profiles
+      method: GET
+  host_profile_compliance:
+    read:
+      path: /api/clusters/{clusterId}/host-profile/compliance
       method: GET
   image:
     read:

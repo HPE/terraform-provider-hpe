@@ -1,0 +1,60 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Reports host profile compliance for either a cluster or a single server. Provide exactly one of `cluster_id` or `server_id`. A `cluster_id` lookup returns the aggregated `overall_status` plus a per-host summary; a `server_id` lookup returns a flat per-server compliance result.
+
+### Compliance, extraction and remediation
+
+Managing the profile document (the `hpe_morpheus_host_profile` resource) and reading compliance (this data source) are the Terraform-native, declarative operations. To verify compliance on every plan and apply, wrap this data source in a Terraform `check` block — see below. Extracting a profile from a running host and remediating drift are performed directly in Morpheus; a host profile extracted in Morpheus can then be brought under Terraform management with `terraform import hpe_morpheus_host_profile.<name> <id>`.
+
+### Continuous compliance with a `check` block
+
+A Terraform `check` block re-reads this data source on every plan and apply and asserts the result, surfacing drift as a non-blocking warning rather than failing the run. A `cluster_id` lookup exposes the aggregated `overall_status`:
+
+```hcl
+check "host_profile_compliance" {
+  data "hpe_morpheus_host_profile_compliance" "cluster" {
+    cluster_id = hpe_morpheus_cluster.example.id
+  }
+
+  assert {
+    condition = data.hpe_morpheus_host_profile_compliance.cluster.overall_status == "compliant"
+    error_message = format(
+      "cluster host profile compliance is %q, expected \"compliant\"",
+      data.hpe_morpheus_host_profile_compliance.cluster.overall_status,
+    )
+  }
+}
+```
+
+A `server_id` lookup instead exposes a boolean `compliant` attribute, so assert on that directly.
+
+### Compliance status values
+
+`overall_status` (cluster lookup) is an aggregate rolled up from the per-host statuses and is one of:
+
+- `compliant` — every host is compliant
+- `non-compliant` — at least one host is non-compliant
+- `error` — at least one host errored (and none is non-compliant)
+- `unknown` — no hosts were evaluated, or a check is in progress
+
+The rollup takes the first match in that order (`non-compliant` outranks `error`, which outranks `compliant`). Because an in-progress check does not count as any of the first three, a cluster whose hosts are currently being checked reads as `unknown` — allow for this when asserting on `overall_status` in a `check` block.
+
+The per-host `status` (the `status` attribute on a `server_id` lookup, and each entry of `hosts`) carries the same four values, plus the transient `checking` (a compliance check is running) and `remediating` (remediation is running).
+
+#### Freshness
+
+This data source reads the **last recorded** compliance result, which the appliance maintains on its host profile drift-detection schedule configured in Morpheus. It does not re-run the compliance check. To obtain an up-to-the-moment result, re-run the check in Morpheus before reading.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_host_profile_compliance/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
