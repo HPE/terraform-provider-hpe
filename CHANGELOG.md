@@ -189,6 +189,16 @@ generated from the provider specification for other tools does not inherit Terra
 plan vocabulary for an argument. No behaviour changes.
 ## Bug fixes
 
+### Compute server lookups work on an appliance with an external Kubernetes cluster
+
+`hpe_morpheus_compute_servers`, and `hpe_morpheus_compute_server` looked up by name, failed with
+*decoding failed … cannot parse "+0000" as "Z07:00"* on any appliance that had registered an
+external Kubernetes cluster. Morpheus reports the time a server's statistics were sampled with a
+`Z` offset for most servers and with `+0000` for the cluster's node; the second form is not a
+valid RFC 3339 timestamp, and one such server made the whole server list unreadable, whatever was
+being looked up. The provider now reads that timestamp as text. Neither data source exposes it, so
+their attributes are unchanged.
+
 ### `hpe_morpheus_cluster`: an External Kubernetes cluster's token and kubeconfig no longer reach state (MORPH-19991)
 
 For an External Kubernetes cluster the appliance returns `config.apiToken` — a cluster-admin

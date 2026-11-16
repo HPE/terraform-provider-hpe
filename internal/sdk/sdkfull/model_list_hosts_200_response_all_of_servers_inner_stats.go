@@ -15,7 +15,6 @@ package sdkfull
 
 import (
 	"encoding/json"
-	"time"
 )
 
 // checks if the ListHosts200ResponseAllOfServersInnerStats type satisfies the MappedNullable interface at compile time
@@ -23,7 +22,8 @@ var _ MappedNullable = &ListHosts200ResponseAllOfServersInnerStats{}
 
 // ListHosts200ResponseAllOfServersInnerStats struct for ListHosts200ResponseAllOfServersInnerStats
 type ListHosts200ResponseAllOfServersInnerStats struct {
-	Ts                   *time.Time             `json:"ts,omitempty"`
+	// When the statistics were sampled. An ISO 8601 timestamp whose UTC offset is written either as `Z` or as `+0000`, depending on what reported the statistics, so it is not always a valid RFC 3339 date-time.
+	Ts                   *string                `json:"ts,omitempty"`
 	FreeSwap             *int64                 `json:"freeSwap,omitempty"`
 	UsedSwap             *int64                 `json:"usedSwap,omitempty"`
 	CpuIdleTime          *int64                 `json:"cpuIdleTime,omitempty"`
