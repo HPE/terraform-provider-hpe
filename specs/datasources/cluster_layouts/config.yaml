@@ -1,0 +1,108 @@
+cluster_layouts:
+  blocks:
+    filter:
+      set_nested:
+        description: >-
+          Filter block. Repeat to apply multiple filters (all ANDed together).
+          Filter values are case-sensitive and support Go regular expressions
+          (https://regex101.com/).
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: required
+                description: >-
+                  The field to filter on. Valid names are: name, code,
+                  cluster_version, compute_version, provision_type.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                      schema_definition: stringvalidator.OneOf("name", "code", "cluster_version", "compute_version", "provision_type")
+            - name: values
+              set:
+                element_type:
+                  string: {}
+                computed_optional_required: required
+                description: >-
+                  The filter values. A cluster layout matches the block if the
+                  chosen field matches ANY value (Go regular expression).
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+                      schema_definition: setvalidator.SizeAtLeast(1)
+
+  moves:
+    - layouts: cluster_layouts # rename list wrapper array (listClusterLayouts200Response.layouts)
+
+  removes:
+    - max # query param
+    - offset # query param
+    - sort # query param
+    - direction # query param
+    - phrase # query param
+    - provision_type # query param (provisionType)
+    - labels # query param (labels)
+    - all_labels # query param (allLabels)
+    - meta # list response pagination meta
+    # Nested objects/arrays below are sourced from components/schemas/clusterLayout.yaml;
+    # removed to keep the data source flat (scalar layout attributes only).
+    - cluster_layouts.actions # nested array (clusterLayout.yaml: actions)
+    - cluster_layouts.compute_servers # nested array of compute-server-type objects (clusterLayout.yaml: computeServers)
+    - cluster_layouts.environment_variables # nested array (clusterLayout.yaml: environmentVariables)
+    - cluster_layouts.group_type # nested object (clusterLayout.yaml: groupType)
+    - cluster_layouts.option_types # nested array of option-type objects (clusterLayout.yaml: optionTypes)
+    - cluster_layouts.provision_type # nested object (clusterLayout.yaml: provisionType)
+    - cluster_layouts.spec_templates # nested array (clusterLayout.yaml: specTemplates)
+    - cluster_layouts.task_sets # nested array (clusterLayout.yaml: taskSets)
+    - cluster_layouts.type # nested object (clusterLayout.yaml: type)
+
+  overrides:
+    cluster_layouts:
+      computed_optional_required: computed
+      description: The list of cluster layouts matching the supplied filters.
+    cluster_layouts.id:
+      description: The ID of the cluster layout.
+    cluster_layouts.name:
+      description: The name of the cluster layout.
+    cluster_layouts.code:
+      description: The code identifier of the cluster layout.
+    cluster_layouts.description:
+      description: A description of the cluster layout.
+    cluster_layouts.cluster_version:
+      description: >-
+        The version of the cluster software the layout deploys: the Kubernetes
+        version for a Kubernetes layout (for example "1.33.x"), or the HVM
+        cluster version for an HVM layout (for example "1.3" or "2.0"; a layout
+        2.0 builds on virtual switches and accepts the config_hvm network
+        settings of hpe_morpheus_cluster). Set by Morpheus; it cannot be set
+        through the API.
+    cluster_layouts.compute_version:
+      description: The compute version associated with the layout.
+    cluster_layouts.creatable:
+      description: Whether clusters of this layout can be created.
+    cluster_layouts.enabled:
+      description: Whether this cluster layout is enabled.
+    cluster_layouts.has_auto_scale:
+      description: Whether the layout supports auto scaling.
+    cluster_layouts.has_config:
+      description: Whether the layout has additional configuration.
+    cluster_layouts.has_settings:
+      description: Whether the layout has additional settings.
+    cluster_layouts.install_container_runtime:
+      description: Whether the container runtime is installed by this layout.
+    cluster_layouts.internal_id:
+      description: The internal identifier of the cluster layout.
+    cluster_layouts.memory_requirement:
+      description: The memory requirement (in bytes) for this layout.
+    cluster_layouts.server_count:
+      description: The number of servers defined by this layout.
+    cluster_layouts.sort_order:
+      description: The display order of the layout.
+    cluster_layouts.labels:
+      description: Labels associated with the cluster layout.
+    cluster_layouts.date_created:
+      description: The date the cluster layout was created.
+    cluster_layouts.last_updated:
+      description: The date the cluster layout was last updated.

@@ -465,6 +465,46 @@ sent, so there is no tenant attribute, and passing one in `parameters` warns rat
 answering for the wrong tenant. Raw credentials must not be passed in `parameters`; sources that
 authenticate to a target system take a stored credential via `credential_id`.
 
+### `hpe_morpheus_cluster_layouts`: find a cluster layout by its version (MORPH-17748)
+
+Morpheus 9.1.0 introduces cluster layout 2.0 for HVM clusters, and from then on the layout a cluster
+is built from decides what the cluster can do: only a layout whose `cluster_version` is 2.0 or
+greater builds on virtual switches and takes the 2.0 network settings described under
+`hpe_morpheus_cluster` below. A configuration therefore needs to select a layout by that version,
+rather than by an id or a display name that differs from one appliance to the next.
+
+The new `hpe_morpheus_cluster_layouts` data source lists the cluster layouts, with a repeatable
+`filter` block over `name`, `code`, `cluster_version`, `compute_version` and `provision_type`. Each
+value is a Go regular expression, matched unanchored — `2.0` also matches `12.0`, so an exact version
+is written `^2\.0$`; a layout matches a block when the field matches any of the block's values, and
+every block must match. Filtering is client-side, as in `hpe_morpheus_clusters`. Each layout is
+returned with its scalar attributes, so
+
+```hcl
+data "hpe_morpheus_cluster_layouts" "hvm_2" {
+  filter {
+    name   = "cluster_version"
+    values = ["^2\\.0$"]
+  }
+  filter {
+    name   = "code"
+    values = ["^mvm-"]
+  }
+}
+```
+
+selects the HVM 2.0 layout, and `one(data.hpe_morpheus_cluster_layouts.hvm_2.cluster_layouts).id`
+supplies its `id` to `hpe_morpheus_cluster`'s `layout_id`. `cluster_layouts` is a set, and a regular
+expression can select several layouts; `one()` fails the plan unless exactly one matched, so a
+selection that has become ambiguous is caught at plan time rather than building a cluster from the
+wrong layout.
+
+`cluster_version` is the version of the cluster software a layout deploys: the Kubernetes version
+for a Kubernetes layout (`1.33.x`), the HVM cluster version for an HVM layout (`1.3`, `2.0`). The
+singular `hpe_morpheus_cluster_layout` data source already exposed it; the `hpe_morpheus_cluster_layout`
+resource now reads it back as a read-only attribute too. Morpheus does not accept the field when a
+layout is created or updated, so a custom layout cannot be made a 2.0 layout through the API.
+
 ## Improvements
 
 ### Cloud-init user data on HVM instances and clones (MORPH-19115)
@@ -514,6 +554,24 @@ an ordinary integration, so the network pool server and storage server write-onl
 acceptance tests are currently skipped pending an IPAM or storage service with rotatable
 credentials; set `TF_ACC_IPAM_ROTATABLE=1` or `TF_ACC_STORAGE_SERVER_ROTATABLE=1` to re-enable them
 against such a service.
+
+### `hpe_morpheus_cluster`: the network settings of an HVM cluster layout 2.0 (MORPH-17748)
+
+An HVM cluster built from a layout 2.0 (Morpheus 9.1.0) is networked over the hosts' virtual switches
+rather than the bond-and-bridge scheme of the earlier layouts, and carries its own DNS, NTP and proxy
+settings. `config_hvm` gains the corresponding optional attributes: `virt_switch_name` — the virtual
+switch every host must already carry, as Morpheus refuses to add a host without it — and `dns1`,
+`dns2`, `dns3`, `search_domain`, `ntp1`, `ntp2`, `proxy` and `no_proxy`.
+
+Morpheus silently ignores these settings on a layout below 2.0. Before creating or updating a
+cluster the provider therefore reads the selected layout's `cluster_version` and, when any of them
+is set for an older layout, refuses with a message naming the layout's version (when the version
+cannot be determined, the operation is allowed through). A change to `virt_switch_name` replaces the
+cluster, since switches are attached to each host as it is added. A change to any of the other
+settings is an in-place update that Morpheus reconciles onto the hosts through its daily
+drift-correction sync, so the hosts converge asynchronously after the apply, and a value that is
+cleared is not rolled back on the hosts by itself. The resource documentation carries a complete
+2.0 example and explains why a change of `layout_id` replaces the cluster rather than upgrading it.
 
 ### New read-only and query attributes across several resources and data sources (MORPH-18721)
 

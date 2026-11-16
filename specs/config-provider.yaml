@@ -1435,6 +1435,10 @@ data_sources:
     read:
       path: /api/library/cluster-layouts/{id}
       method: GET
+  cluster_layouts:
+    read:
+      path: /api/library/cluster-layouts
+      method: GET
   cluster_namespace:
     read:
       path: /api/clusters/{clusterId}/namespaces/{id}

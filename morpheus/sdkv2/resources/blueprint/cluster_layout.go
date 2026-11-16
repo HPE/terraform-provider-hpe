@@ -51,6 +51,16 @@ func ResourceClusterLayout() *schema.Resource {
 				Description: "The version of the cluster layout",
 				Required:    true,
 			},
+			"cluster_version": {
+				Type: schema.TypeString,
+				Description: "The version of the cluster software the layout deploys: the Kubernetes " +
+					"version for a Kubernetes layout (for example '1.33.x'), or the HVM cluster version " +
+					"for an HVM layout (for example '1.3' or '2.0'; a layout 2.0 builds on virtual " +
+					"switches and accepts the config_hvm network settings of hpe_morpheus_cluster). " +
+					"Set by Morpheus; it cannot be set through the API, so a custom layout cannot be " +
+					"made a 2.0 layout.",
+				Computed: true,
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Description: "The description of the cluster layout",
@@ -470,6 +480,7 @@ func resourceClusterLayoutRead(ctx context.Context, d *schema.ResourceData, meta
 	d.SetId(convert.Int64ToString(clusterLayout.ClusterLayout.ID))
 	d.Set("name", clusterLayout.ClusterLayout.Name)
 	d.Set("version", clusterLayout.ClusterLayout.ComputeVersion)
+	d.Set("cluster_version", clusterLayout.ClusterLayout.ClusterVersion)
 	d.Set("description", clusterLayout.ClusterLayout.Description)
 	d.Set("creatable", clusterLayout.ClusterLayout.Creatable)
 	d.Set("minimum_memory", clusterLayout.ClusterLayout.MemoryRequirement)
@@ -873,6 +884,11 @@ func parseClusterLayoutEnvironmentVariables(variables []any) []map[string]any {
 	return evars
 }
 
+// ClusterLayoutPayload decodes the response of a cluster layout GET in
+// resourceClusterLayoutRead. It is never sent to Morpheus: the create and
+// update request bodies are built as maps in resourceClusterLayoutCreate and
+// resourceClusterLayoutUpdate, so a read-only field such as ClusterVersion can
+// be decoded here without being written back.
 type ClusterLayoutPayload struct {
 	ClusterLayout struct {
 		ID      int64 `json:"id"`
@@ -884,6 +900,7 @@ type ClusterLayoutPayload struct {
 		Description             string `json:"description"`
 		Code                    string `json:"code"`
 		ComputeVersion          string `json:"computeVersion"`
+		ClusterVersion          string `json:"clusterVersion"`
 		HasAutoScale            bool   `json:"hasAutoScale"`
 		Creatable               bool   `json:"creatable"`
 		MemoryRequirement       int64  `json:"memoryRequirement"`

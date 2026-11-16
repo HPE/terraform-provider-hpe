@@ -13,6 +13,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusterlayout"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusterlayouts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusters"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastores"
@@ -172,6 +173,7 @@ func (p *MorpheusProvider) DataSources(
 		// resource-reference lookup data sources (avoid hard-coded IDs)
 		backupjob.NewDataSource,
 		clusterlayout.NewDataSource,
+		clusterlayouts.NewDataSource,
 		monitoringchecktype.NewDataSource,
 		networkpoolservertype.NewDataSource,
 		networkroutertype.NewDataSource,

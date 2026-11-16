@@ -19,8 +19,8 @@ func ClusterLayoutDataSourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"cluster_version": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The cluster version associated with the layout",
-				MarkdownDescription: "The cluster version associated with the layout",
+				Description:         "The version of the cluster software the layout deploys: the Kubernetes version for a Kubernetes layout (for example \"1.33.x\"), or the HVM cluster version for an HVM layout (for example \"1.3\" or \"2.0\"; a layout 2.0 builds on virtual switches and accepts the config_hvm network settings of hpe_morpheus_cluster). Set by Morpheus; it cannot be set through the API.",
+				MarkdownDescription: "The version of the cluster software the layout deploys: the Kubernetes version for a Kubernetes layout (for example \"1.33.x\"), or the HVM cluster version for an HVM layout (for example \"1.3\" or \"2.0\"; a layout 2.0 builds on virtual switches and accepts the config_hvm network settings of hpe_morpheus_cluster). Set by Morpheus; it cannot be set through the API.",
 			},
 			"code": schema.StringAttribute{
 				Computed:            true,

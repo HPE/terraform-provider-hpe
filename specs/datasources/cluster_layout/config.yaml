@@ -26,7 +26,13 @@ cluster_layout:
     description:
       description: A description of the cluster layout
     cluster_version:
-      description: The cluster version associated with the layout
+      description: >-
+        The version of the cluster software the layout deploys: the Kubernetes
+        version for a Kubernetes layout (for example "1.33.x"), or the HVM
+        cluster version for an HVM layout (for example "1.3" or "2.0"; a layout
+        2.0 builds on virtual switches and accepts the config_hvm network
+        settings of hpe_morpheus_cluster). Set by Morpheus; it cannot be set
+        through the API.
     compute_version:
       description: The compute version associated with the layout
     creatable:
