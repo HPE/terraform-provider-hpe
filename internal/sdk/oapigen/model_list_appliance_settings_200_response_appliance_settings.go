@@ -20,70 +20,71 @@ var _ MappedNullable = &ListApplianceSettings200ResponseApplianceSettings{}
 
 // ListApplianceSettings200ResponseApplianceSettings struct for ListApplianceSettings200ResponseApplianceSettings
 type ListApplianceSettings200ResponseApplianceSettings struct {
-	Uuid                       *string                                                                        `json:"uuid,omitempty"`
-	ApplianceId                *string                                                                        `json:"applianceId,omitempty"`
-	ApplianceUrl               *string                                                                        `json:"applianceUrl,omitempty"`
-	InternalApplianceUrl       *string                                                                        `json:"internalApplianceUrl,omitempty"`
-	CorsAllowed                *string                                                                        `json:"corsAllowed,omitempty"`
-	RegistrationEnabled        *bool                                                                          `json:"registrationEnabled,omitempty"`
-	DefaultRoleId              *string                                                                        `json:"defaultRoleId,omitempty"`
-	DefaultUserRoleId          NullableString                                                                 `json:"defaultUserRoleId,omitempty"`
-	DockerPrivilegedMode       *bool                                                                          `json:"dockerPrivilegedMode,omitempty"`
-	CloudSyncIntervalSeconds   NullableString                                                                 `json:"cloudSyncIntervalSeconds,omitempty"`
-	ClusterSyncIntervalSeconds NullableString                                                                 `json:"clusterSyncIntervalSeconds,omitempty"`
-	UsageRetainmentPeriod      NullableString                                                                 `json:"usageRetainmentPeriod,omitempty"`
-	InvoiceRetainmentPeriod    NullableString                                                                 `json:"invoiceRetainmentPeriod,omitempty"`
-	IncidentRetainmentPeriod   NullableString                                                                 `json:"incidentRetainmentPeriod,omitempty"`
-	StatsRetainmentPeriod      NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod `json:"statsRetainmentPeriod,omitempty"`
-	ReportsRetainmentPeriod    NullableString                                                                 `json:"reportsRetainmentPeriod,omitempty"`
-	HttpBlacklistHosts         NullableString                                                                 `json:"httpBlacklistHosts,omitempty"`
-	HttpApprovelistHosts       NullableString                                                                 `json:"httpApprovelistHosts,omitempty"`
-	ExchangeUrl                NullableString                                                                 `json:"exchangeUrl,omitempty"`
-	NoAgent                    *bool                                                                          `json:"noAgent,omitempty"`
-	AgentSSLVerify             *bool                                                                          `json:"agentSSLVerify,omitempty"`
-	DisableSSHPasswordAuth     *bool                                                                          `json:"disableSSHPasswordAuth,omitempty"`
-	DefaultLocale              NullableString                                                                 `json:"defaultLocale,omitempty"`
-	DefaultVdiGateway          NullableString                                                                 `json:"defaultVdiGateway,omitempty"`
-	MaxOptionListSize          NullableString                                                                 `json:"maxOptionListSize,omitempty"`
-	PasswordMinLength          NullableString                                                                 `json:"passwordMinLength,omitempty"`
-	PasswordMinUpperCase       NullableString                                                                 `json:"passwordMinUpperCase,omitempty"`
-	PasswordMinNumbers         NullableString                                                                 `json:"passwordMinNumbers,omitempty"`
-	PasswordMinSymbols         NullableString                                                                 `json:"passwordMinSymbols,omitempty"`
-	UserBrowserSessionTimeout  NullableString                                                                 `json:"userBrowserSessionTimeout,omitempty"`
-	UserBrowserSessionWarning  NullableString                                                                 `json:"userBrowserSessionWarning,omitempty"`
-	ExpirePwdDays              NullableString                                                                 `json:"expirePwdDays,omitempty"`
-	DisableAfterAttempts       NullableString                                                                 `json:"disableAfterAttempts,omitempty"`
-	DisableAfterDaysInactive   NullableString                                                                 `json:"disableAfterDaysInactive,omitempty"`
-	WarnUserDaysBefore         NullableString                                                                 `json:"warnUserDaysBefore,omitempty"`
-	SmtpMailFrom               NullableString                                                                 `json:"smtpMailFrom,omitempty"`
-	SmtpServer                 NullableString                                                                 `json:"smtpServer,omitempty"`
-	SmtpPort                   NullableString                                                                 `json:"smtpPort,omitempty"`
-	SmtpSSL                    *bool                                                                          `json:"smtpSSL,omitempty"`
-	SmtpTLS                    *bool                                                                          `json:"smtpTLS,omitempty"`
-	SmtpUser                   NullableString                                                                 `json:"smtpUser,omitempty"`
-	SmtpPassword               NullableString                                                                 `json:"smtpPassword,omitempty"`
-	SmtpPasswordHash           NullableString                                                                 `json:"smtpPasswordHash,omitempty"`
-	TwilioAccountSid           NullableString                                                                 `json:"twilioAccountSid,omitempty"`
-	TwilioSmsFrom              NullableString                                                                 `json:"twilioSmsFrom,omitempty"`
-	TwilioAuthToken            NullableString                                                                 `json:"twilioAuthToken,omitempty"`
-	ProxyHost                  NullableString                                                                 `json:"proxyHost,omitempty"`
-	ProxyPort                  NullableString                                                                 `json:"proxyPort,omitempty"`
-	ProxyUser                  NullableString                                                                 `json:"proxyUser,omitempty"`
-	ProxyPassword              NullableString                                                                 `json:"proxyPassword,omitempty"`
-	ProxyPasswordHash          NullableString                                                                 `json:"proxyPasswordHash,omitempty"`
-	ProxyDomain                NullableString                                                                 `json:"proxyDomain,omitempty"`
-	ProxyWorkstation           NullableString                                                                 `json:"proxyWorkstation,omitempty"`
-	NoProxy                    NullableString                                                                 `json:"noProxy,omitempty"`
-	CurrencyProvider           NullableString                                                                 `json:"currencyProvider,omitempty"`
-	CurrencyKey                NullableString                                                                 `json:"currencyKey,omitempty"`
-	MaintenanceMode            *bool                                                                          `json:"maintenanceMode,omitempty"`
-	EnabledZoneTypes           []ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner       `json:"enabledZoneTypes,omitempty"`
-	DashboardsToDisplay        NullableString                                                                 `json:"dashboardsToDisplay,omitempty"`
-	EnableMurph                *bool                                                                          `json:"enableMurph,omitempty"`
-	VmeAppliance               *bool                                                                          `json:"vmeAppliance,omitempty"`
-	LatestWindowsAgentVersion  *string                                                                        `json:"latestWindowsAgentVersion,omitempty"`
-	LatestLinuxAgentVersion    *string                                                                        `json:"latestLinuxAgentVersion,omitempty"`
-	AdditionalProperties       map[string]interface{}                                                         `json:",remain"`
+	Uuid                            *string                                                                        `json:"uuid,omitempty"`
+	ApplianceId                     *string                                                                        `json:"applianceId,omitempty"`
+	ApplianceUrl                    *string                                                                        `json:"applianceUrl,omitempty"`
+	InternalApplianceUrl            *string                                                                        `json:"internalApplianceUrl,omitempty"`
+	CorsAllowed                     *string                                                                        `json:"corsAllowed,omitempty"`
+	RegistrationEnabled             *bool                                                                          `json:"registrationEnabled,omitempty"`
+	DefaultRoleId                   *string                                                                        `json:"defaultRoleId,omitempty"`
+	DefaultUserRoleId               NullableString                                                                 `json:"defaultUserRoleId,omitempty"`
+	DockerPrivilegedMode            *bool                                                                          `json:"dockerPrivilegedMode,omitempty"`
+	CloudSyncIntervalSeconds        NullableString                                                                 `json:"cloudSyncIntervalSeconds,omitempty"`
+	ClusterSyncIntervalSeconds      NullableString                                                                 `json:"clusterSyncIntervalSeconds,omitempty"`
+	UsageRetainmentPeriod           NullableString                                                                 `json:"usageRetainmentPeriod,omitempty"`
+	InvoiceRetainmentPeriod         NullableString                                                                 `json:"invoiceRetainmentPeriod,omitempty"`
+	IncidentRetainmentPeriod        NullableString                                                                 `json:"incidentRetainmentPeriod,omitempty"`
+	StatsRetainmentPeriod           NullableListApplianceSettings200ResponseApplianceSettingsStatsRetainmentPeriod `json:"statsRetainmentPeriod,omitempty"`
+	ReportsRetainmentPeriod         NullableString                                                                 `json:"reportsRetainmentPeriod,omitempty"`
+	HttpBlacklistHosts              NullableString                                                                 `json:"httpBlacklistHosts,omitempty"`
+	HttpApprovelistHosts            NullableString                                                                 `json:"httpApprovelistHosts,omitempty"`
+	ExchangeUrl                     NullableString                                                                 `json:"exchangeUrl,omitempty"`
+	NoAgent                         *bool                                                                          `json:"noAgent,omitempty"`
+	AgentSSLVerify                  *bool                                                                          `json:"agentSSLVerify,omitempty"`
+	DisableSSHPasswordAuth          *bool                                                                          `json:"disableSSHPasswordAuth,omitempty"`
+	DefaultLocale                   NullableString                                                                 `json:"defaultLocale,omitempty"`
+	DefaultVdiGateway               NullableString                                                                 `json:"defaultVdiGateway,omitempty"`
+	MaxOptionListSize               NullableString                                                                 `json:"maxOptionListSize,omitempty"`
+	PasswordMinLength               NullableString                                                                 `json:"passwordMinLength,omitempty"`
+	PasswordMinUpperCase            NullableString                                                                 `json:"passwordMinUpperCase,omitempty"`
+	PasswordMinNumbers              NullableString                                                                 `json:"passwordMinNumbers,omitempty"`
+	PasswordMinSymbols              NullableString                                                                 `json:"passwordMinSymbols,omitempty"`
+	UserBrowserSessionTimeout       NullableString                                                                 `json:"userBrowserSessionTimeout,omitempty"`
+	UserBrowserSessionWarning       NullableString                                                                 `json:"userBrowserSessionWarning,omitempty"`
+	ExpirePwdDays                   NullableString                                                                 `json:"expirePwdDays,omitempty"`
+	DisableAfterAttempts            NullableString                                                                 `json:"disableAfterAttempts,omitempty"`
+	DisableAfterDaysInactive        NullableString                                                                 `json:"disableAfterDaysInactive,omitempty"`
+	WarnUserDaysBefore              NullableString                                                                 `json:"warnUserDaysBefore,omitempty"`
+	SmtpMailFrom                    NullableString                                                                 `json:"smtpMailFrom,omitempty"`
+	SmtpServer                      NullableString                                                                 `json:"smtpServer,omitempty"`
+	SmtpPort                        NullableString                                                                 `json:"smtpPort,omitempty"`
+	SmtpSSL                         *bool                                                                          `json:"smtpSSL,omitempty"`
+	SmtpTLS                         *bool                                                                          `json:"smtpTLS,omitempty"`
+	SmtpUser                        NullableString                                                                 `json:"smtpUser,omitempty"`
+	SmtpPassword                    NullableString                                                                 `json:"smtpPassword,omitempty"`
+	SmtpPasswordHash                NullableString                                                                 `json:"smtpPasswordHash,omitempty"`
+	TwilioAccountSid                NullableString                                                                 `json:"twilioAccountSid,omitempty"`
+	TwilioSmsFrom                   NullableString                                                                 `json:"twilioSmsFrom,omitempty"`
+	TwilioAuthToken                 NullableString                                                                 `json:"twilioAuthToken,omitempty"`
+	ProxyHost                       NullableString                                                                 `json:"proxyHost,omitempty"`
+	ProxyPort                       NullableString                                                                 `json:"proxyPort,omitempty"`
+	ProxyUser                       NullableString                                                                 `json:"proxyUser,omitempty"`
+	ProxyPassword                   NullableString                                                                 `json:"proxyPassword,omitempty"`
+	ProxyPasswordHash               NullableString                                                                 `json:"proxyPasswordHash,omitempty"`
+	ProxyDomain                     NullableString                                                                 `json:"proxyDomain,omitempty"`
+	ProxyWorkstation                NullableString                                                                 `json:"proxyWorkstation,omitempty"`
+	NoProxy                         NullableString                                                                 `json:"noProxy,omitempty"`
+	CurrencyProvider                NullableString                                                                 `json:"currencyProvider,omitempty"`
+	CurrencyKey                     NullableString                                                                 `json:"currencyKey,omitempty"`
+	MaintenanceMode                 *bool                                                                          `json:"maintenanceMode,omitempty"`
+	EnabledZoneTypes                []ListApplianceSettings200ResponseApplianceSettingsEnabledZoneTypesInner       `json:"enabledZoneTypes,omitempty"`
+	DashboardsToDisplay             NullableString                                                                 `json:"dashboardsToDisplay,omitempty"`
+	EnableMurph                     *bool                                                                          `json:"enableMurph,omitempty"`
+	VmeAppliance                    *bool                                                                          `json:"vmeAppliance,omitempty"`
+	LatestWindowsAgentVersion       *string                                                                        `json:"latestWindowsAgentVersion,omitempty"`
+	LatestLinuxAgentVersion         *string                                                                        `json:"latestLinuxAgentVersion,omitempty"`
+	HostProfileComplianceScheduleId NullableString                                                                 `json:"hostProfileComplianceScheduleId,omitempty"`
+	AdditionalProperties            map[string]interface{}                                                         `json:",remain"`
 }
 
 type _ListApplianceSettings200ResponseApplianceSettings ListApplianceSettings200ResponseApplianceSettings
@@ -286,6 +287,9 @@ func (o ListApplianceSettings200ResponseApplianceSettings) ToMap() (map[string]i
 	}
 	if !IsNil(o.LatestLinuxAgentVersion) {
 		toSerialize["latestLinuxAgentVersion"] = o.LatestLinuxAgentVersion
+	}
+	if o.HostProfileComplianceScheduleId.IsSet() {
+		toSerialize["hostProfileComplianceScheduleId"] = o.HostProfileComplianceScheduleId.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

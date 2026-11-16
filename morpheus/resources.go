@@ -80,6 +80,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdiapp"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdigateway"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdipool"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/virtualswitch"
 )
 
 func (p *MorpheusProvider) Resources(
@@ -188,6 +189,9 @@ func (p *MorpheusProvider) Resources(
 
 		// Plugin lifecycle management (Plugin Framework)
 		plugin.NewResource,
+
+		// MORPH-17745: virtual switch (framework)
+		virtualswitch.NewResource,
 	}
 
 	return resources

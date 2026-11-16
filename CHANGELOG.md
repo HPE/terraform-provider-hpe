@@ -86,7 +86,51 @@ that needed the API or the UI.
 
 Verified against the built-in Morpheus pool type and an Infoblox-backed pool.
 
+### `hpe_morpheus_virtual_switch` resource and virtual switch data sources (MORPH-17745)
+
+Morpheus 9.1.0 virtual switches on HVM layout-2.0 clusters can now be managed from Terraform. A
+virtual switch is a per-cluster switch with traffic **segments** and per-host **uplinks**, realised
+on the hosts as Linux bridges or OVS.
+
+- **`hpe_morpheus_virtual_switch`**: `cluster_id`, `name` (at most 16 characters), `base_type`
+  (`general`, `iscsi` or `sdn`; immutable), `bond_mode`, `mtu`, `description`; a `segments` map
+  (`traffic_type`, `vlan_id`, addresses, per-host `host_ips`, `mtu`) and `uplinks` (`server_id`,
+  `nic1`, optional `nic2`). Rename, description and bond changes, and adding, editing or removing
+  segments apply in place through the appliance's rename, update, composite-edit and segment
+  endpoints; a change to a segment's `traffic_type` or `mtu`, or to `base_type`, replaces the
+  switch. Every mutation is asynchronous on the appliance and the resource waits for its process
+  and for the switch to leave `syncing`. The plan-time rules Morpheus enforces (management segment
+  needs an address, `iscsi` is single-NIC and exclusive of other data segments, one untagged segment
+  per data type, no duplicate VLANs, no uplink removal) are reported before apply.
+- **`hpe_morpheus_virtual_switch`** and **`hpe_morpheus_virtual_switches`** data sources: read a
+  switch by id or name, or list a cluster's switches.
+- **`hpe_morpheus_cluster_available_nics`** data source: the spare NICs of each host of a cluster,
+  so uplinks can be chosen by data rather than by guess.
+
+Requires Morpheus 9.1.0; gated on the `virtual_switch` test capability.
+
 ## Improvements
+
+### `hpe_morpheus_network`: HVM networks on a virtual switch (MORPH-18378)
+
+On a Morpheus 9.1 HVM cluster with virtual switches, the network resource binds each HVM type to
+its switch: a standard network's (`ovsPortGroup`) `switch_id` is the switch's libvirt network name
+(`hvmnetN`, from the `hvm-vswitch-or-router` option source by the switch's name), a private network
+takes `config_hvm_private.virtual_switch_id`, and a data network a segment of a switch through
+`config_hvm_data.virtual_switch_segment_id`. The `switch_id` description and the docs of both
+resources now say so, together with what Morpheus enforces across them — the switch must be in
+the network's cluster, a network VLAN or trunk may not collide with a segment VLAN on the switch,
+and a switch with networks cannot be deleted or have its MTU changed — with an example that creates
+a switch and both kinds of network on it. Two changes here make that example apply in one go
+(the third it relies on, finding a cluster's hidden network server by name, is MORPH-20649 below):
+
+- A data network on a virtual switch segment waits, before the create, until Morpheus has
+  recorded the segment's host interface, which it does on the cluster's inventory sync (every few
+  minutes); without it Morpheus fails the create with a bare 500. The wait is bounded at twelve
+  minutes.
+- `hpe_morpheus_virtual_switch` keeps the ids of its existing segments known when the switch is
+  updated; previously every edit of the switch planned a network built on one of its segments for
+  replacement — and destroyed it.
 
 ### `hpe_morpheus_network_pool`: every IP range of a pool, with `ip_address_ranges` (MORPH-15713)
 

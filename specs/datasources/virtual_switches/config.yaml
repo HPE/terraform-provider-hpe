@@ -1,0 +1,80 @@
+virtual_switches:
+  templates:
+    cluster_id:
+      int64:
+        computed_optional_required: required
+        description: The ID of the cluster (server group) whose virtual switches are returned.
+    virtual_switches:
+      list_nested:
+        computed_optional_required: computed
+        description: The list of virtual switches in the cluster.
+        nested_object:
+          attributes:
+            - name: id
+              int64:
+                computed_optional_required: computed
+                description: The Morpheus ID of the virtual switch.
+            - name: name
+              string:
+                computed_optional_required: computed
+                description: Switch name.
+            - name: code
+              string:
+                computed_optional_required: computed
+                description: The code identifier for the switch.
+            - name: description
+              string:
+                computed_optional_required: computed
+                description: The description of the switch.
+            - name: base_type
+              string:
+                computed_optional_required: computed
+                description: The switch base type.
+            - name: bond_mode
+              string:
+                computed_optional_required: computed
+                description: NIC bonding mode. Null indicates single-NIC (no bond) mode.
+            - name: mtu
+              int64:
+                computed_optional_required: computed
+                description: Switch MTU.
+            - name: status
+              string:
+                computed_optional_required: computed
+                description: Sync status of the switch.
+            - name: status_message
+              string:
+                computed_optional_required: computed
+                description: Additional detail about the current status, when present.
+            - name: active
+              bool:
+                computed_optional_required: computed
+                description: Whether the switch is active.
+            - name: cluster_id
+              int64:
+                computed_optional_required: computed
+                description: The ID of the cluster that owns this switch.
+            - name: nic_count
+              int64:
+                computed_optional_required: computed
+                description: Number of distinct physical NICs consumed across all host uplinks.
+            - name: network_count
+              int64:
+                computed_optional_required: computed
+                description: Number of traffic segments defined on the switch.
+            - name: segments
+              list_nested:
+                computed_optional_required: computed
+                description: Traffic-type summary of the segments defined on the switch.
+                nested_object:
+                  attributes:
+                    - name: traffic_type
+                      string:
+                        computed_optional_required: computed
+                        description: The traffic type carried by this segment.
+  moves:
+    - virtual_switches: virtual_switches_spec     # (paths/api@virtual-switches.yaml GET 200 virtualSwitches[] -> components/schemas/virtualSwitch.yaml) move spec-derived array out of the way (replaced by template list)
+    - template-cluster_id: cluster_id             # (paths/api@virtual-switches.yaml GET clusterId query parameter) required
+    - template-virtual_switches: virtual_switches # (components/schemas/virtualSwitch.yaml) inject full summary list
+  removes:
+    - virtual_switches_spec                       # (components/schemas/virtualSwitch.yaml) spec-derived list, replaced by the template; drops uplinkNics, the raw per-host NIC list the uplinks' nic1/nic2 carry

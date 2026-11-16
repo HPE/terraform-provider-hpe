@@ -98,6 +98,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancestoragecontroller"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkinterfacetype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkproxy"
+
+	// MORPH-17745: virtual switch data sources
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusteravailablenics"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/virtualswitch"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/virtualswitches"
 )
 
 func (p *MorpheusProvider) DataSources(
@@ -201,5 +206,10 @@ func (p *MorpheusProvider) DataSources(
 		instancedisktype.NewDataSource,
 		// Plugin lifecycle data source (Plugin Framework)
 		plugin.NewDataSource,
+
+		// MORPH-17745: virtual switch data sources
+		virtualswitch.NewDataSource,
+		virtualswitches.NewDataSource,
+		clusteravailablenics.NewDataSource,
 	}
 }

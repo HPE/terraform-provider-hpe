@@ -47,3 +47,10 @@ const TenantParentMinVersion = ">= 8.1.0"
 // 9.0.x, but the API response only carries it from 9.0.2, so below that the
 // provider cannot read the value back and preserves what was configured.
 const CloudBackupProvidersMinVersion = ">= 9.0.2"
+
+// VirtualSwitchMinVersion is the minimum Morpheus appliance version required by
+// the virtual switch resource and data sources. The HVM virtual switch API
+// (/api/virtual-switches, the async process envelope, and the composite-edit
+// endpoint) arrived in Morpheus 9.1.0; before that release the routes do not
+// exist. (MORPH-17745.)
+const VirtualSwitchMinVersion = ">= 9.1.0"

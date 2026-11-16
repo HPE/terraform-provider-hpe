@@ -709,8 +709,8 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			"switch_id": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Network switch identifier",
-				MarkdownDescription: "Network switch identifier",
+				Description:         "Switch the network is bound to, as the network type defines it. For an HVM standard network (`ovsPortGroup`) on a Morpheus 9.1 cluster with per-cluster virtual switches this is the virtual switch's libvirt network name (`hvmnetN`), which the `hvm-vswitch-or-router` option source returns for the switch's name; on earlier releases it is the OVS bridge router. Changing it replaces the network on types that cannot edit it (HVM standard networks among them); on the others it is updated in place.",
+				MarkdownDescription: "Switch the network is bound to, as the network type defines it. For an HVM standard network (`ovsPortGroup`) on a Morpheus 9.1 cluster with per-cluster virtual switches this is the virtual switch's libvirt network name (`hvmnetN`), which the `hvm-vswitch-or-router` option source returns for the switch's name; on earlier releases it is the OVS bridge router. Changing it replaces the network on types that cannot edit it (HVM standard networks among them); on the others it is updated in place.",
 			},
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,

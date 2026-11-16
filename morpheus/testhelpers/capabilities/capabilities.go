@@ -87,6 +87,12 @@ const (
 	// unsupported environments.
 	AffinityGroup Capability = "affinity_group"
 
+	// VirtualSwitch marks tests that create or read HVM virtual switches. These
+	// need a Morpheus >= 9.1.0 appliance with an HVM (mvm-cluster) cluster on a
+	// virtual-switch-capable (2.0+) layout and hosts with spare NICs. That is
+	// more than the "hvm" capability advertises, so it is declared separately.
+	VirtualSwitch Capability = "virtual_switch"
+
 	// Automation Integrations
 	Ansible      Capability = "ansible"
 	AnsibleTower Capability = "ansible_tower"

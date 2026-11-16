@@ -23,7 +23,7 @@ var _ MappedNullable = &VirtualSwitchDetail{}
 // VirtualSwitchDetail struct for VirtualSwitchDetail
 type VirtualSwitchDetail struct {
 	Id *int64 `json:"id,omitempty"`
-	// Switch name. Limited to 12 characters so the derived `<name>-br` bridge stays within the 15-character Linux interface name limit.
+	// Switch name. Limited to 16 characters, matching the switch domain constraint and the service name-length limit.
 	Name        *string        `json:"name,omitempty"`
 	Code        NullableString `json:"code,omitempty"`
 	Description NullableString `json:"description,omitempty"`
@@ -40,10 +40,12 @@ type VirtualSwitchDetail struct {
 	// Number of distinct physical NICs consumed across all host uplinks.
 	NicCount *int32 `json:"nicCount,omitempty"`
 	// Number of traffic segments defined on the switch.
-	NetworkCount         *int32                             `json:"networkCount,omitempty"`
-	Segments             []VirtualSwitchDetailAllOfSegments `json:"segments,omitempty"`
-	Uplinks              []VirtualSwitchDetailAllOfUplinks  `json:"uplinks,omitempty"`
-	AdditionalProperties map[string]interface{}             `json:",remain"`
+	NetworkCount *int32                             `json:"networkCount,omitempty"`
+	Segments     []VirtualSwitchDetailAllOfSegments `json:"segments,omitempty"`
+	// Distinct physical NIC names consumed across all host uplinks.
+	UplinkNics           []string                          `json:"uplinkNics,omitempty"`
+	Uplinks              []VirtualSwitchDetailAllOfUplinks `json:"uplinks,omitempty"`
+	AdditionalProperties map[string]interface{}            `json:",remain"`
 }
 
 type _VirtualSwitchDetail VirtualSwitchDetail
@@ -99,6 +101,9 @@ func (o VirtualSwitchDetail) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Segments) {
 		toSerialize["segments"] = o.Segments
+	}
+	if !IsNil(o.UplinkNics) {
+		toSerialize["uplinkNics"] = o.UplinkNics
 	}
 	if !IsNil(o.Uplinks) {
 		toSerialize["uplinks"] = o.Uplinks

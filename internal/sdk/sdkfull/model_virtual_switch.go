@@ -23,7 +23,7 @@ var _ MappedNullable = &VirtualSwitch{}
 // VirtualSwitch A cluster-scoped HVM virtual switch describing the desired host networking intent. Morpheus stores the desired state; hvmcli realizes it on each host.
 type VirtualSwitch struct {
 	Id *int64 `json:"id,omitempty"`
-	// Switch name. Limited to 12 characters so the derived `<name>-br` bridge stays within the 15-character Linux interface name limit.
+	// Switch name. Limited to 16 characters, matching the switch domain constraint and the service name-length limit.
 	Name        *string        `json:"name,omitempty"`
 	Code        NullableString `json:"code,omitempty"`
 	Description NullableString `json:"description,omitempty"`
@@ -40,7 +40,11 @@ type VirtualSwitch struct {
 	// Number of distinct physical NICs consumed across all host uplinks.
 	NicCount *int32 `json:"nicCount,omitempty"`
 	// Number of traffic segments defined on the switch.
-	NetworkCount         *int32                 `json:"networkCount,omitempty"`
+	NetworkCount *int32 `json:"networkCount,omitempty"`
+	// Traffic-type summary of the segments defined on the switch. The list view returns only each segment's traffic type; the detail view returns the full segment objects.
+	Segments []GetVirtualSwitch200ResponseVirtualSwitchAllOfSegmentsInner `json:"segments,omitempty"`
+	// Distinct physical NIC names consumed across all host uplinks.
+	UplinkNics           []string               `json:"uplinkNics,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -94,6 +98,12 @@ func (o VirtualSwitch) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.NetworkCount) {
 		toSerialize["networkCount"] = o.NetworkCount
+	}
+	if !IsNil(o.Segments) {
+		toSerialize["segments"] = o.Segments
+	}
+	if !IsNil(o.UplinkNics) {
+		toSerialize["uplinkNics"] = o.UplinkNics
 	}
 
 	for key, value := range o.AdditionalProperties {

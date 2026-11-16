@@ -135,8 +135,10 @@ type UpdateApplianceSettingsRequestApplianceSettings struct {
 	// Comma-delimited dashboard IDs to display
 	DashboardsToDisplay NullableString `json:"dashboardsToDisplay,omitempty"`
 	// Enable Murph AI services
-	EnableMurph          *bool                  `json:"enableMurph,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	EnableMurph *bool `json:"enableMurph,omitempty"`
+	// ID of the execute schedule used for host profile compliance scans. If unset or blank, the appliance falls back to the built-in \"daily at midnight\" schedule.
+	HostProfileComplianceScheduleId *string                `json:"hostProfileComplianceScheduleId,omitempty"`
+	AdditionalProperties            map[string]interface{} `json:",remain"`
 }
 
 type _UpdateApplianceSettingsRequestApplianceSettings UpdateApplianceSettingsRequestApplianceSettings
@@ -324,6 +326,9 @@ func (o UpdateApplianceSettingsRequestApplianceSettings) ToMap() (map[string]int
 	}
 	if !IsNil(o.EnableMurph) {
 		toSerialize["enableMurph"] = o.EnableMurph
+	}
+	if !IsNil(o.HostProfileComplianceScheduleId) {
+		toSerialize["hostProfileComplianceScheduleId"] = o.HostProfileComplianceScheduleId
 	}
 
 	for key, value := range o.AdditionalProperties {

@@ -1,0 +1,60 @@
+data "hpe_morpheus_cluster_available_nics" "nics" {
+  cluster_id = {{.ClusterId}}
+}
+{{if eq .NfsIpExpr "local.nfs_ips[host.server_name]"}}
+# The data-nfs address of each host, by host name.
+locals {
+  nfs_ips = {
+    "hvm-host-1" = "10.20.0.11"
+    "hvm-host-2" = "10.20.0.12"
+  }
+}
+{{else}}
+# The test derives each host's data-nfs address from its position among the
+# cluster's host names, so any number of hosts fits the /24.
+locals {
+  host_names = sort([for host in data.hpe_morpheus_cluster_available_nics.nics.available_nics : host.server_name])
+}
+{{end}}
+resource "hpe_morpheus_virtual_switch" "example" {
+  cluster_id = {{.ClusterId}}
+  name       = "{{.Name}}"
+{{- if .BondMode}}
+  bond_mode  = "{{.BondMode}}"
+{{- end}}
+  mtu        = {{.Mtu}}
+
+  # One uplink per host, fanned out over the available-nics data source. As
+  # hosts join the cluster they appear here and the next apply adds their uplink.
+  uplinks = [
+    for host in data.hpe_morpheus_cluster_available_nics.nics.available_nics : {
+      server_id = host.server_id
+      nic1      = "{{.Nic1}}"
+{{- if .Nic2}}
+      nic2      = "{{.Nic2}}"
+{{- end}}
+    }
+  ]
+
+  # management lives on the cluster's first switch (vs0); a second switch carries
+  # a vm segment and a tagged data-nfs segment with a distinct per-host IP.
+  segments = {
+    vm = {
+      traffic_type = "vm"
+    }
+    nfs = {
+      traffic_type = "data-nfs"
+      vlan_id      = {{.NfsVlan}}
+      netmask      = "{{.NfsNetmask}}"
+      # Address each host by identity, not by its position in available_nics:
+      # the API does not promise an order, and a host that is briefly offline
+      # drops out of the list, which would shift every later address.
+      host_ips = [
+        for host in data.hpe_morpheus_cluster_available_nics.nics.available_nics : {
+          server_id = host.server_id
+          ip        = {{.NfsIpExpr}}
+        }
+      ]
+    }
+  }
+}

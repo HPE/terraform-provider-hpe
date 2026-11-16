@@ -51,7 +51,9 @@ func (r ApiAddVirtualSwitchRequest) Execute() (*AddVirtualSwitch200Response, *ht
 /*
 AddVirtualSwitch Create a Virtual Switch
 
-Creates a virtual switch on a cluster. This is an asynchronous operation: the request validates and persists the desired state, seeds pending per-host uplinks, starts a background Process, and returns its `processId`.
+Creates a virtual switch on a cluster. This is an asynchronous operation: the request validates and persists the desired state, seeds pending per-host uplinks, starts a background Process, and returns its `processId`. Poll `GET /api/processes/{processId}` to track host orchestration. On validation failure a 400 is returned with `{success: false, errors: {field: message}}`. A 404 is returned when the cluster is not on a virtual-switch-capable (2.0+) layout.
+
+Requires Morpheus 9.1.0.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiAddVirtualSwitchRequest
@@ -184,7 +186,9 @@ func (r ApiAddVirtualSwitchSegmentRequest) Execute() (*UpdateVirtualSwitch200Res
 /*
 AddVirtualSwitchSegment Add a Virtual Switch Segment
 
-Adds a traffic segment to a virtual switch. This is an asynchronous operation that returns a `processId`.
+Adds a traffic segment to a virtual switch. This is an asynchronous operation that returns a `processId`; poll `GET /api/processes/{processId}` to track host orchestration.
+
+Requires Morpheus 9.1.0.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -297,10 +301,151 @@ func (a *VirtualSwitchesAPIService) AddVirtualSwitchSegmentExecute(r ApiAddVirtu
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
+type ApiCompositeEditVirtualSwitchRequest struct {
+	ctx                               context.Context
+	ApiService                        *VirtualSwitchesAPIService
+	id                                int64
+	compositeEditVirtualSwitchRequest *CompositeEditVirtualSwitchRequest
+}
+
+func (r ApiCompositeEditVirtualSwitchRequest) CompositeEditVirtualSwitchRequest(compositeEditVirtualSwitchRequest CompositeEditVirtualSwitchRequest) ApiCompositeEditVirtualSwitchRequest {
+	r.compositeEditVirtualSwitchRequest = &compositeEditVirtualSwitchRequest
+	return r
+}
+
+func (r ApiCompositeEditVirtualSwitchRequest) Execute() (*UpdateVirtualSwitch200Response, *http.Response, error) {
+	return r.ApiService.CompositeEditVirtualSwitchExecute(r)
+}
+
+/*
+CompositeEditVirtualSwitch Composite Edit a Virtual Switch
+
+Applies switch-level changes, adds new segments, and edits existing segments in a single asynchronous operation. This avoids the sync-guard conflicts that sequential update/add/edit calls would cause. Returns a `processId`; poll `GET /api/processes/{processId}` to track host orchestration. On validation failure a 400 is returned with `{success: false, errors: {field: message}}`.
+
+Requires Morpheus 9.1.0.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id Morpheus ID of the Object being referenced
+	@return ApiCompositeEditVirtualSwitchRequest
+*/
+func (a *VirtualSwitchesAPIService) CompositeEditVirtualSwitch(ctx context.Context, id int64) ApiCompositeEditVirtualSwitchRequest {
+	return ApiCompositeEditVirtualSwitchRequest{
+		ApiService: a,
+		ctx:        ctx,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return UpdateVirtualSwitch200Response
+func (a *VirtualSwitchesAPIService) CompositeEditVirtualSwitchExecute(r ApiCompositeEditVirtualSwitchRequest) (*UpdateVirtualSwitch200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *UpdateVirtualSwitch200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "VirtualSwitchesAPIService.CompositeEditVirtualSwitch")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/virtual-switches/{id}/edit"
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.compositeEditVirtualSwitchRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiDeleteVirtualSwitchRequest struct {
 	ctx        context.Context
 	ApiService *VirtualSwitchesAPIService
 	id         int64
+	force      *bool
+}
+
+// Force deletion even when a sync is in flight.
+func (r ApiDeleteVirtualSwitchRequest) Force(force bool) ApiDeleteVirtualSwitchRequest {
+	r.force = &force
+	return r
 }
 
 func (r ApiDeleteVirtualSwitchRequest) Execute() (*UpdateVirtualSwitch200Response, *http.Response, error) {
@@ -310,7 +455,9 @@ func (r ApiDeleteVirtualSwitchRequest) Execute() (*UpdateVirtualSwitch200Respons
 /*
 DeleteVirtualSwitch Delete a Virtual Switch
 
-Deletes a virtual switch and its segments and uplinks. This is an asynchronous operation that returns a `processId`.
+Deletes a virtual switch and its segments and uplinks. This is an asynchronous operation that returns a `processId`; poll `GET /api/processes/{processId}` to track host orchestration.
+
+Requires Morpheus 9.1.0.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -347,6 +494,9 @@ func (a *VirtualSwitchesAPIService) DeleteVirtualSwitchExecute(r ApiDeleteVirtua
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	if r.force != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "force", r.force, "form", "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -435,7 +585,9 @@ func (r ApiDeleteVirtualSwitchSegmentRequest) Execute() (*UpdateVirtualSwitch200
 /*
 DeleteVirtualSwitchSegment Delete a Virtual Switch Segment
 
-Removes a traffic segment from a virtual switch. This is an asynchronous operation that returns a `processId`.
+Removes a traffic segment from a virtual switch. This is an asynchronous operation that returns a `processId`; poll `GET /api/processes/{processId}` to track host orchestration.
+
+Requires Morpheus 9.1.0.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -564,6 +716,8 @@ GetVirtualSwitch Get a Specific Virtual Switch
 
 Retrieves a specific virtual switch, including its segments and per-host uplinks.
 
+Requires Morpheus 9.1.0.
+
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
 	@return ApiGetVirtualSwitchRequest
@@ -687,6 +841,8 @@ func (r ApiListClusterAvailableNicsRequest) Execute() (*ListClusterAvailableNics
 ListClusterAvailableNics List Available NICs
 
 Retrieves the candidate physical NICs per host in a cluster, used when assigning uplinks to a virtual switch. NICs already consumed by an existing switch uplink are flagged with `consumed: true`.
+
+Requires Morpheus 9.1.0.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param clusterId The ID of the cluster
@@ -812,6 +968,8 @@ ListVirtualSwitchSegments List Virtual Switch Segments
 
 Retrieves the traffic segments defined on a virtual switch.
 
+Requires Morpheus 9.1.0.
+
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
 	@return ApiListVirtualSwitchSegmentsRequest
@@ -935,6 +1093,8 @@ func (r ApiListVirtualSwitchUplinksRequest) Execute() (*ListVirtualSwitchUplinks
 ListVirtualSwitchUplinks List Virtual Switch Uplinks
 
 Retrieves the per-host NIC uplink mappings for a virtual switch.
+
+Requires Morpheus 9.1.0.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -1066,6 +1226,8 @@ ListVirtualSwitches List Virtual Switches
 
 Retrieves the HVM virtual switches defined on a cluster.
 
+Requires Morpheus 9.1.0.
+
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiListVirtualSwitchesRequest
 */
@@ -1176,6 +1338,140 @@ func (a *VirtualSwitchesAPIService) ListVirtualSwitchesExecute(r ApiListVirtualS
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
+type ApiRenameVirtualSwitchRequest struct {
+	ctx                        context.Context
+	ApiService                 *VirtualSwitchesAPIService
+	id                         int64
+	renameVirtualSwitchRequest *RenameVirtualSwitchRequest
+}
+
+func (r ApiRenameVirtualSwitchRequest) RenameVirtualSwitchRequest(renameVirtualSwitchRequest RenameVirtualSwitchRequest) ApiRenameVirtualSwitchRequest {
+	r.renameVirtualSwitchRequest = &renameVirtualSwitchRequest
+	return r
+}
+
+func (r ApiRenameVirtualSwitchRequest) Execute() (*UpdateVirtualSwitch200Response, *http.Response, error) {
+	return r.ApiService.RenameVirtualSwitchExecute(r)
+}
+
+/*
+RenameVirtualSwitch Rename a Virtual Switch
+
+Renames a virtual switch. This is an asynchronous operation that returns a `processId`; poll `GET /api/processes/{processId}` to track host orchestration. On validation failure a 400 is returned with `{success: false, errors: {field: message}}`.
+
+Requires Morpheus 9.1.0.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id Morpheus ID of the Object being referenced
+	@return ApiRenameVirtualSwitchRequest
+*/
+func (a *VirtualSwitchesAPIService) RenameVirtualSwitch(ctx context.Context, id int64) ApiRenameVirtualSwitchRequest {
+	return ApiRenameVirtualSwitchRequest{
+		ApiService: a,
+		ctx:        ctx,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return UpdateVirtualSwitch200Response
+func (a *VirtualSwitchesAPIService) RenameVirtualSwitchExecute(r ApiRenameVirtualSwitchRequest) (*UpdateVirtualSwitch200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *UpdateVirtualSwitch200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "VirtualSwitchesAPIService.RenameVirtualSwitch")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/virtual-switches/{id}/rename"
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.renameVirtualSwitchRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiUpdateVirtualSwitchRequest struct {
 	ctx                        context.Context
 	ApiService                 *VirtualSwitchesAPIService
@@ -1195,7 +1491,9 @@ func (r ApiUpdateVirtualSwitchRequest) Execute() (*UpdateVirtualSwitch200Respons
 /*
 UpdateVirtualSwitch Update a Virtual Switch
 
-Updates a virtual switch. `baseType` is immutable and any attempt to change it is rejected. This is an asynchronous operation that returns a `processId`.
+Updates a virtual switch. `baseType` is immutable and any attempt to change it is rejected. This is an asynchronous operation that returns a `processId`; poll `GET /api/processes/{processId}` to track host orchestration. On validation failure a 400 is returned with `{success: false, errors: {field: message}}`.
+
+Requires Morpheus 9.1.0.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -1251,6 +1549,144 @@ func (a *VirtualSwitchesAPIService) UpdateVirtualSwitchExecute(r ApiUpdateVirtua
 	}
 	// body params
 	localVarPostBody = r.updateVirtualSwitchRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiUpdateVirtualSwitchSegmentRequest struct {
+	ctx                               context.Context
+	ApiService                        *VirtualSwitchesAPIService
+	id                                int64
+	segId                             int64
+	updateVirtualSwitchSegmentRequest *UpdateVirtualSwitchSegmentRequest
+}
+
+func (r ApiUpdateVirtualSwitchSegmentRequest) UpdateVirtualSwitchSegmentRequest(updateVirtualSwitchSegmentRequest UpdateVirtualSwitchSegmentRequest) ApiUpdateVirtualSwitchSegmentRequest {
+	r.updateVirtualSwitchSegmentRequest = &updateVirtualSwitchSegmentRequest
+	return r
+}
+
+func (r ApiUpdateVirtualSwitchSegmentRequest) Execute() (*UpdateVirtualSwitch200Response, *http.Response, error) {
+	return r.ApiService.UpdateVirtualSwitchSegmentExecute(r)
+}
+
+/*
+UpdateVirtualSwitchSegment Update a Virtual Switch Segment
+
+Updates the mutable fields of a traffic segment (VLAN, IP settings, per-host IPs). The request body may be wrapped in a `segment` object or supplied at the top level. This is an asynchronous operation that returns a `processId`; poll `GET /api/processes/{processId}` to track host orchestration.
+
+Requires Morpheus 9.1.0.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id Morpheus ID of the Object being referenced
+	@param segId Morpheus ID of the virtual switch segment being referenced
+	@return ApiUpdateVirtualSwitchSegmentRequest
+*/
+func (a *VirtualSwitchesAPIService) UpdateVirtualSwitchSegment(ctx context.Context, id int64, segId int64) ApiUpdateVirtualSwitchSegmentRequest {
+	return ApiUpdateVirtualSwitchSegmentRequest{
+		ApiService: a,
+		ctx:        ctx,
+		id:         id,
+		segId:      segId,
+	}
+}
+
+// Execute executes the request
+//
+//	@return UpdateVirtualSwitch200Response
+func (a *VirtualSwitchesAPIService) UpdateVirtualSwitchSegmentExecute(r ApiUpdateVirtualSwitchSegmentRequest) (*UpdateVirtualSwitch200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *UpdateVirtualSwitch200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "VirtualSwitchesAPIService.UpdateVirtualSwitchSegment")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/virtual-switches/{id}/segments/{segId}"
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"segId"+"}", url.PathEscape(parameterValueToString(r.segId, "segId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.updateVirtualSwitchSegmentRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

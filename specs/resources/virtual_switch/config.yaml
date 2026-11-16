@@ -1,0 +1,259 @@
+virtual_switch:
+  enable_timeouts: true
+  templates:
+    # cluster_id is the ?clusterId= query parameter on create; it is not part of
+    # the request body, so it must be injected here rather than moved.
+    cluster_id:
+      int64:
+        computed_optional_required: required
+        description: The ID of the cluster (server group) that owns this virtual switch.
+        plan_modifiers:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+              schema_definition: int64planmodifier.RequiresReplace()
+    id:
+      int64:
+        computed_optional_required: computed
+        description: The Morpheus ID of the virtual switch.
+        plan_modifiers:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+              schema_definition: int64planmodifier.UseStateForUnknown()
+    status:
+      string:
+        computed_optional_required: computed
+        description: Sync status of the switch (available, syncing, or error).
+    status_message:
+      string:
+        computed_optional_required: computed
+        description: Additional detail about the current status, when present.
+    active:
+      bool:
+        computed_optional_required: computed
+        description: Whether the switch is active.
+    nic_count:
+      int64:
+        computed_optional_required: computed
+        description: Number of distinct physical NICs consumed across all host uplinks.
+    network_count:
+      int64:
+        computed_optional_required: computed
+        description: Number of traffic segments defined on the switch.
+    # segments is a map keyed by a user-chosen mnemonic. Each element merges the
+    # writable create fields with the computed fields returned by the detail read.
+    segments:
+      map_nested:
+        computed_optional_required: required
+        description: Traffic segments defined on the switch, keyed by a user-chosen mnemonic.
+        nested_object:
+          attributes:
+            - name: traffic_type
+              string:
+                computed_optional_required: required
+                description: The traffic type carried by this segment.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                      schema_definition: |-
+                        stringvalidator.OneOf(
+                          "vm",
+                          "management",
+                          "data-nfs",
+                          "data-iscsi",
+                          "live-migration",
+                          "sdn",
+                        )
+            - name: vlan_id
+              int64:
+                computed_optional_required: optional
+                description: VLAN tag between 2 and 4094. Omit for an untagged segment.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+                      schema_definition: int64validator.Between(2, 4094)
+            - name: ip_address
+              string:
+                computed_optional_required: computed_optional
+                description: >-
+                  The IP address assigned to the segment. When only host_ips is set, Morpheus derives it from the
+                  first host entry on its next cluster refresh and keeps it thereafter; it is used only as the
+                  address of a host that has no host_ips entry. Set it explicitly to control it.
+                plan_modifiers:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+                      schema_definition: stringplanmodifier.UseStateForUnknown()
+            - name: netmask
+              string:
+                computed_optional_required: computed_optional
+                description: The netmask for the segment. Morpheus may rewrite it from the host configuration on a cluster refresh.
+                plan_modifiers:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+                      schema_definition: stringplanmodifier.UseStateForUnknown()
+            - name: gateway
+              string:
+                computed_optional_required: computed_optional
+                description: The gateway for the segment. Morpheus may rewrite it from the host configuration on a cluster refresh.
+                plan_modifiers:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+                      schema_definition: stringplanmodifier.UseStateForUnknown()
+            - name: mtu
+              int64:
+                computed_optional_required: computed_optional
+                description: >-
+                  MTU for the segment, 1500 or 9000. Stored by Morpheus but not applied to the hosts; a
+                  segment added to an existing switch takes the switch's MTU when unset. Changing a value you
+                  set replaces the switch.
+                plan_modifiers:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+                      schema_definition: int64planmodifier.UseStateForUnknown()
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+                      schema_definition: |-
+                        int64validator.OneOf(
+                          1500,
+                          9000,
+                        )
+            - name: host_ips
+              set_nested:
+                computed_optional_required: optional
+                description: Per-host IP address assignments for this segment.
+                nested_object:
+                  attributes:
+                    - name: server_id
+                      int64:
+                        computed_optional_required: required
+                        description: The ID of the host (compute server) this IP is assigned to.
+                    - name: ip
+                      string:
+                        computed_optional_required: required
+                        description: The IP address assigned to the segment on this host.
+            - name: id
+              int64:
+                computed_optional_required: computed
+                description: The Morpheus ID of the segment.
+            - name: interface_name
+              string:
+                computed_optional_required: computed
+                description: OS interface carrying this traffic (e.g. bond0, bond0.220). Reported by Morpheus; the API's writable interfaceName is not exposed (Morpheus derives it from the uplinks).
+            - name: status
+              string:
+                computed_optional_required: computed
+                description: Sync status of the segment.
+            - name: status_message
+              string:
+                computed_optional_required: computed
+                description: Additional detail about the segment status, when present.
+            - name: ovs_bridge
+              string:
+                computed_optional_required: computed
+                description: OVS bridge name reported by hvmcli (VM traffic only).
+            - name: ovs_uuid
+              string:
+                computed_optional_required: computed
+                description: OVS bridge UUID reported by hvmcli.
+            - name: ovs_libvirt_network
+              string:
+                computed_optional_required: computed
+                description: OVS libvirt network name reported by hvmcli.
+    # uplinks is a set keyed by server_id/nic assignment. Merges writable create
+    # fields with the computed fields returned by the detail read.
+    uplinks:
+      set_nested:
+        computed_optional_required: required
+        description: Host uplink NIC assignments for the switch.
+        nested_object:
+          attributes:
+            - name: server_id
+              int64:
+                computed_optional_required: required
+                description: The ID of the host (compute server) this uplink applies to.
+            - name: nic1
+              string:
+                computed_optional_required: required
+                description: Primary physical NIC name.
+            - name: nic2
+              string:
+                computed_optional_required: optional
+                description: Optional secondary NIC. Omit for single-NIC mode.
+            - name: id
+              int64:
+                computed_optional_required: computed
+                description: The Morpheus ID of the uplink.
+            - name: server_name
+              string:
+                computed_optional_required: computed
+                description: The name of the host this uplink applies to.
+            - name: sync_status
+              string:
+                computed_optional_required: computed
+                description: Sync status of the uplink.
+            - name: sync_message
+              string:
+                computed_optional_required: computed
+                description: Additional detail about the uplink sync status, when present.
+  moves:
+    - virtual_switch: ""                          # unnest wrapper (paths/api@virtual-switches.yaml POST requestBody virtualSwitch -> components/schemas/virtualSwitchCreate.yaml)
+    - segments: segments_spec                     # (components/schemas/virtualSwitchCreate.yaml segments[] -> virtualSwitchSegmentCreate.yaml) move spec-derived list_nested out of the way (replaced by template map_nested)
+    - uplinks: uplinks_spec                       # (components/schemas/virtualSwitchCreate.yaml uplinks[] -> virtualSwitchUplinkAssignment.yaml) move spec-derived list_nested out of the way (replaced by template set_nested)
+    - template-cluster_id: cluster_id             # (paths/api@virtual-switches.yaml POST clusterId query parameter)
+    - template-id: id                             # (components/schemas/virtualSwitch.yaml)
+    - template-status: status                     # (components/schemas/virtualSwitch.yaml)
+    - template-status_message: status_message     # (components/schemas/virtualSwitch.yaml)
+    - template-active: active                     # (components/schemas/virtualSwitch.yaml)
+    - template-nic_count: nic_count               # (components/schemas/virtualSwitch.yaml)
+    - template-network_count: network_count       # (components/schemas/virtualSwitch.yaml)
+    - template-segments: segments                 # (components/schemas/virtualSwitchSegmentCreate.yaml + virtualSwitchSegment.yaml read-back) replace list_nested create array with map_nested
+    - template-uplinks: uplinks                   # (components/schemas/virtualSwitchUplinkAssignment.yaml + virtualSwitchUplink.yaml read-back) replace list_nested create array with set_nested
+  removes:
+    - segments_spec                               # (components/schemas/virtualSwitchCreate.yaml segments) spec-derived create segments array, replaced by template map_nested
+    - uplinks_spec                                # (components/schemas/virtualSwitchCreate.yaml uplinks) spec-derived create uplinks array, replaced by template set_nested; its read-back fields
+                                                  # sync_status and sync_message are carried; lastSyncDate (virtualSwitchUplink.yaml) is deliberately
+                                                  # left off the resource's set elements (volatile; see the virtual_switch data source)
+    - process_id                                  # async create response, not exposed (components/schemas/virtualSwitchAsyncSuccess.yaml)
+    - success                                     # async create response, not exposed (components/schemas/virtualSwitchAsyncSuccess.yaml)
+    - warnings                                    # async create response, not exposed (components/schemas/virtualSwitchAsyncSuccess.yaml)
+    - uplink_nics                                 # not exposed (components/schemas/virtualSwitch.yaml)
+  overrides:
+    name:
+      computed_optional_required: required
+      description: Switch name. 1-16 characters.
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+            schema_definition: stringvalidator.LengthAtLeast(1)
+    code:
+      computed_optional_required: computed_optional
+      description: An optional code identifier for the switch. Set only when the switch is created; changing it forces replacement. When not configured, the code Morpheus assigns is read into state.
+      requires_replace: true
+      state_for_unknown: true
+    description:
+      computed_optional_required: optional
+      description: An optional description of the switch.
+    base_type:
+      computed_optional_required: computed_optional
+      description: The switch base type. Immutable after creation; changing it replaces the switch.
+      default: "general"
+      one_of: [general, iscsi, sdn]
+      requires_replace: true
+    bond_mode:
+      computed_optional_required: optional
+      description: NIC bonding mode; omit for a single-NIC uplink. Not allowed with a data-iscsi segment.
+      one_of: [active-backup, 802.3ad]
+    mtu:
+      computed_optional_required: computed_optional
+      description: Switch MTU. One of 1500 or 9000.
+      default: 1500

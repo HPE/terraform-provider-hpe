@@ -1,0 +1,39 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+  Manages an HVM virtual switch on a Morpheus cluster. A virtual switch groups host uplink NICs and traffic segments (management, VM, live-migration, and data networks) across every host in an HVM cluster. Requires Morpheus 9.1.0 or newer.
+---
+# {{.Name}} ({{.Type}})
+
+Manages an HVM virtual switch on a Morpheus cluster. A virtual switch groups host uplink NICs and traffic segments (management, VM, live-migration, and data networks) across every host in an HVM cluster on a virtual-switch-capable (2.0+) layout.
+
+Every change is applied asynchronously: Morpheus persists the desired state, then fans the configuration out over the cluster's hosts in the background. The provider waits for that work to finish before returning.
+
+-> Requires **Morpheus 9.1.0 or newer**. Against an older appliance the `/api/virtual-switches` routes do not exist and the provider reports a version error.
+
+-> Removing `description` clears it; removing `bond_mode` clears the NIC bond (the switch reverts to single-NIC uplinks). A segment's `vlan_id` and `host_ips` are cleared when removed; its `ip_address`, `netmask` and `gateway` are not (they are computed when unset, so removing one keeps the prior value — set a new value to change it). `name`, `base_type`, `code`, and `mtu` are not clearable: `mtu` in particular cannot be changed once the switch carries Morpheus networks.
+
+~> **Uplinks are per host and cannot be removed.** Morpheus has no API to remove a host from a virtual switch, so dropping a `server_id` from `uplinks` is a plan-time error — remove the host from the cluster, or recreate the switch, instead. Fan `uplinks` out over `hpe_morpheus_cluster_available_nics` so new hosts are picked up automatically.
+
+~> Changing a segment's `traffic_type` or `mtu` (including setting `mtu` on a segment that had none) forces the whole switch to be replaced: the API cannot edit either field in place. Changing the switch's `base_type` likewise replaces it.
+
+~> **Networks on the switch.** An `hpe_morpheus_network` bound to the switch — a standard network's `switch_id`, a private network's `config_hvm_private.virtual_switch_id`, or a data network's `config_hvm_data.virtual_switch_segment_id` — blocks deleting the switch and changing its `mtu` until the network is removed, and a segment's `vlan_id` may not collide with the `vlan_id` or trunked VLANs of a network on the same switch. Derive the network's binding from this resource (the `hvm-vswitch-or-router` option source looked up by the switch's `name`, or a segment's `id`) so Terraform orders destroys network-first; see the network resource's [HVM networks on a virtual switch](morpheus_network#hvm-networks-on-a-virtual-switch).
+
+## Example Usage
+
+A two-host switch with a `vm` segment and a tagged `data-nfs` segment carrying a distinct per-host IP, with uplinks fanned out over the cluster's available NICs. (The cluster's first switch, `vs0`, typically carries the `management` segment; a `management` segment requires an IP address, so set `ip_address` or a non-empty `host_ips` and a `netmask` when adding one.)
+
+{{ tffile "examples/resources/morpheus_virtual_switch/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Virtual switches can be imported using their numeric Morpheus ID, e.g.
+
+{{ codefile "shell" "examples/resources/morpheus_virtual_switch/import.sh" }}
+
+The `cluster_id` and the segment map keys are populated by the read that follows the import. The imported keys are synthesised from each segment's traffic type and VLAN (for example `data-nfs_100`, `vm`).
+
+Segment map keys are cosmetic: they live only in Terraform and Morpheus never sees them. Segments are matched to your configuration by identity (traffic type and VLAN, which Morpheus keeps unique per switch), so **re-keying a segment after import is a no-op** — renaming `data-nfs_100` to `nfs` in your configuration does not delete and recreate the segment, it simply adopts your key on the next apply.

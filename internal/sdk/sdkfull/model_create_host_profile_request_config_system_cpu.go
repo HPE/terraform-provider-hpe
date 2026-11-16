@@ -22,7 +22,9 @@ var _ MappedNullable = &CreateHostProfileRequestConfigSystemCpu{}
 
 // CreateHostProfileRequestConfigSystemCpu struct for CreateHostProfileRequestConfigSystemCpu
 type CreateHostProfileRequestConfigSystemCpu struct {
-	PowerManagement      *string                `json:"powerManagement,omitempty"`
+	// CPU frequency scaling governor. Use performance for hypervisors to prevent VM CPU throttling.
+	PowerManagement *string `json:"powerManagement,omitempty"`
+	// Enable simultaneous multi-threading (SMT/HT) on host CPUs.
 	HyperThreading       *bool                  `json:"hyperThreading,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }

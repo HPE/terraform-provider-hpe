@@ -1316,6 +1316,19 @@ resources:
     update:
       path: /api/whitelabel-settings
       method: PUT
+  virtual_switch:
+    create:
+      path: /api/virtual-switches
+      method: POST
+    read:
+      path: /api/virtual-switches/{id}
+      method: GET
+    update:
+      path: /api/virtual-switches/{id}
+      method: PUT
+    delete:
+      path: /api/virtual-switches/{id}
+      method: DELETE
 data_sources:
   ansible_tower_inventory:
     read:
@@ -1797,4 +1810,16 @@ data_sources:
   whoami:
     read:
       path: /api/whoami
+      method: GET
+  virtual_switch:
+    read:
+      path: /api/virtual-switches/{id}
+      method: GET
+  virtual_switches:
+    read:
+      path: /api/virtual-switches
+      method: GET
+  cluster_available_nics:
+    read:
+      path: /api/clusters/{clusterId}/available-nics
       method: GET

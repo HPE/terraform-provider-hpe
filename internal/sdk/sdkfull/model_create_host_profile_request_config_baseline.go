@@ -20,9 +20,11 @@ import (
 // checks if the CreateHostProfileRequestConfigBaseline type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &CreateHostProfileRequestConfigBaseline{}
 
-// CreateHostProfileRequestConfigBaseline struct for CreateHostProfileRequestConfigBaseline
+// CreateHostProfileRequestConfigBaseline Specify package versions to enforce on all hosts in the assigned cluster. Values are pre-filled by Capture from Host.
 type CreateHostProfileRequestConfigBaseline struct {
-	KernelVersion        *string                                                `json:"kernelVersion,omitempty"`
+	KernelVersion *string `json:"kernelVersion,omitempty"`
+	// Additional packages to install, one per line in package=version format.
+	AdditionalPackages   *string                                                `json:"additionalPackages,omitempty"`
 	PackageVersions      *CreateHostProfileRequestConfigBaselinePackageVersions `json:"packageVersions,omitempty"`
 	AdditionalProperties map[string]interface{}                                 `json:",remain"`
 }
@@ -41,6 +43,9 @@ func (o CreateHostProfileRequestConfigBaseline) ToMap() (map[string]interface{},
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.KernelVersion) {
 		toSerialize["kernelVersion"] = o.KernelVersion
+	}
+	if !IsNil(o.AdditionalPackages) {
+		toSerialize["additionalPackages"] = o.AdditionalPackages
 	}
 	if !IsNil(o.PackageVersions) {
 		toSerialize["packageVersions"] = o.PackageVersions

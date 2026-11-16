@@ -1,0 +1,19 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Lists the virtual switches defined on a cluster. Each entry is a summary row; use
+`hpe_morpheus_virtual_switch` to read the full segment and uplink detail for a single
+switch. Requires Morpheus 9.1.0 or newer.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_virtual_switches/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
