@@ -43,6 +43,21 @@ instance:
         element_type:
           string: {}
         description: Organization labels (keywords) assigned to the instance.
+    tags_all:
+      set_nested:
+        computed_optional_required: computed
+        description: |-
+          Every metadata tag Morpheus holds for the instance, including the ones it adds itself
+          (tag policies, provisioning workflows, cloud tag sync) -- read-only. `tags` carries only
+          the tags this resource manages (MORPH-20973).
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: computed
+            - name: value
+              string:
+                computed_optional_required: computed
     compute_servers:
       set:
         computed_optional_required: computed
@@ -635,6 +650,7 @@ instance:
     - template-id: id
     - template-host_name: host_name
     - template-labels: labels
+    - template-tags_all: tags_all                            # (components/schemas/instance.yaml tags) the unfiltered tag list
     - template-compute_servers: compute_servers
     - template-server_uuid: server_uuid
     - template-server_uuids: server_uuids
@@ -849,6 +865,13 @@ instance:
       computed_optional_required: required
     tags:
       computed_optional_required: optional
+      description: |-
+        Metadata tags this resource manages, each a name and value. Morpheus may hold further tags
+        it adds itself (tag policies, provisioning workflows, cloud tag sync): those are not managed
+        here and never cause a diff -- see `tags_all`. Names are matched ignoring case and must be
+        unique; a value differing only in case is the configured one (VMware re-cases tags).
+        Changing or removing a tag here updates only that tag (`addTags`/`removeTags`); emptying or
+        omitting the set removes the previously managed tags and leaves Morpheus's own alone.
     tags.name:
       computed_optional_required: required
     tags.value:

@@ -186,6 +186,29 @@ instance is created; changing or removing them forces a new instance to be creat
 
 {{ tffile "morpheus/framework/resources/instance/example_evars.tf" }}
 
+## Tags
+
+`tags` is the set of metadata tags this resource **manages**, each a `name` and `value`. Morpheus
+may hold further tags it adds itself -- from a provisioning workflow, a layout option type or the
+cloud's tag sync (vCenter tags, for instance). Those are not managed here and never cause a diff;
+the computed `tags_all` lists everything Morpheus holds. Tags are matched by name
+case-insensitively, and a value that differs from the configured one **only in case** is treated
+as the configured value: a VMware cloud reports a tag in the case of the vCenter tag it matched
+(`env = "prod"` comes back as `Prod`), which is not drift. Any other change Morpheus makes to a
+managed tag's value, or a managed tag it removes, is reported as drift and put back on the next
+apply. Tag names must be unique ignoring case.
+
+Changing, adding or removing a managed tag updates only that tag (Morpheus's `addTags` /
+`removeTags`), so Morpheus's own tags survive. Emptying `tags` (`tags = []`) or omitting it
+removes the tags this resource previously managed and leaves Morpheus's own alone. Right after a
+create or update, a configured tag Morpheus does not yet report, or reports with another value,
+is kept as configured with a warning (some clouds apply tags asynchronously); the next refresh
+shows what Morpheus holds.
+
+On import `tags` is left unset -- the resource cannot tell which of Morpheus's tags a configuration
+means to manage -- and `tags_all` shows them all. Configure the tags you want managed and apply:
+they are added (or re-valued) through Morpheus's `addTags` and managed from then on.
+
 ## VMware VM Instance
 
 {{ tffile "morpheus/framework/resources/instance/example_vmware.tf" }}

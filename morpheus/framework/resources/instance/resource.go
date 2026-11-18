@@ -201,6 +201,7 @@ func (g *Resource) ConfigValidators(
 	return []resource.ConfigValidator{
 		serverUUIDConflictValidator{},
 		hvmHostAffinityConflictValidator{},
+		uniqueTagNamesValidator{},
 	}
 }
 

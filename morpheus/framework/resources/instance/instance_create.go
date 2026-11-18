@@ -744,8 +744,9 @@ func (g *Resource) Create(
 
 	// Read the instance state
 	state, found, d := getInstanceAsState(ctx, instanceId, client, plan, false)
+	// Warnings too (the tag reconciliation's, for one), not only errors.
+	resp.Diagnostics.Append(d...)
 	if d.HasError() || !found {
-		resp.Diagnostics.Append(d...)
 		resp.Diagnostics.AddError(
 			"failed to read instance state",
 			fmt.Sprintf("Instance %d was created but could not be read", instanceId),

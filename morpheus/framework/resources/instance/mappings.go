@@ -315,16 +315,6 @@ func createTagMapper(
 	}
 }
 
-// Map Terraform tag value into an API request struct
-func updateTagMapper(
-	in TagsValue,
-) sdk.UpdateInstanceRequestInstanceTagsInner {
-	return sdk.UpdateInstanceRequestInstanceTagsInner{
-		Name:  in.Name.ValueStringPointer(),
-		Value: in.Value.ValueStringPointer(),
-	}
-}
-
 // Map Terraform evar value into an API request struct
 func evarMapper(
 	in EvarsValue,

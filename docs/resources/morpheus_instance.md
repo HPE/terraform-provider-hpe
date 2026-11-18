@@ -678,6 +678,29 @@ resource "hpe_morpheus_instance" "example" {
 }
 ```
 
+## Tags
+
+`tags` is the set of metadata tags this resource **manages**, each a `name` and `value`. Morpheus
+may hold further tags it adds itself -- from a provisioning workflow, a layout option type or the
+cloud's tag sync (vCenter tags, for instance). Those are not managed here and never cause a diff;
+the computed `tags_all` lists everything Morpheus holds. Tags are matched by name
+case-insensitively, and a value that differs from the configured one **only in case** is treated
+as the configured value: a VMware cloud reports a tag in the case of the vCenter tag it matched
+(`env = "prod"` comes back as `Prod`), which is not drift. Any other change Morpheus makes to a
+managed tag's value, or a managed tag it removes, is reported as drift and put back on the next
+apply. Tag names must be unique ignoring case.
+
+Changing, adding or removing a managed tag updates only that tag (Morpheus's `addTags` /
+`removeTags`), so Morpheus's own tags survive. Emptying `tags` (`tags = []`) or omitting it
+removes the tags this resource previously managed and leaves Morpheus's own alone. Right after a
+create or update, a configured tag Morpheus does not yet report, or reports with another value,
+is kept as configured with a warning (some clouds apply tags asynchronously); the next refresh
+shows what Morpheus holds.
+
+On import `tags` is left unset -- the resource cannot tell which of Morpheus's tags a configuration
+means to manage -- and `tags_all` shows them all. Configure the tags you want managed and apply:
+they are added (or re-valued) through Morpheus's `addTags` and managed from then on.
+
 ## VMware VM Instance
 
 ```terraform
@@ -1302,7 +1325,12 @@ the provider detects that after create and fails the apply. Set at
 provision time only; changing it forces replacement. When not set,
 Morpheus generates the UUIDs and they are read back here.
 - `service_plan_options` (Attributes) Custom options for selected service plan - the supported options depend on the service plan selected (see [below for nested schema](#nestedatt--service_plan_options))
-- `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--tags))
+- `tags` (Attributes Set) Metadata tags this resource manages, each a name and value. Morpheus may hold further tags
+it adds itself (tag policies, provisioning workflows, cloud tag sync): those are not managed
+here and never cause a diff -- see `tags_all`. Names are matched ignoring case and must be
+unique; a value differing only in case is the configured one (VMware re-cases tags).
+Changing or removing a tag here updates only that tag (`addTags`/`removeTags`); emptying or
+omitting the set removes the previously managed tags and leaves Morpheus's own alone. (see [below for nested schema](#nestedatt--tags))
 - `task_set_id` (Number) The Workflow ID to execute.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `user_group` (Number) The id of the user group to associate with the instance. When create_user is enabled on
@@ -1330,6 +1358,9 @@ scope the server_uuid read-back to the owned container only.
 - `status` (String) The status of the instance (e.g. running, stopped, failed, unknown). The provider
 refreshes this on read, so an out-of-band deletion of the underlying VM - which Morpheus
 reports as "unknown" while retaining the instance record - surfaces as a change on the next plan.
+- `tags_all` (Attributes Set) Every metadata tag Morpheus holds for the instance, including the ones it adds itself
+(tag policies, provisioning workflows, cloud tag sync) -- read-only. `tags` carries only
+the tags this resource manages (MORPH-20973). (see [below for nested schema](#nestedatt--tags_all))
 
 <a id="nestedatt--network_interfaces"></a>
 ### Nested Schema for `network_interfaces`
@@ -1621,3 +1652,12 @@ with an image occupying a little over 10GB yields an 11GB volume.
 This is also where an out-of-band resize becomes visible: a disk grown
 outside Terraform is reflected here on the next refresh.
 - `id` (Number) The id for the LV configuration being created.
+
+
+<a id="nestedatt--tags_all"></a>
+### Nested Schema for `tags_all`
+
+Read-Only:
+
+- `name` (String)
+- `value` (String)

@@ -233,6 +233,39 @@ generated from the provider specification for other tools does not inherit Terra
 plan vocabulary for an argument. No behaviour changes.
 ## Bug fixes
 
+### `hpe_morpheus_instance`: tags Morpheus adds itself no longer fail the apply or show as drift (MORPH-20973)
+
+Morpheus does not always hold only the tags an instance was created with: tag policies,
+provisioning workflows (`addTags`), layout option types and the cloud's own tag sync (vCenter tags
+on VMware, for example) add tags to a new instance, or overwrite a value. The provider stored the
+API's tag list verbatim after create and update, so the apply failed with *Provider produced
+inconsistent result after apply … `.tags`: length changed from 4 to 6* (or *was cty.SetVal([…]),
+but now null* when Morpheus held none yet), Terraform tainted the healthy, running instance, and the
+next apply destroyed and recreated it only to fail the same way. A configured `tags = []` failed
+even when Morpheus added nothing, since an empty list was stored as null.
+
+`tags` is now the set of tags the resource **manages**, matched by name:
+
+- a read keeps, of the tags Morpheus holds, only the configured ones, with Morpheus's value — so a
+  value Morpheus overwrites and a tag it removes are still drift, while a tag it adds is not. A value
+  that differs only in case is taken as the configured one: a VMware cloud reports a tag in the case
+  of the vCenter tag it matched (`prod` as `Prod`), which is not drift. Tag names must be unique
+  ignoring case;
+- after a create or update a configured tag Morpheus does not (yet) report, or reports with another
+  value, is kept as configured, with a warning naming the difference, so the apply completes; the
+  next refresh shows what Morpheus holds;
+- an update sends only the difference between the previously managed tags and the plan
+  (`addTags` / `removeTags`) instead of replacing the whole list, so tags Morpheus added survive;
+- an omitted `tags` stays null and `tags = []` stays an empty set; either removes the tags the
+  resource previously managed and nothing else;
+- the new computed **`tags_all`** lists every tag Morpheus holds for the instance.
+
+On import `tags` is not populated — the resource cannot know which of Morpheus's tags a
+configuration means to manage — and `tags_all` is; configuring tags after an import adds them
+through `addTags` and manages them from then on.
+
+Thanks to the customer who diagnosed the defect and proposed a fix.
+
 ### Compute server lookups work on an appliance with an external Kubernetes cluster
 
 `hpe_morpheus_compute_servers`, and `hpe_morpheus_compute_server` looked up by name, failed with

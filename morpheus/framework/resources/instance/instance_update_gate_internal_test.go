@@ -290,6 +290,7 @@ func TestUnitUpdateGateClassifiesEveryRootAttribute(t *testing.T) {
 		"compute_servers": "computed",
 		"connection_info": "computed",
 		"container_id":    "computed",
+		"tags_all":        "computed",
 	}
 
 	obj := instanceObjectType(t)

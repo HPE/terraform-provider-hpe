@@ -92,7 +92,7 @@ func (g *Resource) Update(
 	// applyEvarsUpdate below, which runs unconditionally and is a no-op when
 	// the planned variables match state.
 	if isUpdateCallNeeded(req.Plan.Raw, req.State.Raw) {
-		makeUpdateAPIcalls(ctx, client, plan, pending, resp)
+		makeUpdateAPIcalls(ctx, client, plan, state, pending, resp)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -175,6 +175,7 @@ func makeUpdateAPIcalls(
 	ctx context.Context,
 	client *sdk.APIClient,
 	plan InstanceModel,
+	state InstanceModel,
 	pending clearable.Pending,
 	resp *resource.UpdateResponse,
 ) {
@@ -205,19 +206,16 @@ func makeUpdateAPIcalls(
 		instanceUpdateRequest.Site = site
 	}
 
-	// tags
-	if !plan.Tags.IsNull() && !plan.Tags.IsUnknown() {
-		tags, diags := convert.FromSetType(ctx, plan.Tags, updateTagMapper)
-		if diags.HasError() {
-			tflog.Error(ctx, "cannot convert tags")
-			resp.Diagnostics.Append(diags...)
+	// tags: only the difference between the managed tags in the prior state
+	// and the plan, as addTags/removeTags -- the whole-list `tags` would also
+	// strip the tags Morpheus added itself (tags.go, MORPH-20973).
+	addTags, removeTags := tagChanges(state.Tags, plan.Tags)
+	if len(addTags) > 0 {
+		instanceUpdateRequest.AddTags = addTags
+	}
 
-			return
-		}
-		instanceUpdateRequest.Tags = tags
-	} else {
-		// Morpheus will only remove tags if explicitly passed an empty list
-		instanceUpdateRequest.Tags = []sdk.UpdateInstanceRequestInstanceTagsInner{}
+	if len(removeTags) > 0 {
+		instanceUpdateRequest.RemoveTags = removeTags
 	}
 
 	// labels: the planned list, or an empty list when being cleared
