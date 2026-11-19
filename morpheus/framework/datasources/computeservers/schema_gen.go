@@ -83,6 +83,11 @@ func ComputeServersDataSourceSchema(ctx context.Context) schema.Schema {
 							Description:         "The description of the compute server.",
 							MarkdownDescription: "The description of the compute server.",
 						},
+						"display_name": schema.StringAttribute{
+							Computed:            true,
+							Description:         "The display name of the compute server, when one is set.",
+							MarkdownDescription: "The display name of the compute server, when one is set.",
+						},
 						"external_id": schema.StringAttribute{
 							Computed:            true,
 							Description:         "The external ID of the compute server.",
@@ -131,6 +136,16 @@ func ComputeServersDataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "The labels associated with the compute server.",
 							MarkdownDescription: "The labels associated with the compute server.",
+						},
+						"maintenance_mode": schema.BoolAttribute{
+							Computed:            true,
+							Description:         "Whether the compute server is in maintenance mode.",
+							MarkdownDescription: "Whether the compute server is in maintenance mode.",
+						},
+						"managed": schema.BoolAttribute{
+							Computed:            true,
+							Description:         "Whether the compute server is managed by Morpheus (agent-managed, with Morpheus owning its lifecycle).",
+							MarkdownDescription: "Whether the compute server is managed by Morpheus (agent-managed, with Morpheus owning its lifecycle).",
 						},
 						"max_memory": schema.Int64Attribute{
 							Computed:            true,
@@ -429,6 +444,24 @@ func (t ServersType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`description expected to be basetypes.StringValue, was: %T`, descriptionAttribute))
 	}
 
+	displayNameAttribute, ok := attributes["display_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`display_name is missing from object`)
+
+		return nil, diags
+	}
+
+	displayNameVal, ok := displayNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`display_name expected to be basetypes.StringValue, was: %T`, displayNameAttribute))
+	}
+
 	externalIdAttribute, ok := attributes["external_id"]
 
 	if !ok {
@@ -607,6 +640,42 @@ func (t ServersType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		diags.AddError(
 			"Attribute Wrong Type",
 			fmt.Sprintf(`labels expected to be basetypes.SetValue, was: %T`, labelsAttribute))
+	}
+
+	maintenanceModeAttribute, ok := attributes["maintenance_mode"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`maintenance_mode is missing from object`)
+
+		return nil, diags
+	}
+
+	maintenanceModeVal, ok := maintenanceModeAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`maintenance_mode expected to be basetypes.BoolValue, was: %T`, maintenanceModeAttribute))
+	}
+
+	managedAttribute, ok := attributes["managed"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`managed is missing from object`)
+
+		return nil, diags
+	}
+
+	managedVal, ok := managedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`managed expected to be basetypes.BoolValue, was: %T`, managedAttribute))
 	}
 
 	maxMemoryAttribute, ok := attributes["max_memory"]
@@ -856,6 +925,7 @@ func (t ServersType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		ComputeServerTypeManaged: computeServerTypeManagedVal,
 		ComputeServerTypeName:    computeServerTypeNameVal,
 		Description:              descriptionVal,
+		DisplayName:              displayNameVal,
 		ExternalId:               externalIdVal,
 		ExternalIp:               externalIpVal,
 		GroupId:                  groupIdVal,
@@ -866,6 +936,8 @@ func (t ServersType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		InternalId:               internalIdVal,
 		InternalIp:               internalIpVal,
 		Labels:                   labelsVal,
+		MaintenanceMode:          maintenanceModeVal,
+		Managed:                  managedVal,
 		MaxMemory:                maxMemoryVal,
 		MaxStorage:               maxStorageVal,
 		Name:                     nameVal,
@@ -1090,6 +1162,24 @@ func NewServersValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`description expected to be basetypes.StringValue, was: %T`, descriptionAttribute))
 	}
 
+	displayNameAttribute, ok := attributes["display_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`display_name is missing from object`)
+
+		return NewServersValueUnknown(), diags
+	}
+
+	displayNameVal, ok := displayNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`display_name expected to be basetypes.StringValue, was: %T`, displayNameAttribute))
+	}
+
 	externalIdAttribute, ok := attributes["external_id"]
 
 	if !ok {
@@ -1268,6 +1358,42 @@ func NewServersValue(attributeTypes map[string]attr.Type, attributes map[string]
 		diags.AddError(
 			"Attribute Wrong Type",
 			fmt.Sprintf(`labels expected to be basetypes.SetValue, was: %T`, labelsAttribute))
+	}
+
+	maintenanceModeAttribute, ok := attributes["maintenance_mode"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`maintenance_mode is missing from object`)
+
+		return NewServersValueUnknown(), diags
+	}
+
+	maintenanceModeVal, ok := maintenanceModeAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`maintenance_mode expected to be basetypes.BoolValue, was: %T`, maintenanceModeAttribute))
+	}
+
+	managedAttribute, ok := attributes["managed"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`managed is missing from object`)
+
+		return NewServersValueUnknown(), diags
+	}
+
+	managedVal, ok := managedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`managed expected to be basetypes.BoolValue, was: %T`, managedAttribute))
 	}
 
 	maxMemoryAttribute, ok := attributes["max_memory"]
@@ -1517,6 +1643,7 @@ func NewServersValue(attributeTypes map[string]attr.Type, attributes map[string]
 		ComputeServerTypeManaged: computeServerTypeManagedVal,
 		ComputeServerTypeName:    computeServerTypeNameVal,
 		Description:              descriptionVal,
+		DisplayName:              displayNameVal,
 		ExternalId:               externalIdVal,
 		ExternalIp:               externalIpVal,
 		GroupId:                  groupIdVal,
@@ -1527,6 +1654,8 @@ func NewServersValue(attributeTypes map[string]attr.Type, attributes map[string]
 		InternalId:               internalIdVal,
 		InternalIp:               internalIpVal,
 		Labels:                   labelsVal,
+		MaintenanceMode:          maintenanceModeVal,
+		Managed:                  managedVal,
 		MaxMemory:                maxMemoryVal,
 		MaxStorage:               maxStorageVal,
 		Name:                     nameVal,
@@ -1618,6 +1747,7 @@ type ServersValue struct {
 	ComputeServerTypeManaged basetypes.BoolValue   `tfsdk:"compute_server_type_managed"`
 	ComputeServerTypeName    basetypes.StringValue `tfsdk:"compute_server_type_name"`
 	Description              basetypes.StringValue `tfsdk:"description"`
+	DisplayName              basetypes.StringValue `tfsdk:"display_name"`
 	ExternalId               basetypes.StringValue `tfsdk:"external_id"`
 	ExternalIp               basetypes.StringValue `tfsdk:"external_ip"`
 	GroupId                  basetypes.Int64Value  `tfsdk:"group_id"`
@@ -1628,6 +1758,8 @@ type ServersValue struct {
 	InternalId               basetypes.StringValue `tfsdk:"internal_id"`
 	InternalIp               basetypes.StringValue `tfsdk:"internal_ip"`
 	Labels                   basetypes.SetValue    `tfsdk:"labels"`
+	MaintenanceMode          basetypes.BoolValue   `tfsdk:"maintenance_mode"`
+	Managed                  basetypes.BoolValue   `tfsdk:"managed"`
 	MaxMemory                basetypes.Int64Value  `tfsdk:"max_memory"`
 	MaxStorage               basetypes.Int64Value  `tfsdk:"max_storage"`
 	Name                     basetypes.StringValue `tfsdk:"name"`
@@ -1645,7 +1777,7 @@ type ServersValue struct {
 }
 
 func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 31)
+	attrTypes := make(map[string]tftypes.Type, 34)
 
 	var val tftypes.Value
 	var err error
@@ -1658,6 +1790,7 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["compute_server_type_managed"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["compute_server_type_name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["description"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["display_name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["external_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["external_ip"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["group_id"] = basetypes.Int64Type{}.TerraformType(ctx)
@@ -1670,6 +1803,8 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["labels"] = basetypes.SetType{
 		ElemType: types.StringType,
 	}.TerraformType(ctx)
+	attrTypes["maintenance_mode"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["managed"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["max_memory"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["max_storage"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
@@ -1688,7 +1823,7 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 31)
+		vals := make(map[string]tftypes.Value, 34)
 
 		val, err = v.AgentInstalled.ToTerraformValue(ctx)
 		if err != nil {
@@ -1745,6 +1880,13 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		}
 
 		vals["description"] = val
+
+		val, err = v.DisplayName.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["display_name"] = val
 
 		val, err = v.ExternalId.ToTerraformValue(ctx)
 		if err != nil {
@@ -1815,6 +1957,20 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		}
 
 		vals["labels"] = val
+
+		val, err = v.MaintenanceMode.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["maintenance_mode"] = val
+
+		val, err = v.Managed.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["managed"] = val
 
 		val, err = v.MaxMemory.ToTerraformValue(ctx)
 		if err != nil {
@@ -1958,6 +2114,7 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"compute_server_type_managed": basetypes.BoolType{},
 			"compute_server_type_name":    basetypes.StringType{},
 			"description":                 basetypes.StringType{},
+			"display_name":                basetypes.StringType{},
 			"external_id":                 basetypes.StringType{},
 			"external_ip":                 basetypes.StringType{},
 			"group_id":                    basetypes.Int64Type{},
@@ -1970,6 +2127,8 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"labels": basetypes.SetType{
 				ElemType: types.StringType,
 			},
+			"maintenance_mode": basetypes.BoolType{},
+			"managed":          basetypes.BoolType{},
 			"max_memory":       basetypes.Int64Type{},
 			"max_storage":      basetypes.Int64Type{},
 			"name":             basetypes.StringType{},
@@ -1995,6 +2154,7 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		"compute_server_type_managed": basetypes.BoolType{},
 		"compute_server_type_name":    basetypes.StringType{},
 		"description":                 basetypes.StringType{},
+		"display_name":                basetypes.StringType{},
 		"external_id":                 basetypes.StringType{},
 		"external_ip":                 basetypes.StringType{},
 		"group_id":                    basetypes.Int64Type{},
@@ -2007,6 +2167,8 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		"labels": basetypes.SetType{
 			ElemType: types.StringType,
 		},
+		"maintenance_mode": basetypes.BoolType{},
+		"managed":          basetypes.BoolType{},
 		"max_memory":       basetypes.Int64Type{},
 		"max_storage":      basetypes.Int64Type{},
 		"name":             basetypes.StringType{},
@@ -2041,6 +2203,7 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"compute_server_type_managed": v.ComputeServerTypeManaged,
 			"compute_server_type_name":    v.ComputeServerTypeName,
 			"description":                 v.Description,
+			"display_name":                v.DisplayName,
 			"external_id":                 v.ExternalId,
 			"external_ip":                 v.ExternalIp,
 			"group_id":                    v.GroupId,
@@ -2051,6 +2214,8 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"internal_id":                 v.InternalId,
 			"internal_ip":                 v.InternalIp,
 			"labels":                      labelsVal,
+			"maintenance_mode":            v.MaintenanceMode,
+			"managed":                     v.Managed,
 			"max_memory":                  v.MaxMemory,
 			"max_storage":                 v.MaxStorage,
 			"name":                        v.Name,
@@ -2116,6 +2281,10 @@ func (v ServersValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.DisplayName.Equal(other.DisplayName) {
+		return false
+	}
+
 	if !v.ExternalId.Equal(other.ExternalId) {
 		return false
 	}
@@ -2153,6 +2322,14 @@ func (v ServersValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.Labels.Equal(other.Labels) {
+		return false
+	}
+
+	if !v.MaintenanceMode.Equal(other.MaintenanceMode) {
+		return false
+	}
+
+	if !v.Managed.Equal(other.Managed) {
 		return false
 	}
 
@@ -2229,6 +2406,7 @@ func (v ServersValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		"compute_server_type_managed": basetypes.BoolType{},
 		"compute_server_type_name":    basetypes.StringType{},
 		"description":                 basetypes.StringType{},
+		"display_name":                basetypes.StringType{},
 		"external_id":                 basetypes.StringType{},
 		"external_ip":                 basetypes.StringType{},
 		"group_id":                    basetypes.Int64Type{},
@@ -2241,6 +2419,8 @@ func (v ServersValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		"labels": basetypes.SetType{
 			ElemType: types.StringType,
 		},
+		"maintenance_mode": basetypes.BoolType{},
+		"managed":          basetypes.BoolType{},
 		"max_memory":       basetypes.Int64Type{},
 		"max_storage":      basetypes.Int64Type{},
 		"name":             basetypes.StringType{},

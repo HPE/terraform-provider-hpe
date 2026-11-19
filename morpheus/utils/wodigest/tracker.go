@@ -5,6 +5,7 @@ package wodigest
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -43,7 +44,11 @@ type Tracker struct {
 	// marker ("" when it has none). A change to a marker is honoured as a
 	// change for the whole 2.2 line.
 	Attributes map[string]string
-	// Immutable lists the attributes whose change requires replacement.
+	// Immutable lists the attributes whose change requires replacement. An
+	// entry under an optional nested block (a config variant) is marked for
+	// replacement only when that block is set in the plan or the prior
+	// state; the others are left alone, as Terraform rejects a replacement
+	// on a path that does not exist.
 	Immutable []string
 	// APIHash maps an attribute to an extractor of the appliance's hash of the
 	// stored secret from the resource's read response. Only attributes listed
@@ -249,21 +254,23 @@ func (t Tracker) ModifyPlan(
 			return
 		}
 
-		names := t.Names()
-		sort.Strings(names)
-
-		how := "the configured values are sent on the next update of any other attribute" + t.markerHint()
-		if len(t.Immutable) > 0 {
-			how = "the configured values can only take effect through a replacement of the resource; " +
-				"any update of another attribute records them as applied"
+		// The configured attributes are what the user can act on: they name
+		// the undetected change, and the first of them makes the example ID.
+		configured := make([]string, 0, len(current))
+		for name := range current {
+			configured = append(configured, name)
 		}
+
+		sort.Strings(configured)
+
+		how := t.importedHow(configured)
 
 		resp.Diagnostics.AddWarning(
 			"Write-only values of an imported "+t.Resource+" are taken as already applied",
 			"This resource was imported without the digests of its write-only values, so a change to "+
-				strings.Join(names, ", ")+" is not detected until the resource is next applied. To have "+
+				strings.Join(configured, ", ")+" is not detected until the resource is next applied. To have "+
 				"changes detected from the start, import with the values' sha256 digests in the import ID: "+
-				"\"<id>#"+names[0]+"=<sha256 hex>\". Otherwise "+how+".")
+				"\"<id>#"+configured[0]+"=<sha256 hex>\". Otherwise "+how+".")
 
 		return
 	}
@@ -284,9 +291,7 @@ func (t Tracker) ModifyPlan(
 	// line still means "re-send", and re-sending an immutable value is a
 	// replacement -- plans a replacement of the resource.
 	if decision == Replace || (marker && t.immutableMarkerChanged(ctx, req.Plan, req.State)) {
-		for _, name := range t.Immutable {
-			resp.RequiresReplace = append(resp.RequiresReplace, attrPath(name))
-		}
+		t.planReplacement(ctx, req, resp)
 
 		return
 	}
@@ -343,6 +348,69 @@ func (t Tracker) driftedConfigured(stored Digests, current Attrs) []string {
 	sort.Strings(names)
 
 	return names
+}
+
+// planReplacement marks every immutable attribute whose path exists -- in the
+// plan or the prior state -- for replacement, so a changed create-only value
+// (or a switch between variant blocks) recreates the resource. Only a path
+// that exists may be marked: an immutable attribute under a nested block that
+// is null in both (a variant block not in use) is a path Terraform rejects as
+// non-existent. When no path can be marked, the changed value would otherwise
+// be ignored without a trace, so it is an error.
+func (t Tracker) planReplacement(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	marked := 0
+
+	for _, name := range t.Immutable {
+		if !t.pathPresent(ctx, attrPath(name), req.Plan, req.State) {
+			continue
+		}
+
+		resp.RequiresReplace = append(resp.RequiresReplace, attrPath(name))
+		marked++
+	}
+
+	if marked == 0 {
+		resp.Diagnostics.AddError(
+			"Write-only value change cannot be applied",
+			"A write-only value of this "+t.Resource+" that can only change through a replacement "+
+				"differs from the applied one, but none of "+strings.Join(t.Immutable, ", ")+
+				" is set in the plan or the prior state, so no replacement can be planned. "+
+				"Taint the resource (terraform taint) to replace it.")
+	}
+}
+
+// importedHow words, for the imported-without-digests warning, how the
+// configured write-only values come to be recorded as applied: on the next
+// update of any other attribute (an update stores the configured digests; it
+// does not re-send the values, since nothing marked them for a re-send), or
+// -- for the immutable ones -- only through a replacement of the resource.
+// Only the configured attributes are described; what is not configured is
+// not recorded.
+func (t Tracker) importedHow(configured []string) string {
+	var updatable, immutable []string
+
+	for _, name := range configured {
+		if slices.Contains(t.Immutable, name) {
+			immutable = append(immutable, name)
+		} else {
+			updatable = append(updatable, name)
+		}
+	}
+
+	sort.Strings(updatable)
+	sort.Strings(immutable)
+
+	switch {
+	case len(immutable) == 0:
+		return "the configured values are recorded as applied on the next update of any other attribute" + t.markerHint()
+	case len(updatable) == 0:
+		return "the configured values can only take effect through a replacement of the resource; " +
+			"any update of another attribute records them as applied"
+	default:
+		return strings.Join(updatable, ", ") + " is recorded as applied on the next update of any other attribute, " +
+			"as is " + strings.Join(immutable, ", ") + ", which can only take effect through a replacement of " +
+			"the resource" + t.markerHint()
+	}
 }
 
 // immutableMarkerChanged reports whether the marker of an immutable attribute
@@ -489,4 +557,28 @@ func unknownOf(ctx context.Context, v attr.Value) (attr.Value, error) {
 	}
 
 	return unknown, nil
+}
+
+// pathPresent reports whether the attribute path resolves to a non-null value
+// in the plan or in the prior state -- that is, whether every nested block on
+// the way to it is set in at least one of them. A write-only attribute itself
+// is always null, so the check is on its parent when it is nested.
+func (t Tracker) pathPresent(ctx context.Context, p path.Path, plan, state getter) bool {
+	parent := p.ParentPath()
+	if parent.Equal(path.Empty()) {
+		return true // a top-level attribute always exists
+	}
+
+	for _, g := range []getter{plan, state} {
+		var v attr.Value
+		if diags := g.GetAttribute(ctx, parent, &v); diags.HasError() || v == nil {
+			continue
+		}
+
+		if !v.IsNull() {
+			return true
+		}
+	}
+
+	return false
 }

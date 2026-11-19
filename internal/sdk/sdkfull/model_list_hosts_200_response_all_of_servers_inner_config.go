@@ -20,8 +20,10 @@ import (
 // checks if the ListHosts200ResponseAllOfServersInnerConfig type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &ListHosts200ResponseAllOfServersInnerConfig{}
 
-// ListHosts200ResponseAllOfServersInnerConfig struct for ListHosts200ResponseAllOfServersInnerConfig
+// ListHosts200ResponseAllOfServersInnerConfig The server's stored configuration map, as it was sent at provisioning (secret-like keys removed). Which keys are present depends on the server type; the ones below are common.
 type ListHosts200ResponseAllOfServersInnerConfig struct {
+	// The cloud-init user data the host was provisioned with, when one was given.
+	UserData              NullableString                                             `json:"userData,omitempty"`
 	PoolProviderType      NullableString                                             `json:"poolProviderType,omitempty"`
 	IsVpcSelectable       *bool                                                      `json:"isVpcSelectable,omitempty"`
 	SmbiosAssetTag        NullableString                                             `json:"smbiosAssetTag,omitempty"`
@@ -51,6 +53,9 @@ func (o ListHosts200ResponseAllOfServersInnerConfig) MarshalJSON() ([]byte, erro
 
 func (o ListHosts200ResponseAllOfServersInnerConfig) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if o.UserData.IsSet() {
+		toSerialize["userData"] = o.UserData.Get()
+	}
 	if o.PoolProviderType.IsSet() {
 		toSerialize["poolProviderType"] = o.PoolProviderType.Get()
 	}

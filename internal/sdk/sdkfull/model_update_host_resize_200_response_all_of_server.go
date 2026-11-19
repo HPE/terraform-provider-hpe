@@ -71,6 +71,9 @@ type UpdateHostResize200ResponseAllOfServer struct {
 	StatusPercent            NullableString                                            `json:"statusPercent,omitempty"`
 	StatusEta                NullableString                                            `json:"statusEta,omitempty"`
 	PowerState               *string                                                   `json:"powerState,omitempty"`
+	MaintenanceMode          NullableBool                                              `json:"maintenanceMode,omitempty"`
+	Managed                  *bool                                                     `json:"managed,omitempty"`
+	DisplayName              NullableString                                            `json:"displayName,omitempty"`
 	AgentInstalled           *bool                                                     `json:"agentInstalled,omitempty"`
 	LastAgentUpdate          NullableString                                            `json:"lastAgentUpdate,omitempty"`
 	AgentVersion             NullableString                                            `json:"agentVersion,omitempty"`
@@ -262,6 +265,15 @@ func (o UpdateHostResize200ResponseAllOfServer) ToMap() (map[string]interface{},
 	}
 	if !IsNil(o.PowerState) {
 		toSerialize["powerState"] = o.PowerState
+	}
+	if o.MaintenanceMode.IsSet() {
+		toSerialize["maintenanceMode"] = o.MaintenanceMode.Get()
+	}
+	if !IsNil(o.Managed) {
+		toSerialize["managed"] = o.Managed
+	}
+	if o.DisplayName.IsSet() {
+		toSerialize["displayName"] = o.DisplayName.Get()
 	}
 	if !IsNil(o.AgentInstalled) {
 		toSerialize["agentInstalled"] = o.AgentInstalled

@@ -1,0 +1,26 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+~> **Terminology** A **host** is a compute server that hosts others — a hypervisor,
+bare-metal server, or Kubernetes node — with no parent of its own. Look a host up by
+`id`, or by `name` together with an optional `cloud_id` to disambiguate. `bare_metal` is
+derived from the compute server type.
+
+-> This data source reads hosts of **every** type, including ones the `hpe_morpheus_host` resource
+cannot create: HVM hypervisors (`mvm`) are created by `hpe_morpheus_cluster`, and virtual machines by
+`hpe_morpheus_instance`. See the resource's documentation for which types are creatable.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_host/example-id.tf" }}
+
+{{ tffile "examples/data-sources/morpheus_host/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

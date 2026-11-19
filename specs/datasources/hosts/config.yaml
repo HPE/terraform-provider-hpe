@@ -1,0 +1,180 @@
+hosts:
+  templates:
+    cloud_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: Filter by cloud ID. Only hosts in this cloud are returned.
+    group_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: Filter by group ID. Only hosts in this group are returned.
+    compute_server_type:
+      string:
+        computed_optional_required: computed_optional
+        description: Filter by compute server type code. Only hosts of this type are returned.
+    bare_metal:
+      bool:
+        computed_optional_required: computed_optional
+        description: Filter by bare metal hosts. When true, only bare-metal hosts are returned.
+    phrase:
+      string:
+        computed_optional_required: computed_optional
+        description: Filter by a search phrase matched against host names.
+    hosts_compute_server_type:
+      string:
+        computed_optional_required: computed
+        description: The code of the compute server type.
+    hosts_bare_metal:
+      bool:
+        computed_optional_required: computed
+        description: Whether the host is a bare-metal host.
+    hosts_cloud_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the cloud this host belongs to.
+    hosts_parent_host_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the parent hypervisor host, if any.
+
+  moves:
+    - servers: hosts                                                           # (paths/api@servers.yaml GET 200 servers) renamed to hosts
+    - hosts.zone_id: hosts.cloud_id_raw                                        # (server.yaml) rename zone→cloud (removed below)
+    - hosts.compute_server_type: hosts._compute_server_type_obj                # (server.yaml computeServerType) object out of the way; replaced by flattened template
+    - template-cloud_id: cloud_id                                              # (template) top-level filter
+    - template-group_id: group_id                                             # (template) top-level filter
+    - template-compute_server_type: compute_server_type                        # (template) top-level filter
+    - template-bare_metal: bare_metal                                          # (paths/api@servers.yaml bareMetalHost query parameter) top-level filter
+    - template-phrase: phrase                                                  # (template) top-level filter
+    - template-hosts_compute_server_type: hosts.compute_server_type            # (template) flatten computeServerType.code
+    - template-hosts_bare_metal: hosts.bare_metal                              # (derived) /api/server-types bareMetalHost for the host's type; not in the server rendering
+    - template-hosts_cloud_id: hosts.cloud_id                                  # (template) flatten zone.id
+    - template-hosts_parent_host_id: hosts.parent_host_id                      # (template) flatten parentServer.id
+
+  removes:
+    - max                                              # (query parameter) pagination
+    - offset                                           # (query parameter) pagination
+    - name                                             # (query parameter) low-value
+    - zone_id                                          # (query parameter) replaced by top-level cloud_id
+    - site_id                                          # (query parameter) replaced by group_id filter
+    - cluster_id                                       # (query parameter) low-value
+    - parent_server_id                                 # (query parameter) low-value
+    - managed                                          # (query parameter) low-value
+    - server_type                                      # (query parameter) low-value
+    - power_state                                      # (query parameter) returned per host
+    - ip                                               # (query parameter) low-value
+    - vm                                               # (query parameter) low-value
+    - vm_hypervisor                                    # (query parameter) low-value
+    - bare_metal_host                                  # (query parameter) replaced by top-level bare_metal
+    - status                                           # (query parameter) returned per host
+    - agent_installed                                  # (query parameter) low-value
+    - guest_agent_status                               # (query parameter) internal
+    - last_updated                                     # (query parameter) low-value
+    - created_by                                       # (query parameter) low-value
+    - tagsname                                         # (query parameter) tags filter
+    - metadata                                         # (query parameter) alias for tags
+    - uuid                                             # (query parameter) low-value
+    - external_id                                      # (query parameter) low-value
+    - internal_id                                      # (query parameter) low-value
+    - external_uniquel_id                              # (query parameter) typo in spec
+    - stats                                            # (query parameter) low-value
+    - include_tenants                                  # (query parameter) internal
+    - tenant_id                                        # (query parameter) internal
+    - details                                          # (query parameter) internal
+    - meta                                             # (response envelope) pagination metadata
+    - multitenant                                      # (response) internal
+    - hosts.cloud_id_raw                               # (server.yaml) replaced by flattened cloud_id template
+    - hosts.account                                    # (server.yaml) nested object
+    - hosts.account_id                                 # (server.yaml) internal tenant ref
+    - hosts.agent_installed                            # (server.yaml) low-value in summary
+    - hosts.agent_version                              # (server.yaml) internal
+    - hosts.api_key                                    # (server.yaml) sensitive internal
+    - hosts._compute_server_type_obj                   # (server.yaml) spec computeServerType object; replaced by flattened template
+    - hosts.config                                     # (server.yaml) dynamic/unstructured
+    - hosts.containers                                 # (server.yaml) nested collection
+    - hosts.controllers                                # (server.yaml) nested collection
+    - hosts.cores_per_socket                           # (server.yaml) low-value detail
+    - hosts.data_device                                # (server.yaml) internal
+    - hosts.date_created                               # (server.yaml) read-only timestamp
+    - hosts.description                                # (server.yaml) low-value in summary
+    - hosts.display_name                               # (server.yaml) low-value
+    - hosts.enable_logs                                # (server.yaml) internal
+    - hosts.enabled                                    # (server.yaml) low-value in summary
+    - hosts.error_message                              # (server.yaml) transient
+    - hosts.external_id                                # (server.yaml) low-value in summary
+    - hosts.external_name                              # (server.yaml) internal
+    - hosts.external_unique_id                         # (server.yaml) internal
+    - hosts.folder_id                                  # (server.yaml) low-value
+    - hosts.guest_agent_status                         # (server.yaml) internal
+    - hosts.guest_console_password                     # (server.yaml) sensitive
+    - hosts.guest_console_password_hash                # (server.yaml) sensitive
+    - hosts.guest_console_port                         # (server.yaml) internal
+    - hosts.guest_console_preferred                    # (server.yaml) internal
+    - hosts.guest_console_type                         # (server.yaml) internal
+    - hosts.guest_console_username                     # (server.yaml) internal
+    - hosts.hostname                                   # (server.yaml) low-value in summary
+    - hosts.hourly_cost                                # (server.yaml) billing
+    - hosts.hourly_price                               # (server.yaml) billing
+    - hosts.instance                                   # (server.yaml) nested object
+    - hosts.interfaces                                 # (server.yaml) nested collection
+    - hosts.internal_id                                # (server.yaml) internal
+    - hosts.labels                                     # (server.yaml) low-value in summary
+    - hosts.last_agent_update                          # (server.yaml) internal timestamp
+    - hosts.last_updated                               # (server.yaml) read-only timestamp
+    - hosts.lvm_enabled                                # (server.yaml) low-value
+    - hosts.maintenance_mode                           # (server.yaml) low-value
+    - hosts.manage_internal_firewall                   # (server.yaml) internal
+    - hosts.managed                                    # (server.yaml) low-value in summary
+    - hosts.max_cores                                  # (server.yaml) low-value detail
+    - hosts.max_cpu                                    # (server.yaml) low-value detail
+    - hosts.max_gpus                                   # (server.yaml) low-value detail
+    - hosts.max_memory                                 # (server.yaml) low-value detail
+    - hosts.max_storage                                # (server.yaml) low-value detail
+    - hosts.os_device                                  # (server.yaml) internal
+    - hosts.os_type                                    # (server.yaml) low-value
+    - hosts.owner                                      # (server.yaml) nested object
+    - hosts.parent_server                              # (server.yaml) replaced by parent_host_id
+    - hosts.plan                                       # (server.yaml) nested object
+    - hosts.platform                                   # (server.yaml) low-value in summary
+    - hosts.platform_version                           # (server.yaml) low-value
+    - hosts.resource_pool_id                           # (server.yaml) low-value
+    - hosts.secure_metadata_datastore                  # (server.yaml) nested object
+    - hosts.server_os                                  # (server.yaml) nested object
+    - hosts.site_id                                    # (server.yaml) low-value
+    - hosts.software_raid                              # (server.yaml) low-value
+    - hosts.source_image                               # (server.yaml) nested object
+    - hosts.ssh_host                                   # (server.yaml) sensitive
+    - hosts.ssh_key_pair                               # (server.yaml) sensitive nested
+    - hosts.ssh_password                               # (server.yaml) sensitive
+    - hosts.ssh_password_hash                          # (server.yaml) sensitive
+    - hosts.ssh_port                                   # (server.yaml) sensitive
+    - hosts.ssh_username                               # (server.yaml) sensitive
+    - hosts.stats                                      # (server.yaml) dynamic object
+    - hosts.status_date                                # (server.yaml) read-only timestamp
+    - hosts.status_eta                                 # (server.yaml) transient
+    - hosts.status_message                             # (server.yaml) transient
+    - hosts.status_percent                             # (server.yaml) transient
+    - hosts.tag_compliant                              # (server.yaml) internal
+    - hosts.tags                                       # (server.yaml) nested collection
+    - hosts.uuid                                       # (server.yaml) low-value in summary
+    - hosts.visibility                                 # (server.yaml) low-value in summary
+    - hosts.volume_id                                  # (server.yaml) internal
+    - hosts.volumes                                    # (server.yaml) nested collection
+    - hosts.zone                                       # (server.yaml) replaced by cloud_id
+
+  overrides:
+    hosts:
+      computed_optional_required: computed
+      description: The list of hosts matching the supplied filters.
+    hosts.id:
+      description: The ID of the host.
+    hosts.name:
+      description: The name of the host.
+    hosts.status:
+      description: The status of the host (e.g. provisioned, running).
+    hosts.power_state:
+      description: The power state of the host (e.g. on, off).
+    hosts.internal_ip:
+      description: The internal IP address of the host.
+    hosts.external_ip:
+      description: The external IP address of the host.

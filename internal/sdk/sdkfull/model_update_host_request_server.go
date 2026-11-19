@@ -28,6 +28,8 @@ type UpdateHostRequestServer struct {
 	Description *string `json:"description,omitempty"`
 	// Flag to determine if a host can be selected for provisioning
 	Enabled *bool `json:"enabled,omitempty"`
+	// The visibility of the server (`private` or `public`).
+	Visibility *string `json:"visibility,omitempty"`
 	// Flag to enable/disable managment of internal firewall
 	ManageInternalFirewall *bool `json:"manageInternalFirewall,omitempty"`
 	// Flag to enable/disable logs
@@ -81,6 +83,9 @@ func (o UpdateHostRequestServer) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Enabled) {
 		toSerialize["enabled"] = o.Enabled
+	}
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
 	}
 	if !IsNil(o.ManageInternalFirewall) {
 		toSerialize["manageInternalFirewall"] = o.ManageInternalFirewall

@@ -118,6 +118,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | `Backup` | `backup` | Backup jobs, instance backups and host (file) backups, created and destroyed against the objects the `TF_VAR_testacc_morpheus_backup_*` variables name (`testhelpers/backup_fixture.go`). Nothing is scheduled, so no backup runs; backups have to be enabled on the appliance |
 | `Metal` | `metal` | HPE Bare Metal cloud (iLO/Redfish servers). Gates the bare-metal instance-node tests and, paired with `alletra`, the HPE Alletra MP Bare Metal (BMaaS) datastore test, which reads its cloud, storage server, resource pool, group and tenant from the `TF_VAR_testacc_morpheus_metal_*` fixture below and skips when one is unset |
 | `VDI` | `vdi` | VDI pools/apps/gateways |
+| `BareMetalStub` | `bare_metal_stub` | An Omega bare-metal stub cloud (`omega.baremetal.stub-server`) the `hpe_morpheus_host` tests can add hosts to. Also the opt-in for the not-creatable test, which would POST an `mvm` host if the type list could not be read. Reads the `TF_VAR_testacc_morpheus_bmaas_*` fixtures |
 
 ### Identity / Platform
 
@@ -265,6 +266,9 @@ Exit codes:
 | `TF_ACC_CAPABILITIES` | Comma-separated list of available capabilities |
 | `TF_ACC_CAPABILITIES_VERBOSE` | Set to `1` to log when tests don't run |
 | `TF_ACC_PHPIPAM_URL`, `TF_ACC_PHPIPAM_APP_ID`, `TF_ACC_PHPIPAM_USERNAME`, `TF_ACC_PHPIPAM_PASSWORD` | A reachable phpIPAM service for the phpIPAM pool-server test, which skips without them. Optional `TF_ACC_PHPIPAM_APP_ID_2` names a second application for the app-ID change step |
+| `TF_VAR_testacc_morpheus_bmaas_cloud_id`, `TF_VAR_testacc_morpheus_bmaas_group_id`, `TF_VAR_testacc_morpheus_bmaas_resource_pool_id` | The Omega bare-metal stub cloud, group and resource pool the `hpe_morpheus_host` tests create hosts in (`bare_metal_stub`) |
+| `TF_VAR_testacc_morpheus_host_id`, `TF_VAR_testacc_morpheus_host_name` | An existing host (an HVM hypervisor, say) for the `hpe_morpheus_host` data source tests by id and by name |
+| `TF_VAR_testacc_morpheus_hvm_guest_server_id` | A guest VM on the HVM cloud (`TF_VAR_testacc_morpheus_compute_server_cloud_id`), for the `hpe_morpheus_hosts` type-filter test |
 | `TF_VAR_testacc_morpheus_affinity_cloud_id` | ID of a cloud that supports affinity groups. Required by the `affinity_group` + `vmware` tests, which skip without it |
 | `TF_VAR_testacc_morpheus_affinity_cluster_id` | ID of an HVM cluster that supports affinity groups. Required by the cluster affinity-group resource/data-source tests, which skip without it (the instance placement tests use the HVM fixture's cluster by name instead) |
 | `TF_VAR_testacc_morpheus_affinity_pool_id` | ID of a resource pool of type Cluster on the cloud above. Morpheus rejects a cloud affinity group created without a pool, so the `affinity_group` + `vmware` resource tests skip without it |

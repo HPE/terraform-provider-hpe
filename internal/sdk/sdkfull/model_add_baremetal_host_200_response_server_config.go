@@ -20,8 +20,10 @@ import (
 // checks if the AddBaremetalHost200ResponseServerConfig type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &AddBaremetalHost200ResponseServerConfig{}
 
-// AddBaremetalHost200ResponseServerConfig struct for AddBaremetalHost200ResponseServerConfig
+// AddBaremetalHost200ResponseServerConfig The server's stored configuration map, as it was sent at provisioning (secret-like keys removed). Which keys are present depends on the server type; the ones below are common.
 type AddBaremetalHost200ResponseServerConfig struct {
+	// The cloud-init user data the host was provisioned with, when one was given.
+	UserData              NullableString                                         `json:"userData,omitempty"`
 	PoolProviderType      NullableString                                         `json:"poolProviderType,omitempty"`
 	IsVpcSelectable       *bool                                                  `json:"isVpcSelectable,omitempty"`
 	SmbiosAssetTag        NullableString                                         `json:"smbiosAssetTag,omitempty"`
@@ -51,6 +53,9 @@ func (o AddBaremetalHost200ResponseServerConfig) MarshalJSON() ([]byte, error) {
 
 func (o AddBaremetalHost200ResponseServerConfig) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if o.UserData.IsSet() {
+		toSerialize["userData"] = o.UserData.Get()
+	}
 	if o.PoolProviderType.IsSet() {
 		toSerialize["poolProviderType"] = o.PoolProviderType.Get()
 	}

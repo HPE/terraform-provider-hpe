@@ -20,9 +20,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastoretypes"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/group"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/host"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/hostprofile"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/hostprofilecompliance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/hostprofiles"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/hosts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/images"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instance"
@@ -128,6 +130,8 @@ func (p *MorpheusProvider) DataSources(
 		hostprofile.NewDataSource,
 		hostprofiles.NewDataSource,
 		hostprofilecompliance.NewDataSource,
+		host.NewDataSource,
+		hosts.NewDataSource,
 		instance.NewDataSource,
 		instancetypelayout.NewDataSource,
 		image.NewDataSource,

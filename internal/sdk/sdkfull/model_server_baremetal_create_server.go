@@ -22,15 +22,20 @@ var _ MappedNullable = &ServerBaremetalCreateServer{}
 
 // ServerBaremetalCreateServer struct for ServerBaremetalCreateServer
 type ServerBaremetalCreateServer struct {
-	Cloud                *ServerBaremetalCreateServerCloud             `json:"cloud,omitempty"`
-	ComputeServerType    *ServerBaremetalCreateServerComputeServerType `json:"computeServerType,omitempty"`
-	Description          *string                                       `json:"description,omitempty"`
-	Group                *ServerBaremetalCreateServerGroup             `json:"group,omitempty"`
-	Labels               []string                                      `json:"labels,omitempty"`
-	Name                 *string                                       `json:"name,omitempty"`
-	Visibility           *string                                       `json:"visibility,omitempty"`
-	Config               *ServerBaremetalCreateServerConfig            `json:"config,omitempty"`
-	AdditionalProperties map[string]interface{}                        `json:",remain"`
+	Cloud             *ServerBaremetalCreateServerCloud             `json:"cloud,omitempty"`
+	Group             *ServerBaremetalCreateServerGroup             `json:"group,omitempty"`
+	ComputeServerType *ServerBaremetalCreateServerComputeServerType `json:"computeServerType,omitempty"`
+	Plan              *ServerBaremetalCreateServerPlan              `json:"plan,omitempty"`
+	Name              *string                                       `json:"name,omitempty"`
+	Description       *string                                       `json:"description,omitempty"`
+	Labels            []string                                      `json:"labels,omitempty"`
+	Visibility        *string                                       `json:"visibility,omitempty"`
+	// SSH username for the host.
+	SshUsername *string `json:"sshUsername,omitempty"`
+	// SSH password for the host.
+	SshPassword          *string                            `json:"sshPassword,omitempty"`
+	Config               *ServerBaremetalCreateServerConfig `json:"config,omitempty"`
+	AdditionalProperties map[string]interface{}             `json:",remain"`
 }
 
 type _ServerBaremetalCreateServer ServerBaremetalCreateServer
@@ -48,23 +53,32 @@ func (o ServerBaremetalCreateServer) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Cloud) {
 		toSerialize["cloud"] = o.Cloud
 	}
-	if !IsNil(o.ComputeServerType) {
-		toSerialize["computeServerType"] = o.ComputeServerType
-	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
-	}
 	if !IsNil(o.Group) {
 		toSerialize["group"] = o.Group
 	}
-	if !IsNil(o.Labels) {
-		toSerialize["labels"] = o.Labels
+	if !IsNil(o.ComputeServerType) {
+		toSerialize["computeServerType"] = o.ComputeServerType
+	}
+	if !IsNil(o.Plan) {
+		toSerialize["plan"] = o.Plan
 	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
+	if !IsNil(o.Description) {
+		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.Labels) {
+		toSerialize["labels"] = o.Labels
+	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
+	}
+	if !IsNil(o.SshUsername) {
+		toSerialize["sshUsername"] = o.SshUsername
+	}
+	if !IsNil(o.SshPassword) {
+		toSerialize["sshPassword"] = o.SshPassword
 	}
 	if !IsNil(o.Config) {
 		toSerialize["config"] = o.Config

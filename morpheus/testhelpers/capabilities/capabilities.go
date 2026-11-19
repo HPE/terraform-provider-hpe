@@ -169,6 +169,12 @@ const (
 	// Bare Metal
 	Metal Capability = "metal"
 
+	// BareMetalStub marks tests that create bare-metal hosts against an Omega
+	// bare-metal stub cloud (omega.baremetal.stub-server). These need an Omega
+	// Cloud seeded on the appliance plus the TF_VAR_testacc_morpheus_bmaas_*
+	// fixtures (cloud/group/resource-pool IDs).
+	BareMetalStub Capability = "bare_metal_stub"
+
 	// PCE - For tests against a live PCE Cloud system.
 	PCE Capability = "pce"
 )

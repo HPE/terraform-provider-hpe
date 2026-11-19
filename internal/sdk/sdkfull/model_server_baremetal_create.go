@@ -20,10 +20,14 @@ import (
 // checks if the ServerBaremetalCreate type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &ServerBaremetalCreate{}
 
-// ServerBaremetalCreate struct for ServerBaremetalCreate
+// ServerBaremetalCreate Generic \"Add Host\" request body. Despite the operationId, this endpoint adds any host type returned by `GET /api/server-types?creatable=true` — a managed compute server such as a Kubernetes node, an ESXi/Fusion/Hyper-V metal host, a KVM hypervisor, or a bare-metal plugin node (HPE iLO, Omega stub). The fields read differ per `server.computeServerType`; the `config` object carries the type-specific option-type values.
 type ServerBaremetalCreate struct {
-	Server               *ServerBaremetalCreateServer `json:"server,omitempty"`
-	AdditionalProperties map[string]interface{}       `json:",remain"`
+	Server *ServerBaremetalCreateServer `json:"server,omitempty"`
+	// Storage volumes to create for the host.
+	Volumes []ServerBaremetalCreateVolumesInner `json:"volumes,omitempty"`
+	// Network interfaces to attach to the host.
+	NetworkInterfaces    []ServerBaremetalCreateNetworkInterfacesInner `json:"networkInterfaces,omitempty"`
+	AdditionalProperties map[string]interface{}                        `json:",remain"`
 }
 
 type _ServerBaremetalCreate ServerBaremetalCreate
@@ -40,6 +44,12 @@ func (o ServerBaremetalCreate) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Server) {
 		toSerialize["server"] = o.Server
+	}
+	if !IsNil(o.Volumes) {
+		toSerialize["volumes"] = o.Volumes
+	}
+	if !IsNil(o.NetworkInterfaces) {
+		toSerialize["networkInterfaces"] = o.NetworkInterfaces
 	}
 
 	for key, value := range o.AdditionalProperties {

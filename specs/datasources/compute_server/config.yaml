@@ -151,6 +151,12 @@ compute_server:
       description: Whether the compute server type is managed.
     description:
       description: The description of the compute server.
+    display_name:
+      description: The display name of the compute server, when one is set.
+    maintenance_mode:
+      description: Whether the compute server is in maintenance mode.
+    managed:
+      description: Whether the compute server is managed by Morpheus (agent-managed, with Morpheus owning its lifecycle).
     external_id:
       description: The external ID of the compute server.
     external_ip:

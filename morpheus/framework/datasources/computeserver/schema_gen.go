@@ -57,6 +57,11 @@ func ComputeServerDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The description of the compute server.",
 				MarkdownDescription: "The description of the compute server.",
 			},
+			"display_name": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The display name of the compute server, when one is set.",
+				MarkdownDescription: "The display name of the compute server, when one is set.",
+			},
 			"external_id": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The external ID of the compute server.",
@@ -109,6 +114,16 @@ func ComputeServerDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The labels associated with the compute server.",
 				MarkdownDescription: "The labels associated with the compute server.",
+			},
+			"maintenance_mode": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the compute server is in maintenance mode.",
+				MarkdownDescription: "Whether the compute server is in maintenance mode.",
+			},
+			"managed": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the compute server is managed by Morpheus (agent-managed, with Morpheus owning its lifecycle).",
+				MarkdownDescription: "Whether the compute server is managed by Morpheus (agent-managed, with Morpheus owning its lifecycle).",
 			},
 			"max_memory": schema.Int64Attribute{
 				Computed:            true,
@@ -193,6 +208,7 @@ type ComputeServerModel struct {
 	ComputeServerTypeManaged types.Bool   `tfsdk:"compute_server_type_managed"`
 	ComputeServerTypeName    types.String `tfsdk:"compute_server_type_name"`
 	Description              types.String `tfsdk:"description"`
+	DisplayName              types.String `tfsdk:"display_name"`
 	ExternalId               types.String `tfsdk:"external_id"`
 	ExternalIp               types.String `tfsdk:"external_ip"`
 	GroupId                  types.Int64  `tfsdk:"group_id"`
@@ -203,6 +219,8 @@ type ComputeServerModel struct {
 	InternalId               types.String `tfsdk:"internal_id"`
 	InternalIp               types.String `tfsdk:"internal_ip"`
 	Labels                   types.Set    `tfsdk:"labels"`
+	MaintenanceMode          types.Bool   `tfsdk:"maintenance_mode"`
+	Managed                  types.Bool   `tfsdk:"managed"`
 	MaxMemory                types.Int64  `tfsdk:"max_memory"`
 	MaxStorage               types.Int64  `tfsdk:"max_storage"`
 	Name                     types.String `tfsdk:"name"`

@@ -180,6 +180,36 @@ on the hosts as Linux bridges or OVS.
   so uplinks can be chosen by data rather than by guess.
 
 Requires Morpheus 9.1.0; gated on the `virtual_switch` test capability.
+### `hpe_morpheus_host` resource, `hpe_morpheus_host` / `hpe_morpheus_hosts` data sources, and `hpe_morpheus_host_power_state` (MORPH-13976)
+
+A Morpheus **host** — a managed compute server added through the "Add Host" flow — can now be
+managed as a Terraform resource, for both virtual and physical hosts (bare metal, hypervisors and
+Kubernetes nodes). In the Morpheus API every host is a compute server with no parent of its own;
+the read-only `hpe_morpheus_compute_server`/`hpe_morpheus_compute_servers` data sources are
+unchanged and still cover every compute server, including guests.
+
+- **`hpe_morpheus_host`**: give `name`, `cloud_id`, `group_id` and a `compute_server_type` code,
+  then configure the host with at most one of three blocks — `config_bmaas` (HPE iLO bare metal via
+  the hpe-baremetal-plugin), `config_omega_bmaas` (the Omega bare-metal stub), or a free-form
+  `config` map for everything else (Kubernetes nodes, ESXi/Fusion/Hyper-V metal, KVM hypervisors…).
+  Write-only credentials follow the write-only pattern: a changed `ssh_password_wo` is detected
+  (`write_only_revision`) and re-sent in place, and a change on the appliance is noticed through its
+  stored hash; the iLO/console passwords are sent only when the host is added, so a change to one
+  replaces the host. Create is asynchronous: the provider polls until the host leaves
+  `provisioning`. `delete_options` (`remove_resources`, `preserve_volumes`, `force`,
+  `remove_instances`) carry **no provider default** — an unset flag is omitted so Morpheus applies
+  `removeResources = type.managed`. Setting `remove_resources = true` on a bare-metal host runs the
+  plugin's disk-sanitizing wipe; this is called out in the docs. Import by numeric ID, optionally
+  with `#ssh_password_wo=<sha256>` so a password change is detected from the start.
+- **`hpe_morpheus_host` / `hpe_morpheus_hosts` data sources**: look a host up by `id` (or `name`
+  + `cloud_id`), or list hosts filtered by `cloud_id`, `group_id`, `compute_server_type`,
+  `bare_metal` and `phrase`.
+- **`hpe_morpheus_host_power_state`**: turn a host `on` or `off` by `host_id` without owning the
+  host resource, mirroring `hpe_morpheus_instance_power_state`.
+
+Verified live against the Omega bare-metal stub (`omega.baremetal.stub-server`): create/read/update/
+import/destroy, delete with `remove_resources`, power on/off, and the data sources. The iLO
+`config_bmaas` request shape is unit-tested.
 
 ## Improvements
 
@@ -405,10 +435,10 @@ that is the group's last server on 9.1 no longer fails: the server is left in pl
 so `terraform destroy` of a group and its members works (the group's own destroy removes the
 membership).
 
-Known issue (Morpheus core, MORPH-20098): on a VMware cloud, renaming a cloud affinity group and then
-destroying it leaves the DRS rule behind in vCenter under its original name, after which later
-`KEEP_TOGETHER` groups containing the same VMs are refused by vCenter. Until that is fixed, avoid
-renaming VMware cloud affinity groups that will later be destroyed.
+Known issue on Morpheus 9.1 (Morpheus core, MORPH-20098, fixed in Morpheus 9.2 by MORPH-16870): on a
+VMware cloud, renaming a cloud affinity group and then destroying it leaves the DRS rule behind in
+vCenter under its original name, after which later `KEEP_TOGETHER` groups containing the same VMs are
+refused by vCenter. On 9.1, avoid renaming VMware cloud affinity groups that will later be destroyed.
 
 # v2.2.0 Release Notes
 

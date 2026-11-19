@@ -1,0 +1,26 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+~> **Hosts vs compute servers** This data source is a host-focused view over the same
+`/api/servers` collection as `hpe_morpheus_compute_servers`, which stays available. It
+filters only on host-relevant keys. `cloud_id`, `group_id`, `bare_metal` and `phrase` are
+query parameters of the list; `compute_server_type` (type code) is applied client-side. Whether a
+host is bare metal comes from the server types list (`/api/server-types`), since the servers API
+does not render the flag.
+
+-> This data source reads hosts of **every** type, including ones the `hpe_morpheus_host` resource
+cannot create: HVM hypervisors (`mvm`) are created by `hpe_morpheus_cluster`, and virtual machines by
+`hpe_morpheus_instance`. See the resource's documentation for which types are creatable.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_hosts/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

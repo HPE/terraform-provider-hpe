@@ -310,6 +310,19 @@ resources:
     delete:
       path: /api/groups/{id}
       method: DELETE
+  host:
+    create:
+      path: /api/servers
+      method: POST
+    read:
+      path: /api/servers/{id}
+      method: GET
+    update:
+      path: /api/servers/{id}
+      method: PUT
+    delete:
+      path: /api/servers/{id}
+      method: DELETE
   guidance_setting:
     create:
       path: /api/guidance-settings
@@ -1509,6 +1522,14 @@ data_sources:
   group:
     read:
       path: /api/groups/{id}
+      method: GET
+  host:
+    read:
+      path: /api/servers/{id}
+      method: GET
+  hosts:
+    read:
+      path: /api/servers
       method: GET
   instance_snapshot:
     read:

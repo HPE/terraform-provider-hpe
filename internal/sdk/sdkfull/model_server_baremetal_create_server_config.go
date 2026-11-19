@@ -15,63 +15,130 @@ package sdkfull
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
-// checks if the ServerBaremetalCreateServerConfig type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &ServerBaremetalCreateServerConfig{}
+// very silly way of avoiding `"fmt" imported and not used` errors
+var _ fmt.Stringer
 
-// ServerBaremetalCreateServerConfig struct for ServerBaremetalCreateServerConfig
+// ServerBaremetalCreateServerConfig Type-specific configuration object. The documented variants are the HPE iLO bare-metal keys and the Omega stub keys; any other creatable type's option-type values are accepted via the generic variant.
 type ServerBaremetalCreateServerConfig struct {
-	IloIpAddress   *string `json:"iloIpAddress,omitempty"`
-	IloUsername    *string `json:"iloUsername,omitempty"`
-	IloPassword    *string `json:"iloPassword,omitempty"`
-	MacAddress     *string `json:"macAddress,omitempty"`
-	ResourcePoolId *int32  `json:"resourcePoolId,omitempty"`
-	// Set to 'true' if the server is pre-provisioned (brownfield)
-	PreProvisioned       *bool                  `json:"preProvisioned,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	BmaasHostConfigObject1      *BmaasHostConfigObject1
+	HostConfigGeneric1          *HostConfigGeneric1
+	OmegaBmaasHostConfigObject1 *OmegaBmaasHostConfigObject1
 }
 
-type _ServerBaremetalCreateServerConfig ServerBaremetalCreateServerConfig
-
-func (o ServerBaremetalCreateServerConfig) MarshalJSON() ([]byte, error) {
-	toSerialize, err := o.ToMap()
-	if err != nil {
-		return []byte{}, err
+func (dst *ServerBaremetalCreateServerConfig) UnmarshalMapstructure(data any) (any, error) {
+	if dst == nil {
+		dst = &ServerBaremetalCreateServerConfig{}
 	}
-	return json.Marshal(toSerialize)
+
+	mapstructDecode(data, &dst.BmaasHostConfigObject1)
+
+	if IsEmpty(dst.BmaasHostConfigObject1) {
+		dst.BmaasHostConfigObject1 = nil
+	}
+
+	mapstructDecode(data, &dst.HostConfigGeneric1)
+
+	if IsEmpty(dst.HostConfigGeneric1) {
+		dst.HostConfigGeneric1 = nil
+	}
+
+	mapstructDecode(data, &dst.OmegaBmaasHostConfigObject1)
+
+	if IsEmpty(dst.OmegaBmaasHostConfigObject1) {
+		dst.OmegaBmaasHostConfigObject1 = nil
+	}
+
+	return dst, nil
 }
 
-func (o ServerBaremetalCreateServerConfig) ToMap() (map[string]interface{}, error) {
-	toSerialize := map[string]interface{}{}
-	if !IsNil(o.IloIpAddress) {
-		toSerialize["iloIpAddress"] = o.IloIpAddress
-	}
-	if !IsNil(o.IloUsername) {
-		toSerialize["iloUsername"] = o.IloUsername
-	}
-	if !IsNil(o.IloPassword) {
-		toSerialize["iloPassword"] = o.IloPassword
-	}
-	if !IsNil(o.MacAddress) {
-		toSerialize["macAddress"] = o.MacAddress
-	}
-	if !IsNil(o.ResourcePoolId) {
-		toSerialize["resourcePoolId"] = o.ResourcePoolId
-	}
-	if !IsNil(o.PreProvisioned) {
-		toSerialize["preProvisioned"] = o.PreProvisioned
-	}
-
-	for key, value := range o.AdditionalProperties {
-		toSerialize[key] = value
+// Unmarshal JSON data into any of the pointers in the struct
+func (dst *ServerBaremetalCreateServerConfig) UnmarshalJSON(data []byte) error {
+	var err error
+	// try to unmarshal JSON data into BmaasHostConfigObject1
+	err = json.Unmarshal(data, &dst.BmaasHostConfigObject1)
+	if err == nil {
+		jsonBmaasHostConfigObject1, merrBmaasHostConfigObject1 := json.Marshal(dst.BmaasHostConfigObject1)
+		var zeroBmaasHostConfigObject1 BmaasHostConfigObject1
+		jsonZeroBmaasHostConfigObject1, _ := json.Marshal(&zeroBmaasHostConfigObject1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrBmaasHostConfigObject1 != nil || string(jsonBmaasHostConfigObject1) == "{}" || (len(jsonBmaasHostConfigObject1) > 0 && jsonBmaasHostConfigObject1[0] == '{' && string(jsonBmaasHostConfigObject1) == string(jsonZeroBmaasHostConfigObject1)) {
+			dst.BmaasHostConfigObject1 = nil
+		} else {
+			return nil // data stored in dst.BmaasHostConfigObject1, return on the first match
+		}
+	} else {
+		dst.BmaasHostConfigObject1 = nil
 	}
 
-	return toSerialize, nil
+	// try to unmarshal JSON data into HostConfigGeneric1
+	err = json.Unmarshal(data, &dst.HostConfigGeneric1)
+	if err == nil {
+		jsonHostConfigGeneric1, merrHostConfigGeneric1 := json.Marshal(dst.HostConfigGeneric1)
+		var zeroHostConfigGeneric1 HostConfigGeneric1
+		jsonZeroHostConfigGeneric1, _ := json.Marshal(&zeroHostConfigGeneric1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrHostConfigGeneric1 != nil || string(jsonHostConfigGeneric1) == "{}" || (len(jsonHostConfigGeneric1) > 0 && jsonHostConfigGeneric1[0] == '{' && string(jsonHostConfigGeneric1) == string(jsonZeroHostConfigGeneric1)) {
+			dst.HostConfigGeneric1 = nil
+		} else {
+			return nil // data stored in dst.HostConfigGeneric1, return on the first match
+		}
+	} else {
+		dst.HostConfigGeneric1 = nil
+	}
+
+	// try to unmarshal JSON data into OmegaBmaasHostConfigObject1
+	err = json.Unmarshal(data, &dst.OmegaBmaasHostConfigObject1)
+	if err == nil {
+		jsonOmegaBmaasHostConfigObject1, merrOmegaBmaasHostConfigObject1 := json.Marshal(dst.OmegaBmaasHostConfigObject1)
+		var zeroOmegaBmaasHostConfigObject1 OmegaBmaasHostConfigObject1
+		jsonZeroOmegaBmaasHostConfigObject1, _ := json.Marshal(&zeroOmegaBmaasHostConfigObject1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrOmegaBmaasHostConfigObject1 != nil || string(jsonOmegaBmaasHostConfigObject1) == "{}" || (len(jsonOmegaBmaasHostConfigObject1) > 0 && jsonOmegaBmaasHostConfigObject1[0] == '{' && string(jsonOmegaBmaasHostConfigObject1) == string(jsonZeroOmegaBmaasHostConfigObject1)) {
+			dst.OmegaBmaasHostConfigObject1 = nil
+		} else {
+			return nil // data stored in dst.OmegaBmaasHostConfigObject1, return on the first match
+		}
+	} else {
+		dst.OmegaBmaasHostConfigObject1 = nil
+	}
+
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
+	return NewResponseValidationError("data failed to match schemas in anyOf(ServerBaremetalCreateServerConfig)")
 }
 
-func (o *ServerBaremetalCreateServerConfig) UnmarshalJSON(data []byte) (err error) {
-	return decode(data, &o)
-}
+// Marshal data from the first non-nil pointers in the struct to JSON
+func (src ServerBaremetalCreateServerConfig) MarshalJSON() ([]byte, error) {
+	if src.BmaasHostConfigObject1 != nil {
+		return json.Marshal(&src.BmaasHostConfigObject1)
+	}
 
-// - model_simple.mustache
+	if src.HostConfigGeneric1 != nil {
+		return json.Marshal(&src.HostConfigGeneric1)
+	}
+
+	if src.OmegaBmaasHostConfigObject1 != nil {
+		return json.Marshal(&src.OmegaBmaasHostConfigObject1)
+	}
+
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
+}
