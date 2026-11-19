@@ -327,6 +327,21 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Whether to skip installing the Morpheus agent on the instance.  The default is 'true'",
 						Default:             booldefault.StaticBool(true),
 					},
+					"placement_strategy": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "How firmly the virtual machine is kept on `preferred_host_id`: `auto` (the cluster's placement loop may move it), `failover` (kept on the preferred host while that host is healthy, moved only on failure) or `pinned` (never moved automatically; a pin outranks affinity group rules, which then raise an alarm instead of moving the VM). Applied through the host placement operation after provisioning; changing it does not replace the instance.",
+						MarkdownDescription: "How firmly the virtual machine is kept on `preferred_host_id`: `auto` (the cluster's placement loop may move it), `failover` (kept on the preferred host while that host is healthy, moved only on failure) or `pinned` (never moved automatically; a pin outranks affinity group rules, which then raise an alarm instead of moving the VM). Applied through the host placement operation after provisioning; changing it does not replace the instance.",
+						Validators: []validator.String{
+							stringvalidator.OneOf("auto", "failover", "pinned"),
+						},
+					},
+					"preferred_host_id": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The id of the hypervisor host (its compute server id) the virtual machine should run on, used with `placement_strategy`. Must be a provisioned host in the instance's cluster. Changing it live-migrates the VM to the new host; set `timeouts.update` to bound the migration.",
+						MarkdownDescription: "The id of the hypervisor host (its compute server id) the virtual machine should run on, used with `placement_strategy`. Must be a provisioned host in the instance's cluster. Changing it live-migrates the VM to the new host; set `timeouts.update` to bound the migration.",
+					},
 					"resource_pool_id": schema.StringAttribute{
 						Required:            true,
 						Description:         "The resource pool to provision the instance into, as `pool-<id>`. For an HVM cluster this is the\npool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source\nas `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the\ncloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`\ncannot find it by name. A network belongs to the pool of the cluster it was discovered on; a\npool that does not contain the requested network fails with `Invalid network`.",
@@ -3790,6 +3805,42 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 			fmt.Sprintf(`no_agent expected to be basetypes.BoolValue, was: %T`, noAgentAttribute))
 	}
 
+	placementStrategyAttribute, ok := attributes["placement_strategy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`placement_strategy is missing from object`)
+
+		return nil, diags
+	}
+
+	placementStrategyVal, ok := placementStrategyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`placement_strategy expected to be basetypes.StringValue, was: %T`, placementStrategyAttribute))
+	}
+
+	preferredHostIdAttribute, ok := attributes["preferred_host_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`preferred_host_id is missing from object`)
+
+		return nil, diags
+	}
+
+	preferredHostIdVal, ok := preferredHostIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`preferred_host_id expected to be basetypes.Int64Value, was: %T`, preferredHostIdAttribute))
+	}
+
 	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
 
 	if !ok {
@@ -3837,6 +3888,8 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 		KvmHostId:            kvmHostIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
+		PlacementStrategy:    placementStrategyVal,
+		PreferredHostId:      preferredHostIdVal,
 		ResourcePoolId:       resourcePoolIdVal,
 		UserData:             userDataVal,
 		state:                attr.ValueStateKnown,
@@ -4014,6 +4067,42 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 			fmt.Sprintf(`no_agent expected to be basetypes.BoolValue, was: %T`, noAgentAttribute))
 	}
 
+	placementStrategyAttribute, ok := attributes["placement_strategy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`placement_strategy is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	placementStrategyVal, ok := placementStrategyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`placement_strategy expected to be basetypes.StringValue, was: %T`, placementStrategyAttribute))
+	}
+
+	preferredHostIdAttribute, ok := attributes["preferred_host_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`preferred_host_id is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	preferredHostIdVal, ok := preferredHostIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`preferred_host_id expected to be basetypes.Int64Value, was: %T`, preferredHostIdAttribute))
+	}
+
 	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
 
 	if !ok {
@@ -4061,6 +4150,8 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 		KvmHostId:            kvmHostIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
+		PlacementStrategy:    placementStrategyVal,
+		PreferredHostId:      preferredHostIdVal,
 		ResourcePoolId:       resourcePoolIdVal,
 		UserData:             userDataVal,
 		state:                attr.ValueStateKnown,
@@ -4139,13 +4230,15 @@ type ConfigHvmValue struct {
 	KvmHostId            basetypes.Int64Value  `tfsdk:"kvm_host_id"`
 	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
 	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
+	PlacementStrategy    basetypes.StringValue `tfsdk:"placement_strategy"`
+	PreferredHostId      basetypes.Int64Value  `tfsdk:"preferred_host_id"`
 	ResourcePoolId       basetypes.StringValue `tfsdk:"resource_pool_id"`
 	UserData             basetypes.StringValue `tfsdk:"user_data"`
 	state                attr.ValueState
 }
 
 func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 8)
+	attrTypes := make(map[string]tftypes.Type, 10)
 
 	var val tftypes.Value
 	var err error
@@ -4156,6 +4249,8 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 	attrTypes["kvm_host_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["placement_strategy"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["preferred_host_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["user_data"] = basetypes.StringType{}.TerraformType(ctx)
 
@@ -4163,7 +4258,7 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 8)
+		vals := make(map[string]tftypes.Value, 10)
 
 		val, err = v.AffinityGroupId.ToTerraformValue(ctx)
 		if err != nil {
@@ -4206,6 +4301,20 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		}
 
 		vals["no_agent"] = val
+
+		val, err = v.PlacementStrategy.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["placement_strategy"] = val
+
+		val, err = v.PreferredHostId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["preferred_host_id"] = val
 
 		val, err = v.ResourcePoolId.ToTerraformValue(ctx)
 		if err != nil {
@@ -4257,6 +4366,8 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 		"kvm_host_id":           basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
+		"placement_strategy":    basetypes.StringType{},
+		"preferred_host_id":     basetypes.Int64Type{},
 		"resource_pool_id":      basetypes.StringType{},
 		"user_data":             basetypes.StringType{},
 	}
@@ -4278,6 +4389,8 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 			"kvm_host_id":           v.KvmHostId,
 			"nested_virtualization": v.NestedVirtualization,
 			"no_agent":              v.NoAgent,
+			"placement_strategy":    v.PlacementStrategy,
+			"preferred_host_id":     v.PreferredHostId,
 			"resource_pool_id":      v.ResourcePoolId,
 			"user_data":             v.UserData,
 		})
@@ -4324,6 +4437,14 @@ func (v ConfigHvmValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.PlacementStrategy.Equal(other.PlacementStrategy) {
+		return false
+	}
+
+	if !v.PreferredHostId.Equal(other.PreferredHostId) {
+		return false
+	}
+
 	if !v.ResourcePoolId.Equal(other.ResourcePoolId) {
 		return false
 	}
@@ -4351,6 +4472,8 @@ func (v ConfigHvmValue) AttributeTypes(ctx context.Context) map[string]attr.Type
 		"kvm_host_id":           basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
+		"placement_strategy":    basetypes.StringType{},
+		"preferred_host_id":     basetypes.Int64Type{},
 		"resource_pool_id":      basetypes.StringType{},
 		"user_data":             basetypes.StringType{},
 	}

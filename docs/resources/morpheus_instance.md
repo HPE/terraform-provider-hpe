@@ -122,6 +122,26 @@ what you see.
 such a configuration. An affinity group silently overrides an explicit host pin, so the instance would
 land on a host chosen by the group rather than the one named by `kvm_host_id`.
 
+~> **HVM host placement** `config_hvm.placement_strategy` sets the steady-state placement policy and
+`config_hvm.preferred_host_id` names the host it refers to. The strategies, in precedence order, are:
+**`pinned`** (keep the VM on `preferred_host_id`, or the current host if none is given — this outranks
+a `MUST` affinity rule, so Morpheus raises an affinity-violation alarm rather than moving a pinned VM),
+a **`MUST` affinity group** rule, **`failover`** (prefer `preferred_host_id`, which is required, but
+allow the VM to move), and **`auto`** (no preference — what the appliance applies when nothing is set;
+the attributes have no schema default and read back whatever the appliance holds). Setting
+`preferred_host_id` without `placement_strategy`, with `auto`, or `failover` without `preferred_host_id`,
+is rejected. Changing `preferred_host_id` on an existing instance triggers a **live migration** to the new
+host; the provider waits for the VM to arrive on it, within `timeouts.update`, and fails the apply if it
+does not.
+Morpheus refuses to move a running VM whose volumes are on **local** storage ("Server must be powered
+off to move hosts because it is on local storage"), so a host change is only possible live for VMs on
+shared storage; the create fails with that message rather than silently keeping the old host. To avoid
+a migration straight after provisioning, set `kvm_host_id` (the initial host) to the same host as
+`preferred_host_id`. Setting `placement_strategy = "auto"` **releases** any pin or host preference;
+removing the attributes from the configuration does not clear them (they are computed, so an omitted
+attribute keeps the value read from the appliance and plans no change).
+
+
 -> `affinity_group_id` reflects what was requested when the instance was created, not its live
 membership. Morpheus returns the value but never updates it, so it does not follow membership changes
 made elsewhere. Actual membership is reported by the `servers` attribute of the
@@ -1505,6 +1525,8 @@ Create-only: changing it replaces the instance.
 - `nested_virtualization` (String) Enable nested virtualization on the instance. Can be a number of valid string values:
    "on", "off", "0", "1", "true", "false", "yes", "no", "".  The default is "off".
 - `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
+- `placement_strategy` (String) How firmly the virtual machine is kept on `preferred_host_id`: `auto` (the cluster's placement loop may move it), `failover` (kept on the preferred host while that host is healthy, moved only on failure) or `pinned` (never moved automatically; a pin outranks affinity group rules, which then raise an alarm instead of moving the VM). Applied through the host placement operation after provisioning; changing it does not replace the instance.
+- `preferred_host_id` (Number) The id of the hypervisor host (its compute server id) the virtual machine should run on, used with `placement_strategy`. Must be a provisioned host in the instance's cluster. Changing it live-migrates the VM to the new host; set `timeouts.update` to bound the migration.
 - `user_data` (String) Cloud-init user data for the virtual machine: cloud-config YAML (starting `#cloud-config`)
 or a plain script. Applied once, when the virtual machine is first provisioned, so changing
 it replaces the instance; use `lifecycle { ignore_changes }` to update the stored value for

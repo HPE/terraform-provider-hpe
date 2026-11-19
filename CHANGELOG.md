@@ -726,6 +726,16 @@ previously expose:
 - The `hpe_morpheus_setting_whitelabel` resource gains the settable `security_banner`,
   `external_legal_text` and `supports_themes`, and the read-only `account`.
 
+### `hpe_morpheus_instance`: HVM host placement (MORPH-15716)
+
+The `config_hvm` block of `hpe_morpheus_instance` gains `placement_strategy` (`auto`, `failover` or
+`pinned`) and `preferred_host_id`, which control the VM's steady-state host placement after
+provisioning. `pinned` keeps the VM on the preferred host (outranking a `MUST` affinity rule, which
+then raises an alarm instead of moving it), `failover` prefers the host but allows migration on
+failure, and `auto` expresses no preference. Changing `preferred_host_id` on an existing instance
+triggers a live migration, which the provider waits for within `timeouts.update`; setting
+`placement_strategy = "auto"` releases any host preference. Both attributes are read back on import.
+
 ### `hpe_morpheus_cloud`: backup providers are assigned at the cloud level (MORPH-18721)
 
 Morpheus 9.x assigns backup providers to a cloud rather than through a per-cloud-type backup mode.

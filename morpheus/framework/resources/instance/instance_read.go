@@ -233,6 +233,21 @@ func getInstanceAsState(
 		state.Config = plan.Config
 	}
 
+	// HVM host placement lives on the node compute servers, not in the
+	// instance config, so it is read separately via GET /api/servers/{id} for
+	// each node. Non-HVM instances have config_hvm null and are skipped. A
+	// failed read is a warning and keeps the prior values (state.ConfigHvm was
+	// seeded from the prior state above), so an auxiliary GET failure never
+	// fails the instance refresh.
+	if !state.ConfigHvm.IsNull() && !state.ConfigHvm.IsUnknown() {
+		placement, pdiags := refreshHostPlacement(ctx, client, instance)
+		diags.Append(pdiags...)
+		if placement.Read {
+			state.ConfigHvm.PlacementStrategy = placement.Strategy
+			state.ConfigHvm.PreferredHostId = placement.Preferred
+		}
+	}
+
 	// connection_info
 	cInfo, dc := getConnectionInfo(instance)
 	diags.Append(dc...)

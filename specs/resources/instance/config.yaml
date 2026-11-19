@@ -394,6 +394,27 @@ instance:
       int64:
         computed_optional_required: optional
         description: The id of the KVM host to use for provisioning.
+    placementStrategy:
+      string:
+        computed_optional_required: computed_optional
+        description: >-
+          How firmly the virtual machine is kept on `preferred_host_id`: `auto` (the cluster's
+          placement loop may move it), `failover` (kept on the preferred host while that host is
+          healthy, moved only on failure) or `pinned` (never moved automatically; a pin outranks
+          affinity group rules, which then raise an alarm instead of moving the VM). Applied through the
+          host placement operation after provisioning; changing it does not replace the instance.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+              schema_definition: stringvalidator.OneOf("auto", "failover", "pinned")
+    preferredHostId:
+      int64:
+        computed_optional_required: computed_optional
+        description: >-
+          The id of the hypervisor host (its compute server id) the virtual machine should run on, used
+          with `placement_strategy`. Must be a provisioned host in the instance's cluster. Changing it
+          live-migrates the VM to the new host; set `timeouts.update` to bound the migration.
     layoutSize:
       int64:
         computed_optional_required: computed_optional
@@ -671,6 +692,8 @@ instance:
     - template-nestedVirtualization: config_hvm.nested_virtualization
     - template-resourcePoolId: config_hvm.resource_pool_id
     - template-kvmHostId: config_hvm.kvm_host_id
+    - template-placementStrategy: config_hvm.placement_strategy
+    - template-preferredHostId: config_hvm.preferred_host_id
     - template-userData: config_hvm.user_data
     - template-affinityGroupId: config_hvm.affinity_group_id
     - template-virtualImageId: config_hvm.image_id
