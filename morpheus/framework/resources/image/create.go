@@ -88,16 +88,13 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		reqImage.VirtualImage.IsForceCustomization = plan.ForceCustomization.ValueBoolPointer()
 	}
 
-	// uncomment when adding support for uploading files
-	// file upload will need to be after image creation, we only want to
-	// verify here that the file exists before we submit the API request
-	// if !plan.File.IsNull() && !plan.File.IsUnknown() {
-	// 	if _, err := os.Stat(plan.File.ValueString()); err != nil {
-	// 		resp.Diagnostics.AddError("could not read the specified image file", err.Error())
+	if !plan.FilePath.IsNull() {
+		if _, err := inspectLocalFile(plan.FilePath.ValueString(), plan.FileSha256.ValueString()); err != nil {
+			resp.Diagnostics.AddError("Invalid local image file", err.Error())
 
-	// 		return
-	// 	}
-	// }
+			return
+		}
+	}
 
 	// image_type (required)
 	reqImage.VirtualImage.ImageType = plan.ImageType.ValueStringPointer()
@@ -274,30 +271,12 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		})
 	}
 
-	// rough template for what needs to be done to support file uploading
-	// if !plan.File.IsNull() && !plan.File.IsUnknown() {
-	// 	if diags := uploadImageFile(ctx, client, plan.Id.ValueInt64(), plan.File.ValueString()); diags.HasError() {
-	// 		resp.Diagnostics = append(resp.Diagnostics, diags...)
+	if err := applyLocalFile(ctx, client, &plan, ImageModel{}); err != nil {
+		resp.Diagnostics.AddError("Error uploading image file", err.Error())
+		taintResourceState(plan.Id.ValueInt64())
 
-	// 		return
-	// 	}
-	// file, err := os.Open(plan.File.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("could not read the specified image file", err.Error())
-
-	// 	return
-	// }
-
-	// _, httpResp, err := client.LibraryAPI.AddVirtualImageFile(
-	// 	ctx,
-	// 	plan.Id.ValueInt64(),
-	// ).Filename(plan.File.ValueString()).Body(file).Execute()
-	// if err != nil || httpResp.StatusCode != http.StatusOK {
-	// 	resp.Diagnostics.AddError("error uploading image file", errors.ErrMsg(err, httpResp))
-
-	// 	return
-	// }
-	// }
+		return
+	}
 
 	waitForReady := func() (string, error) {
 		resp, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, plan.Id.ValueInt64()).Execute()

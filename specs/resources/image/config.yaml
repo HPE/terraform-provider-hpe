@@ -1,10 +1,42 @@
 image:
   templates:
-  #   file:
-  #     string:
-  #       computed_optional_required: optional
-  #       description:
-  #         "Path to a local image file to upload"
+    file_path:
+      string:
+        computed_optional_required: optional
+        description: Local image file to stream to Morpheus. Conflicts with url. File changes update the existing image without replacing its ID. Removing this attribute stops managing the file without deleting it.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: stringvalidator.ConflictsWith(path.MatchRoot("url"))
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+              schema_definition: stringvalidator.LengthAtLeast(1)
+    file_sha256:
+      string:
+        computed_optional_required: computed_optional
+        description: SHA-256 of file_path, computed locally when omitted. An explicit checksum is verified before uploading. A changed checksum re-uploads in place; initial adoption checks filename and size because Morpheus does not report remote checksums.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: stringvalidator.AlsoRequires(path.MatchRoot("file_path"))
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: regexp
+              schema_definition: stringvalidator.RegexMatches(regexp.MustCompile(`^[0-9a-fA-F]{64}$`), "must be 64 hexadecimal characters")
+    file_name:
+      string:
+        computed_optional_required: computed
+        description: Basename of the managed local image file.
+    file_size:
+      int64:
+        computed_optional_required: computed
+        description: Managed file size in bytes from the image file listing, not the asynchronously computed image raw_size.
     ssh_password_wo:
       string:
         computed_optional_required: optional
@@ -60,7 +92,10 @@ image:
   moves:
     - virtual_image: ""
     - accounts: tenant_ids
-    # - template-file: file
+    - template-file_path: file_path
+    - template-file_sha256: file_sha256
+    - template-file_name: file_name
+    - template-file_size: file_size
     - config.azure_reference_virtual_image_configuration: config_azure
     - os_type: os_type_id
     - storage_provider.id: storage_provider_id
@@ -108,8 +143,8 @@ image:
     url:
       computed_optional_required: optional
       requires_replace: true
-      # conflicts_with:
-      #   - "file"
+      conflicts_with:
+        - file_path
     owner_id:
       description: ID of the user which created this image
     raw_size:

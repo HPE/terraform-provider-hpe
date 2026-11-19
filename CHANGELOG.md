@@ -69,6 +69,17 @@ finds the appliance needing setup again (reinstalled behind the same URL) remove
 the next apply sets it up again. Destroying the resource leaves the appliance as it is. Import takes
 the appliance URL.
 
+### `hpe_morpheus_image`: local image uploads (MORPH-20059)
+
+Images now accept `file_path` and optional `file_sha256` instead of `url`. Local files are streamed
+without buffering the whole image, verified through the file listing, and updated in place without
+replacing the image ID. Existing same-name, same-size files can be adopted after ordinary image
+import. Local content changes are detected by checksum, while remote drift detection uses filename
+and byte count because Morpheus does not expose remote checksums. Single-file management removes
+other files after verification; replacing a same-name file removes it before uploading, so a failed
+upload may temporarily leave the image without usable content. Removing `file_path` stops file
+management without deleting its content. Existing URL and metadata-only configurations still work.
+
 ### `hpe_morpheus_network_pool_ip` resource and data source (MORPH-15704)
 
 A single IP address can now be reserved from a network pool. Until now the provider could define

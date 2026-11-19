@@ -54,6 +54,23 @@ func getImageAsState(
 		return state, nil, false, diags
 	}
 
+	state.FilePath = plan.FilePath
+	state.FileSha256 = plan.FileSha256
+	state.FileName = plan.FileName
+	state.FileSize = plan.FileSize
+	if !plan.FilePath.IsNull() && !plan.FileName.IsNull() {
+		files, err := imageFiles(resp)
+		if err != nil {
+			diags.AddError("Reading image files", err.Error())
+
+			return state, nil, false, diags
+		}
+		entry, present := findFile(files, plan.FileName.ValueString())
+		if !present || entry.Size != plan.FileSize.ValueInt64() {
+			state.FileSize = types.Int64Value(entry.Size)
+		}
+	}
+
 	// auto_join_domain
 	state.AutoJoinDomain = convert.BoolToType(image.IsAutoJoinDomain)
 

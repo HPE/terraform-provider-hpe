@@ -46,6 +46,13 @@ func (r *Resource) Update(
 		return
 	}
 
+	plan.Id = state.Id
+	if err := applyLocalFile(ctx, client, &plan, state); err != nil {
+		resp.Diagnostics.AddError("Error updating image file", err.Error())
+
+		return
+	}
+
 	name := plan.Name.ValueString()
 
 	updateRequest := &sdk.UpdateVirtualImageRequest{}
