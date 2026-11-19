@@ -18,7 +18,7 @@ import (
 // checks if the CreateHostProfileRequestConfigBaseline type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &CreateHostProfileRequestConfigBaseline{}
 
-// CreateHostProfileRequestConfigBaseline struct for CreateHostProfileRequestConfigBaseline
+// CreateHostProfileRequestConfigBaseline Specify package versions to enforce on all hosts in the assigned cluster. Values are pre-filled by Capture from Host.
 type CreateHostProfileRequestConfigBaseline struct {
 	KernelVersion *string `json:"kernelVersion,omitempty"`
 	// Additional packages to install, one per line in package=version format.

@@ -97,6 +97,67 @@ that needed the API or the UI.
 
 Verified against the built-in Morpheus pool type and an Infoblox-backed pool.
 
+### Software-defined networking for HPE VM Essentials (MORPH-12796)
+
+The HPE Morpheus SDN network plugin brings a Juniper CN2 controller to an HVM cluster: virtual
+networks, logical and BGP routers, load balancers and floating IPs. The provider now manages each
+of them; SDN security groups follow later. The surfaces were built from the plugin's definitions
+and verified against a Morpheus 9.1.0 appliance running plugin 1.1.0 with a Juniper CN2 controller;
+the acceptance tests run once an SDN-capable appliance is configured (`TF_ACC_SDN_*`, capability
+`juniper_sdn`). The floating IP *attachment* resource follows separately, pending two appliance fixes.
+
+- **`hpe_morpheus_network_server`** (new). Registers a network controller integration — the
+  common settings of every type (`service_url`, `service_username`/`service_password_wo` or a
+  stored `credential_id`, the write-only `service_token_wo`, `cloud_id`, `tenant_ids`, …) with
+  either the free-form `config` map or a typed block. The first typed block is `config_juniper_sdn` (`controller_address`,
+  `show_introspect`, `enable_sub_tenants`) for the SDN controller, which takes no credentials.
+- **`hpe_morpheus_network_floating_ip`** (new). Allocates a floating IP from a pool on an SDN
+  network server and releases it on destroy. The pool and network server are kept in state since
+  the API does not return them; pools are discoverable through the `juniperFloatingIpPools` option
+  source.
+- **`hpe_morpheus_network`**: the `juniperSdn` virtual network type (cluster resource pool through
+  `zone_pool_id`; every change replaces the network, as the plugin edits nothing in place). The
+  resource and data source now expose `unique_id`, the controller's identifier for the network (a
+  UUID for SDN virtual networks); it is what the SDN router and load balancer reference a virtual
+  network by.
+- **`hpe_morpheus_network_router`** now sends `name` on update only when it has changed (every
+  router type; the SDN plugin rejects an unchanged name), and renaming an SDN router replaces it,
+  since the plugin refuses the change in place.
+- **`hpe_morpheus_network_router`**: `config_juniper_sdn` (`resource_pool_id`,
+  `virtual_network_uids`, `floating_ip_pool_ids`; changing the pool replaces the router, the
+  sets are edited in place) for the SDN logical router and
+  `config_juniper_bgp` (`vendor`, `asn`, `peer_address_1..4`, `address_families`, `port`,
+  `hold_time`, `admin_down` and the write-only `md5_key_wo`, whose changes are detected from a
+  digest and move `write_only_revision`) for the SDN BGP router.
+- **`hpe_morpheus_load_balancer`**: `config_juniper_sdn` (`resource_pool_id`,
+  `virtual_network_uid`, `virtual_ip`, `source_port`, `destination_port`, `protocol`) for the SDN
+  load balancer type, and **`hpe_morpheus_load_balancer_monitor`** gains the HTTP health-check
+  fields `config.http_method`, `http_uri`, `http_port` and `http_return_code` (set
+  `monitor_timeout` and `max_retry`; the SDN controller requires both). The load balancer's
+  `type_code` is now computed when omitted: a typed block implies it, and it is read from the
+  appliance (for `config_haproxy` it stays null, as before), so an imported NSX-T or SDN load balancer
+  whose configuration omits `type_code` no longer plans a replacement. Existing configurations that
+  set `type_code` are unaffected.
+
+The `hpe_morpheus_network_floating_ips` data source reads every page of the listing, so a pool with
+more floating IPs than one page holds is reported in full.
+
+Removing one of `hpe_morpheus_load_balancer_monitor`'s `config.http_*` values clears it explicitly on
+update, and removing the whole `config` block clears every HTTP health-check value it carried; each
+attribute's description says what the SDN health check does when it is cleared. The
+`config` block is sent where the appliance reads it (the request's top-level `config`, as well as
+under the monitor), so the HTTP health-check values are stored on the appliance, reach the SDN
+controller, and are read back on import (MORPH-21017).
+
+An end-to-end example is in `examples/e2e/morpheus-sdn-hvm`.
+
+## New data sources
+
+### `hpe_morpheus_network_floating_ip` and `hpe_morpheus_network_floating_ips` (MORPH-12796)
+
+Read one floating IP by `id` or `ip_address`, or list them filtered by `cloud_id`, `server_id`,
+`ip_status` and `phrase` with the standard `filter` block.
+
 ### `hpe_morpheus_virtual_switch` resource and virtual switch data sources (MORPH-17745)
 
 Morpheus 9.1.0 virtual switches on HVM layout-2.0 clusters can now be managed from Terraform. A

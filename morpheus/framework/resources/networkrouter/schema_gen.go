@@ -7,16 +7,19 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -62,12 +65,144 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 					dynamicvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("config_nsxt_gateway_tier0"),
 						path.MatchRoot("config_nsxt_gateway_tier1"),
+						path.MatchRoot("config_juniper_sdn"),
+						path.MatchRoot("config_juniper_bgp"),
 					}...),
 					dynamicvalidator.ExactlyOneOf(path.Expressions{
 						path.MatchRoot("config"),
 						path.MatchRoot("config_nsxt_gateway_tier0"),
 						path.MatchRoot("config_nsxt_gateway_tier1"),
+						path.MatchRoot("config_juniper_sdn"),
+						path.MatchRoot("config_juniper_bgp"),
 					}...),
+				},
+			},
+			"config_juniper_bgp": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"address_families": schema.SetAttribute{
+						ElementType:         types.StringType,
+						Required:            true,
+						Description:         "Address families to exchange with the peers, from the `juniperBgpAddressFamilies` option source (for example `inet`, `inet6`).",
+						MarkdownDescription: "Address families to exchange with the peers, from the `juniperBgpAddressFamilies` option source (for example `inet`, `inet6`).",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
+					},
+					"admin_down": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Administratively down (`on` or `off`). Defaults to `off`.",
+						MarkdownDescription: "Administratively down (`on` or `off`). Defaults to `off`.",
+						Default:             stringdefault.StaticString("off"),
+					},
+					"asn": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Autonomous system number. Defaults to 65000.",
+						MarkdownDescription: "Autonomous system number. Defaults to 65000.",
+						Default:             int64default.StaticInt64(65000),
+					},
+					"hold_time": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "BGP hold time in seconds. Defaults to 90.",
+						MarkdownDescription: "BGP hold time in seconds. Defaults to 90.",
+						Default:             int64default.StaticInt64(90),
+					},
+					"md5_key_wo": schema.StringAttribute{
+						Optional:            true,
+						Sensitive:           true,
+						WriteOnly:           true,
+						Description:         "MD5 authentication key for the peering (write-only). It is never stored in state; a change is detected from a digest kept in private state and re-sent on the next apply. Removing the attribute leaves the key as it is on the appliance; set it to `\"\"` to clear it.",
+						MarkdownDescription: "MD5 authentication key for the peering (write-only). It is never stored in state; a change is detected from a digest kept in private state and re-sent on the next apply. Removing the attribute leaves the key as it is on the appliance; set it to `\"\"` to clear it.",
+						PlanModifiers: []planmodifier.String{
+							modifiers.NullableStringUpdateModifier{},
+						},
+					},
+					"peer_address_1": schema.StringAttribute{
+						Required:            true,
+						Description:         "First BGP peer address.",
+						MarkdownDescription: "First BGP peer address.",
+					},
+					"peer_address_2": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Second BGP peer address.",
+						MarkdownDescription: "Second BGP peer address.",
+					},
+					"peer_address_3": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Third BGP peer address.",
+						MarkdownDescription: "Third BGP peer address.",
+					},
+					"peer_address_4": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Fourth BGP peer address.",
+						MarkdownDescription: "Fourth BGP peer address.",
+					},
+					"port": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "BGP port. Defaults to 179.",
+						MarkdownDescription: "BGP port. Defaults to 179.",
+						Default:             int64default.StaticInt64(179),
+					},
+					"vendor": schema.StringAttribute{
+						Required:            true,
+						Description:         "Vendor of the peer router.",
+						MarkdownDescription: "Vendor of the peer router.",
+					},
+				},
+				CustomType: ConfigJuniperBgpType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigJuniperBgpValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "Configuration of an HPE Morpheus SDN BGP router (`juniperBGPSdnRouter`), a BGP peering between the SDN controller and up to four external peers. Set exactly one of `config`, `config_nsxt_gateway_tier0`, `config_nsxt_gateway_tier1`, `config_juniper_sdn` or `config_juniper_bgp`; adding or removing the block changes the router's type and replaces the router.",
+				MarkdownDescription: "Configuration of an HPE Morpheus SDN BGP router (`juniperBGPSdnRouter`), a BGP peering between the SDN controller and up to four external peers. Set exactly one of `config`, `config_nsxt_gateway_tier0`, `config_nsxt_gateway_tier1`, `config_juniper_sdn` or `config_juniper_bgp`; adding or removing the block changes the router's type and replaces the router.",
+				PlanModifiers: []planmodifier.Object{
+					modifiers.ObjectRequiresReplaceOnPresenceChange(),
+				},
+			},
+			"config_juniper_sdn": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"floating_ip_pool_ids": schema.SetAttribute{
+						ElementType:         types.Int64Type,
+						Optional:            true,
+						Description:         "IDs of the floating IP pools the router serves.",
+						MarkdownDescription: "IDs of the floating IP pools the router serves.",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
+					},
+					"resource_pool_id": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "ID of the HVM cluster resource pool the router is scoped to. The router lives on that cluster, so changing or removing it replaces the router.",
+						MarkdownDescription: "ID of the HVM cluster resource pool the router is scoped to. The router lives on that cluster, so changing or removing it replaces the router.",
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.RequiresReplace(),
+						},
+					},
+					"virtual_network_uids": schema.SetAttribute{
+						ElementType:         types.StringType,
+						Optional:            true,
+						Description:         "The SDN virtual networks the router joins, each given by the network's `unique_id` (`hpe_morpheus_network.<name>.unique_id`).",
+						MarkdownDescription: "The SDN virtual networks the router joins, each given by the network's `unique_id` (`hpe_morpheus_network.<name>.unique_id`).",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
+					},
+				},
+				CustomType: ConfigJuniperSdnType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigJuniperSdnValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "Configuration of an HPE Morpheus SDN logical router (`juniperSdnRouter`), which joins SDN virtual networks on an HVM cluster. Set exactly one of `config`, `config_nsxt_gateway_tier0`, `config_nsxt_gateway_tier1`, `config_juniper_sdn` or `config_juniper_bgp`; adding or removing the block changes the router's type and replaces the router.",
+				MarkdownDescription: "Configuration of an HPE Morpheus SDN logical router (`juniperSdnRouter`), which joins SDN virtual networks on an HVM cluster. Set exactly one of `config`, `config_nsxt_gateway_tier0`, `config_nsxt_gateway_tier1`, `config_juniper_sdn` or `config_juniper_bgp`; adding or removing the block changes the router's type and replaces the router.",
+				PlanModifiers: []planmodifier.Object{
+					modifiers.ObjectRequiresReplaceOnPresenceChange(),
 				},
 			},
 			"config_nsxt_gateway_tier0": schema.SingleNestedAttribute{
@@ -431,6 +566,14 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.OneOf("public", "private"),
 				},
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which the write-only value (`config_juniper_bgp.md5_key_wo`)\nwas last sent to Morpheus. Changes whenever that value changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which the write-only value (`config_juniper_bgp.md5_key_wo`)\nwas last sent to Morpheus. Changes whenever that value changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -439,6 +582,8 @@ type NetworkRouterModel struct {
 	CloudId                types.Int64                 `tfsdk:"cloud_id"`
 	Code                   types.String                `tfsdk:"code"`
 	Config                 types.Dynamic               `tfsdk:"config"`
+	ConfigJuniperBgp       ConfigJuniperBgpValue       `tfsdk:"config_juniper_bgp"`
+	ConfigJuniperSdn       ConfigJuniperSdnValue       `tfsdk:"config_juniper_sdn"`
 	ConfigNsxtGatewayTier0 ConfigNsxtGatewayTier0Value `tfsdk:"config_nsxt_gateway_tier0"`
 	ConfigNsxtGatewayTier1 ConfigNsxtGatewayTier1Value `tfsdk:"config_nsxt_gateway_tier1"`
 	EnableBgp              types.Bool                  `tfsdk:"enable_bgp"`
@@ -452,6 +597,1409 @@ type NetworkRouterModel struct {
 	TenantIds              types.Set                   `tfsdk:"tenant_ids"`
 	TypeId                 types.Int64                 `tfsdk:"type_id"`
 	Visibility             types.String                `tfsdk:"visibility"`
+	WriteOnlyRevision      types.Int64                 `tfsdk:"write_only_revision"`
+}
+
+var _ basetypes.ObjectTypable = ConfigJuniperBgpType{}
+
+type ConfigJuniperBgpType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigJuniperBgpType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigJuniperBgpType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigJuniperBgpType) String() string {
+	return "ConfigJuniperBgpType"
+}
+
+func (t ConfigJuniperBgpType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigJuniperBgpValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigJuniperBgpValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	addressFamiliesAttribute, ok := attributes["address_families"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`address_families is missing from object`)
+
+		return nil, diags
+	}
+
+	addressFamiliesVal, ok := addressFamiliesAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`address_families expected to be basetypes.SetValue, was: %T`, addressFamiliesAttribute))
+	}
+
+	adminDownAttribute, ok := attributes["admin_down"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`admin_down is missing from object`)
+
+		return nil, diags
+	}
+
+	adminDownVal, ok := adminDownAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`admin_down expected to be basetypes.StringValue, was: %T`, adminDownAttribute))
+	}
+
+	asnAttribute, ok := attributes["asn"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`asn is missing from object`)
+
+		return nil, diags
+	}
+
+	asnVal, ok := asnAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`asn expected to be basetypes.Int64Value, was: %T`, asnAttribute))
+	}
+
+	holdTimeAttribute, ok := attributes["hold_time"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`hold_time is missing from object`)
+
+		return nil, diags
+	}
+
+	holdTimeVal, ok := holdTimeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`hold_time expected to be basetypes.Int64Value, was: %T`, holdTimeAttribute))
+	}
+
+	md5KeyWoAttribute, ok := attributes["md5_key_wo"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`md5_key_wo is missing from object`)
+
+		return nil, diags
+	}
+
+	md5KeyWoVal, ok := md5KeyWoAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`md5_key_wo expected to be basetypes.StringValue, was: %T`, md5KeyWoAttribute))
+	}
+
+	peerAddress1Attribute, ok := attributes["peer_address_1"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`peer_address_1 is missing from object`)
+
+		return nil, diags
+	}
+
+	peerAddress1Val, ok := peerAddress1Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`peer_address_1 expected to be basetypes.StringValue, was: %T`, peerAddress1Attribute))
+	}
+
+	peerAddress2Attribute, ok := attributes["peer_address_2"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`peer_address_2 is missing from object`)
+
+		return nil, diags
+	}
+
+	peerAddress2Val, ok := peerAddress2Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`peer_address_2 expected to be basetypes.StringValue, was: %T`, peerAddress2Attribute))
+	}
+
+	peerAddress3Attribute, ok := attributes["peer_address_3"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`peer_address_3 is missing from object`)
+
+		return nil, diags
+	}
+
+	peerAddress3Val, ok := peerAddress3Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`peer_address_3 expected to be basetypes.StringValue, was: %T`, peerAddress3Attribute))
+	}
+
+	peerAddress4Attribute, ok := attributes["peer_address_4"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`peer_address_4 is missing from object`)
+
+		return nil, diags
+	}
+
+	peerAddress4Val, ok := peerAddress4Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`peer_address_4 expected to be basetypes.StringValue, was: %T`, peerAddress4Attribute))
+	}
+
+	portAttribute, ok := attributes["port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`port is missing from object`)
+
+		return nil, diags
+	}
+
+	portVal, ok := portAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`port expected to be basetypes.Int64Value, was: %T`, portAttribute))
+	}
+
+	vendorAttribute, ok := attributes["vendor"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vendor is missing from object`)
+
+		return nil, diags
+	}
+
+	vendorVal, ok := vendorAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vendor expected to be basetypes.StringValue, was: %T`, vendorAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigJuniperBgpValue{
+		AddressFamilies: addressFamiliesVal,
+		AdminDown:       adminDownVal,
+		Asn:             asnVal,
+		HoldTime:        holdTimeVal,
+		Md5KeyWo:        md5KeyWoVal,
+		PeerAddress1:    peerAddress1Val,
+		PeerAddress2:    peerAddress2Val,
+		PeerAddress3:    peerAddress3Val,
+		PeerAddress4:    peerAddress4Val,
+		Port:            portVal,
+		Vendor:          vendorVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigJuniperBgpValueNull() ConfigJuniperBgpValue {
+	return ConfigJuniperBgpValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigJuniperBgpValueUnknown() ConfigJuniperBgpValue {
+	return ConfigJuniperBgpValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigJuniperBgpValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigJuniperBgpValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigJuniperBgpValue Attribute Value",
+				"While creating a ConfigJuniperBgpValue value, a missing attribute value was detected. "+
+					"A ConfigJuniperBgpValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigJuniperBgpValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigJuniperBgpValue Attribute Type",
+				"While creating a ConfigJuniperBgpValue value, an invalid attribute value was detected. "+
+					"A ConfigJuniperBgpValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigJuniperBgpValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigJuniperBgpValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigJuniperBgpValue Attribute Value",
+				"While creating a ConfigJuniperBgpValue value, an extra attribute value was detected. "+
+					"A ConfigJuniperBgpValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigJuniperBgpValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	addressFamiliesAttribute, ok := attributes["address_families"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`address_families is missing from object`)
+
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	addressFamiliesVal, ok := addressFamiliesAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`address_families expected to be basetypes.SetValue, was: %T`, addressFamiliesAttribute))
+	}
+
+	adminDownAttribute, ok := attributes["admin_down"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`admin_down is missing from object`)
+
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	adminDownVal, ok := adminDownAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`admin_down expected to be basetypes.StringValue, was: %T`, adminDownAttribute))
+	}
+
+	asnAttribute, ok := attributes["asn"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`asn is missing from object`)
+
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	asnVal, ok := asnAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`asn expected to be basetypes.Int64Value, was: %T`, asnAttribute))
+	}
+
+	holdTimeAttribute, ok := attributes["hold_time"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`hold_time is missing from object`)
+
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	holdTimeVal, ok := holdTimeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`hold_time expected to be basetypes.Int64Value, was: %T`, holdTimeAttribute))
+	}
+
+	md5KeyWoAttribute, ok := attributes["md5_key_wo"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`md5_key_wo is missing from object`)
+
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	md5KeyWoVal, ok := md5KeyWoAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`md5_key_wo expected to be basetypes.StringValue, was: %T`, md5KeyWoAttribute))
+	}
+
+	peerAddress1Attribute, ok := attributes["peer_address_1"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`peer_address_1 is missing from object`)
+
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	peerAddress1Val, ok := peerAddress1Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`peer_address_1 expected to be basetypes.StringValue, was: %T`, peerAddress1Attribute))
+	}
+
+	peerAddress2Attribute, ok := attributes["peer_address_2"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`peer_address_2 is missing from object`)
+
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	peerAddress2Val, ok := peerAddress2Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`peer_address_2 expected to be basetypes.StringValue, was: %T`, peerAddress2Attribute))
+	}
+
+	peerAddress3Attribute, ok := attributes["peer_address_3"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`peer_address_3 is missing from object`)
+
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	peerAddress3Val, ok := peerAddress3Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`peer_address_3 expected to be basetypes.StringValue, was: %T`, peerAddress3Attribute))
+	}
+
+	peerAddress4Attribute, ok := attributes["peer_address_4"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`peer_address_4 is missing from object`)
+
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	peerAddress4Val, ok := peerAddress4Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`peer_address_4 expected to be basetypes.StringValue, was: %T`, peerAddress4Attribute))
+	}
+
+	portAttribute, ok := attributes["port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`port is missing from object`)
+
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	portVal, ok := portAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`port expected to be basetypes.Int64Value, was: %T`, portAttribute))
+	}
+
+	vendorAttribute, ok := attributes["vendor"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vendor is missing from object`)
+
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	vendorVal, ok := vendorAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vendor expected to be basetypes.StringValue, was: %T`, vendorAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigJuniperBgpValueUnknown(), diags
+	}
+
+	return ConfigJuniperBgpValue{
+		AddressFamilies: addressFamiliesVal,
+		AdminDown:       adminDownVal,
+		Asn:             asnVal,
+		HoldTime:        holdTimeVal,
+		Md5KeyWo:        md5KeyWoVal,
+		PeerAddress1:    peerAddress1Val,
+		PeerAddress2:    peerAddress2Val,
+		PeerAddress3:    peerAddress3Val,
+		PeerAddress4:    peerAddress4Val,
+		Port:            portVal,
+		Vendor:          vendorVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigJuniperBgpValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigJuniperBgpValue {
+	object, diags := NewConfigJuniperBgpValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigJuniperBgpValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigJuniperBgpType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigJuniperBgpValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigJuniperBgpValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigJuniperBgpValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigJuniperBgpValueMust(ConfigJuniperBgpValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigJuniperBgpType) ValueType(ctx context.Context) attr.Value {
+	return ConfigJuniperBgpValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigJuniperBgpValue{}
+
+type ConfigJuniperBgpValue struct {
+	AddressFamilies basetypes.SetValue    `tfsdk:"address_families"`
+	AdminDown       basetypes.StringValue `tfsdk:"admin_down"`
+	Asn             basetypes.Int64Value  `tfsdk:"asn"`
+	HoldTime        basetypes.Int64Value  `tfsdk:"hold_time"`
+	Md5KeyWo        basetypes.StringValue `tfsdk:"md5_key_wo"`
+	PeerAddress1    basetypes.StringValue `tfsdk:"peer_address_1"`
+	PeerAddress2    basetypes.StringValue `tfsdk:"peer_address_2"`
+	PeerAddress3    basetypes.StringValue `tfsdk:"peer_address_3"`
+	PeerAddress4    basetypes.StringValue `tfsdk:"peer_address_4"`
+	Port            basetypes.Int64Value  `tfsdk:"port"`
+	Vendor          basetypes.StringValue `tfsdk:"vendor"`
+	state           attr.ValueState
+}
+
+func (v ConfigJuniperBgpValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 11)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["address_families"] = basetypes.SetType{
+		ElemType: types.StringType,
+	}.TerraformType(ctx)
+	attrTypes["admin_down"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["asn"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["hold_time"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["md5_key_wo"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["peer_address_1"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["peer_address_2"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["peer_address_3"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["peer_address_4"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["port"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["vendor"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 11)
+
+		val, err = v.AddressFamilies.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["address_families"] = val
+
+		val, err = v.AdminDown.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["admin_down"] = val
+
+		val, err = v.Asn.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["asn"] = val
+
+		val, err = v.HoldTime.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["hold_time"] = val
+
+		val, err = v.Md5KeyWo.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["md5_key_wo"] = val
+
+		val, err = v.PeerAddress1.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["peer_address_1"] = val
+
+		val, err = v.PeerAddress2.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["peer_address_2"] = val
+
+		val, err = v.PeerAddress3.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["peer_address_3"] = val
+
+		val, err = v.PeerAddress4.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["peer_address_4"] = val
+
+		val, err = v.Port.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["port"] = val
+
+		val, err = v.Vendor.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["vendor"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigJuniperBgpValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigJuniperBgpValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigJuniperBgpValue) String() string {
+	return "ConfigJuniperBgpValue"
+}
+
+func (v ConfigJuniperBgpValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var addressFamiliesVal basetypes.SetValue
+	switch {
+	case v.AddressFamilies.IsUnknown():
+		addressFamiliesVal = types.SetUnknown(types.StringType)
+	case v.AddressFamilies.IsNull():
+		addressFamiliesVal = types.SetNull(types.StringType)
+	default:
+		var d diag.Diagnostics
+		addressFamiliesVal, d = types.SetValue(types.StringType, v.AddressFamilies.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"address_families": basetypes.SetType{
+				ElemType: types.StringType,
+			},
+			"admin_down":     basetypes.StringType{},
+			"asn":            basetypes.Int64Type{},
+			"hold_time":      basetypes.Int64Type{},
+			"md5_key_wo":     basetypes.StringType{},
+			"peer_address_1": basetypes.StringType{},
+			"peer_address_2": basetypes.StringType{},
+			"peer_address_3": basetypes.StringType{},
+			"peer_address_4": basetypes.StringType{},
+			"port":           basetypes.Int64Type{},
+			"vendor":         basetypes.StringType{},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"address_families": basetypes.SetType{
+			ElemType: types.StringType,
+		},
+		"admin_down":     basetypes.StringType{},
+		"asn":            basetypes.Int64Type{},
+		"hold_time":      basetypes.Int64Type{},
+		"md5_key_wo":     basetypes.StringType{},
+		"peer_address_1": basetypes.StringType{},
+		"peer_address_2": basetypes.StringType{},
+		"peer_address_3": basetypes.StringType{},
+		"peer_address_4": basetypes.StringType{},
+		"port":           basetypes.Int64Type{},
+		"vendor":         basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"address_families": addressFamiliesVal,
+			"admin_down":       v.AdminDown,
+			"asn":              v.Asn,
+			"hold_time":        v.HoldTime,
+			"md5_key_wo":       v.Md5KeyWo,
+			"peer_address_1":   v.PeerAddress1,
+			"peer_address_2":   v.PeerAddress2,
+			"peer_address_3":   v.PeerAddress3,
+			"peer_address_4":   v.PeerAddress4,
+			"port":             v.Port,
+			"vendor":           v.Vendor,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigJuniperBgpValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigJuniperBgpValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AddressFamilies.Equal(other.AddressFamilies) {
+		return false
+	}
+
+	if !v.AdminDown.Equal(other.AdminDown) {
+		return false
+	}
+
+	if !v.Asn.Equal(other.Asn) {
+		return false
+	}
+
+	if !v.HoldTime.Equal(other.HoldTime) {
+		return false
+	}
+
+	if !v.Md5KeyWo.Equal(other.Md5KeyWo) {
+		return false
+	}
+
+	if !v.PeerAddress1.Equal(other.PeerAddress1) {
+		return false
+	}
+
+	if !v.PeerAddress2.Equal(other.PeerAddress2) {
+		return false
+	}
+
+	if !v.PeerAddress3.Equal(other.PeerAddress3) {
+		return false
+	}
+
+	if !v.PeerAddress4.Equal(other.PeerAddress4) {
+		return false
+	}
+
+	if !v.Port.Equal(other.Port) {
+		return false
+	}
+
+	if !v.Vendor.Equal(other.Vendor) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigJuniperBgpValue) Type(ctx context.Context) attr.Type {
+	return ConfigJuniperBgpType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigJuniperBgpValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"address_families": basetypes.SetType{
+			ElemType: types.StringType,
+		},
+		"admin_down":     basetypes.StringType{},
+		"asn":            basetypes.Int64Type{},
+		"hold_time":      basetypes.Int64Type{},
+		"md5_key_wo":     basetypes.StringType{},
+		"peer_address_1": basetypes.StringType{},
+		"peer_address_2": basetypes.StringType{},
+		"peer_address_3": basetypes.StringType{},
+		"peer_address_4": basetypes.StringType{},
+		"port":           basetypes.Int64Type{},
+		"vendor":         basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigJuniperSdnType{}
+
+type ConfigJuniperSdnType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigJuniperSdnType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigJuniperSdnType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigJuniperSdnType) String() string {
+	return "ConfigJuniperSdnType"
+}
+
+func (t ConfigJuniperSdnType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigJuniperSdnValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigJuniperSdnValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	floatingIpPoolIdsAttribute, ok := attributes["floating_ip_pool_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`floating_ip_pool_ids is missing from object`)
+
+		return nil, diags
+	}
+
+	floatingIpPoolIdsVal, ok := floatingIpPoolIdsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`floating_ip_pool_ids expected to be basetypes.SetValue, was: %T`, floatingIpPoolIdsAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return nil, diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.Int64Value, was: %T`, resourcePoolIdAttribute))
+	}
+
+	virtualNetworkUidsAttribute, ok := attributes["virtual_network_uids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virtual_network_uids is missing from object`)
+
+		return nil, diags
+	}
+
+	virtualNetworkUidsVal, ok := virtualNetworkUidsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virtual_network_uids expected to be basetypes.SetValue, was: %T`, virtualNetworkUidsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigJuniperSdnValue{
+		FloatingIpPoolIds:  floatingIpPoolIdsVal,
+		ResourcePoolId:     resourcePoolIdVal,
+		VirtualNetworkUids: virtualNetworkUidsVal,
+		state:              attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigJuniperSdnValueNull() ConfigJuniperSdnValue {
+	return ConfigJuniperSdnValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigJuniperSdnValueUnknown() ConfigJuniperSdnValue {
+	return ConfigJuniperSdnValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigJuniperSdnValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigJuniperSdnValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigJuniperSdnValue Attribute Value",
+				"While creating a ConfigJuniperSdnValue value, a missing attribute value was detected. "+
+					"A ConfigJuniperSdnValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigJuniperSdnValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigJuniperSdnValue Attribute Type",
+				"While creating a ConfigJuniperSdnValue value, an invalid attribute value was detected. "+
+					"A ConfigJuniperSdnValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigJuniperSdnValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigJuniperSdnValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigJuniperSdnValue Attribute Value",
+				"While creating a ConfigJuniperSdnValue value, an extra attribute value was detected. "+
+					"A ConfigJuniperSdnValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigJuniperSdnValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	floatingIpPoolIdsAttribute, ok := attributes["floating_ip_pool_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`floating_ip_pool_ids is missing from object`)
+
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	floatingIpPoolIdsVal, ok := floatingIpPoolIdsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`floating_ip_pool_ids expected to be basetypes.SetValue, was: %T`, floatingIpPoolIdsAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.Int64Value, was: %T`, resourcePoolIdAttribute))
+	}
+
+	virtualNetworkUidsAttribute, ok := attributes["virtual_network_uids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virtual_network_uids is missing from object`)
+
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	virtualNetworkUidsVal, ok := virtualNetworkUidsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virtual_network_uids expected to be basetypes.SetValue, was: %T`, virtualNetworkUidsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	return ConfigJuniperSdnValue{
+		FloatingIpPoolIds:  floatingIpPoolIdsVal,
+		ResourcePoolId:     resourcePoolIdVal,
+		VirtualNetworkUids: virtualNetworkUidsVal,
+		state:              attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigJuniperSdnValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigJuniperSdnValue {
+	object, diags := NewConfigJuniperSdnValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigJuniperSdnValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigJuniperSdnType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigJuniperSdnValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigJuniperSdnValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigJuniperSdnValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigJuniperSdnValueMust(ConfigJuniperSdnValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigJuniperSdnType) ValueType(ctx context.Context) attr.Value {
+	return ConfigJuniperSdnValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigJuniperSdnValue{}
+
+type ConfigJuniperSdnValue struct {
+	FloatingIpPoolIds  basetypes.SetValue   `tfsdk:"floating_ip_pool_ids"`
+	ResourcePoolId     basetypes.Int64Value `tfsdk:"resource_pool_id"`
+	VirtualNetworkUids basetypes.SetValue   `tfsdk:"virtual_network_uids"`
+	state              attr.ValueState
+}
+
+func (v ConfigJuniperSdnValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["floating_ip_pool_ids"] = basetypes.SetType{
+		ElemType: types.Int64Type,
+	}.TerraformType(ctx)
+	attrTypes["resource_pool_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["virtual_network_uids"] = basetypes.SetType{
+		ElemType: types.StringType,
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.FloatingIpPoolIds.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["floating_ip_pool_ids"] = val
+
+		val, err = v.ResourcePoolId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["resource_pool_id"] = val
+
+		val, err = v.VirtualNetworkUids.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["virtual_network_uids"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigJuniperSdnValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigJuniperSdnValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigJuniperSdnValue) String() string {
+	return "ConfigJuniperSdnValue"
+}
+
+func (v ConfigJuniperSdnValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var floatingIpPoolIdsVal basetypes.SetValue
+	switch {
+	case v.FloatingIpPoolIds.IsUnknown():
+		floatingIpPoolIdsVal = types.SetUnknown(types.Int64Type)
+	case v.FloatingIpPoolIds.IsNull():
+		floatingIpPoolIdsVal = types.SetNull(types.Int64Type)
+	default:
+		var d diag.Diagnostics
+		floatingIpPoolIdsVal, d = types.SetValue(types.Int64Type, v.FloatingIpPoolIds.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"floating_ip_pool_ids": basetypes.SetType{
+				ElemType: types.Int64Type,
+			},
+			"resource_pool_id": basetypes.Int64Type{},
+			"virtual_network_uids": basetypes.SetType{
+				ElemType: types.StringType,
+			},
+		}), diags
+	}
+
+	var virtualNetworkUidsVal basetypes.SetValue
+	switch {
+	case v.VirtualNetworkUids.IsUnknown():
+		virtualNetworkUidsVal = types.SetUnknown(types.StringType)
+	case v.VirtualNetworkUids.IsNull():
+		virtualNetworkUidsVal = types.SetNull(types.StringType)
+	default:
+		var d diag.Diagnostics
+		virtualNetworkUidsVal, d = types.SetValue(types.StringType, v.VirtualNetworkUids.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"floating_ip_pool_ids": basetypes.SetType{
+				ElemType: types.Int64Type,
+			},
+			"resource_pool_id": basetypes.Int64Type{},
+			"virtual_network_uids": basetypes.SetType{
+				ElemType: types.StringType,
+			},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"floating_ip_pool_ids": basetypes.SetType{
+			ElemType: types.Int64Type,
+		},
+		"resource_pool_id": basetypes.Int64Type{},
+		"virtual_network_uids": basetypes.SetType{
+			ElemType: types.StringType,
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"floating_ip_pool_ids": floatingIpPoolIdsVal,
+			"resource_pool_id":     v.ResourcePoolId,
+			"virtual_network_uids": virtualNetworkUidsVal,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigJuniperSdnValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigJuniperSdnValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.FloatingIpPoolIds.Equal(other.FloatingIpPoolIds) {
+		return false
+	}
+
+	if !v.ResourcePoolId.Equal(other.ResourcePoolId) {
+		return false
+	}
+
+	if !v.VirtualNetworkUids.Equal(other.VirtualNetworkUids) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigJuniperSdnValue) Type(ctx context.Context) attr.Type {
+	return ConfigJuniperSdnType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigJuniperSdnValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"floating_ip_pool_ids": basetypes.SetType{
+			ElemType: types.Int64Type,
+		},
+		"resource_pool_id": basetypes.Int64Type{},
+		"virtual_network_uids": basetypes.SetType{
+			ElemType: types.StringType,
+		},
+	}
 }
 
 var _ basetypes.ObjectTypable = ConfigNsxtGatewayTier0Type{}

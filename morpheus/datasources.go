@@ -40,6 +40,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkedgecluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrulegroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfloatingip"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfloatingips"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpool"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpoolip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpoolservertype"
@@ -162,6 +164,8 @@ func (p *MorpheusProvider) DataSources(
 		whoami.NewDataSource,
 		// hpegl VMaaS parity data sources
 		networkserver.NewDataSource,
+		networkfloatingip.NewDataSource,
+		networkfloatingips.NewDataSource,
 		networkedgecluster.NewDataSource,
 		networktransportzone.NewDataSource,
 		networkpool.NewDataSource,

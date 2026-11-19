@@ -4,6 +4,8 @@ package networkrouter
 
 import (
 	"context"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -33,12 +35,23 @@ func configString(m map[string]interface{}, key string) types.String {
 	return types.StringNull()
 }
 
-// configInt64 reads a numeric config value (JSON numbers decode as float64),
-// returning a null int64 when the key is absent or not numeric.
+// configInt64 reads a numeric config value — a JSON number (decoded as
+// float64) or, as option-type values stored from the UI often are, a numeric
+// string — returning a null int64 when the key is absent or not numeric.
 func configInt64(m map[string]interface{}, key string) types.Int64 {
-	if v, ok := m[key]; ok && v != nil {
-		if f, ok := v.(float64); ok {
-			return types.Int64Value(int64(f))
+	v, ok := m[key]
+	if !ok || v == nil {
+		return types.Int64Null()
+	}
+
+	switch n := v.(type) {
+	case float64:
+		return types.Int64Value(int64(n))
+	case int64:
+		return types.Int64Value(n)
+	case string:
+		if i, err := strconv.ParseInt(strings.TrimSpace(n), 10, 64); err == nil {
+			return types.Int64Value(i)
 		}
 	}
 

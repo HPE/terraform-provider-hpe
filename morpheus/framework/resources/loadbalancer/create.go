@@ -232,9 +232,23 @@ func setCreateConfig(
 		cfg := sdk.CreateLoadBalancerRequestLoadBalancerConfig{}
 		cfg.NSXTLoadBalancerConfigObject = nsxtConfig
 		createLB.Config = &cfg
+	case !plan.ConfigJuniperSdn.IsNull() && !plan.ConfigJuniperSdn.IsUnknown():
+		if !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown() {
+			createLB.Type = plan.TypeCode.ValueStringPointer()
+		} else {
+			typeCode := typeCodeJuniperSdn
+			createLB.Type = &typeCode
+		}
+
+		cfg := sdk.CreateLoadBalancerRequestLoadBalancerConfig{JuniperSDNLoadBalancerConfig: juniperSdnConfig(plan.ConfigJuniperSdn)}
+		createLB.Config = &cfg
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
-		createLB.Type = plan.TypeCode.ValueStringPointer()
+		// type_code is computed, so an omitted value is unknown here, and
+		// ValueStringPointer would send "" rather than omit the key.
+		if !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown() {
+			createLB.Type = plan.TypeCode.ValueStringPointer()
+		}
 
 		configValue := plan.Config.UnderlyingValue()
 		configMap, err := convert.ValueToAny(ctx, configValue)

@@ -9,10 +9,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -54,7 +56,10 @@ func (r *Resource) Update(
 
 	router := &sdk.UpdateNetworkRouterRequestNetworkRouter{}
 
-	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
+	// Only send the name when it changed: the HPE Morpheus SDN router types
+	// reject any update that carries the name field ("Field name cannot be
+	// changed"), even with the current value, and no type needs it re-sent.
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() && !plan.Name.Equal(state.Name) {
 		router.Name = plan.Name.ValueStringPointer()
 	}
 
@@ -62,9 +67,13 @@ func (r *Resource) Update(
 		router.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
-	// Build config map for update
-	// Only generic config supports update
-	configMap := buildUpdateConfig(ctx, plan)
+	// Write-only values are re-sent only when their digest says they changed.
+	resend := wodigest.Resend(ctx, req.Plan)
+
+	configMap := buildUpdateConfig(ctx, plan, configuredMd5Key(config), resend, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	if configMap != nil {
 		router.Config = configMap
 	}
@@ -104,10 +113,36 @@ func (r *Resource) Update(
 		newState.Config = plan.Config
 	}
 
+	// Write-only digests: a re-send moves the revision; otherwise it is kept.
+	if resend {
+		newState.WriteOnlyRevision = wodigest.NewRevision()
+	} else {
+		newState.WriteOnlyRevision = state.WriteOnlyRevision
+	}
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
-func buildUpdateConfig(ctx context.Context, plan NetworkRouterModel) map[string]any {
+func buildUpdateConfig(
+	ctx context.Context, plan NetworkRouterModel, md5Key types.String, sendMd5Key bool, diags *diag.Diagnostics,
+) map[string]any {
+	// The SDN plugin's router fields are editable (resource_pool_id excepted:
+	// it replaces); send them as the map the update request takes. The NSX-T
+	// gateway blocks are create-only.
+	switch {
+	case !plan.ConfigJuniperSdn.IsNull() && !plan.ConfigJuniperSdn.IsUnknown():
+		m, d := juniperSdnUpdateConfig(ctx, plan.ConfigJuniperSdn)
+		diags.Append(d...)
+
+		return m
+	case !plan.ConfigJuniperBgp.IsNull() && !plan.ConfigJuniperBgp.IsUnknown():
+		m, d := juniperBgpUpdateConfig(ctx, plan.ConfigJuniperBgp, md5Key, sendMd5Key)
+		diags.Append(d...)
+
+		return m
+	}
+
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
 		configValue := plan.Config.UnderlyingValue()
 

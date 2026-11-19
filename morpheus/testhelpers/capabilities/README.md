@@ -69,6 +69,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | `NSXT` | `nsxt` | VMware NSX-T |
 | `NSXV` | `nsxv` | VMware NSX-V |
 | `ACI` | `aci` | Cisco ACI |
+| `JuniperSDN` | `juniper_sdn` | HPE Morpheus SDN (Juniper CN2). Needs the HPE Morpheus SDN network plugin, Morpheus >= 9.1.0, and an HVM cluster whose cloud points at the SDN network server. The fixture IDs come from `TF_ACC_SDN_CLOUD_ID`, `TF_ACC_SDN_NETWORK_SERVER_ID`, `TF_ACC_SDN_CLUSTER_POOL_ID` and `TF_ACC_SDN_FLOATING_IP_POOL_ID` (see `testhelpers.RequireSdnFixture`) |
 
 ### Network Features
 
@@ -324,6 +325,14 @@ Exit codes:
 | `TF_ACC_IPAM_ROTATABLE` | Set to `1` to re-enable the network pool server write-only matrix and drift tests. They are skipped by default because Morpheus 9.1.x validates the IPAM credentials on create and update, so an out-of-band password rotation cannot be staged against an ordinary integration; set this against an IPAM whose credentials can be rotated (MORPH-19005 follow-up) |
 | `TF_ACC_STORAGE_SERVER_ROTATABLE` | Set to `1` to re-enable the storage server write-only matrix and drift tests. They are skipped by default because Morpheus 9.1.x validates the storage server credentials on create and update, so an out-of-band password rotation cannot be staged; set this against a storage server whose credentials can be rotated (MORPH-19005 follow-up) |
 | `TF_ACC_BGP_SOURCE_ADDRESS` | Overrides the BGP source address used by the network router BGP neighbor drift test (`config_nsxt.source_addresses`). Optional; no fixture carries it, so set it to a valid source address on the target tier-0 router when running that test |
+| `TF_ACC_SDN_CLOUD_ID` | HVM cloud whose network service is the SDN network server. Required by the `juniper_sdn` tests, which skip without it |
+| `TF_ACC_SDN_NETWORK_SERVER_ID` | SDN (Juniper CN2) network server id. Required by the `juniper_sdn` tests |
+| `TF_ACC_SDN_CLUSTER_POOL_ID` | HVM cluster resource pool id (`zonePool.id`) that SDN networks, routers and load balancers are scoped to. Required by the `juniper_sdn` tests |
+| `TF_ACC_SDN_FLOATING_IP_POOL_ID` | Floating IP pool on the SDN network server, from which floating IPs are allocated. Required by the `juniper_sdn` tests |
+| `TF_ACC_SDN_LOAD_BALANCER` | Set to `1` to run the SDN load balancer test, held because any load balancer delete on Morpheus 9.1.x damages the other load balancers' records (MORPH-18174) |
+| `TF_ACC_SDN_GROUP_ID` | Optional group SDN routers are created in. Defaults to `1` |
+| `TF_ACC_SDN_CONTROLLER_ADDRESS` | A spare CN2 controller address for the SDN network server resource test, which registers (and unregisters) a network server against it. Optional; the test skips without it |
+| `TF_ACC_NSXT_MANAGER_ROTATABLE`, `TF_ACC_NSXT_CLOUD_ID` | A reachable NSX manager URL with rotatable credentials, and the cloud to attach it to, for the NSX-T network server write-only matrix (Morpheus validates the manager on create) |
 
 ### Examples
 

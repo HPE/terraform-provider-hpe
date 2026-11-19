@@ -69,6 +69,11 @@ func NetworkDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
+			"unique_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The controller's identifier for the network (a UUID for SDN virtual networks); what the SDN router and load balancer reference a virtual network by.",
+				MarkdownDescription: "The controller's identifier for the network (a UUID for SDN virtual networks); what the SDN router and load balancer reference a virtual network by.",
+			},
 			"visibility": schema.StringAttribute{
 				Computed: true,
 			},
@@ -86,5 +91,6 @@ type NetworkModel struct {
 	Id          types.Int64  `tfsdk:"id"`
 	Labels      types.Set    `tfsdk:"labels"`
 	Name        types.String `tfsdk:"name"`
+	UniqueId    types.String `tfsdk:"unique_id"`
 	Visibility  types.String `tfsdk:"visibility"`
 }

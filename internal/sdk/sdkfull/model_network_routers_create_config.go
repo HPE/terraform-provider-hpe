@@ -23,6 +23,8 @@ var _ fmt.Stringer
 
 // NetworkRoutersCreateConfig struct for NetworkRoutersCreateConfig
 type NetworkRoutersCreateConfig struct {
+	JuniperBGPSDNRouterConfig1      *JuniperBGPSDNRouterConfig1
+	JuniperSDNRouterConfig1         *JuniperSDNRouterConfig1
 	NetworkRoutersCreateConfigAnyOf *NetworkRoutersCreateConfigAnyOf
 	MapmapOfStringAny               *map[string]interface{}
 }
@@ -30,6 +32,18 @@ type NetworkRoutersCreateConfig struct {
 func (dst *NetworkRoutersCreateConfig) UnmarshalMapstructure(data any) (any, error) {
 	if dst == nil {
 		dst = &NetworkRoutersCreateConfig{}
+	}
+
+	mapstructDecode(data, &dst.JuniperBGPSDNRouterConfig1)
+
+	if IsEmpty(dst.JuniperBGPSDNRouterConfig1) {
+		dst.JuniperBGPSDNRouterConfig1 = nil
+	}
+
+	mapstructDecode(data, &dst.JuniperSDNRouterConfig1)
+
+	if IsEmpty(dst.JuniperSDNRouterConfig1) {
+		dst.JuniperSDNRouterConfig1 = nil
 	}
 
 	mapstructDecode(data, &dst.NetworkRoutersCreateConfigAnyOf)
@@ -50,6 +64,46 @@ func (dst *NetworkRoutersCreateConfig) UnmarshalMapstructure(data any) (any, err
 // Unmarshal JSON data into any of the pointers in the struct
 func (dst *NetworkRoutersCreateConfig) UnmarshalJSON(data []byte) error {
 	var err error
+	// try to unmarshal JSON data into JuniperBGPSDNRouterConfig1
+	err = json.Unmarshal(data, &dst.JuniperBGPSDNRouterConfig1)
+	if err == nil {
+		jsonJuniperBGPSDNRouterConfig1, merrJuniperBGPSDNRouterConfig1 := json.Marshal(dst.JuniperBGPSDNRouterConfig1)
+		var zeroJuniperBGPSDNRouterConfig1 JuniperBGPSDNRouterConfig1
+		jsonZeroJuniperBGPSDNRouterConfig1, _ := json.Marshal(&zeroJuniperBGPSDNRouterConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrJuniperBGPSDNRouterConfig1 != nil || string(jsonJuniperBGPSDNRouterConfig1) == "{}" || (len(jsonJuniperBGPSDNRouterConfig1) > 0 && jsonJuniperBGPSDNRouterConfig1[0] == '{' && string(jsonJuniperBGPSDNRouterConfig1) == string(jsonZeroJuniperBGPSDNRouterConfig1)) {
+			dst.JuniperBGPSDNRouterConfig1 = nil
+		} else {
+			return nil // data stored in dst.JuniperBGPSDNRouterConfig1, return on the first match
+		}
+	} else {
+		dst.JuniperBGPSDNRouterConfig1 = nil
+	}
+
+	// try to unmarshal JSON data into JuniperSDNRouterConfig1
+	err = json.Unmarshal(data, &dst.JuniperSDNRouterConfig1)
+	if err == nil {
+		jsonJuniperSDNRouterConfig1, merrJuniperSDNRouterConfig1 := json.Marshal(dst.JuniperSDNRouterConfig1)
+		var zeroJuniperSDNRouterConfig1 JuniperSDNRouterConfig1
+		jsonZeroJuniperSDNRouterConfig1, _ := json.Marshal(&zeroJuniperSDNRouterConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrJuniperSDNRouterConfig1 != nil || string(jsonJuniperSDNRouterConfig1) == "{}" || (len(jsonJuniperSDNRouterConfig1) > 0 && jsonJuniperSDNRouterConfig1[0] == '{' && string(jsonJuniperSDNRouterConfig1) == string(jsonZeroJuniperSDNRouterConfig1)) {
+			dst.JuniperSDNRouterConfig1 = nil
+		} else {
+			return nil // data stored in dst.JuniperSDNRouterConfig1, return on the first match
+		}
+	} else {
+		dst.JuniperSDNRouterConfig1 = nil
+	}
+
 	// try to unmarshal JSON data into NetworkRoutersCreateConfigAnyOf
 	err = json.Unmarshal(data, &dst.NetworkRoutersCreateConfigAnyOf)
 	if err == nil {
@@ -101,6 +155,14 @@ func (dst *NetworkRoutersCreateConfig) UnmarshalJSON(data []byte) error {
 
 // Marshal data from the first non-nil pointers in the struct to JSON
 func (src NetworkRoutersCreateConfig) MarshalJSON() ([]byte, error) {
+	if src.JuniperBGPSDNRouterConfig1 != nil {
+		return json.Marshal(&src.JuniperBGPSDNRouterConfig1)
+	}
+
+	if src.JuniperSDNRouterConfig1 != nil {
+		return json.Marshal(&src.JuniperSDNRouterConfig1)
+	}
+
 	if src.NetworkRoutersCreateConfigAnyOf != nil {
 		return json.Marshal(&src.NetworkRoutersCreateConfigAnyOf)
 	}

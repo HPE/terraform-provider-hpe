@@ -25,7 +25,11 @@ type ContainersAttachFloatingIpRequestConfig struct {
 	// The Floating IP identifier in the format: \"ip-ID\" or \"pool-ID\".  The Options API /api/options/openStack/openstackFloatingIpOptions?containerId={{containerId}} can be used to see which options are available.
 	OsExternalNetworkId string `json:"osExternalNetworkId"`
 	// Bandwidth (Mbit/s) Only the following cloud types support this parameter: Huawei, OpenTelekom
-	FloatingIpBandwidth  *float32               `json:"floatingIpBandwidth,omitempty"`
+	FloatingIpBandwidth *float32 `json:"floatingIpBandwidth,omitempty"`
+	// The Floating IP identifier in the format: \"ip-ID\" or \"pool-ID\", read by plugin-provided network services (for example HPE Morpheus SDN). Clouds whose network service reads `osExternalNetworkId` ignore it, so both may be sent with the same value.
+	FloatingIp *string `json:"floatingIp,omitempty"`
+	// The ID of the server network interface to bind the Floating IP to. Supported by plugin-provided network services; when omitted the service chooses the interface.
+	NetworkInterfaceId   *int64                 `json:"networkInterfaceId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -44,6 +48,12 @@ func (o ContainersAttachFloatingIpRequestConfig) ToMap() (map[string]interface{}
 	toSerialize["osExternalNetworkId"] = o.OsExternalNetworkId
 	if !IsNil(o.FloatingIpBandwidth) {
 		toSerialize["floatingIpBandwidth"] = o.FloatingIpBandwidth
+	}
+	if !IsNil(o.FloatingIp) {
+		toSerialize["floatingIp"] = o.FloatingIp
+	}
+	if !IsNil(o.NetworkInterfaceId) {
+		toSerialize["networkInterfaceId"] = o.NetworkInterfaceId
 	}
 
 	for key, value := range o.AdditionalProperties {

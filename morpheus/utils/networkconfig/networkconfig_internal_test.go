@@ -466,3 +466,52 @@ func TestUnitUndeclaredFieldsAndKeys(t *testing.T) {
 		t.Errorf("no config, no keys: %v", keys)
 	}
 }
+
+// The plugin table supplements the harvested catalogue; a code in both means
+// the harvest has caught up with the plugin and the hand entry must go.
+func TestPluginTypesDoNotShadowTheHarvestedCatalogue(t *testing.T) {
+	t.Parallel()
+
+	for code, typ := range pluginTypes {
+		if _, ok := knownTypes[code]; ok {
+			t.Errorf("%s is in both the generated and the plugin table; remove it from plugin_types.go", code)
+		}
+
+		if typ.Code != code {
+			t.Errorf("plugin type %s has Code %q", code, typ.Code)
+		}
+
+		if code == "juniperSdn" {
+			// The SDN network is scoped by zonePool.id; both the flag and the
+			// field must say so, or the pool is silently not sent.
+			if !typ.Flags.CanAssignPool {
+				t.Errorf("%s: CanAssignPool must be set, the SDN network is scoped by zonePool.id", code)
+			}
+
+			if _, ok := typ.Field("zonePool.id"); !ok {
+				t.Errorf("%s: zonePool.id is missing from its fields", code)
+			}
+		}
+	}
+}
+
+// TestBehaviourOverridesBeatTheLiveDeclaration proves that a type whose
+// appliance declaration is known to be wrong is corrected both when it comes
+// from the API and from the built-in table, so plan-time replacement rules do
+// not depend on which source answered.
+func TestBehaviourOverridesBeatTheLiveDeclaration(t *testing.T) {
+	t.Parallel()
+
+	live, err := FromAPI(map[string]any{"code": "juniperSdn", "name": "SDN", "gatewayEditable": true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if live.Flags.Gateway {
+		t.Fatal("live juniperSdn: gateway still editable despite the override")
+	}
+
+	builtin, ok := Lookup("juniperSdn")
+	if !ok || builtin.Flags.Gateway {
+		t.Fatalf("built-in juniperSdn: ok=%v gateway editable=%v", ok, builtin.Flags.Gateway)
+	}
+}

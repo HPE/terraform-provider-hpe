@@ -1098,6 +1098,19 @@ resources:
     delete:
       path: /api/networks/pools/{networkPoolId}/ips/{id}
       method: DELETE
+  network_server:
+    create:
+      path: /api/networks/servers
+      method: POST
+    read:
+      path: /api/networks/servers/{id}
+      method: GET
+    update:
+      path: /api/networks/servers/{id}
+      method: PUT
+    delete:
+      path: /api/networks/servers/{id}
+      method: DELETE
   network_pool_server:
     create:
       path: /api/networks/pool-servers
@@ -1111,6 +1124,16 @@ resources:
     delete:
       path: /api/networks/pool-servers/{id}
       method: DELETE
+  network_floating_ip:
+    create:
+      path: /api/networks/floating-ips/allocate
+      method: POST
+    read:
+      path: /api/networks/floating-ips/{id}
+      method: GET
+    delete:
+      path: /api/networks/floating-ips/{id}/release
+      method: PUT
   network_router_firewall_rule:
     create:
       path: /api/networks/routers/{routerId}/firewall-rules
@@ -1595,6 +1618,14 @@ data_sources:
   network_pool_server_type:
     read:
       path: /api/networks/pool-server-types/{id}
+      method: GET
+  network_floating_ip:
+    read:
+      path: /api/networks/floating-ips/{id}
+      method: GET
+  network_floating_ips:
+    read:
+      path: /api/networks/floating-ips
       method: GET
   network_server:
     read:

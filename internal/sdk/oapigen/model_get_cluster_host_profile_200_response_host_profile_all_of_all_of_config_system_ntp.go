@@ -20,7 +20,8 @@ var _ MappedNullable = &GetClusterHostProfile200ResponseHostProfileAllOfAllOfCon
 
 // GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigSystemNtp struct for GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigSystemNtp
 type GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigSystemNtp struct {
-	Enabled              *bool                  `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
+	// Set of NTP servers for host time synchronization.
 	Servers              []string               `json:"servers,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }

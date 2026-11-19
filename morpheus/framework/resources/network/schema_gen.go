@@ -745,6 +745,14 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 					int64validator.ExactlyOneOf(path.MatchRoot("type_id"), path.MatchRoot("type_code")),
 				},
 			},
+			"unique_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The controller's identifier for the network (a UUID for SDN virtual networks); what the SDN router and load balancer reference a virtual network by. Stable for the life of the network.",
+				MarkdownDescription: "The controller's identifier for the network (a UUID for SDN virtual networks); what the SDN router and load balancer reference a virtual network by. Stable for the life of the network.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -834,6 +842,7 @@ type NetworkModel struct {
 	TenantIds               types.Set                `tfsdk:"tenant_ids"`
 	TypeCode                types.String             `tfsdk:"type_code"`
 	TypeId                  types.Int64              `tfsdk:"type_id"`
+	UniqueId                types.String             `tfsdk:"unique_id"`
 	Visibility              types.String             `tfsdk:"visibility"`
 	VlanId                  types.Int64              `tfsdk:"vlan_id"`
 	VxlanId                 types.Int64              `tfsdk:"vxlan_id"`

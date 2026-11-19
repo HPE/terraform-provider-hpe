@@ -72,7 +72,7 @@ func (a *NetworksAPIService) AllocateNetworkFloatingIpExecute(r ApiAllocateNetwo
 		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
 	}
 
-	localVarPath := localBasePath + "/api/networks/floating-ips"
+	localVarPath := localBasePath + "/api/networks/floating-ips/allocate"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -5983,11 +5983,39 @@ func (a *NetworksAPIService) DeleteSubnetExecute(r ApiDeleteSubnetRequest) (*Del
 type ApiGetAllNetworkFloatingIpsRequest struct {
 	ctx        context.Context
 	ApiService *NetworksAPIService
+	max        *int64
+	offset     *int64
+	sort       *string
+	direction  *string
 	phrase     *string
 	ipAddress  *string
 	ipStatus   *string
 	zoneId     *int64
 	serverId   *int64
+}
+
+// Maximum number of records to return
+func (r ApiGetAllNetworkFloatingIpsRequest) Max(max int64) ApiGetAllNetworkFloatingIpsRequest {
+	r.max = &max
+	return r
+}
+
+// Offset records, the number of records to skip, for paginating requests
+func (r ApiGetAllNetworkFloatingIpsRequest) Offset(offset int64) ApiGetAllNetworkFloatingIpsRequest {
+	r.offset = &offset
+	return r
+}
+
+// Sort order, the name of the property to sort by
+func (r ApiGetAllNetworkFloatingIpsRequest) Sort(sort string) ApiGetAllNetworkFloatingIpsRequest {
+	r.sort = &sort
+	return r
+}
+
+// Sort direction, use &#39;desc&#39; to reverse sort
+func (r ApiGetAllNetworkFloatingIpsRequest) Direction(direction string) ApiGetAllNetworkFloatingIpsRequest {
+	r.direction = &direction
+	return r
 }
 
 // Search phrase for partial matches on name or description
@@ -6061,6 +6089,30 @@ func (a *NetworksAPIService) GetAllNetworkFloatingIpsExecute(r ApiGetAllNetworkF
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	if r.max != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "max", r.max, "form", "")
+	} else {
+		var defaultValue int64 = 25
+		r.max = &defaultValue
+	}
+	if r.offset != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "offset", r.offset, "form", "")
+	} else {
+		var defaultValue int64 = 0
+		r.offset = &defaultValue
+	}
+	if r.sort != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", r.sort, "form", "")
+	} else {
+		var defaultValue string = "name"
+		r.sort = &defaultValue
+	}
+	if r.direction != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "direction", r.direction, "form", "")
+	} else {
+		var defaultValue string = "asc"
+		r.direction = &defaultValue
+	}
 	if r.phrase != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
 	}

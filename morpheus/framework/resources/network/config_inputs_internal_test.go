@@ -4,6 +4,7 @@ package network
 
 import (
 	"context"
+	"slices"
 	"strings"
 	"testing"
 
@@ -263,7 +264,7 @@ func TestUnitTypeSpecFallsBackToTheTable(t *testing.T) {
 		t.Errorf("an id alone cannot be resolved without the appliance: got %v", spec)
 	}
 
-	if spec := typeSpec(ctx, nil, 0, "juniperSdn"); spec != nil {
+	if spec := typeSpec(ctx, nil, 0, "somePluginNetwork"); spec != nil {
 		t.Errorf("a type in neither place is generic: got %v", spec)
 	}
 
@@ -340,5 +341,41 @@ func TestUnitCheckDeclared(t *testing.T) {
 	inputs.typ = nil
 	if diags := checkDeclared(ctx, nil, inputs); len(diags) != 0 {
 		t.Errorf("no type, no diagnostics: %v", diags)
+	}
+}
+
+// The SDN plugin's virtual network is known from the plugin table: it has no
+// typed block (its only input is zone_pool_id), the pool is its cluster, and
+// nothing is edited in place after create (the plugin declares the gateway
+// editable but refuses the change), so every change replaces the network.
+func TestUnitJuniperSdnNetworkTypeShape(t *testing.T) {
+	t.Parallel()
+
+	spec := typeSpecFor("juniperSdn")
+	if spec == nil {
+		t.Fatal("the catalogue must know juniperSdn")
+	}
+
+	if _, ok := networkconfig.BlockForType("juniperSdn"); ok {
+		t.Error("juniperSdn must have no typed block: zone_pool_id is its only input")
+	}
+
+	if !poolIsCluster["juniperSdn"] {
+		t.Error("juniperSdn's zone_pool_id is the HVM cluster and must not be clearable")
+	}
+
+	ovsBlock, _ := networkconfig.BlockFor("config_ovs_port_group")
+	if d := checkBlockMatchesType(&ovsBlock, spec); d == nil || !strings.Contains(d.Detail(), "free-form config map") {
+		t.Errorf("a block set with juniperSdn must be rejected towards config: %v", d)
+	}
+
+	// The plugin declares the gateway editable but refuses the change at update
+	// time ("Gateway cannot be modified after network creation", verified live
+	// against plugin 1.1.0); the provider follows the behaviour and replaces.
+	immutable := networkconfig.ImmutableAttributes(*spec)
+	for _, want := range []string{"name", "cidr", "vlan_id", "gateway"} {
+		if !slices.Contains(immutable, want) {
+			t.Errorf("%s must replace a juniperSdn network when it changes; immutable = %v", want, immutable)
+		}
 	}
 }

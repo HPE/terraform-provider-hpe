@@ -33,5 +33,5 @@ var notClearable = clearable.NotClearable{
 	"max_retry":                   "a monitor setting Morpheus keeps a value for; the current value is kept when it is removed",
 	"send_version":                "version companion of a write-only value",
 	"monitor_password_wo_version": "version companion of a write-only value",
-	"config":                      "nested block; removing a whole block is not yet supported",
+	"config":                      "nested block, cleared by hand in Update: removing it sends an explicit null for each HTTP health-check value the prior state carried",
 }

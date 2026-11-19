@@ -74,12 +74,26 @@ func getRouterAsState(
 		state.Config = plan.Config
 	case !plan.ConfigNsxtGatewayTier0.IsNull() && !plan.ConfigNsxtGatewayTier0.IsUnknown():
 		// read type ID from API if using static config (it's not known at plan)
-		state.TypeId = convert.Int64ToType(router.Type.Id)
+		state.TypeId = routerTypeID(router, plan.TypeId)
 		state.ConfigNsxtGatewayTier0 = plan.ConfigNsxtGatewayTier0
 	case !plan.ConfigNsxtGatewayTier1.IsNull() && !plan.ConfigNsxtGatewayTier1.IsUnknown():
 		// read type ID from API if using static config (it's not known at plan)
-		state.TypeId = convert.Int64ToType(router.Type.Id)
+		state.TypeId = routerTypeID(router, plan.TypeId)
 		state.ConfigNsxtGatewayTier1 = plan.ConfigNsxtGatewayTier1
+	case !plan.ConfigJuniperSdn.IsNull() && !plan.ConfigJuniperSdn.IsUnknown():
+		// The SDN blocks update in place, so out-of-band changes must show as
+		// drift: read them back from the API rather than echoing the plan.
+		state.TypeId = routerTypeID(router, plan.TypeId)
+		cfg, d := juniperSdnConfigFromMap(ctx, router.Config)
+		diags.Append(d...)
+		state.ConfigJuniperSdn = cfg
+	case !plan.ConfigJuniperBgp.IsNull() && !plan.ConfigJuniperBgp.IsUnknown():
+		state.TypeId = routerTypeID(router, plan.TypeId)
+		cfg, d := juniperBgpConfigFromMap(ctx, router.Config)
+		diags.Append(d...)
+		// md5_key_wo is write-only and reads back as null (the API never
+		// returns it either); wodigest tracks changes to it.
+		state.ConfigJuniperBgp = cfg
 	}
 
 	// Populate type_id from API response if importing (plan.Name is null)
@@ -120,6 +134,10 @@ func getRouterAsState(
 	// silently drop IDs that don't exist in the environment. On import there
 	// is no prior state, so we read from the API response instead.
 	state.TenantIds = plan.TenantIds
+
+	// write_only_revision is the provider's own marker; Create and Update set
+	// it after this read, a refresh keeps it.
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
 	// Read permissions: visibility + tenant_ids
 	if router.Permissions != nil {
@@ -172,6 +190,14 @@ func hydrateImportedConfig(
 		cfg, d := tier1ConfigFromMap(ctx, config)
 		diags.Append(d...)
 		state.ConfigNsxtGatewayTier1 = cfg
+	case codeJuniperSdnRouter:
+		cfg, d := juniperSdnConfigFromMap(ctx, config)
+		diags.Append(d...)
+		state.ConfigJuniperSdn = cfg
+	case codeJuniperBgpSdnRouter:
+		cfg, d := juniperBgpConfigFromMap(ctx, config)
+		diags.Append(d...)
+		state.ConfigJuniperBgp = cfg
 	default:
 		if len(config) > 0 {
 			dyn, err := convert.MapToDynamic(ctx, config)
@@ -233,4 +259,21 @@ func (r *Resource) Read(
 	resp.Diagnostics.Append(
 		schemadefaults.Apply(ctx, NetworkRouterResourceSchema(ctx), &resp.State)...,
 	)
+}
+
+// routerTypeID is the router's type id as the API returned it, or the prior
+// value when the response carries no type: type is an optional pointer, and a
+// typed block's type id is only known from the appliance. An unknown prior —
+// the create plan's, since type_id is computed — becomes null, which can be
+// written to state.
+func routerTypeID(router *sdk.GetNetworkRouter200ResponseNetworkRouter, prior types.Int64) types.Int64 {
+	if router.Type != nil && router.Type.Id != nil {
+		return convert.Int64ToType(router.Type.Id)
+	}
+
+	if prior.IsUnknown() {
+		return types.Int64Null()
+	}
+
+	return prior
 }

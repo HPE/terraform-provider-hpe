@@ -20,7 +20,9 @@ var _ MappedNullable = &GetClusterHostProfile200ResponseHostProfileAllOfAllOfCon
 
 // GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigSystemSecurity struct for GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigSystemSecurity
 type GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigSystemSecurity struct {
-	Selinux              *string                `json:"selinux,omitempty"`
+	// SELinux enforcement mode. Ubuntu uses AppArmor instead; set to disabled for Ubuntu-based HVM nodes.
+	Selinux *string `json:"selinux,omitempty"`
+	// Enables FIPS 140-2 cryptographic compliance. Requires reboot and is not reversible without reinstall.
 	Fips                 *bool                  `json:"fips,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }

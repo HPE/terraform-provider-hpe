@@ -163,6 +163,7 @@ func getNetworkByID(
 
 	state.Id = types.Int64Value(id)
 	state.Name = convert.StrToType(net.Name)
+	state.UniqueId = convert.StrToType(net.UniqueId.Get())
 	state.DisplayName = convert.StrToType(net.DisplayName.Get())
 	state.Description = convert.StrToType(net.Description.Get())
 	state.Cidr = convert.StrToType(net.Cidr.Get())

@@ -15,6 +15,8 @@ import (
 const (
 	typeCodeHAProxy = "haproxyContainer"
 	typeCodeNSXT    = "nsx-t"
+	// typeCodeJuniperSdn is the HPE Morpheus SDN plugin's load balancer type.
+	typeCodeJuniperSdn = "juniper-sdn-lb"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.

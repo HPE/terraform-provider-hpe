@@ -1,0 +1,55 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+The floating IP is allocated from a floating IP pool on an SDN network server.
+Neither the pool nor the network server is returned by the API, so both are kept
+in Terraform state; changing either replaces the resource.
+
+Floating IP pools are defined on the SDN router of a cluster resource pool
+(`hpe_morpheus_network_router` with `config_juniper_sdn.floating_ip_pool_ids`)
+and are discoverable through the `hpe_morpheus_option_source_values` data source
+with the option source `juniperFloatingIpPools`, passing the resource pool as
+`parameters = { juniperResourcePool = "<id>" }`.
+
+Destroying the resource releases the floating IP. A floating IP that is still
+attached to a VM cannot be released; detach it first.
+
+~> **Release may be reported as successful when it was not.** SDN plugin 1.1.0
+reports a successful release when the floating IP record has no controller
+reference or has already gone, even though the floating IP on the controller was
+not deleted. Morpheus then removes its own record and Terraform drops the
+resource from state, leaving an orphaned floating IP on the controller. The
+orphan can collide with later allocations from the same pool, which then fail
+until the pool is recreated on the controller. After destroying a floating IP on
+an affected plugin, check the controller for the leftover object.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_network_floating_ip/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+A floating IP can be imported using its ID. Because the network server and
+floating IP pool it was allocated from are not returned by the API, importing
+with the ID alone leaves both null in state, and the next plan shows a
+replacement:
+
+```shell
+terraform import hpe_morpheus_network_floating_ip.example 42
+```
+
+To import cleanly, append the network server ID and floating IP pool ID in the
+form `<id>:<network_server_id>:<floating_ip_pool_id>`:
+
+```shell
+terraform import hpe_morpheus_network_floating_ip.example "42:7:9"
+```

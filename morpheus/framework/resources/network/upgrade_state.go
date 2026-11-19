@@ -66,6 +66,7 @@ var attributesAddedInV1 = []string{
 	"parent_network_id",
 	"scope_id",
 	"type_code",
+	"unique_id",
 	"vxlan_id",
 }
 

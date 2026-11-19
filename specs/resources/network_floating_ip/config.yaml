@@ -1,0 +1,83 @@
+network_floating_ip:
+  description: >-
+    Allocates a Morpheus network floating IP from a floating IP pool on an SDN network server, and tracks
+    its details. Floating IPs are released when the resource is destroyed. The floating IP pool and the
+    network server it is allocated from are not returned by the API, so they are kept in Terraform state.
+  moves:
+    - network_floating_ip: ""                            # unnest response wrapper (GET /api/networks/floating-ips/{id})
+    - cloud.id: cloud_id                              # (GET /api/networks/floating-ips/{id} response.networkFloatingIp.cloud)
+    - cloud.name: cloud_name                          # (GET /api/networks/floating-ips/{id} response.networkFloatingIp.cloud)
+    - server.id: server_id                            # (GET /api/networks/floating-ips/{id} response.networkFloatingIp.server)
+    - server.name: server_name                        # (GET /api/networks/floating-ips/{id} response.networkFloatingIp.server)
+    - ip_range.start_address: ip_range_start_address  # (GET /api/networks/floating-ips/{id} response.networkFloatingIp.ipRange)
+    - ip_range.end_address: ip_range_end_address      # (GET /api/networks/floating-ips/{id} response.networkFloatingIp.ipRange)
+    - network_domain.id: network_domain_id            # (GET /api/networks/floating-ips/{id} response.networkFloatingIp.networkDomain)
+    - network_domain.name: network_domain_name        # (GET /api/networks/floating-ips/{id} response.networkFloatingIp.networkDomain)
+  removes:
+    - cloud                                           # flattened into cloud_id / cloud_name
+    - server                                          # flattened into server_id / server_name
+    - ip_range                                        # flattened into ip_range_start_address / ip_range_end_address
+    - network_domain                                  # flattened into network_domain_id / network_domain_name
+    - created_by                                      # (GET /api/networks/floating-ips/{id} response.networkFloatingIp.createdBy) - read-only user ref
+    - success                                         # API response wrapper
+    - cloud.type                                      # (GET response.networkFloatingIp.cloud.type) - not exposed
+  overrides:
+    id:
+      description: The ID of the network floating IP.
+      computed_optional_required: computed
+      state_for_unknown: true
+    network_server_id:
+      description: >-
+        The ID of the network server (SDN controller) to allocate the floating IP from. Not returned by the
+        API, so it is kept in Terraform state. Changing it replaces the resource.
+      computed_optional_required: required
+      requires_replace: true
+    floating_ip_pool_id:
+      description: >-
+        The ID of the floating IP pool to allocate from. Pools are discoverable through the
+        hpe_morpheus_option_source_values data source with option source `juniperFloatingIpPools`. Not
+        returned by the API, so it is kept in Terraform state. Changing it replaces the resource.
+      computed_optional_required: required
+      requires_replace: true
+    ip_address:
+      description: The allocated IP address.
+      computed_optional_required: computed
+    ip_status:
+      description: The status of the floating IP, one of `assigned`, `free` or `pending`.
+      computed_optional_required: computed
+    external_id:
+      description: The external ID of the floating IP.
+      computed_optional_required: computed
+    cloud_id:
+      description: The ID of the cloud the floating IP belongs to.
+      computed_optional_required: computed
+    cloud_name:
+      description: The name of the cloud the floating IP belongs to.
+      computed_optional_required: computed
+    server_id:
+      description: The ID of the server (VM) the floating IP is attached to, if any.
+      computed_optional_required: computed
+    server_name:
+      description: The name of the server (VM) the floating IP is attached to, if any.
+      computed_optional_required: computed
+    ip_range_start_address:
+      description: The start address of the pool range the floating IP was allocated from.
+      computed_optional_required: computed
+    ip_range_end_address:
+      description: The end address of the pool range the floating IP was allocated from.
+      computed_optional_required: computed
+    ptr_id:
+      description: The PTR record ID of the floating IP.
+      computed_optional_required: computed
+    network_domain_id:
+      description: The ID of the network domain the floating IP belongs to, if any.
+      computed_optional_required: computed
+    network_domain_name:
+      description: The name of the network domain the floating IP belongs to, if any.
+      computed_optional_required: computed
+    date_created:
+      description: When the floating IP was created.
+      computed_optional_required: computed
+    last_updated:
+      description: When the floating IP was last updated.
+      computed_optional_required: computed

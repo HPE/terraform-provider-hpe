@@ -1,0 +1,229 @@
+network_server:
+  description: >-
+    Manages a Morpheus network server: the integration with an external network controller (NSX-T, or the
+    HPE Morpheus SDN controller of an HVM cluster). Most settings are common to all types; type-specific
+    option values are given either in the free-form `config` map or in a typed block.
+  templates:
+    type_code:
+      string:
+        computed_optional_required: required
+        description: >-
+          The network server type code, for example `nsx-t` or `morpheus-junipersdn-network`. Changing it
+          replaces the network server.
+        requires_replace: true
+    cloud_id:
+      int64:
+        computed_optional_required: optional
+        description: The ID of the cloud the network server is attached to.
+    credential_id:
+      int64:
+        computed_optional_required: optional
+        description: >-
+          The ID of a stored credential to authenticate with. Conflicts with `service_username` and
+          `service_password_wo`.
+    service_password_wo:
+      string:
+        computed_optional_required: optional
+        description: The service password for authentication (write-only). Conflicts with `credential_id`.
+        sensitive: true
+        write_only: true
+        plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+    service_password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: |-
+          Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.6 release. Changing it still re-sends service_password_wo.
+        deprecation_message: "No longer needed: changes to service_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which a write-only value (service_password_wo or
+          service_token_wo) was last sent to Morpheus. Changes whenever one of them changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    tenant_ids:
+      set:
+        computed_optional_required: optional
+        description: The IDs of the tenants allowed to use the network server (private visibility).
+        element_type:
+          int64: {}
+    config:
+      dynamic:
+        computed_optional_required: optional
+        description: >-
+          Free-form type-specific option values, keyed as the network server type's option types name
+          them. Use a typed block instead when one exists for the type.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/HPE/terraform-provider-hpe/utils/validators
+              schema_definition: validators.ValidObjectMap()
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                dynamicvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRoot("config_juniper_sdn"),
+                }...)
+    config_juniper_sdn:
+      single_nested: {}
+    controller_address:
+      string: {}
+    show_introspect:
+      bool: {}
+    enable_sub_tenants:
+      bool: {}
+  moves:
+    - network_server: "" # unnest wrapper
+    - service_token: service_token_wo # write-only: never stored in state
+    - template-type_code: type_code
+    - template-cloud_id: cloud_id
+    - template-credential_id: credential_id
+    - template-service_password_wo: service_password_wo
+    - template-service_password_wo_version: service_password_wo_version
+    - template-write_only_revision: write_only_revision
+    - template-tenant_ids: tenant_ids
+    - template-config: config
+    - template-config_juniper_sdn: config_juniper_sdn
+    - template-controller_address: config_juniper_sdn.controller_address
+    - template-show_introspect: config_juniper_sdn.show_introspect
+    - template-enable_sub_tenants: config_juniper_sdn.enable_sub_tenants
+  removes:
+    - nsxnetwork_server # create request anyOf variant; the common attributes come from the response
+    - hpemorpheus_sdnnetwork_server # create request anyOf variant; typed as config_juniper_sdn
+    - account
+    - credential
+    - integration
+    - last_sync
+    - last_sync_duration
+    - next_run_date
+    - service_password
+    - service_password_hash
+    - service_token_hash
+    - status_date
+    - success
+    - tenants
+    - type
+    - zone_id
+    - visible
+    - api_port
+    - admin_port
+    - service_path
+  overrides:
+    id:
+      description: The ID of the network server.
+      computed_optional_required: computed
+      state_for_unknown: true
+    name:
+      description: The name of the network server.
+      computed_optional_required: required
+      string_length_at_least: 1
+    description:
+      description: The description of the network server. Not settable through the API.
+      computed_optional_required: computed
+    enabled:
+      description: Whether the network server is enabled. Not settable through the API.
+      computed_optional_required: computed
+    visibility:
+      description: The visibility of the network server, `private` or `public`.
+      computed_optional_required: computed_optional
+      default: private
+      one_of: [private, public]
+    service_url:
+      description: |-
+        The URL of the network controller's API. Not taken by the HPE Morpheus SDN network server type
+        (`morpheus-junipersdn-network`), whose plugin stores the controller's API version here itself;
+        leave it unset for SDN servers.
+      computed_optional_required: optional
+    service_username:
+      description: The service username for authentication. Conflicts with `credential_id`.
+      computed_optional_required: optional
+      conflicts_with: [credential_id]
+    service_token_wo:
+      description: >-
+        A service token for authentication, for types that take one (write-only). It is never stored in
+        state; a change is detected from a digest kept in private state and re-sent on the next apply.
+      computed_optional_required: optional
+      sensitive: true
+      write_only: true
+      plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+    service_host:
+      description: The controller host, for types that separate it from the URL.
+      computed_optional_required: computed_optional
+    service_port:
+      description: The controller port, for types that separate it from the URL.
+      computed_optional_required: computed_optional
+    service_mode:
+      description: The service mode, for types that have one.
+      computed_optional_required: computed_optional
+    network_filter:
+      description: A filter limiting the networks the server syncs.
+      computed_optional_required: optional
+    tenant_match:
+      description: A tenant match expression, for types that have one.
+      computed_optional_required: optional
+    internal_id:
+      computed_optional_required: computed
+      description: The internal ID of the network server.
+    external_id:
+      computed_optional_required: computed
+      description: The external ID of the network server.
+    status:
+      computed_optional_required: computed
+      description: The status of the network server.
+    status_message:
+      computed_optional_required: computed
+      description: The status message of the network server.
+    date_created:
+      computed_optional_required: computed
+      description: When the network server was created.
+    last_updated:
+      computed_optional_required: computed
+      description: When the network server was last updated.
+    type_code:
+      description: >-
+        The network server type code, for example `nsx-t` or `morpheus-junipersdn-network`. Changing it
+        replaces the network server.
+      computed_optional_required: required
+      requires_replace: true
+    config_juniper_sdn:
+      description: >-
+        Configuration for the HPE Morpheus SDN network server type (`morpheus-junipersdn-network`): the
+        Juniper CN2 controller of an HVM cluster. The controller is reached from the cluster's hosts, so the
+        type takes no service connection or credential attributes — `service_url`, `service_host`,
+        `service_port`, `service_mode`, `service_username`, `service_password_wo`, `service_token_wo`,
+        `credential_id`, `network_filter` and `tenant_match` conflict with this block, as does `config`.
+      computed_optional_required: optional
+      conflicts_with: [config, service_url, service_host, service_port, service_mode, service_username, service_password_wo, service_token_wo, credential_id, network_filter, tenant_match]
+    credential_id:
+      conflicts_with: [service_username, service_password_wo]
+    service_password_wo:
+      conflicts_with: [credential_id]
+    config_juniper_sdn.controller_address:
+      description: The address of the CN2 controller. Changing it replaces the network server.
+      computed_optional_required: required
+      requires_replace: true
+    config_juniper_sdn.show_introspect:
+      description: Whether to show the controller's introspect pages in the Morpheus UI.
+      computed_optional_required: computed_optional
+      default: false
+    config_juniper_sdn.enable_sub_tenants:
+      description: Whether sub-tenants may use the SDN controller.
+      computed_optional_required: computed_optional
+      default: false

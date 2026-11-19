@@ -1,0 +1,16 @@
+resource "hpe_morpheus_load_balancer" "sdn" {
+  name              = "{{ .Name }}"
+  type_code         = "{{ .TypeCode }}"
+  visibility        = "{{ .Visibility }}"
+  cloud_id          = {{ .CloudId }}
+  network_server_id = {{ .NetworkServerId }}
+
+  config_juniper_sdn = {
+    resource_pool_id   = {{ .ResourcePoolId }}
+    virtual_network_uid = {{ .VirtualNetworkUid }}
+    virtual_ip         = "{{ .VirtualIp }}"
+    source_port        = {{ .SourcePort }}
+    destination_port   = {{ .DestinationPort }}
+    protocol           = "{{ .Protocol }}"
+  }
+}

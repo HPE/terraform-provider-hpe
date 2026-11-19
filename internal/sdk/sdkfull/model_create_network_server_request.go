@@ -22,8 +22,8 @@ var _ MappedNullable = &CreateNetworkServerRequest{}
 
 // CreateNetworkServerRequest struct for CreateNetworkServerRequest
 type CreateNetworkServerRequest struct {
-	NetworkServer        *NSXNetworkServer      `json:"networkServer,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	NetworkServer        *CreateNetworkServerRequestNetworkServer `json:"networkServer,omitempty"`
+	AdditionalProperties map[string]interface{}                   `json:",remain"`
 }
 
 type _CreateNetworkServerRequest CreateNetworkServerRequest

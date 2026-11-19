@@ -31,6 +31,26 @@ func LoadBalancerMonitorResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
+					"http_method": schema.StringAttribute{
+						Optional:            true,
+						Description:         "HTTP method of an HTTP health check, for load balancer types whose monitors define one (the HPE Morpheus SDN load balancer, with `monitor_type = \"HTTP\"`). Removing it clears the value Morpheus records; the SDN controller keeps the method it has, as its health check requires one.",
+						MarkdownDescription: "HTTP method of an HTTP health check, for load balancer types whose monitors define one (the HPE Morpheus SDN load balancer, with `monitor_type = \"HTTP\"`). Removing it clears the value Morpheus records; the SDN controller keeps the method it has, as its health check requires one.",
+					},
+					"http_port": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "Port an HTTP health check connects to. Removing it clears the value Morpheus records and the SDN health check reverts to its default port, the pool member's.",
+						MarkdownDescription: "Port an HTTP health check connects to. Removing it clears the value Morpheus records and the SDN health check reverts to its default port, the pool member's.",
+					},
+					"http_return_code": schema.StringAttribute{
+						Optional:            true,
+						Description:         "HTTP status code an HTTP health check expects, for example `200`. Removing it clears the value Morpheus records; the SDN controller keeps the code it has, as its health check requires one.",
+						MarkdownDescription: "HTTP status code an HTTP health check expects, for example `200`. Removing it clears the value Morpheus records; the SDN controller keeps the code it has, as its health check requires one.",
+					},
+					"http_uri": schema.StringAttribute{
+						Optional:            true,
+						Description:         "URI requested by an HTTP health check. Removing it clears the value Morpheus records and the SDN health check falls back to `/`.",
+						MarkdownDescription: "URI requested by an HTTP health check. Removing it clears the value Morpheus records and the SDN health check falls back to `/`.",
+					},
 					"monitor": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"id": schema.Int64Attribute{
@@ -273,6 +293,78 @@ func (t ConfigType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 
 	attributes := in.Attributes()
 
+	httpMethodAttribute, ok := attributes["http_method"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`http_method is missing from object`)
+
+		return nil, diags
+	}
+
+	httpMethodVal, ok := httpMethodAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`http_method expected to be basetypes.StringValue, was: %T`, httpMethodAttribute))
+	}
+
+	httpPortAttribute, ok := attributes["http_port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`http_port is missing from object`)
+
+		return nil, diags
+	}
+
+	httpPortVal, ok := httpPortAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`http_port expected to be basetypes.Int64Value, was: %T`, httpPortAttribute))
+	}
+
+	httpReturnCodeAttribute, ok := attributes["http_return_code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`http_return_code is missing from object`)
+
+		return nil, diags
+	}
+
+	httpReturnCodeVal, ok := httpReturnCodeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`http_return_code expected to be basetypes.StringValue, was: %T`, httpReturnCodeAttribute))
+	}
+
+	httpUriAttribute, ok := attributes["http_uri"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`http_uri is missing from object`)
+
+		return nil, diags
+	}
+
+	httpUriVal, ok := httpUriAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`http_uri expected to be basetypes.StringValue, was: %T`, httpUriAttribute))
+	}
+
 	monitorAttribute, ok := attributes["monitor"]
 
 	if !ok {
@@ -314,9 +406,13 @@ func (t ConfigType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 	}
 
 	return ConfigValue{
-		Monitor:       monitorVal,
-		MonitorConfig: monitorConfigVal,
-		state:         attr.ValueStateKnown,
+		HttpMethod:     httpMethodVal,
+		HttpPort:       httpPortVal,
+		HttpReturnCode: httpReturnCodeVal,
+		HttpUri:        httpUriVal,
+		Monitor:        monitorVal,
+		MonitorConfig:  monitorConfigVal,
+		state:          attr.ValueStateKnown,
 	}, diags
 }
 
@@ -383,6 +479,78 @@ func NewConfigValue(attributeTypes map[string]attr.Type, attributes map[string]a
 		return NewConfigValueUnknown(), diags
 	}
 
+	httpMethodAttribute, ok := attributes["http_method"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`http_method is missing from object`)
+
+		return NewConfigValueUnknown(), diags
+	}
+
+	httpMethodVal, ok := httpMethodAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`http_method expected to be basetypes.StringValue, was: %T`, httpMethodAttribute))
+	}
+
+	httpPortAttribute, ok := attributes["http_port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`http_port is missing from object`)
+
+		return NewConfigValueUnknown(), diags
+	}
+
+	httpPortVal, ok := httpPortAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`http_port expected to be basetypes.Int64Value, was: %T`, httpPortAttribute))
+	}
+
+	httpReturnCodeAttribute, ok := attributes["http_return_code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`http_return_code is missing from object`)
+
+		return NewConfigValueUnknown(), diags
+	}
+
+	httpReturnCodeVal, ok := httpReturnCodeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`http_return_code expected to be basetypes.StringValue, was: %T`, httpReturnCodeAttribute))
+	}
+
+	httpUriAttribute, ok := attributes["http_uri"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`http_uri is missing from object`)
+
+		return NewConfigValueUnknown(), diags
+	}
+
+	httpUriVal, ok := httpUriAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`http_uri expected to be basetypes.StringValue, was: %T`, httpUriAttribute))
+	}
+
 	monitorAttribute, ok := attributes["monitor"]
 
 	if !ok {
@@ -424,9 +592,13 @@ func NewConfigValue(attributeTypes map[string]attr.Type, attributes map[string]a
 	}
 
 	return ConfigValue{
-		Monitor:       monitorVal,
-		MonitorConfig: monitorConfigVal,
-		state:         attr.ValueStateKnown,
+		HttpMethod:     httpMethodVal,
+		HttpPort:       httpPortVal,
+		HttpReturnCode: httpReturnCodeVal,
+		HttpUri:        httpUriVal,
+		Monitor:        monitorVal,
+		MonitorConfig:  monitorConfigVal,
+		state:          attr.ValueStateKnown,
 	}, diags
 }
 
@@ -496,17 +668,25 @@ func (t ConfigType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigValue{}
 
 type ConfigValue struct {
-	Monitor       basetypes.ObjectValue  `tfsdk:"monitor"`
-	MonitorConfig basetypes.DynamicValue `tfsdk:"monitor_config"`
-	state         attr.ValueState
+	HttpMethod     basetypes.StringValue  `tfsdk:"http_method"`
+	HttpPort       basetypes.Int64Value   `tfsdk:"http_port"`
+	HttpReturnCode basetypes.StringValue  `tfsdk:"http_return_code"`
+	HttpUri        basetypes.StringValue  `tfsdk:"http_uri"`
+	Monitor        basetypes.ObjectValue  `tfsdk:"monitor"`
+	MonitorConfig  basetypes.DynamicValue `tfsdk:"monitor_config"`
+	state          attr.ValueState
 }
 
 func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 2)
+	attrTypes := make(map[string]tftypes.Type, 6)
 
 	var val tftypes.Value
 	var err error
 
+	attrTypes["http_method"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["http_port"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["http_return_code"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["http_uri"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["monitor"] = basetypes.ObjectType{
 		AttrTypes: MonitorValue{}.AttributeTypes(ctx),
 	}.TerraformType(ctx)
@@ -516,7 +696,35 @@ func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 2)
+		vals := make(map[string]tftypes.Value, 6)
+
+		val, err = v.HttpMethod.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["http_method"] = val
+
+		val, err = v.HttpPort.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["http_port"] = val
+
+		val, err = v.HttpReturnCode.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["http_return_code"] = val
+
+		val, err = v.HttpUri.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["http_uri"] = val
 
 		val, err = v.Monitor.ToTerraformValue(ctx)
 		if err != nil {
@@ -583,6 +791,10 @@ func (v ConfigValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 	}
 
 	attributeTypes := map[string]attr.Type{
+		"http_method":      basetypes.StringType{},
+		"http_port":        basetypes.Int64Type{},
+		"http_return_code": basetypes.StringType{},
+		"http_uri":         basetypes.StringType{},
 		"monitor": basetypes.ObjectType{
 			AttrTypes: MonitorValue{}.AttributeTypes(ctx),
 		},
@@ -600,8 +812,12 @@ func (v ConfigValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"monitor":        monitorVal,
-			"monitor_config": v.MonitorConfig,
+			"http_method":      v.HttpMethod,
+			"http_port":        v.HttpPort,
+			"http_return_code": v.HttpReturnCode,
+			"http_uri":         v.HttpUri,
+			"monitor":          monitorVal,
+			"monitor_config":   v.MonitorConfig,
 		})
 
 	return objVal, diags
@@ -620,6 +836,22 @@ func (v ConfigValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
+	}
+
+	if !v.HttpMethod.Equal(other.HttpMethod) {
+		return false
+	}
+
+	if !v.HttpPort.Equal(other.HttpPort) {
+		return false
+	}
+
+	if !v.HttpReturnCode.Equal(other.HttpReturnCode) {
+		return false
+	}
+
+	if !v.HttpUri.Equal(other.HttpUri) {
+		return false
 	}
 
 	if !v.Monitor.Equal(other.Monitor) {
@@ -643,6 +875,10 @@ func (v ConfigValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
+		"http_method":      basetypes.StringType{},
+		"http_port":        basetypes.Int64Type{},
+		"http_return_code": basetypes.StringType{},
+		"http_uri":         basetypes.StringType{},
 		"monitor": basetypes.ObjectType{
 			AttrTypes: MonitorValue{}.AttributeTypes(ctx),
 		},

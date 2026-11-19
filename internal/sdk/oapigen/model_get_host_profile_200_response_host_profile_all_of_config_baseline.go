@@ -18,7 +18,7 @@ import (
 // checks if the GetHostProfile200ResponseHostProfileAllOfConfigBaseline type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &GetHostProfile200ResponseHostProfileAllOfConfigBaseline{}
 
-// GetHostProfile200ResponseHostProfileAllOfConfigBaseline struct for GetHostProfile200ResponseHostProfileAllOfConfigBaseline
+// GetHostProfile200ResponseHostProfileAllOfConfigBaseline Specify package versions to enforce on all hosts in the assigned cluster. Values are pre-filled by Capture from Host.
 type GetHostProfile200ResponseHostProfileAllOfConfigBaseline struct {
 	KernelVersion *string `json:"kernelVersion,omitempty"`
 	// Additional packages to install, one per line in package=version format.

@@ -8,6 +8,14 @@ load_balancer_monitor:
       int64: {}
     monitor_config:
       dynamic: {}
+    http_method:
+      string: {}
+    http_uri:
+      string: {}
+    http_port:
+      int64: {}
+    http_return_code:
+      string: {}
     monitor_password_wo:
       string:
         computed_optional_required: optional
@@ -45,6 +53,10 @@ load_balancer_monitor:
     - template-monitor: config.monitor
     - template-monitor_id: config.monitor.id
     - template-monitor_config: config.monitor_config
+    - template-http_method: config.http_method
+    - template-http_uri: config.http_uri
+    - template-http_port: config.http_port
+    - template-http_return_code: config.http_return_code
     - template-monitor_password_wo: monitor_password_wo
     - template-monitor_password_wo_version: monitor_password_wo_version
     - template-write_only_revision: write_only_revision
@@ -156,3 +168,15 @@ load_balancer_monitor:
     config.monitor_config:
       description: Free-form monitor configuration content.
       computed_optional_required: computed_optional
+    config.http_method:
+      description: HTTP method of an HTTP health check, for load balancer types whose monitors define one (the HPE Morpheus SDN load balancer, with `monitor_type = "HTTP"`). Removing it clears the value Morpheus records; the SDN controller keeps the method it has, as its health check requires one.
+      computed_optional_required: optional
+    config.http_uri:
+      description: URI requested by an HTTP health check. Removing it clears the value Morpheus records and the SDN health check falls back to `/`.
+      computed_optional_required: optional
+    config.http_port:
+      description: Port an HTTP health check connects to. Removing it clears the value Morpheus records and the SDN health check reverts to its default port, the pool member's.
+      computed_optional_required: optional
+    config.http_return_code:
+      description: HTTP status code an HTTP health check expects, for example `200`. Removing it clears the value Morpheus records; the SDN controller keeps the code it has, as its health check requires one.
+      computed_optional_required: optional

@@ -617,6 +617,7 @@ network:
     - network.no_proxy
     - network.search_domains
     - network.switch_id
+    - network.unique_id
     - network.vlan_id
     - network.visibility
   moves:
@@ -655,6 +656,11 @@ network:
     - template-resource_permissions: resource_permissions
     - template-connected_gateway: connected_gateway
   overrides:
+    unique_id:
+      computed_optional_required: computed
+      state_for_unknown: true
+      description: >-
+        The controller's identifier for the network (a UUID for SDN virtual networks); what the SDN router and load balancer reference a virtual network by. Stable for the life of the network.
     config_ovs_port_group:
       conflicts_with: [config]
     config_nsxt:

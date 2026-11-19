@@ -20,8 +20,10 @@ var _ MappedNullable = &GetClusterHostProfile200ResponseHostProfileAllOfAllOfCon
 
 // GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigStorageMultipath struct for GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigStorageMultipath
 type GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigStorageMultipath struct {
-	Enabled              *bool                  `json:"enabled,omitempty"`
-	FindMultipaths       *bool                  `json:"findMultipaths,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
+	// Enables automatic multipath detection in /etc/multipath.conf.
+	FindMultipaths *bool `json:"findMultipaths,omitempty"`
+	// Uses /dev/mapper/mpathX aliases instead of raw WWIDs.
 	UserFriendlyNames    *bool                  `json:"userFriendlyNames,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }

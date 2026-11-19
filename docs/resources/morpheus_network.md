@@ -805,6 +805,7 @@ resource "hpe_morpheus_network" "child" {
 - `config_from_api` (Dynamic) The type-specific configuration as Morpheus returns it, read-only. Includes keys the server adds itself and masks secrets; a change here is visible but never enforced.
 - `id` (Number) Network id
 - `resource_permissions` (Attributes) (see [below for nested schema](#nestedatt--resource_permissions))
+- `unique_id` (String) The controller's identifier for the network (a UUID for SDN virtual networks); what the SDN router and load balancer reference a virtual network by. Stable for the life of the network.
 
 <a id="nestedatt--config_azure"></a>
 ### Nested Schema for `config_azure`

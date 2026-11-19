@@ -45,6 +45,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdomain"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfloatingip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkgroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkpool"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkpoolip"
@@ -55,6 +56,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouternat"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterroute"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/optionlist"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
@@ -139,6 +141,8 @@ func (p *MorpheusProvider) Resources(
 		networkrouternat.NewResource,
 		networkrouterfirewallrule.NewResource,
 		networkrouterfirewallrulegroup.NewResource,
+		networkfloatingip.NewResource,
+		networkserver.NewResource,
 		subnet.NewResource,
 		securitygroup.NewResource,
 		securitygrouprule.NewResource,

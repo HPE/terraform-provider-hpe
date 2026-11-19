@@ -22,9 +22,9 @@ var _ MappedNullable = &GetAllNetworkFloatingIps200Response{}
 
 // GetAllNetworkFloatingIps200Response struct for GetAllNetworkFloatingIps200Response
 type GetAllNetworkFloatingIps200Response struct {
-	NetworkFloatingIps   interface{}                        `json:"networkFloatingIps,omitempty"`
-	Meta                 *ListApprovals200ResponseAllOfMeta `json:"meta,omitempty"`
-	AdditionalProperties map[string]interface{}             `json:",remain"`
+	NetworkFloatingIps   []GetAllNetworkFloatingIps200ResponseAllOfNetworkFloatingIpsInner `json:"networkFloatingIps,omitempty"`
+	Meta                 *ListApprovals200ResponseAllOfMeta                                `json:"meta,omitempty"`
+	AdditionalProperties map[string]interface{}                                            `json:",remain"`
 }
 
 type _GetAllNetworkFloatingIps200Response GetAllNetworkFloatingIps200Response
@@ -39,7 +39,7 @@ func (o GetAllNetworkFloatingIps200Response) MarshalJSON() ([]byte, error) {
 
 func (o GetAllNetworkFloatingIps200Response) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if o.NetworkFloatingIps != nil {
+	if !IsNil(o.NetworkFloatingIps) {
 		toSerialize["networkFloatingIps"] = o.NetworkFloatingIps
 	}
 	if !IsNil(o.Meta) {

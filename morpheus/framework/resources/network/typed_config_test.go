@@ -592,3 +592,67 @@ func TestAccMorpheusNetworkTenantIdsUnsetUpdatesInPlace(t *testing.T) {
 		},
 	})
 }
+
+// --- HPE Morpheus SDN virtual network (juniperSdn) --------------------------
+
+func juniperSdnNetworkConfig(name, cloudID, groupID, networkServerID, zonePoolID, cidr, gateway string) string {
+	return testhelpers.ProviderBlock() + fmt.Sprintf(`
+resource "hpe_morpheus_network" "sdn" {
+  name              = %q
+  cloud_id          = %s
+  group_id          = %s
+  type_code         = "juniperSdn"
+  network_server_id = %s
+  zone_pool_id      = %s
+  cidr              = %q
+  gateway           = %q
+  visibility        = "private"
+  tenant_ids        = [1]
+  labels            = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
+
+  lifecycle {
+    ignore_changes = [display_name]
+  }
+}
+`, name, cloudID, groupID, networkServerID, zonePoolID, cidr, gateway)
+}
+
+// TestAccMorpheusNetworkTypedJuniperSdn exercises the SDN plugin's juniperSdn
+// virtual network type: a network scoped to an HVM cluster resource pool
+// (zonePool.id) on a CN2 controller. Only the gateway is editable after
+// create, so the update changes it; CIDR and the resource pool are immutable.
+func TestAccMorpheusNetworkTypedJuniperSdn(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.JuniperSDN)
+	f := testhelpers.RequireSdnFixture(t)
+
+	t.Parallel()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	const rn = "hpe_morpheus_network.sdn"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: typedLifecycle{
+			resourceName: rn,
+			create: juniperSdnNetworkConfig(
+				name, f.CloudID, f.GroupID, f.NetworkServerID, f.ClusterPoolID,
+				"10.90.0.0/24", "10.90.0.1"),
+			createChecks: []resource.TestCheckFunc{
+				attr(rn, "type_code", "juniperSdn"),
+				attr(rn, "zone_pool_id", f.ClusterPoolID),
+				attr(rn, "cidr", "10.90.0.0/24"),
+				attr(rn, "gateway", "10.90.0.1"),
+			},
+			// The plugin refuses a gateway change after creation (verified live:
+			// "Gateway cannot be modified after network creation"), and edits
+			// nothing else on this type, so the only lifecycle change is a
+			// replacement.
+			replace: juniperSdnNetworkConfig(
+				name, f.CloudID, f.GroupID, f.NetworkServerID, f.ClusterPoolID,
+				"10.90.0.0/24", "10.90.0.2"),
+			importIgnore: []string{"network_server_id"},
+		}.steps(),
+	})
+}

@@ -54,6 +54,16 @@ const (
 	NSXV Capability = "nsxv"
 	ACI  Capability = "aci"
 
+	// JuniperSDN marks tests that exercise the HPE Morpheus SDN (Juniper CN2)
+	// network surfaces: the SDN network server, SDN virtual networks, SDN and
+	// BGP routers, the SDN load balancer and its monitors, and floating IPs.
+	// These need the HPE Morpheus SDN network plugin installed, Morpheus >=
+	// 9.1.0, and an HVM cluster whose cloud points at the SDN network server.
+	// No reference appliance has the plugin, so these tests skip unless that
+	// infrastructure is advertised and the matching fixture (see
+	// testhelpers.RequireSdnFixture) is supplied.
+	JuniperSDN Capability = "juniper_sdn"
+
 	// Network Features
 	Network             Capability = "network"
 	NetworkDHCP         Capability = "network_dhcp"

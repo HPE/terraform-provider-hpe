@@ -24,6 +24,7 @@ var _ fmt.Stringer
 // LoadBalancerCreateConfig Configuration object with parameters that vary by load balancer type.
 type LoadBalancerCreateConfig struct {
 	HAProxyLoadBalancerConfigObject1 *HAProxyLoadBalancerConfigObject1
+	JuniperSDNLoadBalancerConfig1    *JuniperSDNLoadBalancerConfig1
 	NSXTLoadBalancerConfigObject1    *NSXTLoadBalancerConfigObject1
 	MapmapOfStringAny                *map[string]interface{}
 }
@@ -37,6 +38,12 @@ func (dst *LoadBalancerCreateConfig) UnmarshalMapstructure(data any) (any, error
 
 	if IsEmpty(dst.HAProxyLoadBalancerConfigObject1) {
 		dst.HAProxyLoadBalancerConfigObject1 = nil
+	}
+
+	mapstructDecode(data, &dst.JuniperSDNLoadBalancerConfig1)
+
+	if IsEmpty(dst.JuniperSDNLoadBalancerConfig1) {
+		dst.JuniperSDNLoadBalancerConfig1 = nil
 	}
 
 	mapstructDecode(data, &dst.NSXTLoadBalancerConfigObject1)
@@ -75,6 +82,26 @@ func (dst *LoadBalancerCreateConfig) UnmarshalJSON(data []byte) error {
 		}
 	} else {
 		dst.HAProxyLoadBalancerConfigObject1 = nil
+	}
+
+	// try to unmarshal JSON data into JuniperSDNLoadBalancerConfig1
+	err = json.Unmarshal(data, &dst.JuniperSDNLoadBalancerConfig1)
+	if err == nil {
+		jsonJuniperSDNLoadBalancerConfig1, merrJuniperSDNLoadBalancerConfig1 := json.Marshal(dst.JuniperSDNLoadBalancerConfig1)
+		var zeroJuniperSDNLoadBalancerConfig1 JuniperSDNLoadBalancerConfig1
+		jsonZeroJuniperSDNLoadBalancerConfig1, _ := json.Marshal(&zeroJuniperSDNLoadBalancerConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrJuniperSDNLoadBalancerConfig1 != nil || string(jsonJuniperSDNLoadBalancerConfig1) == "{}" || (len(jsonJuniperSDNLoadBalancerConfig1) > 0 && jsonJuniperSDNLoadBalancerConfig1[0] == '{' && string(jsonJuniperSDNLoadBalancerConfig1) == string(jsonZeroJuniperSDNLoadBalancerConfig1)) {
+			dst.JuniperSDNLoadBalancerConfig1 = nil
+		} else {
+			return nil // data stored in dst.JuniperSDNLoadBalancerConfig1, return on the first match
+		}
+	} else {
+		dst.JuniperSDNLoadBalancerConfig1 = nil
 	}
 
 	// try to unmarshal JSON data into NSXTLoadBalancerConfigObject1
@@ -130,6 +157,10 @@ func (dst *LoadBalancerCreateConfig) UnmarshalJSON(data []byte) error {
 func (src LoadBalancerCreateConfig) MarshalJSON() ([]byte, error) {
 	if src.HAProxyLoadBalancerConfigObject1 != nil {
 		return json.Marshal(&src.HAProxyLoadBalancerConfigObject1)
+	}
+
+	if src.JuniperSDNLoadBalancerConfig1 != nil {
+		return json.Marshal(&src.JuniperSDNLoadBalancerConfig1)
 	}
 
 	if src.NSXTLoadBalancerConfigObject1 != nil {

@@ -15,6 +15,7 @@ import (
 //go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer/example_haproxy.tf example_haproxy.tf.tmpl Name "example-terraform-haproxy-lb" Description "HAProxy load balancer" CloudName "hvm" GroupName "Zodiac" PlanId "8" Pool "pool-1" Visibility "public"
 //go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer/example_haproxy_generic.tf example_haproxy_generic.tf.tmpl Name "example-terraform-haproxy-lb" Description "HAProxy load balancer via generic config" CloudName "hvm" GroupName "Zodiac" TypeCode "haproxyContainer" PlanId "8" Pool "pool-1" Visibility "public"
 //go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer/example_nsxt.tf example_nsxt.tf.tmpl NetworkServerId "5" Name "example-terraform-nsxt-lb" TypeCode "nsx-t" Visibility "public" AdminState "true" LogLevel "INFO" Size "SMALL" Tier1Gateway "\"tier1-gateway\""
+//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer/example_juniper_sdn.tf example_juniper_sdn.tf.tmpl Name "example-terraform-sdn-lb" TypeCode "juniper-sdn-lb" Visibility "public" CloudId "1" NetworkServerId "5" ResourcePoolId "1" VirtualNetworkUid "\"0be6b79b-757c-4d92-affc-8084e328cb4c\"" VirtualIp "10.90.0.100" SourcePort "80" DestinationPort "8080" Protocol "TCP"
 
 func RenderLoadBalancerHAProxyConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
@@ -189,4 +190,45 @@ data "hpe_morpheus_network_router" "lb_tier1" {
   id = hpe_morpheus_network_router.lb_tier1.id
 }
 `, nil
+}
+
+func RenderLoadBalancerJuniperSdnConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":              "example-terraform-sdn-lb",
+		"TypeCode":          "juniper-sdn-lb",
+		"Visibility":        "public",
+		"CloudId":           "1",
+		"NetworkServerId":   "5",
+		"ResourcePoolId":    "1",
+		"VirtualNetworkUid": `"0be6b79b-757c-4d92-affc-8084e328cb4c"`,
+		"VirtualIp":         "10.90.0.100",
+		"SourcePort":        "80",
+		"DestinationPort":   "8080",
+		"Protocol":          "TCP",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "example_juniper_sdn.tf.tmpl")
+
+	return testhelpers.RenderExample(
+		t,
+		templatePath,
+		args...,
+	)
 }
