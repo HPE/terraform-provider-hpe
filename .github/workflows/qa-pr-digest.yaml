@@ -2,11 +2,13 @@
 
 name: QA PR Digest
 
-# Posts a daily "Pending QA" message to Slack listing this repo's open pull
-# requests that are approved AND labelled "Needs QA" - the ones waiting only
-# on QA sign-off. The companion Open PR digest workflow (pr-digest.yaml)
-# applies the complementary rule and leaves exactly those out, so every open
-# PR is listed by one workflow or the other. Change the two rules together.
+# Posts a daily "Pending QA" message to Slack listing this repo's MERGED pull
+# requests that are still labelled "Needs QA" - the changes on a dev branch
+# that QA have yet to test. Pull requests merge as soon as they are reviewed
+# and QA test them on the dev branch afterwards, so the queue is made of merged
+# pull requests, not open ones. The companion Open PR digest workflow
+# (pr-digest.yaml) lists every open pull request, so between them the two
+# cover everything awaiting a developer or QA.
 #
 # It runs at 08:00 India Standard Time, the start of the QA team's working
 # day; the Open PR digest keeps its own 08:00 Europe/Dublin schedule for the
@@ -16,8 +18,10 @@ name: QA PR Digest
 # require QA"), so its arrival every morning doubles as a heartbeat that the
 # workflow ran. Do not add an early exit for the empty case.
 #
-# The GitHub label stays "Needs QA" (it is also the merge lock enforced by
-# the needs-qa workflow); "Pending QA - Approved PRs with the "Needs QA"
+# The label is what holds a change back from the release line: the
+# release-gate workflow refuses a commit whose pull request still carries it.
+# When QA report a pass the developer replaces it with "QA Approved", and the
+# pull request leaves this list. "Pending QA - Merged PRs with the "Needs QA"
 # label:" is only the title line of the Slack message.
 #
 # Delivery reuses the Open PR digest's Slack Workflow Builder *webhook
@@ -55,7 +59,7 @@ concurrency:
 
 env:
   MAX_PRS: '20'
-  # Exact label name; the same string the needs-qa workflow matches on.
+  # Exact label name; the same string the release-gate workflow matches on.
   QA_LABEL: 'Needs QA'
 
 jobs:
@@ -73,29 +77,45 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Keep the open, non-draft PRs that are approved AND labelled Needs
-          # QA. "approved" is GitHub's own merge-gate verdict: reviewDecision
-          # is APPROVED only when the required approvals are present, nothing
-          # is CHANGES_REQUESTED and - because the dev-* ruleset requires
-          # conversation resolution - no review thread is unresolved (it is
-          # null, printed as "", while one is). A labelled PR that is not yet
-          # approved stays in the Open PR digest until it is.
-          prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
-                  --json title,url,isDraft,labels,reviewDecision \
-                | jq -c --arg label "$QA_LABEL" '
-                    [ .[] | select((.isDraft | not)
-                                   and .reviewDecision == "APPROVED"
-                                   and any(.labels[]; .name == $label)) ]')
+          # Merged pull requests still labelled Needs QA, oldest merge first
+          # so the change that has waited longest heads the list. A merged
+          # pull request was reviewed by definition, so there is no approval
+          # test here. An open pull request with the label is not listed: it
+          # is still the developers' to merge, and the Open PR digest has it.
+          #
+          # Everything is fetched before sorting: taking only the newest few
+          # and then sorting would drop the oldest, which are the ones this
+          # message exists to surface.
+          #
+          # Not `gh pr list --label`: with a label filter it goes through
+          # GitHub's search, which returns at most 1000 results however high
+          # --limit is set, and gives no sign that it stopped. This pages
+          # through the repository's pull requests directly, which has no such
+          # cap, so the list and the count are complete. If a page fails, the
+          # step fails; a partial queue is never posted as if it were whole.
+          prs=$(gh api graphql --paginate \
+                  -f owner="${GITHUB_REPOSITORY%/*}" -f name="${GITHUB_REPOSITORY#*/}" -f label="$QA_LABEL" \
+                  -f query='
+                    query($owner: String!, $name: String!, $label: String!, $endCursor: String) {
+                      repository(owner: $owner, name: $name) {
+                        pullRequests(states: MERGED, labels: [$label], first: 100, after: $endCursor) {
+                          nodes { title url mergedAt }
+                          pageInfo { hasNextPage endCursor }
+                        }
+                      }
+                    }' \
+                  --jq '.data.repository.pullRequests.nodes[]' \
+                | jq -s -c 'sort_by(.mergedAt)')
 
           count=$(jq -r 'length' <<<"$prs")
 
           # The title is the first line of the list because the shared
           # trigger's heading is fixed on the Slack side (see the header
           # comment); it names the label via $label so the two never drift
-          # apart. Every PR here is approved by definition, so unlike the
-          # Open PR digest there are no ✅ marks.
+          # apart. Every PR here is merged and reviewed, so unlike the Open PR
+          # digest there are no ✅ marks.
           body=$(jq -r --argjson max "${MAX_PRS}" --arg label "$QA_LABEL" '
-                   "Pending QA - Approved PRs with the \"\($label)\" label:\n"
+                   "Pending QA - Merged PRs with the \"\($label)\" label:\n"
                    + (if length == 0 then "No PRs currently require QA" else
                         length as $n
                         | (.[:$max] | map("• \(.title) — \(.url)") | join("\n"))
