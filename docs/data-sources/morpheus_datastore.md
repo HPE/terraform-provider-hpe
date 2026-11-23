@@ -60,7 +60,7 @@ data "hpe_morpheus_datastore" "example" {
 
 ### Optional
 
-- `cluster_id` (Number) Cluster whose datastores the lookup is limited to. Every HVM cluster has datastores of its own — `local`, `morpheus-cloud-init`, `morpheus-images` — so with two clusters on an appliance a lookup by `name` alone finds one of each and fails. Set `cluster_id` to look the name up among that cluster's datastores only; with `id`, the datastore must be one of that cluster's. A filter on the lookup, not an attribute of the datastore: it is never returned.
+- `cluster_id` (Number) Cluster whose datastores the lookup is limited to. Every HVM cluster has datastores of its own — `local`, `morpheus-cloud-init`, `morpheus-images` — so with two clusters on an appliance a lookup by `name` alone finds one of each and fails. Set `cluster_id` to look the name up among that cluster's datastores only; with `id`, the datastore must be one of that cluster's. A filter on the lookup, not an attribute of the datastore: the API does not report it, and the value is the one given.
 - `id` (Number) The ID of the datastore
 - `name` (String) The name of the datastore. Must not be empty. Clusters' datastores share names (`local` on every HVM cluster); see `cluster_id`.
 

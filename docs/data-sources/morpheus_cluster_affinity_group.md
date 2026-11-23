@@ -62,7 +62,7 @@ data "hpe_morpheus_cluster_affinity_group" "example" {
 - `resource_permissions` (Attributes) Resource permissions for group access. (see [below for nested schema](#nestedatt--resource_permissions))
 - `servers` (Set of Number) Set of compute server IDs in the affinity group.
 - `source` (String) The source of the affinity group (e.g. user, sync).
-- `tenant_ids` (Set of Number) Tenant account IDs allowed access. The Morpheus API does not currently apply tenant assignment on affinity groups, so this is typically empty regardless of what has been requested. Tracked as MORPH-15806.
+- `tenant_ids` (Set of Number) Tenant account IDs allowed access. On Morpheus 9.0.x a group that was given tenant permissions answers its own read with a server error from then on, so no tenants are reported (MORPH-15806); the master tenant's groups report them from 9.1.0, and a sub-tenant's from 9.1.2.
 - `visibility` (String) The visibility of the affinity group.
 - `vm_group` (Attributes) The VM Group side of a combined VM-to-Host rule. Null for a legacy VM-to-VM rule. When present, `hostGroup` is also present and `servers` is empty. (see [below for nested schema](#nestedatt--vm_group))
 
