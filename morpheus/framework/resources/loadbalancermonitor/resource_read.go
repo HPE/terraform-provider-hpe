@@ -209,9 +209,13 @@ func getLoadBalancerMonitorAsState(
 		}
 
 		state.Config = ConfigValue{
-			Monitor:       monitorObjVal,
-			MonitorConfig: monitorConfigDyn,
-			state:         attr.ValueStateKnown,
+			HttpMethod:     convert.StrToType(cfg.HttpMethod.Get()),
+			HttpUri:        convert.StrToType(cfg.HttpUri.Get()),
+			HttpPort:       convert.Int64ToType(cfg.HttpPort.Get()),
+			HttpReturnCode: convert.StrToType(cfg.HttpReturnCode.Get()),
+			Monitor:        monitorObjVal,
+			MonitorConfig:  monitorConfigDyn,
+			state:          attr.ValueStateKnown,
 		}
 	} else {
 		state.Config = NewConfigValueNull()
@@ -246,4 +250,52 @@ func preserveUnreturnedFields(
 		!prior.DataLength.IsNull() && !prior.DataLength.IsUnknown() {
 		state.DataLength = prior.DataLength
 	}
+}
+
+// overlayPlanConfig returns the config block to record after an apply: the
+// planned value for every attribute the practitioner set (the API may not echo
+// those verbatim), and the read-back value for every attribute that was unknown
+// in the plan (the computed monitor / monitor_config), so no unknown survives
+// into state.
+func overlayPlanConfig(ctx context.Context, plan, read ConfigValue) ConfigValue {
+	if plan.IsNull() || plan.IsUnknown() {
+		return read
+	}
+
+	out := read
+	if read.IsNull() || read.IsUnknown() {
+		// Nothing was read back, so start from typed nulls: the zero value's
+		// untyped object and dynamic cannot be written to state.
+		out = ConfigValue{
+			HttpMethod:     types.StringNull(),
+			HttpUri:        types.StringNull(),
+			HttpPort:       types.Int64Null(),
+			HttpReturnCode: types.StringNull(),
+			Monitor:        types.ObjectNull(MonitorValue{}.AttributeTypes(ctx)),
+			MonitorConfig:  types.DynamicNull(),
+			state:          attr.ValueStateKnown,
+		}
+	}
+
+	if !plan.HttpMethod.IsUnknown() {
+		out.HttpMethod = plan.HttpMethod
+	}
+	if !plan.HttpUri.IsUnknown() {
+		out.HttpUri = plan.HttpUri
+	}
+	if !plan.HttpPort.IsUnknown() {
+		out.HttpPort = plan.HttpPort
+	}
+	if !plan.HttpReturnCode.IsUnknown() {
+		out.HttpReturnCode = plan.HttpReturnCode
+	}
+	if !plan.Monitor.IsUnknown() {
+		out.Monitor = plan.Monitor
+	}
+	if !plan.MonitorConfig.IsUnknown() {
+		out.MonitorConfig = plan.MonitorConfig
+	}
+	out.state = attr.ValueStateKnown
+
+	return out
 }

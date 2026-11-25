@@ -134,9 +134,40 @@ same way until its first apply.
 
 Network types managed by a network plugin — the HVM port group types among them — belong to a
 **network server**, and Morpheus 9.1 requires it on create: `network_server_id`. For an HVM cluster
-the network server is the cluster's own, hidden from the ordinary listing; find it with
-`GET /api/networks/servers?showHidden=true` (it is named after the cluster, `<cluster> HVM Network
-Server`). Morpheus does not return it on a network, so the configured value is kept in state.
+the network server is the cluster's own, hidden from the ordinary listing but found by the
+`hpe_morpheus_network_server` data source by its name, `<cluster> HVM Network Server`. Morpheus
+does not return it on a network, so the configured value is kept in state.
+
+### HVM networks on a virtual switch
+
+On a Morpheus 9.1 HVM cluster with per-cluster virtual switches (`hpe_morpheus_virtual_switch`), an
+HVM network is bound to a switch, and each HVM type names it differently:
+
+| Type | Attribute | Bound to |
+|---|---|---|
+| `ovsPortGroup` (standard network) | `switch_id` | the virtual switch, by its libvirt network name (`hvmnetN`) — see below |
+| `hvmPortGroupPrivateNetwork` | `config_hvm_private.virtual_switch_id` (layout `VSWITCH`) | the virtual switch |
+| `hvmPortGroupDataNetwork` | `config_hvm_data.virtual_switch_segment_id` (layout `VSWITCH`) | a data-traffic segment of a switch, e.g. `hpe_morpheus_virtual_switch.x.segments["nfs"].id` |
+
+The libvirt network name is not an attribute of the switch; Morpheus hands it out through the
+`hvm-vswitch-or-router` option source, keyed by the switch's name, so look it up with
+`hpe_morpheus_option_source_value` as the example shows. On a cluster without virtual switches
+`switch_id` is the OVS bridge router instead, and the two typed blocks take the `HOST_INTERFACE`
+layout. The switch (or its segment) is required by the
+network type; the provider cannot tell at plan time which layout a cluster has, so a missing or
+mismatched value is reported by Morpheus at apply.
+
+Morpheus enforces the binding on both sides:
+
+- the switch must belong to the network's cluster (`zone_pool_id`); a standard network carrying
+  VM traffic is placed on the switch's `vm` segment, which the switch must have;
+- the network's `vlan_id`, and every VLAN in `config_ovs_port_group.vlan_trunks`, must not collide
+  with the `vlan_id` of a segment on the same switch;
+- while a network references a switch, the switch cannot be deleted and its MTU cannot be changed.
+  Derive the network's `switch_id` (or segment id) from the `hpe_morpheus_virtual_switch`
+  resource, as the example does, so that Terraform destroys the network first.
+
+{{ tffile "examples/resources/morpheus_network/example_on_virtual_switch.tf" }}
 
 ### Visibility and tenants
 
@@ -152,6 +183,12 @@ cloud, or on an HVM cluster's hosts — afterwards, so the provider waits for th
 `provisioning` state before reading it back (a failed provisioning is an error at apply, with the
 network left for inspection). On destroy it waits until the network is gone, and reports Morpheus's
 own message if the delete is refused.
+
+An HVM data network on a virtual switch segment (`config_hvm_data.virtual_switch_segment_id`) also
+waits, before the create, until Morpheus has recorded the segment's host interface: a segment just
+added to a switch has none until the cluster's next inventory sync (every few minutes), and Morpheus
+cannot build the network without it. This is what lets a switch and a data network on one of its
+segments be applied together; the wait is bounded at twelve minutes.
 
 Morpheus keeps one network record **per cloud**. When two clouds cover the same account, the network
 you create through one is discovered by the other on its next refresh as a separate record under the
@@ -240,7 +277,10 @@ seconds (NSX-T's default is 86400).
 ### OVS Port Group Network (HVM standard network)
 
 The port group's virtual switch, VLAN and resource pool are the top-level `switch_id`, `vlan_id`
-and `zone_pool_id`; `switch_id` replaces the network when changed, `vlan_id` is updated in place.
+and `zone_pool_id`; `switch_id` replaces the network when changed (an HVM standard network cannot
+edit it), `vlan_id` is updated in place.
+On a 9.1 cluster with virtual switches `switch_id` is the switch's libvirt network name — see
+[HVM networks on a virtual switch](#hvm-networks-on-a-virtual-switch).
 
 {{ tffile "examples/resources/morpheus_network/example_ovs_port_group.tf" }}
 

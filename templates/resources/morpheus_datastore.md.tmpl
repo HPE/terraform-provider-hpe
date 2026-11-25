@@ -47,6 +47,21 @@ $ curl -H "Authorization: Bearer $MORPHEUS_API_TOKEN" <morpheus-url>/api/data-st
 
 -> Note that Morpheus version `8.0.13` or later is required for BMaaS datastore support.
 
+A BMaaS datastore is associated with an HPE Bare Metal cloud and must be created in a **resource pool of that
+cloud** (`resource_pool.id`). Resource pool IDs are allocated per appliance, so resolve the pool rather than
+writing an ID into the configuration. There is no resource pool data source yet, but the `zonePools` option
+source lists a cloud's pools, so `hpe_morpheus_option_source_value` resolves one by name -- every HPE Bare
+Metal cloud has a `Default` pool -- and that is what the example does, alongside the storage server, group and
+tenant resolved by name with their own data sources. To use an ID instead, list the cloud's pools with the API:
+
+```bash
+$ curl -H "Authorization: Bearer $MORPHEUS_API_TOKEN" <morpheus-url>/api/clouds/<cloud-id>/resource-pools | jq '.resourcePools[] | {id, name}'
+```
+
+An ID that names no resource pool is rejected by Morpheus as `zonePool.id: Required fields are missing`
+(`zonePool` is the API's name for `resource_pool`); the provider's error then lists the pools the cloud does
+have.
+
 {{ tffile "morpheus/framework/resources/datastore/example_alletramp_bm.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}

@@ -58,8 +58,8 @@ func NetworkServerDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the network server (integration). Must not be empty.",
-				MarkdownDescription: "The name of the network server (integration). Must not be empty.",
+				Description:         "The name of the network server (integration). Must not be empty. Servers hidden from the ordinary listing — a cluster's own, such as an HVM cluster's `<cluster> HVM Network Server` — are found too, by name or by `id`.",
+				MarkdownDescription: "The name of the network server (integration). Must not be empty. Servers hidden from the ordinary listing — a cluster's own, such as an HVM cluster's `<cluster> HVM Network Server` — are found too, by name or by `id`.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 					stringvalidator.LengthAtLeast(1),

@@ -38,8 +38,8 @@ func PluginResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config": schema.DynamicAttribute{
 				Optional:            true,
-				Description:         "Plugin configuration values keyed by the plugin's option type field names. Wrap secret values with `sensitive()`.",
-				MarkdownDescription: "Plugin configuration values keyed by the plugin's option type field names. Wrap secret values with `sensitive()`.",
+				Description:         "Plugin configuration values keyed by the plugin's option type field names.",
+				MarkdownDescription: "Plugin configuration values keyed by the plugin's option type field names.",
 			},
 			"date_created": schema.StringAttribute{
 				Computed:            true,
@@ -92,8 +92,8 @@ func PluginResourceSchema(ctx context.Context) schema.Schema {
 			"jar_sha256": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Hex-encoded SHA-256 of the plugin jar. Set it (for example with `filesha256()` or the Morpheus Exchange `shaHash`) to have the jar verified before upload and re-uploaded when its contents change; computed from the uploaded jar when omitted.",
-				MarkdownDescription: "Hex-encoded SHA-256 of the plugin jar. Set it (for example with `filesha256()` or the Morpheus Exchange `shaHash`) to have the jar verified before upload and re-uploaded when its contents change; computed from the uploaded jar when omitted.",
+				Description:         "Hex-encoded SHA-256 of the plugin jar, for example the Morpheus Exchange `shaHash`. When set, the jar is verified against it before it is uploaded; when omitted, it is computed from the jar.",
+				MarkdownDescription: "Hex-encoded SHA-256 of the plugin jar, for example the Morpheus Exchange `shaHash`. When set, the jar is verified against it before it is uploaded; when omitted, it is computed from the jar.",
 				PlanModifiers: []planmodifier.String{
 					jarSha256PlanModifier{},
 				},

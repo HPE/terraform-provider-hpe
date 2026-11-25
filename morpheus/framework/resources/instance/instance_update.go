@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -92,7 +94,7 @@ func (g *Resource) Update(
 	// applyEvarsUpdate below, which runs unconditionally and is a no-op when
 	// the planned variables match state.
 	if isUpdateCallNeeded(req.Plan.Raw, req.State.Raw) {
-		makeUpdateAPIcalls(ctx, client, plan, pending, resp)
+		makeUpdateAPIcalls(ctx, client, plan, state, pending, resp)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -117,6 +119,29 @@ func (g *Resource) Update(
 	// calls above -- this is why evars sit in neither gate. MORPH-612.
 	resp.Diagnostics.Append(applyEvarsUpdate(ctx, client, state.Id.ValueInt64(), plan, state)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// HVM host placement is an independent action, not part of the instance
+	// update request. Only call it when placement_strategy or preferred_host_id
+	// actually changed between state and plan. The overall update timeout
+	// already bounds ctx (see context.WithTimeout above), which also bounds the
+	// wait for a migration the placement triggers. On failure the changes the
+	// steps above already applied must still be recorded: re-read the instance
+	// and write it with the placement attributes null (the next plan re-applies
+	// the placement), then report the error.
+	if pdiags := applyPlacementUpdate(ctx, client, state.Id.ValueInt64(), plan, state); pdiags.HasError() {
+		if newState, found, rdiags := getInstanceAsState(ctx, state.Id.ValueInt64(), client, plan, false); found &&
+			!rdiags.HasError() {
+			newState.ServicePlanOptions = servicePlanOptions
+			if !newState.ConfigHvm.IsNull() && !newState.ConfigHvm.IsUnknown() {
+				newState.ConfigHvm.PlacementStrategy = types.StringNull()
+				newState.ConfigHvm.PreferredHostId = types.Int64Null()
+			}
+			resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+		}
+		resp.Diagnostics.Append(pdiags...)
+
 		return
 	}
 
@@ -175,6 +200,7 @@ func makeUpdateAPIcalls(
 	ctx context.Context,
 	client *sdk.APIClient,
 	plan InstanceModel,
+	state InstanceModel,
 	pending clearable.Pending,
 	resp *resource.UpdateResponse,
 ) {
@@ -205,19 +231,16 @@ func makeUpdateAPIcalls(
 		instanceUpdateRequest.Site = site
 	}
 
-	// tags
-	if !plan.Tags.IsNull() && !plan.Tags.IsUnknown() {
-		tags, diags := convert.FromSetType(ctx, plan.Tags, updateTagMapper)
-		if diags.HasError() {
-			tflog.Error(ctx, "cannot convert tags")
-			resp.Diagnostics.Append(diags...)
+	// tags: only the difference between the managed tags in the prior state
+	// and the plan, as addTags/removeTags -- the whole-list `tags` would also
+	// strip the tags Morpheus added itself (tags.go, MORPH-20973).
+	addTags, removeTags := tagChanges(state.Tags, plan.Tags)
+	if len(addTags) > 0 {
+		instanceUpdateRequest.AddTags = addTags
+	}
 
-			return
-		}
-		instanceUpdateRequest.Tags = tags
-	} else {
-		// Morpheus will only remove tags if explicitly passed an empty list
-		instanceUpdateRequest.Tags = []sdk.UpdateInstanceRequestInstanceTagsInner{}
+	if len(removeTags) > 0 {
+		instanceUpdateRequest.RemoveTags = removeTags
 	}
 
 	// labels: the planned list, or an empty list when being cleared

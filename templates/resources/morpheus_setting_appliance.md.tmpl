@@ -12,6 +12,47 @@ description: |-
 
 {{tffile "examples/resources/morpheus_setting_appliance/resource.tf"}}
 
+## How the resource behaves
+
+An appliance has exactly one set of these settings, and it always exists:
+
+- **Create applies, destroy forgets.** Creating the resource applies the configured settings to the
+  appliance's. Destroying it removes it from Terraform state only: the appliance keeps its settings,
+  since there is nothing to delete or reset them to.
+- **Only what you set is managed.** The provider sends only the settings in the configuration, and
+  only those that change. An attribute you do not set keeps the appliance's value, and removing one
+  from the configuration leaves the value on the appliance as it is. To clear a text setting, set it
+  to `""`. `smtp_from_address` cannot be emptied (the provider rejects `""` when planning), nor can
+  `default_locale` (Morpheus refuses `""` when applying, as it is not one of its locales), and the
+  numeric settings cannot be cleared.
+- **Morpheus checks the values.** A value outside the range an attribute's description gives (a
+  cloud sync interval under 300 seconds, say) or a locale the appliance does not offer is refused,
+  and the apply fails with Morpheus' message.
+- **Tenant registration and the default roles go together.** `registration_enabled`,
+  `default_role_id` and `default_user_role_id` must be set together. Morpheus checks that both roles
+  exist when registration is enabled.
+
+## Write-only credentials
+
+`smtp_password`, `proxy_password`, `currency_provider_api_key` and `twilio_auth_token` are write-only:
+they are sent to Morpheus but never stored in Terraform state, which needs Terraform 1.11 or later (or
+OpenTofu 1.11 or later). A change to one in the configuration is detected through a digest kept in
+the resource's private state and surfaces as a change to the computed `write_only_revision`
+attribute, which plans an in-place update that re-sends the configured credentials. A credential
+changed on the appliance outside Terraform is detected too, from the hash Morpheus reports for the
+stored value, and the next plan re-sends the configured one; Morpheus reports no hash for
+`twilio_auth_token`, so a change made to it outside Terraform is not detected. A credential you do
+not set is left as it is on the appliance.
+
+## Limitations
+
+- **Every update resets the plugin exchange URL.** Morpheus resets the URL it checks for plugin
+  updates to `https://share.morpheusdata.com` on every settings update that does not carry it, and
+  its API does not accept one. If your appliance uses another plugin exchange, set its URL again in
+  the Morpheus UI after applying.
+- `smtp_from_address` reads back as `info@gomorpheus.com` when the appliance has no address set, so
+  it cannot be set to `""`: the provider rejects an empty value when planning.
+
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import
@@ -19,3 +60,32 @@ description: |-
 Import is supported using the following syntax:
 
 {{codefile "shell" "examples/resources/morpheus_setting_appliance/import.sh" }}
+
+The settings are a singleton, so the import ID identifies nothing and any value works. The write-only
+credentials are not stored in state, so the import cannot tell whether the values in your
+configuration match the appliance's: they are taken as already applied, the plan after import is
+empty, and a later change to one is only detected once the resource is next updated for another
+reason (Terraform warns about this on every plan until then). To have changes detected from the
+start, append the sha256 digest of each configured credential to the import ID, as shown above.
+
+## Upgrading from an earlier version
+
+Earlier versions of the provider implemented this resource with the legacy plugin SDK. Existing state
+is upgraded in place:
+
+- The first plan after upgrading shows one `~ write_only_revision` update, which re-sends the
+  configured credentials and records their digests; the plans after it are clean.
+- `smtp_password`, `proxy_password` and `currency_provider_api_key` are write-only: they are no
+  longer stored in state, and a configuration that sets any of them needs Terraform 1.11 or later
+  (or OpenTofu 1.11 or later). The previous version kept the appliance's password hashes in the two
+  passwords, and the currency key in clear.
+- `stats_retainment_period` now takes effect: the previous version accepted it but never sent it, so a
+  configuration that sets it changes the appliance's stats retention on the first apply after
+  upgrading. It accepts 30, 60 or 90.
+- The resource manages more settings than the previous version: the password policy, browser
+  sessions, user deactivation, Twilio, the sync intervals, the other retention periods, the HTTP task
+  hosts, the Agent and SSH flags, the default locale and VDI gateway, the option-list size, dashboards
+  and Murph. They are read from the appliance and sent only when configured, so the upgrade changes
+  none of them.
+- `smtp_port`, `proxy_port`, `default_role_id` and `default_user_role_id` are numbers in state;
+  configurations that quote them keep working.

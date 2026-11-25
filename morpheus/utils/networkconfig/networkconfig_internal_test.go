@@ -158,6 +158,34 @@ func TestUnitRouteOvsPortGroup(t *testing.T) {
 	}
 }
 
+func TestUnitRouteDhcpProfilePathOverDeprecatedId(t *testing.T) {
+	t.Parallel()
+
+	// subnet_ip_server_id (deprecated, int64) and subnet_ip_server_path both
+	// set the config key subnetIpServerId. The schema's ConflictsWith rejects
+	// a configuration carrying both; this pins the fallback should a value
+	// for each ever reach Route: the path is sent, not the id.
+	for _, attr := range []string{"config_nsxt", "config_nsx_cloud"} {
+		b, ok := BlockFor(attr)
+		if !ok {
+			t.Fatalf("%s must be declared", attr)
+		}
+
+		all, _ := Route(nil, &b, nil, map[string]any{
+			"subnet_ip_server_id":   int64(7),
+			"subnet_ip_server_path": "/infra/dhcp-server-configs/x",
+		})
+
+		if all["subnetIpServerId"] != "/infra/dhcp-server-configs/x" {
+			t.Errorf("%s: the path must take precedence over the deprecated id, got %v", attr, all["subnetIpServerId"])
+		}
+
+		if len(all) != 1 {
+			t.Errorf("%s: both attributes route to the one key, got %v", attr, all)
+		}
+	}
+}
+
 func TestUnitRouteImmutableSubset(t *testing.T) {
 	t.Parallel()
 
@@ -436,5 +464,54 @@ func TestUnitUndeclaredFieldsAndKeys(t *testing.T) {
 
 	if keys := UndeclaredKeys(older, nil); len(keys) != 0 {
 		t.Errorf("no config, no keys: %v", keys)
+	}
+}
+
+// The plugin table supplements the harvested catalogue; a code in both means
+// the harvest has caught up with the plugin and the hand entry must go.
+func TestPluginTypesDoNotShadowTheHarvestedCatalogue(t *testing.T) {
+	t.Parallel()
+
+	for code, typ := range pluginTypes {
+		if _, ok := knownTypes[code]; ok {
+			t.Errorf("%s is in both the generated and the plugin table; remove it from plugin_types.go", code)
+		}
+
+		if typ.Code != code {
+			t.Errorf("plugin type %s has Code %q", code, typ.Code)
+		}
+
+		if code == "juniperSdn" {
+			// The SDN network is scoped by zonePool.id; both the flag and the
+			// field must say so, or the pool is silently not sent.
+			if !typ.Flags.CanAssignPool {
+				t.Errorf("%s: CanAssignPool must be set, the SDN network is scoped by zonePool.id", code)
+			}
+
+			if _, ok := typ.Field("zonePool.id"); !ok {
+				t.Errorf("%s: zonePool.id is missing from its fields", code)
+			}
+		}
+	}
+}
+
+// TestBehaviourOverridesBeatTheLiveDeclaration proves that a type whose
+// appliance declaration is known to be wrong is corrected both when it comes
+// from the API and from the built-in table, so plan-time replacement rules do
+// not depend on which source answered.
+func TestBehaviourOverridesBeatTheLiveDeclaration(t *testing.T) {
+	t.Parallel()
+
+	live, err := FromAPI(map[string]any{"code": "juniperSdn", "name": "SDN", "gatewayEditable": true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if live.Flags.Gateway {
+		t.Fatal("live juniperSdn: gateway still editable despite the override")
+	}
+
+	builtin, ok := Lookup("juniperSdn")
+	if !ok || builtin.Flags.Gateway {
+		t.Fatalf("built-in juniperSdn: ok=%v gateway editable=%v", ok, builtin.Flags.Gateway)
 	}
 }

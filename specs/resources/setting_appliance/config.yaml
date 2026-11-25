@@ -1,0 +1,340 @@
+setting_appliance:
+  description: "Manages the Morpheus appliance settings. This is a singleton resource — only one instance exists and it cannot be deleted; attributes left unset are left as they are on the appliance."
+  # Every setting PUT /api/appliance-settings takes is an attribute, bar the
+  # four cloud-type commands noted under `removes`. The read-only echoes of
+  # the GET response and the PUT's success envelope are removed.
+  #
+  # The API stores every setting as a string and reports it so (the GET types
+  # them all as strings, the ports and role ids included), while the PUT body
+  # types most numbers as integers and a few as strings (proxyPort, the
+  # password-policy and session-timeout values); the appliance accepts either
+  # form. The integers are integers here, through `templates` where the PUT
+  # types them as strings.
+  #
+  # There is no `id`: the settings are a singleton the API identifies by
+  # nothing, and the Ansible generator treats a resource without a root `id`
+  # as a singleton (no `state` argument). The Terraform resource adds the `id`
+  # the sdkv2 resource had (always "1") itself, in Go.
+  #
+  # The optional+computed attributes use the prior state when unconfigured
+  # (state_for_unknown): the provider sends only the settings that change, so
+  # the others keep their values and a plan shows only what changes.
+  #
+  # The registration flag and the two default role ids must be configured
+  # together (as in the sdkv2 resource); that rule is a config validator in the
+  # Terraform resource, not an also_requires here, because the Ansible module
+  # deliberately lets each travel alone (it fills in the others from the
+  # appliance).
+  templates:
+    proxy_port:
+      int64:
+        computed_optional_required: computed_optional
+        description: The proxy host port.
+    password_min_length:
+      int64:
+        computed_optional_required: computed_optional
+        description: The minimum length of a user's password.
+    password_min_upper_case:
+      int64:
+        computed_optional_required: computed_optional
+        description: The minimum number of upper-case letters in a user's password.
+    password_min_numbers:
+      int64:
+        computed_optional_required: computed_optional
+        description: The minimum number of digits in a user's password.
+    password_min_symbols:
+      int64:
+        computed_optional_required: computed_optional
+        description: The minimum number of symbols in a user's password.
+    user_browser_session_timeout:
+      int64:
+        computed_optional_required: computed_optional
+        description: Minutes of inactivity after which a browser session ends.
+    user_browser_session_warning:
+      int64:
+        computed_optional_required: computed_optional
+        description: Minutes before the session timeout at which the user is warned.
+    # The API never returns the passwords themselves, only a mask and an HMAC
+    # digest (smtpPasswordHash, proxyPasswordHash) for drift detection.
+    smtp_password:
+      string:
+        computed_optional_required: optional
+        description: The password for the user account used to authenticate to the SMTP server.
+        sensitive: true
+        write_only: true
+    proxy_password:
+      string:
+        computed_optional_required: optional
+        description: The password for authenticating to the proxy.
+        sensitive: true
+        write_only: true
+    # Terraform only (the Ansible generator drops it): the marker a change to a
+    # write-only value plans an update through.
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which a write-only value (smtp_password,
+          proxy_password, currency_provider_api_key or twilio_auth_token) was last sent to Morpheus.
+          Changes whenever one of those values changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
+  moves:
+    - appliance_settings: ""
+    - cors_allowed: api_allowed_origins
+    - smtp_mail_from: smtp_from_address
+    - smtp_ssl: smtp_use_ssl
+    - smtp_tls: smtp_use_tls
+    - smtp_user: smtp_username
+    - currency_key: currency_provider_api_key
+    - agent_sslverify: agent_ssl_verify
+    - disable_sshpassword_auth: disable_ssh_password_auth
+    - default_vdi_gateway: default_vdi_gateway_id
+    - expire_pwd_days: expire_password_after_days
+    - disable_after_attempts: disable_user_after_attempts
+    - disable_after_days_inactive: disable_user_after_days_inactive
+    - warn_user_days_before: warn_user_days_before_disable
+    - template-proxy_port: proxy_port
+    - template-password_min_length: password_min_length
+    - template-password_min_upper_case: password_min_upper_case
+    - template-password_min_numbers: password_min_numbers
+    - template-password_min_symbols: password_min_symbols
+    - template-user_browser_session_timeout: user_browser_session_timeout
+    - template-user_browser_session_warning: user_browser_session_warning
+    - template-smtp_password: smtp_password
+    - template-proxy_password: proxy_password
+    - template-write_only_revision: write_only_revision
+  removes:
+    # The PUT's success envelope.
+    - success
+    # Read-only echoes of the GET response. maintenance_mode is toggled through
+    # POST /api/appliance-settings/maintenance, not this PUT.
+    - appliance_id
+    - enabled_zone_types
+    - latest_linux_agent_version
+    - latest_windows_agent_version
+    - maintenance_mode
+    - proxy_password_hash
+    - smtp_password_hash
+    - uuid
+    - vme_appliance
+    # exchangeUrl: the PUT's own validation refuses the key (it is not one of
+    # the appliance setting types the endpoint accepts), and the endpoint
+    # resets the value to its default on every update it handles. Until the
+    # API takes it, there is nothing a resource could do with it.
+    - exchange_url
+    # The cloud-type controls are commands, not state: each PUT enables or
+    # disables the cloud types named, and the state they act on is the
+    # read-only enabled_zone_types list above. They need a design of their
+    # own -- one list of the enabled cloud types, compared with the GET and
+    # applied as the complete set (the endpoint also takes `enabledZoneTypes`
+    # as such a set) -- rather than four write-only attributes.
+    - disable_all_zone_types
+    - disable_zone_types
+    - enable_all_zone_types
+    - enable_zone_types
+  overrides:
+    appliance_url:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The default URL used for Agent install and Agent functionality.
+    internal_appliance_url:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: An override for the default appliance URL when PXE boot is utilized.
+    api_allowed_origins:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: A CORS-related field which specifies the origins that are allowed to access the Morpheus API.
+    registration_enabled:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Whether tenant registration is enabled. Enabling it requires a default tenant role and a default user role to be set.
+    default_role_id:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The ID of the default tenant role assigned on registration.
+    default_user_role_id:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The ID of the default user role assigned on registration.
+    docker_privileged_mode:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Whether Docker privileged mode is enabled.
+    password_min_length:
+      state_for_unknown: true
+    password_min_upper_case:
+      state_for_unknown: true
+    password_min_numbers:
+      state_for_unknown: true
+    password_min_symbols:
+      state_for_unknown: true
+    user_browser_session_timeout:
+      state_for_unknown: true
+    user_browser_session_warning:
+      state_for_unknown: true
+    expire_password_after_days:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Days after which a user's password expires; 0 disables expiry.
+    disable_user_after_attempts:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Failed sign-in attempts after which a user is disabled; 0 disables the feature.
+    disable_user_after_days_inactive:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Days of inactivity after which a user is disabled; 0 disables the feature.
+    warn_user_days_before_disable:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Days before deactivation at which an inactive user is warned by email; 0 disables the warning.
+    smtp_from_address:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The email address to send system emails from.
+    smtp_server:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The hostname or IP address of the SMTP server.
+    smtp_port:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The SMTP server port.
+    smtp_use_ssl:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Whether to use SSL when connecting to the SMTP server.
+    smtp_use_tls:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Whether to use TLS when connecting to the SMTP server.
+    smtp_username:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The username for the user account used to authenticate to the SMTP server.
+    proxy_host:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The hostname or IP address of the proxy host.
+    proxy_port:
+      state_for_unknown: true
+    proxy_user:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The username for authenticating to the proxy.
+    proxy_domain:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The proxy domain name.
+    proxy_workstation:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The proxy workstation.
+    no_proxy:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Comma-separated hosts, domains or CIDR ranges the appliance reaches directly rather than through the proxy (for example `10.0.0.0/8,localhost,127.0.0.1`).
+    currency_provider:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The currency provider (openexchange or fixer).
+      one_of: [openexchange, fixer]
+    currency_provider_api_key:
+      # Returned in clear by the API (unlike the passwords, which it masks),
+      # but a credential all the same: sensitive and write-only, so it is never
+      # reported. It can still be compared with the value the API returns, so a
+      # key that is already set need not be a change.
+      computed_optional_required: optional
+      description: The API key for the currency provider.
+      sensitive: true
+      write_only: true
+    twilio_account_sid:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The Twilio account SID for SMS notifications.
+    twilio_sms_from:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The Twilio phone number SMS notifications are sent from.
+    twilio_auth_token:
+      # A credential the GET masks as it masks the passwords (no digest): it
+      # can only ever be sent, never compared.
+      computed_optional_required: optional
+      description: The Twilio auth token for SMS notifications.
+      sensitive: true
+      write_only: true
+    cloud_sync_interval_seconds:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Seconds between two syncs of a cloud (at least 300).
+    cluster_sync_interval_seconds:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Seconds between two syncs of a cluster (at least 60).
+    usage_retainment_period:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Days usage data is retained (1 to 365).
+    invoice_retainment_period:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Days invoices are retained (at least 1).
+    incident_retainment_period:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Days incidents are retained.
+    stats_retainment_period:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: "Days stats are retained: 30, 60 or 90."
+      # What the endpoint accepts (it refuses any other value).
+      one_of: [30, 60, 90]
+    reports_retainment_period:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Days reports are retained (0 or more).
+    http_blacklist_hosts:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Comma-separated IPs or hostnames that HTTP tasks and REST option lists may not reach.
+    http_approvelist_hosts:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Comma-separated IPs or hostnames that HTTP tasks and REST option lists may reach; when unset, only the deny list applies.
+    no_agent:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Whether Agent installation is disabled appliance-wide.
+    agent_ssl_verify:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Whether the Agent verifies the appliance's TLS certificate.
+    disable_ssh_password_auth:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Whether SSH password authentication to the appliance is disabled.
+    default_locale:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The appliance's default locale, which overrides the users' browser preferences.
+    default_vdi_gateway_id:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The ID of the default VDI gateway.
+    max_option_list_size:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: The maximum size of an option list, in thousands of entries (1 to 10000); raising it can slow the appliance.
+    dashboards_to_display:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Comma-separated IDs of the dashboards to display.
+    enable_murph:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: Whether the Murph AI services are enabled.

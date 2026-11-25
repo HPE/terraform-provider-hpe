@@ -4,6 +4,7 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -32,7 +33,8 @@ type fakeMorpheus struct {
 	apiCalls            atomic.Int32 // bearer-protected requests that were accepted
 	lastAcceptedAPIBody atomic.Pointer[string]
 
-	rejectAllGrants atomic.Bool // simulate a changed password: every grant 401s
+	failNextGrants  atomic.Int32 // token endpoint answers 503 this many times
+	rejectAllGrants atomic.Bool  // simulate a changed password: every grant 401s
 }
 
 func newFakeMorpheus(t *testing.T) (*fakeMorpheus, *httptest.Server) {
@@ -103,6 +105,14 @@ func (f *fakeMorpheus) handleToken(w http.ResponseWriter, r *http.Request) {
 			`error_description="An error occurred while attempting to decode the Jwt: Malformed token", `+
 			`error_uri="https://tools.ietf.org/html/rfc6750#section-3.1"`)
 		w.WriteHeader(http.StatusUnauthorized)
+
+		return
+	}
+
+	if f.failNextGrants.Load() > 0 {
+		f.failNextGrants.Add(-1)
+		w.WriteHeader(http.StatusServiceUnavailable)
+		_, _ = io.WriteString(w, `<html>503 Service Unavailable</html>`)
 
 		return
 	}
@@ -323,4 +333,47 @@ func deref(s *string) string {
 	}
 
 	return *s
+}
+
+// A re-login the token endpoint answers 503 is reported as an
+// AuthenticationError that is retryable, not refused, so a delete poll that
+// crosses the token lifetime rides out a token-endpoint blip; the next
+// request logs in again and succeeds. A refused login stays a refusal.
+func TestCredsRoundTripper_TokenEndpoint5xxIsRetryable(t *testing.T) {
+	f, srv := newFakeMorpheus(t)
+	client, _ := newTestClient(t, srv)
+
+	mustGet(t, client, srv.URL+"/api/whoami")
+	f.expireCurrent()
+	f.failNextGrants.Store(1)
+
+	_, err := client.Get(srv.URL + "/api/processes/75")
+
+	var authErr *AuthenticationError
+	if !errors.As(err, &authErr) {
+		t.Fatalf("error after a 503 refresh = %T %v, want *AuthenticationError", err, err)
+	}
+
+	if authErr.Refused || !authErr.AuthRetryable() || authErr.StatusCode != http.StatusServiceUnavailable {
+		t.Fatalf("503 refresh: refused=%v retryable=%v status=%d, want not refused, retryable, 503",
+			authErr.Refused, authErr.AuthRetryable(), authErr.StatusCode)
+	}
+
+	// The token endpoint is back: the next request logs in and succeeds.
+	resp := mustGet(t, client, srv.URL+"/api/processes/75")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status after the token endpoint recovered = %d, want 200", resp.StatusCode)
+	}
+
+	if got := f.tokenCalls.Load(); got != 3 {
+		t.Fatalf("token requests = %d, want 3 (login, failed refresh, successful refresh)", got)
+	}
+
+	f.expireCurrent()
+	f.rejectAllGrants.Store(true)
+
+	_, err = client.Get(srv.URL + "/api/processes/75")
+	if !errors.As(err, &authErr) || !authErr.Refused || authErr.AuthRetryable() {
+		t.Fatalf("refused refresh: %T %v (refused=%v), want a refused AuthenticationError", err, err, authErr != nil && authErr.Refused)
+	}
 }

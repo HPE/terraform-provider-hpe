@@ -1,0 +1,22 @@
+resource "hpe_morpheus_identity_source_active_directory" "tf_example_active_directory_identity_source" {
+  tenant_id               = {{.TenantId}}
+  name                    = "{{.Name}}"
+  description             = "{{.Description}}"
+  ad_server               = {{.AdServer}}
+  domain                  = {{.Domain}}
+  use_ssl                 = {{.UseSsl}}
+  binding_username        = {{.BindingUsername}}
+  binding_password        = {{.BindingPassword}}
+  required_group          = "{{.RequiredGroup}}"
+  search_member_groups    = {{.SearchMemberGroups}}
+  default_account_role_id = {{.DefaultAccountRoleId}}
+
+  role_mapping {
+    role_id                     = {{.RoleMappingRoleId}}
+    role_name                   = "{{.RoleMappingRoleName}}"
+    active_directory_group_name = {{.RoleMappingGroupName}}
+{{- if .RoleMappingGroupFqn }}
+    active_directory_group_fqn  = {{.RoleMappingGroupFqn}}
+{{- end }}
+  }
+}

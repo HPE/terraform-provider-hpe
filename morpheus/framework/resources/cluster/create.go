@@ -270,6 +270,34 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	plan.WriteOnlyRevision = wodigest.NewRevision()
 
+	// Attach the host profile, if one was requested. This uses the dedicated
+	// cluster host-profile endpoint rather than the cluster create body.
+	if !plan.HostProfileId.IsNull() && !plan.HostProfileId.IsUnknown() {
+		if resp.Diagnostics.Append(applyClusterHostProfile(
+			ctx, clusterId, client, plan.HostProfileId,
+		)...); resp.Diagnostics.HasError() {
+			// The cluster itself provisioned successfully; only the host-profile
+			// attach failed. The cluster ID was already persisted to state at the
+			// "write the ID now" step above, so the cluster is tracked (and, since
+			// Create returns an error, tainted) rather than leaked. Try to replace
+			// that minimal state with a fresh read so it reflects the cluster that
+			// exists on the appliance -- including whatever profile did or did not
+			// attach -- rather than tainting and destroying a healthy cluster. The
+			// attach failure is still surfaced through the diagnostics.
+			if rb, found, rdiag := getClusterAsState(
+				ctx, clusterId, client, plan,
+			); found && !rdiag.HasError() {
+				resp.Diagnostics.Append(resp.State.Set(ctx, &rb)...)
+			} else {
+				// Read-back failed: surface its diagnostics instead of
+				// dropping them. State keeps the ID written above.
+				resp.Diagnostics.Append(rdiag...)
+			}
+
+			return
+		}
+	}
+
 	state, found, diag := getClusterAsState(ctx, clusterId, client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
@@ -279,6 +307,16 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 		return
 	}
+
+	// host_profile_id is a plain Optional attribute, so Terraform requires the
+	// value in the post-apply state to equal the planned value. getClusterAsState
+	// fills it from an unconditional live read, which is what we want on Read (so
+	// out-of-band attach/detach surfaces as drift) but which could diverge from
+	// the plan here -- e.g. a profile attached out of band between the attach
+	// above and this read-back -- and trip "provider produced inconsistent result
+	// after apply". We just reconciled the appliance to the plan, so pin the
+	// planned value in state and let the next Read detect any later drift.
+	state.HostProfileId = plan.HostProfileId
 
 	// Record the appliance-hash drift baseline only now that the read-back
 	// succeeded, so private state and state move together. clusterHostHashes

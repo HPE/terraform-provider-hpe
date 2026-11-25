@@ -2,7 +2,11 @@ network_server:
   templates:
     config:
       dynamic:
-        description: Network server configuration object. Settings vary by integration type.
+        description: >-
+          Network server configuration object, as Morpheus returns it; its keys vary by
+          integration type. Morpheus masks only the top-level `service_password` and
+          `service_token`, so a type that keeps a credential inside its configuration would
+          expose it here — none of the bundled types do.
         computed_optional_required: computed
 
   moves:
@@ -34,7 +38,10 @@ network_server:
       computed_optional_required: computed_optional
     name:
       string_length_at_least: 1
-      description: The name of the network server (integration). Must not be empty.
+      description: >-
+        The name of the network server (integration). Must not be empty. Servers hidden from the
+        ordinary listing — a cluster's own, such as an HVM cluster's `<cluster> HVM Network Server` —
+        are found too, by name or by `id`.
       conflicts_with: ["id"]
       computed_optional_required: computed_optional
     service_password:

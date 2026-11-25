@@ -20,4 +20,8 @@ var clearableAttributes = clearable.Attributes{
 var notClearable = clearable.NotClearable{
 	"dhcp_server":  "boolean",
 	"pool_enabled": "boolean",
+	// Exactly one of the two range attributes is always configured; removing
+	// one means the other took over, not that the pool's ranges are cleared.
+	"ip_address_ranges": "exactly one of ip_address_ranges / ip_ranges is always set",
+	"ip_ranges":         "exactly one of ip_address_ranges / ip_ranges is always set",
 }

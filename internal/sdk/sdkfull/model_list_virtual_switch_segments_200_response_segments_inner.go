@@ -29,16 +29,18 @@ type ListVirtualSwitchSegments200ResponseSegmentsInner struct {
 	IpAddress     NullableString `json:"ipAddress,omitempty"`
 	Netmask       NullableString `json:"netmask,omitempty"`
 	Gateway       NullableString `json:"gateway,omitempty"`
-	// VLAN tag (1-4094). Null means untagged.
+	// VLAN tag (2-4094). Null means untagged.
 	VlanId NullableInt32 `json:"vlanId,omitempty"`
 	Mtu    NullableInt32 `json:"mtu,omitempty"`
 	// OVS bridge name reported by hvmcli (VM traffic only).
-	OvsBridge            NullableString         `json:"ovsBridge,omitempty"`
-	OvsUuid              NullableString         `json:"ovsUuid,omitempty"`
-	OvsLibvirtNetwork    NullableString         `json:"ovsLibvirtNetwork,omitempty"`
-	Status               *string                `json:"status,omitempty"`
-	StatusMessage        NullableString         `json:"statusMessage,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	OvsBridge         NullableString `json:"ovsBridge,omitempty"`
+	OvsUuid           NullableString `json:"ovsUuid,omitempty"`
+	OvsLibvirtNetwork NullableString `json:"ovsLibvirtNetwork,omitempty"`
+	Status            *string        `json:"status,omitempty"`
+	StatusMessage     NullableString `json:"statusMessage,omitempty"`
+	// Per-host IP address assignments for this segment. Present only when per-host IPs have been stored for the segment.
+	HostIps              []ListVirtualSwitchSegments200ResponseSegmentsInnerHostIpsInner `json:"hostIps,omitempty"`
+	AdditionalProperties map[string]interface{}                                          `json:",remain"`
 }
 
 type _ListVirtualSwitchSegments200ResponseSegmentsInner ListVirtualSwitchSegments200ResponseSegmentsInner
@@ -91,6 +93,9 @@ func (o ListVirtualSwitchSegments200ResponseSegmentsInner) ToMap() (map[string]i
 	}
 	if o.StatusMessage.IsSet() {
 		toSerialize["statusMessage"] = o.StatusMessage.Get()
+	}
+	if !IsNil(o.HostIps) {
+		toSerialize["hostIps"] = o.HostIps
 	}
 
 	for key, value := range o.AdditionalProperties {

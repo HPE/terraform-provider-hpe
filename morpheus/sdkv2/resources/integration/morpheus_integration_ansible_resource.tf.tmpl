@@ -1,0 +1,14 @@
+resource "hpe_morpheus_integration_ansible" "tf_example_ansible_integration" {
+  name                          = "{{.Name}}"
+  enabled                       = {{.Enabled}}
+  url                           = {{.Url}}
+  default_branch                = {{.DefaultBranch}}
+  playbooks_path                = "{{.PlaybooksPath}}"
+  roles_path                    = "{{.RolesPath}}"
+  group_variables_path          = "{{.GroupVariablesPath}}"
+  host_variables_path           = "{{.HostVariablesPath}}"
+  enable_ansible_galaxy_install = {{.EnableAnsibleGalaxyInstall}}
+  enable_verbose_logging        = {{.EnableVerboseLogging}}
+  enable_agent_command_bus      = {{.EnableAgentCommandBus}}
+  enable_git_caching            = {{.EnableGitCaching}}
+}

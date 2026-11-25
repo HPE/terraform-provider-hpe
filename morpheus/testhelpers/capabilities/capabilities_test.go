@@ -11,7 +11,7 @@ import (
 func TestHas_WithEnvSet(t *testing.T) {
 	// Reset and set up test environment
 	ResetForTesting()
-	os.Setenv(EnvCapabilities, "vmware,nsxt,network_dhcp")
+	os.Setenv(EnvCapabilities, "vmware,nsxt,network_dhcp,juniper_sdn")
 	defer os.Unsetenv(EnvCapabilities)
 	defer ResetForTesting()
 
@@ -22,6 +22,7 @@ func TestHas_WithEnvSet(t *testing.T) {
 		{VMware, true},
 		{NSXT, true},
 		{NetworkDHCP, true},
+		{JuniperSDN, true},
 		{AWS, false},
 		{Azure, false},
 	}

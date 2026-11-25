@@ -13,18 +13,57 @@ import (
 	morpheus "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
 )
 
-// The tenancy determination is cached once per provider process, mirroring
-// morpheus/utils/tenancy (the two muxed stacks keep separate globals so they
-// stay uncoupled). A provider process serves exactly one provider
-// configuration, so one set of credentials means one answer per process. Only a
-// successful determination is cached; the mutex is held across the whoami call
-// (single flight), so concurrent callers on a cold cache wait for the first
-// determination and retry in turn on failure.
+// The tenancy determination is cached per client. In a Terraform run a provider
+// process serves exactly one provider configuration (Terraform launches a
+// separate plugin process per provider block, aliases included), so this still
+// costs one whoami call per process. The in-process acceptance harness is
+// different: it can hold several provider instances with different credentials
+// in one process, and a process-wide answer would then be attributed to the
+// wrong caller. Keying by client keeps each answer with the credentials that
+// produced it. The mechanism otherwise mirrors morpheus/utils/tenancy (whoami
+// behind a mutex; the two muxed stacks keep separate state so they stay
+// uncoupled): only a successful determination is cached, and the mutex is held
+// across the whoami call (single flight), so concurrent callers on a cold cache
+// wait for the first determination and retry in turn on failure.
+type caller struct {
+	isMaster  bool
+	accountID int64
+}
+
 var (
-	cacheMu  sync.Mutex
-	resolved bool
-	isMaster bool
+	cacheMu sync.Mutex
+	callers = map[*morpheus.Client]caller{}
 )
+
+// resolveCaller returns the (cached) whoami determination for client. The
+// caller must hold cacheMu.
+func resolveCaller(client *morpheus.Client) (caller, error) {
+	if client == nil {
+		return caller{}, fmt.Errorf("no client available to determine tenancy")
+	}
+
+	if c, ok := callers[client]; ok {
+		return c, nil
+	}
+
+	resp, err := client.Whoami()
+	if err != nil {
+		return caller{}, err
+	}
+
+	who, ok := resp.Result.(*morpheus.WhoamiResult)
+	if !ok || who == nil {
+		return caller{}, fmt.Errorf("whoami returned an unexpected response")
+	}
+
+	c := caller{isMaster: who.IsMasterAccount}
+	if who.User != nil {
+		c.accountID = who.User.AccountID
+	}
+	callers[client] = c
+
+	return c, nil
+}
 
 // CallerIsMaster reports whether the legacy client's caller is the master
 // tenant, via whoami. whoami introspects the current user, so it is reachable
@@ -33,31 +72,34 @@ var (
 // The legacy WhoamiResult.IsMasterAccount is a non-pointer bool, so an omitted
 // isMasterAccount decodes to false (non-master), which is correct.
 func CallerIsMaster(client *morpheus.Client) (bool, error) {
-	if client == nil {
-		return false, fmt.Errorf("no client available to determine tenancy")
-	}
-
 	cacheMu.Lock()
 	defer cacheMu.Unlock()
 
-	if resolved {
-		return isMaster, nil
-	}
-
-	resp, err := client.Whoami()
+	c, err := resolveCaller(client)
 	if err != nil {
 		return false, err
 	}
 
-	who, ok := resp.Result.(*morpheus.WhoamiResult)
-	if !ok || who == nil {
-		return false, fmt.Errorf("whoami returned an unexpected response")
+	return c.isMaster, nil
+}
+
+// CallerAccountID returns the ID of the tenant (account) the legacy client's
+// caller belongs to, via whoami. Resources use it to recognise their owning
+// tenant in API responses that list it alongside explicitly shared tenants.
+func CallerAccountID(client *morpheus.Client) (int64, error) {
+	cacheMu.Lock()
+	defer cacheMu.Unlock()
+
+	c, err := resolveCaller(client)
+	if err != nil {
+		return 0, err
 	}
 
-	isMaster = who.IsMasterAccount
-	resolved = true
+	if c.accountID == 0 {
+		return 0, fmt.Errorf("whoami did not report the caller's account")
+	}
 
-	return isMaster, nil
+	return c.accountID, nil
 }
 
 // VisibilityCustomizeDiff rejects, at plan time, visibility = "public" set by a

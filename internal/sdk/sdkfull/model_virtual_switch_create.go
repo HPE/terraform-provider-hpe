@@ -22,13 +22,13 @@ var _ MappedNullable = &VirtualSwitchCreate{}
 
 // VirtualSwitchCreate Request body for creating a virtual switch.
 type VirtualSwitchCreate struct {
-	// Switch name. Limited to 12 characters so the derived `<name>-br` bridge stays within the 15-character Linux interface name limit.
+	// Switch name. Limited to 16 characters, matching the switch domain constraint and the service name-length limit.
 	Name        string  `json:"name"`
 	Code        *string `json:"code,omitempty"`
 	Description *string `json:"description,omitempty"`
 	// The switch base type. Immutable after creation. Defaults to `general`.
 	BaseType *string `json:"baseType,omitempty"`
-	// NIC bonding mode. Omit for single-NIC (no bond) mode.
+	// NIC bonding mode. Omit for single-NIC (no bond) mode. The literal `none` may also be supplied to explicitly clear the bond mode.
 	BondMode             *string                            `json:"bondMode,omitempty"`
 	Mtu                  *int32                             `json:"mtu,omitempty"`
 	Segments             []VirtualSwitchCreateSegmentsInner `json:"segments,omitempty"`

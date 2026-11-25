@@ -13,7 +13,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 )
 
-func TestAccFirstResponsePolicyResource(t *testing.T) {
+func TestAccFirstResponsePolicyResourcePattern(t *testing.T) {
 	acctest.SkipIfNotClient(t)
 
 	clientOverride := acctest.OptionalClientOverride(t)
@@ -38,6 +38,11 @@ func TestAccFirstResponsePolicyResource(t *testing.T) {
 			},
 		})
 	})
+}
+
+func TestAccFirstResponsePolicyResourceAttribute(t *testing.T) {
+	isMSPLevel := acctest.EffectiveScope(t) == "MSP"
+	clientOverride := acctest.OptionalClientOverride(t)
 
 	t.Run("create_with_attribute_suppress", func(t *testing.T) {
 		policyName := acctest.RandomName("frp-suppress")
@@ -48,7 +53,38 @@ func TestAccFirstResponsePolicyResource(t *testing.T) {
 			CheckDestroy:             testAccCheckFirstResponsePolicyDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccFirstResponsePolicySuppressConfig(policyName, clientOverride),
+					Config: testAccFirstResponsePolicySuppressConfig(policyName, clientOverride, isMSPLevel, ""),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						testAccEnsureFirstResponsePolicyExists(t, "hpe_opsramp_first_response_policy.test_policy_suppress"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_first_response_policy.test_policy_suppress", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_first_response_policy.test_policy_suppress", "name", policyName),
+						resource.TestCheckResourceAttr("hpe_opsramp_first_response_policy.test_policy_suppress", "enabled_mode", "OBSERVED"),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_first_response_policy.test_policy_suppress",
+							"attribute_actions.suppress.suppress_duration",
+							"-1",
+						),
+					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccFirstResponsePolicyResourceAttributeWithInclude(t *testing.T) {
+	acctest.SkipIfNotMSPWithClientOverride(t)
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create_with_attribute_suppress_include", func(t *testing.T) {
+		policyName := acctest.RandomName("frp-suppress")
+
+		resource.ParallelTest(t, resource.TestCase{
+			PreCheck:                 acctest.PreCheck(t),
+			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
+			CheckDestroy:             testAccCheckFirstResponsePolicyDestroy(t),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccFirstResponsePolicySuppressConfig(policyName, "", true, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureFirstResponsePolicyExists(t, "hpe_opsramp_first_response_policy.test_policy_suppress"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_first_response_policy.test_policy_suppress", "id"),
@@ -86,13 +122,25 @@ resource "hpe_opsramp_first_response_policy" "test_policy" {
 `, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride))
 }
 
-func testAccFirstResponsePolicySuppressConfig(name string, clientOverride string) string {
+func testAccFirstResponsePolicySuppressConfig(name string, clientOverride string, mspLevel bool, targetClient string) string {
+	organizationMatchingTypeAttribute := ""
+	if mspLevel {
+		if targetClient != "" {
+			organizationMatchingTypeAttribute = fmt.Sprintf(
+				"organization_matching_type = \"INCLUDE\"\n  included_clients = [\"%s\"]",
+				targetClient,
+			)
+		} else {
+			organizationMatchingTypeAttribute = "organization_matching_type = \"ALL\""
+		}
+	}
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_first_response_policy" "test_policy_suppress" {
 	name = "%s"
 	%s
-
+	%s
 	enabled_mode = "OBSERVED"
 	filter_query = ""
 
@@ -102,7 +150,7 @@ resource "hpe_opsramp_first_response_policy" "test_policy_suppress" {
 		}
 	}
 }
-`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride))
+`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride), organizationMatchingTypeAttribute)
 }
 
 func testAccEnsureFirstResponsePolicyExists(t *testing.T, resourceName string) resource.TestCheckFunc {

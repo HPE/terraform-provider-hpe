@@ -1,0 +1,95 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+  Manages a Morpheus host — a managed compute server added through the "Add Host" flow — for both virtual and physical hosts (bare metal, hypervisors, and Kubernetes nodes).
+---
+# {{.Name}} ({{.Type}})
+
+Manages a Morpheus host — a managed compute server added through the "Add Host" flow. A host is a
+compute server that hosts others (a hypervisor, a bare-metal server, or a Kubernetes master/worker)
+rather than a guest instance. The mainstream use case is bare metal — HPE iLO via the
+hpe-baremetal-plugin, or OneView/UCS in-core — but the same API adds a Docker/Kubernetes/standalone
+host on VMware, AWS, Azure, GCP, OpenStack and others.
+
+~> **"Host" vs "compute server"** In the Morpheus API every host *is* a compute server
+(`/api/servers`): a host is simply a compute server with no parent of its own. This resource is
+named `hpe_morpheus_host` because it manages the "Add Host" flow; the read-only
+`hpe_morpheus_compute_server`/`hpe_morpheus_compute_servers` data sources remain and cover every
+compute server, including guests. Use `hpe_morpheus_host`/`hpe_morpheus_hosts` when you specifically
+mean hosts.
+
+The compute server type (`compute_server_type`) selects the kind of host and therefore which
+configuration keys apply. Two typed blocks are provided for the bare-metal plugins —
+`config_bmaas` (HPE iLO) and `config_omega_bmaas` (the Omega stub) — and a free-form `config` map
+covers everything else (Kubernetes nodes, ESXi/Fusion/Hyper-V metal, KVM hypervisors…). At most one
+of `config`, `config_bmaas` or `config_omega_bmaas` may be set; a type that needs no extra keys
+needs none of them.
+
+-> **Which hosts this resource can create.** Only the server types Morpheus marks *creatable*
+(`GET /api/server-types?creatable=true`): bare-metal nodes (HPE iLO, Omega, ESXi/Fusion/Hyper-V metal,
+Supermicro, …), Kubernetes masters and workers per cloud, and KVM hypervisors on a VM or metal
+(`vmwareKvm`, `oneviewKvmLinux`, `ucsKvmLinux`). Two common kinds of host are **not** creatable here
+because another object owns them, and the create is normally refused with a message naming it (the
+check reads the appliance's type list and lets the create through if that read fails): **HVM
+hypervisors** (`mvm`) are created by `hpe_morpheus_cluster` as members of their cluster (adding one
+to an existing cluster is the cluster's *Add Worker*, which has no resource yet), and **virtual
+machines** (`morpheusVm`, `vmwareVm`, …) are `hpe_morpheus_instance`. Every kind of host, creatable
+here or not, can be read with the `hpe_morpheus_host` and `hpe_morpheus_hosts` data sources.
+
+## Example Usage — HPE iLO bare metal (`config_bmaas`)
+
+{{ tffile "examples/resources/morpheus_host/example_bmaas.tf" }}
+
+## Example Usage — Omega bare-metal stub (`config_omega_bmaas`)
+
+{{ tffile "examples/resources/morpheus_host/example.tf" }}
+
+## Example Usage — Kubernetes worker via free-form `config`
+
+{{ tffile "examples/resources/morpheus_host/example_k8s.tf" }}
+
+## Delete behaviour
+
+Deletion calls `DELETE /api/servers/{id}`. The `delete_options` block carries the API's delete
+query parameters `remove_resources`, `preserve_volumes`, `force` and `remove_instances` (the two
+elastic/floating IP release flags are not exposed). None of them has a provider
+default: an unset flag is **omitted** from the request so that Morpheus applies its own, type-aware
+default. Morpheus's default for `removeResources` is `computeServerType.managed` — the underlying
+thing is destroyed for managed types and kept for unmanaged ones. The two bare-metal plugin types
+(`IloBareMetalUnmanaged`, `omega.baremetal.stub-server`) are `managed = false`, so by default
+Morpheus keeps the node and only drops the record.
+
+~> **Destructive wipe on bare metal** Setting `delete_options.remove_resources = true` on a
+**bare-metal** host runs the plugin's `cleanServer`: it powers the machine on via iLO, deletes its
+logical volumes, **sanitizes the disks**, and resets the iLO. This is a destructive, irreversible
+wipe of the physical server. For a **virtual** host the same flag deletes the VM from the cloud.
+Leave `remove_resources` unset to accept Morpheus's `removeResources = type.managed` default.
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Hosts are imported by their numeric ID. Create-only inputs that the API does not return — the
+`config_*` blocks (with their write-only iLO/console passwords), `network_interfaces` and `volumes` —
+are not populated on import. **Leave them out of the configuration of an imported host**: they all
+force replacement, so adding a `config_*` block, `volumes` or `network_interfaces` after import plans
+a destroy and recreate (on a bare-metal host, the destructive path warned about above). The
+in-place attributes (`name`, `description`, `labels`, `visibility`, `enabled`, `ssh_username`,
+`ssh_key_pair_id`, `user_data`) can be managed as usual; `delete_options` only affects destroy and
+may be set.
+
+`ssh_password_wo` is updated in place but, being write-only, is not stored in state, so the import
+cannot tell whether the value in your configuration matches the appliance: it is taken as already
+applied, the plan after import is empty, and a later change to it is only detected once the host is
+next updated for another reason (Terraform warns about this on every plan until then). To have
+changes detected from the start, append the sha256 digest of the configured value to the import ID:
+
+```shell
+terraform import hpe_morpheus_host.example "123#ssh_password_wo=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
+`id = "123#ssh_password_wo=${sha256(var.ssh_password)}"`.
+
+{{ codefile "shell" "examples/resources/morpheus_host/import.sh" }}

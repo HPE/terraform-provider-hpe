@@ -17,6 +17,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/configredact"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -163,17 +164,29 @@ func getClusterAsState(
 	state.Id = convert.Int64ToType(cluster.Id)
 
 	clusterTypeName := ""
-	if cluster.Type != nil && cluster.Type.Name != nil {
-		clusterTypeName = *cluster.Type.Name
+	if clusterType := cluster.Type.Get(); clusterType != nil && clusterType.Name != nil {
+		clusterTypeName = *clusterType.Name
 	}
 	clusterTypeCodeFromName := clusterTypeCodeForName(clusterTypeName)
 	state.ClusterTypeCode = convert.StrToType(&clusterTypeCodeFromName)
 
-	state.CloudId = convert.Int64ToType(cluster.Zone.Id)
+	state.CloudId = convert.Int64ToType(nil)
+	if cluster.Zone != nil {
+		state.CloudId = convert.Int64ToType(cluster.Zone.Id)
+	}
 	state.Uuid = convert.StrToType(cluster.Uuid)
 	state.Description = convert.StrToType(cluster.Description.Get())
-	state.GroupId = convert.Int64ToType(cluster.Site.Id)
-	state.LayoutId = convert.Int64ToType(cluster.Layout.Id)
+
+	var siteID *int64
+	if site := cluster.Site.Get(); site != nil {
+		siteID = site.Id
+	}
+	state.GroupId = convert.Int64ToType(siteID)
+
+	state.LayoutId = convert.Int64ToType(nil)
+	if cluster.Layout != nil {
+		state.LayoutId = convert.Int64ToType(cluster.Layout.Id)
+	}
 	state.Name = convert.StrToType(cluster.Name)
 	state.ServiceUrl = convert.StrToType(cluster.ServiceUrl.Get())
 
@@ -359,9 +372,26 @@ func getClusterAsState(
 		// i.e. only manage in state what we've set in the config.
 		if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
 			state.Config = plan.Config
+
+			// A cluster imported before credentials were withheld carries them
+			// in state from here on; say so rather than silently rewriting the
+			// configured value, which would plan a change on every run for a
+			// configuration that names the key itself.
+			warnCredentialsInConfig(ctx, cluster.Id, plan.Config, &diags)
 		} else {
-			// importing
-			o, err := convert.MapToDynamic(ctx, cfg)
+			// importing: the appliance's config is adopted as it stands, less
+			// any credential it carries — an External Kubernetes cluster's
+			// token and kubeconfig, say — which must not reach state
+			// (MORPH-19991). Those cannot be managed through the free-form
+			// config anyway.
+			safeCfg, withheld := configredact.Cluster(cfg)
+			if len(withheld) > 0 {
+				tflog.Debug(ctx, "cluster config: credential keys withheld from state on import", map[string]any{
+					"cluster": cluster.Id, "keys": withheld,
+				})
+			}
+
+			o, err := convert.MapToDynamic(ctx, safeCfg)
 			if err != nil {
 				diags.AddError(populateOperation, err.Error())
 			}
@@ -409,6 +439,21 @@ func getClusterAsState(
 
 	// write_only_revision is not in the API; carried from prior state.
 	state.WriteOnlyRevision = plan.WriteOnlyRevision
+
+	// host_profile_id is managed via the dedicated cluster host-profile
+	// endpoints, not the cluster GET body. Read it unconditionally so state
+	// reflects the profile the appliance actually has attached -- including one
+	// attached or detached out of band -- and drift surfaces as a diff.
+	//
+	// The read degrades safely on appliances that predate host profiles: the
+	// GET route is only registered from 9.1.0 onward, so an older appliance
+	// leaves the path unmatched and returns 404, which readClusterHostProfile
+	// treats (via errfmt.IsNotFound) as "none attached" -> a null id rather
+	// than an error. Clusters managed against such appliances simply never
+	// carry a host_profile_id, which matches reality.
+	hpState, hpDiags := readClusterHostProfile(ctx, id, client)
+	diags.Append(hpDiags...)
+	state.HostProfileId = hpState
 
 	return state, true, diags
 }
@@ -471,4 +516,41 @@ func clusterTypeCodeForName(name string) string {
 	default:
 		return "Unknown cluster type name to code mapping."
 	}
+}
+
+// warnCredentialsInConfig warns when the config carried in state holds
+// credential keys: either a configuration that writes them (where a typed
+// block with write-only attributes belongs), or a cluster imported before
+// such keys were withheld, which `terraform state rm` and a fresh import
+// clears.
+func warnCredentialsInConfig(ctx context.Context, id *int64, cfg basetypes.DynamicValue, diags *diag.Diagnostics) {
+	raw, err := convert.ValueToAny(ctx, cfg.UnderlyingValue())
+	if err != nil {
+		return
+	}
+
+	m, ok := raw.(map[string]any)
+	if !ok {
+		return
+	}
+
+	if _, withheld := configredact.Cluster(m); len(withheld) > 0 {
+		diags.AddWarning(
+			"cluster config holds credentials",
+			fmt.Sprintf("cluster %d: config carries %s in Terraform state. "+
+				"A cluster imported before the provider withheld credentials keeps what it imported; "+
+				"remove it from state and import it again to drop them. "+
+				"Credentials written into config by the configuration itself are stored as written; "+
+				"a typed block with write-only attributes is the way to supply them.",
+				derefID(id), strings.Join(withheld, ", ")),
+		)
+	}
+}
+
+func derefID(id *int64) int64 {
+	if id == nil {
+		return 0
+	}
+
+	return *id
 }

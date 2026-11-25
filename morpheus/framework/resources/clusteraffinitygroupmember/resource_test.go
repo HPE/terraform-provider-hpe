@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -120,21 +122,31 @@ func groupMembersNoT(clusterID, groupID int64) []int64 {
 // behind is removed by the affinity group sweeper. A membership has no name,
 // tags or metadata of its own, so a leaked one cannot be identified later —
 // which is why there is no membership sweeper.
-func config(name, clusterID, serverID string) string {
+// config renders a group and one member resource for it. seed puts the member
+// into the group's own servers as well: Morpheus 9.1 refuses to create a
+// group with no members, so a member-managed group is bootstrapped with its
+// first member in servers and servers is then dropped from the configuration
+// -- a no-op plan that hands the membership to the member resource.
+func config(name, clusterID, serverID string, seed bool) string {
+	servers := ""
+	if seed {
+		servers = "  servers       = [" + serverID + "]\n"
+	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_cluster_affinity_group" "test" {
   cluster_id    = %[2]s
   name          = "%[1]s"
   affinity_type = "KEEP_TOGETHER"
   active        = true
-}
+%[4]s}
 
 resource "hpe_morpheus_cluster_affinity_group_member" "test" {
   cluster_id        = %[2]s
   affinity_group_id = hpe_morpheus_cluster_affinity_group.test.id
   server_id         = %[3]s
 }
-`, name, clusterID, serverID)
+`, name, clusterID, serverID, servers)
 }
 
 // TestAccMorpheusClusterAffinityGroupMember covers the lifecycle and import.
@@ -150,7 +162,7 @@ func TestAccMorpheusClusterAffinityGroupMember(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Parallel()
+	testhelpers.LockFixture(t, "affinity-member-server") // shares the fixture VM with the group tests
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -159,12 +171,21 @@ func TestAccMorpheusClusterAffinityGroupMember(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config(name, clusterID, serverID),
+				Config: providerConfig + config(name, clusterID, serverID, true),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "server_id", serverID),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					checkMemberPresent(),
 				),
+			},
+			{
+				// Hand the membership to the member resource: dropping servers
+				// from the group is a no-op plan and evicts nobody.
+				Config: providerConfig + config(name, clusterID, serverID, false),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectEmptyPlan(),
+				}},
+				Check: checkMemberPresent(),
 			},
 			{
 				ResourceName:      resourceName,
@@ -200,11 +221,12 @@ func TestAccMorpheusClusterAffinityGroupMemberCoexists(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Parallel()
+	testhelpers.LockFixture(t, "affinity-member-server") // shares the fixture VM with the group tests
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
-	cfg := providerConfig + config(name, clusterID, serverID)
+	seeded := providerConfig + config(name, clusterID, serverID, true)
+	cfg := providerConfig + config(name, clusterID, serverID, false)
 
 	otherID, err := strconv.ParseInt(otherServer, 10, 64)
 	if err != nil {
@@ -215,7 +237,10 @@ func TestAccMorpheusClusterAffinityGroupMemberCoexists(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: cfg,
+				Config: seeded, // bootstrap on 9.1: the group is born with its first member
+			},
+			{
+				Config: cfg, // hand the membership to the member resource
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkMemberPresent(),
 					// Join the group behind Terraform's back, standing in for an
@@ -319,7 +344,7 @@ func TestAccMorpheusClusterAffinityGroupMemberInvalidParent(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
-	t.Parallel()
+	testhelpers.LockFixture(t, "affinity-member-server") // shares the fixture VM with the group tests
 
 	config := testhelpers.ProviderBlock() + `
 resource "hpe_morpheus_cluster_affinity_group_member" "test" {

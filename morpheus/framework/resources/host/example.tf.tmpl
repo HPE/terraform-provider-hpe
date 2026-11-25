@@ -1,0 +1,13 @@
+resource "hpe_morpheus_host" "example" {
+  name                = "{{.Name}}"
+  cloud_id            = {{.CloudId}}
+  group_id            = {{.GroupId}}
+  compute_server_type = "{{.ComputeServerType}}"
+
+  config_omega_bmaas = {
+    console_host     = "{{.ConsoleHost}}"
+    console_username = "{{.ConsoleUsername}}"
+    num_nics         = {{.NumNics}}
+    resource_pool_id = "{{.ResourcePoolId}}"
+  }
+}

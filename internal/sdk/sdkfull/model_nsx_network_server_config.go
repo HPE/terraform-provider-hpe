@@ -20,10 +20,10 @@ import (
 // checks if the NSXNetworkServerConfig type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &NSXNetworkServerConfig{}
 
-// NSXNetworkServerConfig struct for NSXNetworkServerConfig
+// NSXNetworkServerConfig Type-specific settings, keyed by the type's option type field names.
 type NSXNetworkServerConfig struct {
 	// NSX Project (NSX 4.1+)
-	Project              NullableString         `json:"project,omitempty"`
+	Project              *string                `json:"project,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -39,8 +39,8 @@ func (o NSXNetworkServerConfig) MarshalJSON() ([]byte, error) {
 
 func (o NSXNetworkServerConfig) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Project.IsSet() {
-		toSerialize["project"] = o.Project.Get()
+	if !IsNil(o.Project) {
+		toSerialize["project"] = o.Project
 	}
 
 	for key, value := range o.AdditionalProperties {

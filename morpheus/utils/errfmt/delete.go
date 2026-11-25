@@ -4,8 +4,12 @@ package errfmt
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
+	"io"
+	"net"
 	"net/http"
 	"reflect"
 	"sort"
@@ -187,25 +191,174 @@ func (e StillExistsError) Error() string {
 // delete to finish:
 //
 //   - a 404 is what the wait is for: nil, the loop ends;
-//   - a transport error or a non-2xx status other than 404 is permanent (it is
-//     wrapped in backoff.Permanent), so the loop ends with that error;
+//   - a failure IsTransient accepts (the connection failed, or a 5xx) is a
+//     TransientError, which backoff.Retry treats as "try again" with the
+//     caller's interval and within the caller's timeout -- one blip during a
+//     long teardown must not fail the destroy while Morpheus keeps deleting.
+//     Use a DeletePoller to also cap how many such failures in a row are
+//     tolerated and to log each one;
+//   - any other failure -- a 4xx (401, 403, 400...), a refused login, a
+//     certificate error, a done context -- is permanent (wrapped in
+//     backoff.Permanent), so the loop ends with that error at once;
 //   - a successful GET means the resource is still there: a StillExistsError,
 //     which backoff.Retry treats as "try again".
 //
 // Returning nil for a successful GET -- an easy mistake -- makes the loop end
 // on its first poll, so a destroy-then-create replacement races the deletion
 // still running on the appliance (MORPH-18379).
-func PollDeleted(what string, err error, httpResp *http.Response) error {
+func PollDeleted(ctx context.Context, what string, err error, httpResp *http.Response) error {
 	if IsNotFound(httpResp) {
 		return nil
 	}
 
-	if err := CheckResponse(err, httpResp); err != nil {
-		return backoff.Permanent(fmt.Errorf("%s: GET while waiting for the delete failed: %w", what, err))
+	if cerr := CheckResponse(err, httpResp); cerr != nil {
+		if IsTransient(ctx, err, httpResp) {
+			return TransientError{What: what, Err: cerr}
+		}
+
+		return backoff.Permanent(fmt.Errorf("%s: GET while waiting for the delete failed: %w", what, cerr))
 	}
 
 	return StillExistsError{What: what}
 }
+
+// MaxConsecutiveTransient is how many transient failures in a row a
+// DeletePoller tolerates before giving up: Morpheus 500s are often
+// deterministic rather than blips (MORPH-18060, MORPH-18061), and a persistent
+// one should be reported after five intervals (about 25 s at the callers'
+// 5 s cadence), not after the full delete timeout. It is a count, not a time
+// bound: a poll that blocks on an unreachable appliance runs to the client
+// timeout first.
+const MaxConsecutiveTransient = 6
+
+// DeletePoller is PollDeleted with memory: it counts transient failures in a
+// row, logs each one, and turns the MaxConsecutiveTransient-th into a
+// permanent error. A poll that reaches the appliance (the resource still
+// exists) resets the count. One poller serves one wait-for-delete loop.
+type DeletePoller struct {
+	What      string
+	transient int
+}
+
+// Poll classifies one GET exactly as PollDeleted does, subject to the
+// consecutive-failure cap.
+func (p *DeletePoller) Poll(ctx context.Context, err error, httpResp *http.Response) error {
+	res := PollDeleted(ctx, p.What, err, httpResp)
+
+	var transient TransientError
+	if !errors.As(res, &transient) {
+		p.transient = 0
+
+		return res
+	}
+
+	p.transient++
+	if p.transient >= MaxConsecutiveTransient {
+		return backoff.Permanent(fmt.Errorf("%s: GET while waiting for the delete failed %d times in a row: %w",
+			p.What, p.transient, transient.Err))
+	}
+
+	tflog.Warn(ctx, p.What+": GET while waiting for the delete failed; retrying",
+		map[string]any{"failures": p.transient, "of": MaxConsecutiveTransient, "error": transient.Err.Error()})
+
+	return res
+}
+
+// IsTransient reports whether a failed call may succeed when repeated.
+//
+// With a response, only a 5xx is transient. With none, the error is
+// unwrapped (http.Client wraps everything in *url.Error) and judged by its
+// cause:
+//
+//   - the caller's context is done: permanent -- the operation is over,
+//     whatever the error says (a client timeout also reads as a deadline, so
+//     the context is consulted rather than the error);
+//   - a refused login (an error with AuthRefused() true, see
+//     auth.AuthenticationError): permanent -- each retry would be a fresh
+//     login that fails the same way. A token endpoint that answered 5xx
+//     (AuthRetryable()) is transient like any 5xx; a login that did not
+//     complete is judged by its own cause;
+//   - a certificate error: permanent;
+//   - a failed connection -- *net.OpError (refused, reset, unreachable),
+//     *net.DNSError, any net.Error that timed out (dial, TLS handshake,
+//     response header, the client's own timeout), or the server closing the
+//     connection before answering (io.EOF, io.ErrUnexpectedEOF): transient;
+//   - anything else (a request that could not be built, a TLS client talking
+//     to a plain port, an unknown error): permanent.
+//
+// With no error and no 5xx it reports false.
+func IsTransient(ctx context.Context, err error, httpResp *http.Response) bool {
+	if httpResp != nil {
+		return httpResp.StatusCode >= http.StatusInternalServerError
+	}
+
+	if err == nil || ctx.Err() != nil {
+		return false
+	}
+
+	return transientCause(err)
+}
+
+// transientCause judges a no-response error by its cause; see IsTransient.
+func transientCause(err error) bool {
+	var authErr interface {
+		AuthRefused() bool
+		AuthRetryable() bool
+		Unwrap() error
+	}
+
+	if errors.As(err, &authErr) {
+		switch {
+		case authErr.AuthRefused():
+			return false
+		case authErr.AuthRetryable():
+			// The token endpoint answered 5xx: as transient as a 5xx on the
+			// resource GET itself.
+			return true
+		}
+
+		// The login did not complete; judge what stopped it. The auth error
+		// wraps its cause.
+		return transientCause(authErr.Unwrap())
+	}
+
+	var (
+		certErr *tls.CertificateVerificationError
+		x509Err x509.UnknownAuthorityError
+		hostErr x509.HostnameError
+		opErr   *net.OpError
+		dnsErr  *net.DNSError
+		netErr  net.Error
+	)
+
+	switch {
+	case errors.As(err, &certErr), errors.As(err, &x509Err), errors.As(err, &hostErr):
+		return false
+	case errors.As(err, &opErr), errors.As(err, &dnsErr):
+		return true
+	case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
+		return true
+	case errors.As(err, &netErr) && netErr.Timeout():
+		return true
+	}
+
+	return false
+}
+
+// TransientError is a poll's retryable error for a call that failed in a way
+// IsTransient accepts; backoff.Retry tries again. It is also what the caller
+// reports when the wait runs out during an outage, so it reads as a plain
+// failure, not a promise to retry.
+type TransientError struct {
+	What string
+	Err  error
+}
+
+func (e TransientError) Error() string {
+	return fmt.Sprintf("%s: GET while waiting for the delete failed: %v", e.What, e.Err)
+}
+
+func (e TransientError) Unwrap() error { return e.Err }
 
 // RetryRefusedDelete runs del, and when Morpheus refuses the delete tries
 // again up to attempts times, pausing between attempts -- for resources whose

@@ -24,6 +24,8 @@ var notClearable = clearable.NotClearable{
 	"config":                    "free-form configuration; removing the whole map is not yet supported",
 	"config_nsxt_gateway_tier0": "nested block; removing a whole block is not yet supported",
 	"config_nsxt_gateway_tier1": "nested block; removing a whole block is not yet supported",
+	"config_juniper_sdn":        "nested block; removing a whole block is not yet supported",
+	"config_juniper_bgp":        "nested block; removing a whole block is not yet supported",
 	"enable_bgp":                "boolean",
 	"enabled":                   "boolean",
 	"shared_group_access":       "boolean",

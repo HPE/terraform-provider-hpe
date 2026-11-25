@@ -21,7 +21,7 @@ import (
 // very silly way of avoiding `"fmt" imported and not used` errors
 var _ fmt.Stringer
 
-// AddBaremetalHostRequestServerComputeServerType struct for AddBaremetalHostRequestServerComputeServerType
+// AddBaremetalHostRequestServerComputeServerType The type of host to add. Supply either `code` or `id` from `GET /api/server-types?creatable=true`.
 type AddBaremetalHostRequestServerComputeServerType struct {
 	AddBaremetalHostRequestServerComputeServerTypeAnyOf  *AddBaremetalHostRequestServerComputeServerTypeAnyOf
 	AddBaremetalHostRequestServerComputeServerTypeAnyOf1 *AddBaremetalHostRequestServerComputeServerTypeAnyOf1

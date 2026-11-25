@@ -354,7 +354,7 @@ func parseAsData(
 	data.OsTypeId = convert.Int64ToType(osTypeID)
 
 	// owner_id
-	data.OwnerId = convert.Int64ToType(image.OwnerId)
+	data.OwnerId = convert.Int64ToType(image.OwnerId.Get())
 
 	// raw_size
 	data.RawSize = convert.Int64ToType(image.RawSize.Get())

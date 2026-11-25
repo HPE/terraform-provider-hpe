@@ -1,0 +1,17 @@
+# HPE Morpheus SDN (Juniper CN2) Network Server
+#
+# The SDN controller of an HVM cluster is reached from the cluster's hosts, so
+# this type takes no service credentials: only the CN2 controller address and,
+# optionally, the introspect and sub-tenant toggles. The controller address
+# cannot be changed after creation (changing it replaces the network server).
+resource "hpe_morpheus_network_server" "juniper_sdn" {
+  name      = "{{.Name}}"
+  type_code = "{{.TypeCode}}"
+  cloud_id  = {{.CloudId}}
+
+  config_juniper_sdn = {
+    controller_address = "{{.ControllerAddress}}"
+    show_introspect    = {{.ShowIntrospect}}
+    enable_sub_tenants = {{.EnableSubTenants}}
+  }
+}

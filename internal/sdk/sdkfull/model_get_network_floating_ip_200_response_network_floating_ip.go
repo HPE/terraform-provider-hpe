@@ -30,7 +30,7 @@ type GetNetworkFloatingIp200ResponseNetworkFloatingIp struct {
 	IpStatus   *string                                                 `json:"ipStatus,omitempty"`
 	// IP Address
 	IpAddress            *string                                                        `json:"ipAddress,omitempty"`
-	IpRange              NullableString                                                 `json:"ipRange,omitempty"`
+	IpRange              *GetNetworkFloatingIp200ResponseNetworkFloatingIpIpRange       `json:"ipRange,omitempty"`
 	PtrId                NullableString                                                 `json:"ptrId,omitempty"`
 	NetworkDomain        *GetNetworkFloatingIp200ResponseNetworkFloatingIpNetworkDomain `json:"networkDomain,omitempty"`
 	CreatedBy            *GetNetworkFloatingIp200ResponseNetworkFloatingIpCreatedBy     `json:"createdBy,omitempty"`
@@ -69,8 +69,8 @@ func (o GetNetworkFloatingIp200ResponseNetworkFloatingIp) ToMap() (map[string]in
 	if !IsNil(o.IpAddress) {
 		toSerialize["ipAddress"] = o.IpAddress
 	}
-	if o.IpRange.IsSet() {
-		toSerialize["ipRange"] = o.IpRange.Get()
+	if !IsNil(o.IpRange) {
+		toSerialize["ipRange"] = o.IpRange
 	}
 	if o.PtrId.IsSet() {
 		toSerialize["ptrId"] = o.PtrId.Get()

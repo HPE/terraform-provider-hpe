@@ -1,0 +1,121 @@
+network_floating_ips:
+  description: >-
+    Lists Morpheus network floating IPs, optionally filtered by cloud, server, status or search phrase.
+  blocks:
+    filter:
+      set_nested:
+        description: >-
+          Filter block. Repeat to apply multiple filters (all ANDed together).
+          Filter values are case-sensitive and support Go regular expressions
+          (https://regex101.com/).
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: required
+                description: >-
+                  The field to filter on. Valid names are: ip_address,
+                  ip_status, external_id, cloud_name, server_name.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                      schema_definition: stringvalidator.OneOf("ip_address", "ip_status", "external_id", "cloud_name", "server_name")
+            - name: values
+              set:
+                element_type:
+                  string: {}
+                computed_optional_required: required
+                description: >-
+                  The filter values. A floating IP matches the block if the
+                  chosen field matches ANY value (Go regular expression).
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+                      schema_definition: setvalidator.SizeAtLeast(1)
+  moves:
+    - zone_id: cloud_id                                              # query param zoneId (filter by cloud)
+    - network_floating_ips.cloud.id: network_floating_ips.cloud_id   # (GET /api/networks/floating-ips item.cloud)
+    - network_floating_ips.cloud.name: network_floating_ips.cloud_name
+    - network_floating_ips.server.id: network_floating_ips.server_id
+    - network_floating_ips.server.name: network_floating_ips.server_name
+    - network_floating_ips.ip_range.start_address: network_floating_ips.ip_range_start_address
+    - network_floating_ips.ip_range.end_address: network_floating_ips.ip_range_end_address
+    - network_floating_ips.network_domain.id: network_floating_ips.network_domain_id
+    - network_floating_ips.network_domain.name: network_floating_ips.network_domain_name
+  removes:
+    - ip_address                                                     # query param; use the filter block instead
+    - max                                                            # paging is handled by the provider, which fetches every page
+    - offset                                                         # (as above)
+    - sort                                                           # paging order; not exposed
+    - direction                                                      # (as above)
+    - meta                                                           # API pagination wrapper
+    - network_floating_ips.cloud                                     # flattened into cloud_id / cloud_name
+    - network_floating_ips.cloud.type                                # (item.cloud.type) - not exposed
+    - network_floating_ips.server                                    # flattened into server_id / server_name
+    - network_floating_ips.ip_range                                  # flattened into ip_range_start_address / ip_range_end_address
+    - network_floating_ips.network_domain                            # flattened into network_domain_id / network_domain_name
+    - network_floating_ips.created_by                                # (item.createdBy) - read-only user ref
+  overrides:
+    cloud_id:
+      description: Filter by cloud ID.
+      computed_optional_required: computed_optional
+    server_id:
+      description: Filter by server (VM) ID.
+      computed_optional_required: computed_optional
+    ip_status:
+      description: Filter by floating IP status, one of `assigned`, `free` or `pending`.
+      computed_optional_required: computed_optional
+      one_of: [assigned, free, pending]
+    phrase:
+      description: Search phrase for partial matches on IP address.
+      computed_optional_required: computed_optional
+    network_floating_ips:
+      description: The list of network floating IPs matching the supplied filters.
+      computed_optional_required: computed
+    network_floating_ips.id:
+      description: The ID of the network floating IP.
+      computed_optional_required: computed
+    network_floating_ips.external_id:
+      description: The external ID of the floating IP.
+      computed_optional_required: computed
+    network_floating_ips.ip_address:
+      description: The allocated IP address.
+      computed_optional_required: computed
+    network_floating_ips.ip_status:
+      description: The status of the floating IP, one of `assigned`, `free` or `pending`.
+      computed_optional_required: computed
+    network_floating_ips.cloud_id:
+      description: The ID of the cloud the floating IP belongs to.
+      computed_optional_required: computed
+    network_floating_ips.cloud_name:
+      description: The name of the cloud the floating IP belongs to.
+      computed_optional_required: computed
+    network_floating_ips.server_id:
+      description: The ID of the server (VM) the floating IP is attached to, if any.
+      computed_optional_required: computed
+    network_floating_ips.server_name:
+      description: The name of the server (VM) the floating IP is attached to, if any.
+      computed_optional_required: computed
+    network_floating_ips.ip_range_start_address:
+      description: The start address of the pool range the floating IP was allocated from.
+      computed_optional_required: computed
+    network_floating_ips.ip_range_end_address:
+      description: The end address of the pool range the floating IP was allocated from.
+      computed_optional_required: computed
+    network_floating_ips.ptr_id:
+      description: The PTR record ID of the floating IP.
+      computed_optional_required: computed
+    network_floating_ips.network_domain_id:
+      description: The ID of the network domain the floating IP belongs to, if any.
+      computed_optional_required: computed
+    network_floating_ips.network_domain_name:
+      description: The name of the network domain the floating IP belongs to, if any.
+      computed_optional_required: computed
+    network_floating_ips.date_created:
+      description: When the floating IP was created.
+      computed_optional_required: computed
+    network_floating_ips.last_updated:
+      description: When the floating IP was last updated.
+      computed_optional_required: computed

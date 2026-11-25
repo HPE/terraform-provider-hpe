@@ -75,7 +75,28 @@ network:
             computed_optional_required: optional
             write_only: true
             description: >-
-              Id of the NSX-T DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).
+              Deprecated: Morpheus identifies the DHCP profile by its NSX-T policy path (a string such as
+              `/infra/dhcp-server-configs/<id>`), never by a number, so no value of this attribute is
+              accepted and none is converted. Use `subnet_ip_server_path`. This attribute will be removed
+              in a future release.
+            deprecation_message: "Use subnet_ip_server_path: the DHCP profile is identified by its NSX-T policy path (a string), not a numeric id, and no value here is converted. This attribute will be removed in a future release."
+        - name: subnet_ip_server_path
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              The DHCP server or relay profile for `dhcpLocal` or `dhcpRelay`, identified by its NSX-T
+              **policy path** -- the profile's `path`, e.g. `/infra/dhcp-server-configs/<id>` or
+              `/infra/dhcp-relay-configs/<id>` -- not its NSX-T `id`. Morpheus stores and sends the value
+              as given (it becomes the segment's `dhcp_config_path`; the Morpheus key is `subnetIpServerId`
+              although it holds a path), so pass the full path: nothing converts an id into one. The
+              `hpe_morpheus_network_dhcp_server` data source returns it as `provider_id`.
+            validators:
+            - custom:
+                imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+                schema_definition: stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("subnet_ip_server_id"))
         - name: subnet_dhcp_server_address
           string:
             computed_optional_required: optional
@@ -171,7 +192,28 @@ network:
             computed_optional_required: optional
             write_only: true
             description: >-
-              Id of the DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).
+              Deprecated: Morpheus identifies the DHCP profile by its NSX-T policy path (a string such as
+              `/infra/dhcp-server-configs/<id>`), never by a number, so no value of this attribute is
+              accepted and none is converted. Use `subnet_ip_server_path`. This attribute will be removed
+              in a future release.
+            deprecation_message: "Use subnet_ip_server_path: the DHCP profile is identified by its NSX-T policy path (a string), not a numeric id, and no value here is converted. This attribute will be removed in a future release."
+        - name: subnet_ip_server_path
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              The DHCP server or relay profile for `dhcpLocal` or `dhcpRelay`, identified by its NSX-T
+              **policy path** -- the profile's `path`, e.g. `/infra/dhcp-server-configs/<id>` or
+              `/infra/dhcp-relay-configs/<id>` -- not its NSX-T `id`. Morpheus stores and sends the value
+              as given (it becomes the segment's `dhcp_config_path`; the Morpheus key is `subnetIpServerId`
+              although it holds a path), so pass the full path: nothing converts an id into one. The
+              `hpe_morpheus_network_dhcp_server` data source returns it as `provider_id`.
+            validators:
+            - custom:
+                imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+                schema_definition: stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("subnet_ip_server_id"))
         - name: subnet_dhcp_server_address
           string:
             computed_optional_required: optional
@@ -575,6 +617,7 @@ network:
     - network.no_proxy
     - network.search_domains
     - network.switch_id
+    - network.unique_id
     - network.vlan_id
     - network.visibility
   moves:
@@ -613,6 +656,11 @@ network:
     - template-resource_permissions: resource_permissions
     - template-connected_gateway: connected_gateway
   overrides:
+    unique_id:
+      computed_optional_required: computed
+      state_for_unknown: true
+      description: >-
+        The controller's identifier for the network (a UUID for SDN virtual networks); what the SDN router and load balancer reference a virtual network by. Stable for the life of the network.
     config_ovs_port_group:
       conflicts_with: [config]
     config_nsxt:
@@ -633,3 +681,12 @@ network:
       conflicts_with: [config]
     config_openstack:
       conflicts_with: [config]
+    switch_id:
+      description: >-
+        Switch the network is bound to, as the network type defines it. For an HVM
+        standard network (`ovsPortGroup`) on a Morpheus 9.1 cluster with per-cluster
+        virtual switches this is the virtual switch's libvirt network name (`hvmnetN`),
+        which the `hvm-vswitch-or-router` option source returns for the switch's name;
+        on earlier releases it is the OVS bridge router. Changing it replaces the network
+        on types that cannot edit it (HVM standard networks among them); on the others it
+        is updated in place.

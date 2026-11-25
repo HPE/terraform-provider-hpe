@@ -48,6 +48,17 @@ The following `monitor_type` values are valid for NSX-V load balancers:
 
 {{ tffile "examples/resources/morpheus_load_balancer_monitor/example_nsxv.tf" }}
 
+### HPE Morpheus SDN (Juniper CN2)
+
+The HPE Morpheus SDN load balancer's HTTP monitor (`monitor_type = "HTTP"`) carries
+its check in the typed `config` block: `http_method`, `http_uri`, `http_port` and
+`http_return_code`. The controller requires `monitor_timeout` and `max_retry` to be
+greater than zero, and the SDN plugin does not default them, so set both (the appliance
+otherwise reports only "unknown error creating monitor"). Only `PING` and `HTTP` monitor
+types are supported by the SDN plugin.
+
+{{ tffile "examples/resources/morpheus_load_balancer_monitor/example_juniper_sdn.tf" }}
+
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import

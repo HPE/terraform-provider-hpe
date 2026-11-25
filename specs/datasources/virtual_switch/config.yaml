@@ -1,0 +1,164 @@
+virtual_switch:
+  templates:
+    segments:
+      list_nested:
+        computed_optional_required: computed
+        description: Traffic segments defined on the switch.
+        nested_object:
+          attributes:
+            - name: id
+              int64:
+                computed_optional_required: computed
+                description: The Morpheus ID of the segment.
+            - name: traffic_type
+              string:
+                computed_optional_required: computed
+                description: The traffic type carried by this segment.
+            - name: interface_name
+              string:
+                computed_optional_required: computed
+                description: OS interface carrying this traffic (e.g. bond0, bond0.220).
+            - name: ip_address
+              string:
+                computed_optional_required: computed
+                description: The IP address assigned to the segment.
+            - name: netmask
+              string:
+                computed_optional_required: computed
+                description: The netmask for the segment.
+            - name: gateway
+              string:
+                computed_optional_required: computed
+                description: The gateway for the segment.
+            - name: vlan_id
+              int64:
+                computed_optional_required: computed
+                description: VLAN tag. Null means untagged.
+            - name: mtu
+              int64:
+                computed_optional_required: computed
+                description: MTU for the segment.
+            - name: ovs_bridge
+              string:
+                computed_optional_required: computed
+                description: OVS bridge name reported by hvmcli (VM traffic only).
+            - name: ovs_uuid
+              string:
+                computed_optional_required: computed
+                description: OVS bridge UUID reported by hvmcli.
+            - name: ovs_libvirt_network
+              string:
+                computed_optional_required: computed
+                description: OVS libvirt network name reported by hvmcli.
+            - name: status
+              string:
+                computed_optional_required: computed
+                description: Sync status of the segment.
+            - name: status_message
+              string:
+                computed_optional_required: computed
+                description: Additional detail about the segment status, when present.
+            - name: host_ips
+              list_nested:
+                computed_optional_required: computed
+                description: Per-host IP address assignments for this segment.
+                nested_object:
+                  attributes:
+                    - name: server_id
+                      int64:
+                        computed_optional_required: computed
+                        description: The ID of the host (compute server) this IP is assigned to.
+                    - name: ip
+                      string:
+                        computed_optional_required: computed
+                        description: The IP address assigned to the segment on this host.
+    uplinks:
+      list_nested:
+        computed_optional_required: computed
+        description: Host uplink NIC assignments for the switch.
+        nested_object:
+          attributes:
+            - name: id
+              int64:
+                computed_optional_required: computed
+                description: The Morpheus ID of the uplink.
+            - name: server_id
+              int64:
+                computed_optional_required: computed
+                description: The ID of the host (compute server) this uplink applies to.
+            - name: server_name
+              string:
+                computed_optional_required: computed
+                description: The name of the host this uplink applies to.
+            - name: nic1
+              string:
+                computed_optional_required: computed
+                description: Primary physical NIC name.
+            - name: nic2
+              string:
+                computed_optional_required: computed
+                description: Secondary NIC name. Null in single-NIC mode.
+            - name: sync_status
+              string:
+                computed_optional_required: computed
+                description: Sync status of the uplink.
+            - name: sync_message
+              string:
+                computed_optional_required: computed
+                description: Additional detail about the uplink sync status, when present.
+            - name: last_sync_date
+              string:
+                computed_optional_required: computed
+                description: When the uplink was last synced from the host, as an RFC 3339 timestamp; null until the first sync.
+  moves:
+    - virtual_switch: ""                          # unnest wrapper (components/schemas/virtualSwitchDetail.yaml)
+    - segments: segments_spec                     # (components/schemas/virtualSwitchDetail.yaml segments[] -> virtualSwitchSegment.yaml) replace spec-derived summary array with full template list
+    - uplinks: uplinks_spec                       # (components/schemas/virtualSwitchDetail.yaml uplinks[] -> virtualSwitchUplink.yaml) replace spec-derived array with full template list
+    - template-segments: segments                 # (components/schemas/virtualSwitchSegment.yaml) full segment list
+    - template-uplinks: uplinks                   # (components/schemas/virtualSwitchUplink.yaml) full uplink list
+  removes:
+    - segments_spec                               # spec-derived summary array (components/schemas/virtualSwitch.yaml)
+    - uplinks_spec                                # spec-derived array (components/schemas/virtualSwitchUplink.yaml)
+    - uplink_nics                                 # not exposed (components/schemas/virtualSwitch.yaml)
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The Morpheus ID of the virtual switch. Look up by id, or by cluster_id and name.
+      conflicts_with: ["name"]
+    name:
+      computed_optional_required: computed_optional
+      description: Switch name. Used with cluster_id to look the switch up.
+      conflicts_with: ["id"]
+    cluster_id:
+      computed_optional_required: computed_optional
+      description: The ID of the cluster (server group) that owns this virtual switch.
+    code:
+      computed_optional_required: computed
+      description: The code identifier for the switch.
+    description:
+      computed_optional_required: computed
+      description: The description of the switch.
+    base_type:
+      computed_optional_required: computed
+      description: The switch base type.
+    bond_mode:
+      computed_optional_required: computed
+      description: NIC bonding mode. Null indicates single-NIC (no bond) mode.
+    mtu:
+      computed_optional_required: computed
+      description: Switch MTU.
+    status:
+      computed_optional_required: computed
+      description: Sync status of the switch.
+    status_message:
+      computed_optional_required: computed
+      description: Additional detail about the current status, when present.
+    active:
+      computed_optional_required: computed
+      description: Whether the switch is active.
+    nic_count:
+      computed_optional_required: computed
+      description: Number of distinct physical NICs consumed across all host uplinks.
+    network_count:
+      computed_optional_required: computed
+      description: Number of traffic segments defined on the switch.

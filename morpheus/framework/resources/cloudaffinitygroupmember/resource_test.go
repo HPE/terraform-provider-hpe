@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -119,7 +121,17 @@ func groupMembersNoT(cloudID, groupID int64) []int64 {
 // behind is removed by the affinity group sweeper. A membership has no name,
 // tags or metadata of its own, so a leaked one cannot be identified later —
 // which is why there is no membership sweeper.
-func config(name, cloudID, serverID, poolID string) string {
+// config renders a group and one member resource for it. seed puts the member
+// into the group's own servers as well: Morpheus 9.1 refuses to create a
+// group with no members, so a member-managed group is bootstrapped with its
+// first member in servers and servers is then dropped from the configuration
+// -- a no-op plan that hands the membership to the member resource.
+func config(name, cloudID, serverID, poolID string, seed bool) string {
+	servers := ""
+	if seed {
+		servers = "  servers       = [" + serverID + "]\n"
+	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_cloud_affinity_group" "test" {
   cloud_id      = %[2]s
@@ -127,14 +139,14 @@ resource "hpe_morpheus_cloud_affinity_group" "test" {
   name          = "%[1]s"
   affinity_type = "KEEP_TOGETHER"
   active        = true
-}
+%[5]s}
 
 resource "hpe_morpheus_cloud_affinity_group_member" "test" {
   cloud_id        = %[2]s
   affinity_group_id = hpe_morpheus_cloud_affinity_group.test.id
   server_id         = %[3]s
 }
-`, name, cloudID, serverID, poolID)
+`, name, cloudID, serverID, poolID, servers)
 }
 
 // TestAccMorpheusCloudAffinityGroupMember covers the lifecycle and import.
@@ -151,7 +163,11 @@ func TestAccMorpheusCloudAffinityGroupMember(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Parallel()
+	// Serialised across packages: every test seeds its group with the same
+	// fixture VM, and on a VMware cloud Morpheus pushes each group to vCenter
+	// as a DRS rule -- vCenter refuses the same VM in several KEEP_TOGETHER
+	// rules at once, so the groups must be created one at a time.
+	testhelpers.LockFixture(t, "affinity-member-server")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -160,12 +176,21 @@ func TestAccMorpheusCloudAffinityGroupMember(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config(name, cloudID, serverID, poolID),
+				Config: providerConfig + config(name, cloudID, serverID, poolID, true),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "server_id", serverID),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					checkMemberPresent(),
 				),
+			},
+			{
+				// Hand the membership to the member resource: dropping servers
+				// from the group is a no-op plan and evicts nobody.
+				Config: providerConfig + config(name, cloudID, serverID, poolID, false),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectEmptyPlan(),
+				}},
+				Check: checkMemberPresent(),
 			},
 			{
 				ResourceName:      resourceName,
@@ -202,11 +227,16 @@ func TestAccMorpheusCloudAffinityGroupMemberCoexists(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Parallel()
+	// Serialised across packages: every test seeds its group with the same
+	// fixture VM, and on a VMware cloud Morpheus pushes each group to vCenter
+	// as a DRS rule -- vCenter refuses the same VM in several KEEP_TOGETHER
+	// rules at once, so the groups must be created one at a time.
+	testhelpers.LockFixture(t, "affinity-member-server")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
-	cfg := providerConfig + config(name, cloudID, serverID, poolID)
+	seeded := providerConfig + config(name, cloudID, serverID, poolID, true)
+	cfg := providerConfig + config(name, cloudID, serverID, poolID, false)
 
 	otherID, err := strconv.ParseInt(otherServer, 10, 64)
 	if err != nil {
@@ -217,7 +247,10 @@ func TestAccMorpheusCloudAffinityGroupMemberCoexists(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: cfg,
+				Config: seeded, // bootstrap on 9.1: the group is born with its first member
+			},
+			{
+				Config: cfg, // hand the membership to the member resource
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkMemberPresent(),
 					// Join the group behind Terraform's back, standing in for an

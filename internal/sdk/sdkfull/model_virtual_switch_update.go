@@ -22,10 +22,12 @@ var _ MappedNullable = &VirtualSwitchUpdate{}
 
 // VirtualSwitchUpdate Request body for updating a virtual switch. `baseType` is immutable; supplying a different value is rejected.
 type VirtualSwitchUpdate struct {
+	// Switch name. Limited to 16 characters, matching the switch domain constraint and the service name-length limit.
 	Name        *string `json:"name,omitempty"`
 	Description *string `json:"description,omitempty"`
-	BondMode    *string `json:"bondMode,omitempty"`
-	Mtu         *int32  `json:"mtu,omitempty"`
+	// NIC bonding mode. The literal `none` may also be supplied to explicitly clear the bond mode.
+	BondMode *string `json:"bondMode,omitempty"`
+	Mtu      *int32  `json:"mtu,omitempty"`
 	// Optional revised per-host NIC assignments.
 	Uplinks              []VirtualSwitchUpdateUplinksInner `json:"uplinks,omitempty"`
 	AdditionalProperties map[string]interface{}            `json:",remain"`

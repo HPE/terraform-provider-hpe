@@ -2,8 +2,21 @@ resource "hpe_morpheus_cloud_affinity_group" "example" {
   cloud_id      = {{.CloudId}}
   name          = "{{.Name}}"
   affinity_type = "KEEP_TOGETHER"
+{{- if .Active}}
+  active        = {{.Active}}
+{{- end}}
 
   # Morpheus requires a pool on a cloud affinity group, and it must be a
   # resource pool of type Cluster.
   pool_id = {{.PoolId}}
+
+{{- if .Servers}}
+
+  # Morpheus 9.1 and later refuse an affinity group with no members, so give
+  # the group its first members here (for a VM managed in this configuration,
+  # hpe_morpheus_instance.<name>.compute_servers). With servers set this
+  # resource owns the membership; leave it out to manage members one at a time
+  # with hpe_morpheus_cloud_affinity_group_member -- never both on one group.
+  servers = {{.Servers}}
+{{- end}}
 }

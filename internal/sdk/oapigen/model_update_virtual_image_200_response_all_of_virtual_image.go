@@ -29,7 +29,7 @@ type UpdateVirtualImage200ResponseAllOfVirtualImage struct {
 	// Array of label strings, can be used for filtering.
 	Labels []string `json:"labels,omitempty"`
 	// Owner of the image
-	OwnerId *int64                                                `json:"ownerId,omitempty"`
+	OwnerId NullableInt64                                         `json:"ownerId,omitempty"`
 	Tenant  *UpdateVirtualImage200ResponseAllOfVirtualImageTenant `json:"tenant,omitempty"`
 	// Code of image type. eg. vmware, ami, etc.
 	ImageType *string `json:"imageType,omitempty"`
@@ -55,7 +55,7 @@ type UpdateVirtualImage200ResponseAllOfVirtualImage struct {
 	// Minimum required disk size in bytes
 	MinDisk NullableInt64 `json:"minDisk,omitempty"`
 	// Minimum required disk size in gigabytes
-	MinDiskGB NullableString `json:"minDiskGB,omitempty"`
+	MinDiskGB NullableFloat64 `json:"minDiskGB,omitempty"`
 	// Size of image in bytes
 	RawSize NullableInt64 `json:"rawSize,omitempty"`
 	// Size of image in gigabytes
@@ -120,11 +120,11 @@ func (o UpdateVirtualImage200ResponseAllOfVirtualImage) ToMap() (map[string]inte
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.Labels) {
+	if o.Labels != nil {
 		toSerialize["labels"] = o.Labels
 	}
-	if !IsNil(o.OwnerId) {
-		toSerialize["ownerId"] = o.OwnerId
+	if o.OwnerId.IsSet() {
+		toSerialize["ownerId"] = o.OwnerId.Get()
 	}
 	if !IsNil(o.Tenant) {
 		toSerialize["tenant"] = o.Tenant

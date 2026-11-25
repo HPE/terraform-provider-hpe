@@ -6,8 +6,16 @@ resource "hpe_morpheus_network_pool" "example" {
   gateway        = "{{.Gateway}}"
   dns_domain     = "{{.DnsDomain}}"
 
-  ip_ranges = {
-    starting_address = "{{.StartingAddress}}"
-    ending_address   = "{{.EndingAddress}}"
-  }
+  # Every range of the pool, in the order you want them listed. Each range is
+  # edited in place (by its id) when its addresses change.
+  ip_address_ranges = [
+    {
+      starting_address = "{{.StartingAddress}}"
+      ending_address   = "{{.EndingAddress}}"
+    },
+    {
+      starting_address = "{{.StartingAddress2}}"
+      ending_address   = "{{.EndingAddress2}}"
+    },
+  ]
 }

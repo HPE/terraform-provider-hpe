@@ -11,7 +11,7 @@ Provides an active directory identity source resource
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_identity_source_active_directory" "addemo" {
+resource "hpe_morpheus_identity_source_active_directory" "tf_example_active_directory_identity_source" {
   tenant_id               = 1
   name                    = "addemo"
   description             = "TF example AD identity source"

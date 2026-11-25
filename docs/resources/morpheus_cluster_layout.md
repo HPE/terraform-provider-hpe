@@ -72,6 +72,7 @@ resource "hpe_morpheus_cluster_layout" "example" {
 
 ### Read-Only
 
+- `cluster_version` (String) The version of the cluster software the layout deploys: the Kubernetes version for a Kubernetes layout (for example '1.33.x'), or the HVM cluster version for an HVM layout (for example '1.3' or '2.0'; a layout 2.0 builds on virtual switches and accepts the config_hvm network settings of hpe_morpheus_cluster). Set by Morpheus; it cannot be set through the API, so a custom layout cannot be made a 2.0 layout.
 - `id` (String) The ID of the cluster layout
 
 <a id="nestedblock--evar"></a>

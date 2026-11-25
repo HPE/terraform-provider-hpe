@@ -23,7 +23,9 @@ var _ MappedNullable = &AllocateNetworkFloatingIp200ResponseAllOfNetworkFloating
 // AllocateNetworkFloatingIp200ResponseAllOfNetworkFloatingIpNetworkDomain struct for AllocateNetworkFloatingIp200ResponseAllOfNetworkFloatingIpNetworkDomain
 type AllocateNetworkFloatingIp200ResponseAllOfNetworkFloatingIpNetworkDomain struct {
 	// Network Domain ID
-	Id                   *int64                 `json:"id,omitempty"`
+	Id *int64 `json:"id,omitempty"`
+	// Network Domain Name
+	Name                 *string                `json:"name,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -41,6 +43,9 @@ func (o AllocateNetworkFloatingIp200ResponseAllOfNetworkFloatingIpNetworkDomain)
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
+	}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
 	}
 
 	for key, value := range o.AdditionalProperties {

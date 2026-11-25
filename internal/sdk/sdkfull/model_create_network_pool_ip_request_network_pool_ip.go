@@ -22,15 +22,18 @@ var _ MappedNullable = &CreateNetworkPoolIpRequestNetworkPoolIp{}
 
 // CreateNetworkPoolIpRequestNetworkPoolIp struct for CreateNetworkPoolIpRequestNetworkPoolIp
 type CreateNetworkPoolIpRequestNetworkPoolIp struct {
-	// IP Address
+	// IP Address to reserve. Omit to have the pool allocate its next free address; when given it must lie within the pool's IP ranges.
 	IpAddress *string `json:"ipAddress,omitempty"`
-	// Hostname
-	Hostname *string `json:"hostname,omitempty"`
+	// Hostname. Required.
+	Hostname string `json:"hostname"`
+	// Description
+	Description *string `json:"description,omitempty"`
 	// Type of associated resource such as a host/server
 	RefType *string `json:"refType,omitempty"`
 	// ID of associated resource such as a host/server
-	RefId                *int64                 `json:"refId,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	RefId                *int64                                         `json:"refId,omitempty"`
+	Domain               *CreateNetworkPoolIpRequestNetworkPoolIpDomain `json:"domain,omitempty"`
+	AdditionalProperties map[string]interface{}                         `json:",remain"`
 }
 
 type _CreateNetworkPoolIpRequestNetworkPoolIp CreateNetworkPoolIpRequestNetworkPoolIp
@@ -48,14 +51,18 @@ func (o CreateNetworkPoolIpRequestNetworkPoolIp) ToMap() (map[string]interface{}
 	if !IsNil(o.IpAddress) {
 		toSerialize["ipAddress"] = o.IpAddress
 	}
-	if !IsNil(o.Hostname) {
-		toSerialize["hostname"] = o.Hostname
+	toSerialize["hostname"] = o.Hostname
+	if !IsNil(o.Description) {
+		toSerialize["description"] = o.Description
 	}
 	if !IsNil(o.RefType) {
 		toSerialize["refType"] = o.RefType
 	}
 	if !IsNil(o.RefId) {
 		toSerialize["refId"] = o.RefId
+	}
+	if !IsNil(o.Domain) {
+		toSerialize["domain"] = o.Domain
 	}
 
 	for key, value := range o.AdditionalProperties {

@@ -1,0 +1,65 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+The network server type is selected with `type_code` (a stable,
+environment-independent string, for example `nsx-t` or
+`morpheus-junipersdn-network`). Changing it replaces the network server.
+
+Most settings are common to every type. Type-specific option values are given
+either in the free-form `config` map — keyed exactly as the type's option types
+name them — or, for the HPE Morpheus SDN type, in the typed `config_juniper_sdn`
+block. The two are mutually exclusive.
+
+Authentication uses either a username and a write-only password
+(`service_username` and `service_password_wo`) or a stored credential
+(`credential_id`); the two are mutually exclusive. The HPE Morpheus SDN type
+takes no service credentials: its controller is reached from the HVM cluster's
+hosts.
+
+The authoritative, environment-specific list of available type codes depends on
+which integrations and plugins are installed.
+
+## Example Usage
+
+### NSX-T
+
+{{ tffile "examples/resources/morpheus_network_server/example_nsxt.tf" }}
+
+### HPE Morpheus SDN (Juniper CN2)
+
+{{ tffile "examples/resources/morpheus_network_server/example_juniper_sdn.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Network servers can be imported using the network server ID, e.g.
+
+```shell
+terraform import hpe_morpheus_network_server.example 42
+```
+
+The write-only values `service_password_wo` and `service_token_wo` are not stored
+in state, so the import cannot tell whether the values in your configuration match
+the appliance: they are taken as already applied, the plan after import is empty, and a later change to
+them is only detected once the resource is next updated for another reason
+(Terraform warns about this on every plan until then). To have changes detected
+from the start, append the sha256 digest of each configured write-only value to
+the import ID, as `<attribute>=<hex>`; several values are separated with `&`:
+
+```shell
+terraform import hpe_morpheus_network_server.example "42#service_password_wo=<sha256 hex>"
+terraform import hpe_morpheus_network_server.example "42#service_token_wo=<sha256 hex>"
+terraform import hpe_morpheus_network_server.example "42#service_password_wo=<sha256 hex>&service_token_wo=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function
+produces the digest:
+`id = "42#service_password_wo=${sha256(var.service_password_wo)}&service_token_wo=${sha256(var.service_token_wo)}"`.

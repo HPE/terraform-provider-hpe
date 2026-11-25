@@ -22,9 +22,8 @@ var _ MappedNullable = &GetNetworkPoolIp200Response{}
 
 // GetNetworkPoolIp200Response struct for GetNetworkPoolIp200Response
 type GetNetworkPoolIp200Response struct {
-	NetworkPoolIps       interface{}                           `json:"networkPoolIps,omitempty"`
-	Meta                 *GetNetworkPoolIp200ResponseAllOfMeta `json:"meta,omitempty"`
-	AdditionalProperties map[string]interface{}                `json:",remain"`
+	NetworkPoolIp        *GetNetworkPoolIp200ResponseNetworkPoolIp `json:"networkPoolIp,omitempty"`
+	AdditionalProperties map[string]interface{}                    `json:",remain"`
 }
 
 type _GetNetworkPoolIp200Response GetNetworkPoolIp200Response
@@ -39,11 +38,8 @@ func (o GetNetworkPoolIp200Response) MarshalJSON() ([]byte, error) {
 
 func (o GetNetworkPoolIp200Response) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if o.NetworkPoolIps != nil {
-		toSerialize["networkPoolIps"] = o.NetworkPoolIps
-	}
-	if !IsNil(o.Meta) {
-		toSerialize["meta"] = o.Meta
+	if !IsNil(o.NetworkPoolIp) {
+		toSerialize["networkPoolIp"] = o.NetworkPoolIp
 	}
 
 	for key, value := range o.AdditionalProperties {

@@ -20,9 +20,9 @@ import (
 // checks if the AddBaremetalHostRequestServerCloud type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &AddBaremetalHostRequestServerCloud{}
 
-// AddBaremetalHostRequestServerCloud struct for AddBaremetalHostRequestServerCloud
+// AddBaremetalHostRequestServerCloud The cloud to add the host to.
 type AddBaremetalHostRequestServerCloud struct {
-	Id                   *int32                 `json:"id,omitempty"`
+	Id                   *int64                 `json:"id,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 

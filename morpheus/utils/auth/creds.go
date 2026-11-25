@@ -23,6 +23,36 @@ type CredsRoundTripper struct {
 	password string
 }
 
+// AuthenticationError is a login that did not produce a token. StatusCode is
+// the token endpoint's answer (0 when the call never completed). Refused is
+// true when that answer is final -- bad credentials, a 401, any 4xx, a
+// response without a token -- and repeating the login cannot succeed. A 5xx
+// from the token endpoint is not a refusal: the appliance was unable to
+// answer, and a later login may succeed. A login that never completed (the
+// connection failed) wraps its cause for the caller to judge.
+//
+// The round-tripper returns this error with no response when a token cannot
+// be obtained, including a re-login after the token expired during a long
+// operation; pollers that retry failed calls (errfmt.IsTransient) match the
+// Auth* methods rather than this type.
+type AuthenticationError struct {
+	Err        error
+	StatusCode int
+	Refused    bool
+}
+
+func (e *AuthenticationError) Error() string { return e.Err.Error() }
+func (e *AuthenticationError) Unwrap() error { return e.Err }
+
+// AuthRefused reports whether the login was answered and refused for good.
+func (e *AuthenticationError) AuthRefused() bool { return e.Refused }
+
+// AuthRetryable reports whether the token endpoint answered with a 5xx: the
+// login may succeed when repeated.
+func (e *AuthenticationError) AuthRetryable() bool {
+	return e.StatusCode >= http.StatusInternalServerError
+}
+
 // GetToken authenticates with the username and password and caches the
 // access token as the SDK configuration's default Authorization header, which
 // the SDK then adds to every request it makes.
@@ -51,17 +81,29 @@ func (c *CredsRoundTripper) GetToken(ctx context.Context) error {
 	req = req.GrantType("password")
 	req = req.Scope("write")
 
-	token, _, err := c.client.AuthenticationAPI.GetAccessTokenExecute(req)
+	token, httpResp, err := c.client.AuthenticationAPI.GetAccessTokenExecute(req)
 	if err != nil {
 		msg := `could not authenticate with the Morpheus API using ` +
-			`the username:'%s',verify that the credentials are correct: %s"`
+			`the username:'%s',verify that the credentials are correct: %w"`
 
-		return fmt.Errorf(msg, c.username, err)
+		// A 4xx is a refusal; a 5xx is the appliance failing to answer; no
+		// response means the login did not complete and its cause decides.
+		authErr := &AuthenticationError{Err: fmt.Errorf(msg, c.username, err)}
+		if httpResp != nil {
+			authErr.StatusCode = httpResp.StatusCode
+			authErr.Refused = httpResp.StatusCode < http.StatusInternalServerError
+		}
+
+		return authErr
 	}
 
 	if token == nil || token.AccessToken == nil {
-		return fmt.Errorf(
-			"could not authenticate with the Morpheus API using the username:'%s': response missing access token", c.username)
+		return &AuthenticationError{
+			Err: fmt.Errorf(
+				"could not authenticate with the Morpheus API using the username:'%s': response missing access token", c.username),
+			StatusCode: http.StatusOK,
+			Refused:    true,
+		}
 	}
 
 	c.client.GetConfig().AddDefaultHeader(

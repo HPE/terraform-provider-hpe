@@ -1,6 +1,9 @@
 network_pool:
   moves:
     - network_pool: ""                      # unnest wrapper (components/schemas/networkPool.yaml)
+    - ip_ranges: ip_address_ranges          # the pool's ranges, same shape as the resource attribute
+    - ip_address_ranges.start_address: ip_address_ranges.starting_address
+    - ip_address_ranges.end_address: ip_address_ranges.ending_address
 
   removes:
     - account                               # (components/schemas/networkPool.yaml) - internal ref
@@ -12,7 +15,6 @@ network_pool:
     - host_prefix                           # (components/schemas/networkPool.yaml) - not needed
     - http_proxy                            # (components/schemas/networkPool.yaml) - not needed
     - internal_id                           # (components/schemas/networkPool.yaml) - not needed
-    - ip_ranges                             # (components/schemas/networkPool.yaml) - nested array
     - parent_id                             # (components/schemas/networkPool.yaml) - internal
     - parent_type                           # (components/schemas/networkPool.yaml) - internal
     - pool_group                            # (components/schemas/networkPool.yaml) - nested object
@@ -23,6 +25,9 @@ network_pool:
     - type                                  # (components/schemas/networkPool.yaml) - nested object
 
   overrides:
+    ip_address_ranges:
+      description: The IP address ranges of the pool.
+      computed_optional_required: computed
     id:
       description: The ID of the network pool
       conflicts_with: ["name"]

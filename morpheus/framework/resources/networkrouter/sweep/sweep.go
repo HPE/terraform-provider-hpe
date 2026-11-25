@@ -18,6 +18,13 @@ import (
 
 const sweeperName = "hpe_morpheus_network_router"
 
+// SdnTestNamePrefix is the name prefix of the SDN routers the acceptance
+// tests create (the plugin caps router names at 63 characters, so the
+// suite-wide prefix does not fit). It is a copy of the resource package's
+// constant of the same name — the sweeper cannot import that package under
+// the sweep build tag — and TestUnitSweepPrefixMatches keeps the two equal.
+const SdnTestNamePrefix = "tf-sdn-rtr"
+
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		sweeperName,
@@ -45,7 +52,8 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
+			return strings.HasPrefix(*name, testsweep.TestResourcePrefix) ||
+				strings.HasPrefix(*name, SdnTestNamePrefix)
 		},
 		// Delete the test network router.
 		func(

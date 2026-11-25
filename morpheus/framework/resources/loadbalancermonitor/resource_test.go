@@ -221,3 +221,110 @@ func importStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 		return lbID + "." + id, nil
 	}
 }
+
+// TestAccMorpheusLoadBalancerMonitorResourceJuniperSdnHttpExampleOk creates an
+// HTTP health-check monitor on an SDN (juniper-sdn-lb) load balancer. The LB
+// and the juniperSdn network it sits on are created per-test as prerequisites.
+func TestAccMorpheusLoadBalancerMonitorResourceJuniperSdnHttpExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.JuniperSDN)
+
+	// The monitor needs a load balancer of its own, and any load balancer
+	// delete on Morpheus 9.1.x damages the other load balancers' pool and
+	// virtual-server records (MORPH-18174), so this test is held with the
+	// load balancer test until that fix lands.
+	if os.Getenv(testhelpers.EnvSdnLoadBalancer) == "" {
+		t.Skip("SDN load balancer monitor test held for MORPH-18174; set " + testhelpers.EnvSdnLoadBalancer + "=1 to run")
+	}
+
+	f := testhelpers.RequireSdnFixture(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	lbName := name[0:16] + name[len(name)-16:]
+
+	network := `
+resource "hpe_morpheus_network" "sdn" {
+  name              = "` + lbName + `-net"
+  cloud_id          = ` + f.CloudID + `
+  group_id          = ` + f.GroupID + `
+  type_code         = "juniperSdn"
+  network_server_id = ` + f.NetworkServerID + `
+  zone_pool_id      = ` + f.ClusterPoolID + `
+  cidr              = "10.93.0.0/24"
+  gateway           = "10.93.0.1"
+  visibility        = "private"
+  tenant_ids        = [1]
+}
+`
+
+	lbConfig, err := loadbalancer.RenderLoadBalancerJuniperSdnConfig(t, map[string]string{
+		"Name":              lbName,
+		"CloudId":           f.CloudID,
+		"NetworkServerId":   f.NetworkServerID,
+		"ResourcePoolId":    f.ClusterPoolID,
+		"VirtualNetworkUid": "hpe_morpheus_network.sdn.unique_id",
+		"VirtualIp":         "10.93.0.100",
+		"SourcePort":        "80",
+		"DestinationPort":   "8080",
+		"Protocol":          "TCP",
+	})
+	if err != nil {
+		t.Fatalf("failed to render lb config: %s", err)
+	}
+
+	monitorName := acctest.RandomWithPrefix(t.Name())
+	resourceName := "hpe_morpheus_load_balancer_monitor.sdn"
+
+	monitorConfig, err := loadbalancermonitor.RenderLoadBalancerMonitorJuniperSdnConfig(t, map[string]string{
+		"LoadBalancerId": "hpe_morpheus_load_balancer.sdn.id",
+		"Name":           monitorName,
+	})
+	if err != nil {
+		t.Fatalf("failed to render config: %s", err)
+	}
+
+	config := testhelpers.ProviderBlock() + network + lbConfig + monitorConfig
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", monitorName),
+					resource.TestCheckResourceAttr(resourceName, "monitor_type", "HTTP"),
+					resource.TestCheckResourceAttr(resourceName, "config.http_method", "GET"),
+					resource.TestCheckResourceAttr(resourceName, "config.http_uri", "/health"),
+					resource.TestCheckResourceAttr(resourceName, "config.http_port", "8080"),
+					resource.TestCheckResourceAttr(resourceName, "config.http_return_code", "200"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttrSet(resourceName, "load_balancer_id"),
+				),
+			},
+			{
+				// The create step's config.http_* checks are satisfied by the
+				// planned values echoed into state (overlayPlanConfig); the
+				// import reads them back from the appliance and so proves the
+				// read-back mapping.
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: importStateIDFunc(resourceName),
+				ResourceName:      resourceName,
+				ImportStateVerifyIgnore: []string{
+					// Accepted on create but never returned by the API; see
+					// preserveUnreturnedFields in resource_read.go.
+					"receive_data",
+					"data_length",
+					"write_only_revision",
+				},
+			},
+		},
+	})
+}

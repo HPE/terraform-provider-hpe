@@ -1,0 +1,30 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+The setup wizard a browser shows on a new appliance is a front end for two unauthenticated endpoints, `GET /api/setup/check` and `POST /api/setup/init`, and this resource drives them with the provider's `url` and `insecure` settings but none of its credentials. The provider's `username` and `password` are normally the administrator this resource creates: the provider only authenticates when another resource or data source first calls the API, so the resource can run before those credentials exist, and everything else should `depends_on` it.
+
+## Example Usage
+
+{{tffile "examples/resources/morpheus_appliance_setup/example.tf"}}
+
+## Behaviour
+
+- **Create** polls `/api/setup/check` until the appliance's API answers, within the create timeout (default 40 minutes: a first boot seeds the database before the API comes up). When the appliance reports that setup is needed, one `POST /api/setup/init` creates the master tenant, the administrator and the appliance record and, when `license_key_wo` is set, installs the licence; the appliance validates the key before it creates anything, so a bad key fails the apply and leaves the appliance untouched. When the appliance has already been set up, nothing is sent, `already_initialised` is `true` and a warning says so.
+- **Refresh** asks the appliance whether setup is needed. Refresh and import each have a one-minute operation deadline (or the caller's shorter deadline), including the build-version lookup. An appliance that says so again has been reinstalled behind the same URL: the resource is removed from state and the next apply sets it up again. An appliance whose API does not answer is an error, not a removal, so setup is never re-run blind. `build_version` is read with the provider's credentials and kept as it was when they do not work.
+- **Changing** recorded identity inputs (including the appliance URL/name, tenant, administrator, email and Hub mode) is refused at plan and apply time; setup happens once. Removing a recorded optional identity value is also refused, rather than silently discarding the guard against later changes. Unrecorded (null) fields may adopt configuration metadata, including after import; already recorded fields remain protected independently. Manage the tenant, user, appliance settings and licence afterwards through their dedicated resources or the appliance UI (`hpe_morpheus_license` for the key). Write-only password and licence inputs are bootstrap-only: changing them does not rotate credentials or reinstall a licence, including during adoption or replacement. Changing the provider's username/password to match new bootstrap inputs can therefore break authentication against the unchanged appliance; update the real credentials through the appropriate API/UI first.
+- **Destroy** forgets the resource and leaves the appliance set up.
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the appliance URL the provider is configured with; the appliance must already be set up. The required inputs are not known to the appliance and are taken from the configuration on the next apply, which changes nothing on the appliance.
+
+{{codefile "shell" "examples/resources/morpheus_appliance_setup/import.sh" }}

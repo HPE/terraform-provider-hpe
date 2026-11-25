@@ -56,6 +56,17 @@ func (r *cloudAffinityGroupResource) Create(
 		Name: plan.Name.ValueStringPointer(),
 	}
 
+	// servers is sent on create when it is configured; see the cluster
+	// resource for the rationale. Morpheus 9.1 refuses a group with no
+	// members -- the plan-time gate in ModifyPlan refuses that configuration
+	// first on appliances that enforce it.
+	if !plan.Servers.IsNull() && !plan.Servers.IsUnknown() {
+		resp.Diagnostics.Append(plan.Servers.ElementsAs(ctx, &ag.Servers, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	// CRITICAL BEHAVIOUR 1: active MUST ALWAYS be sent on create.
 	// The API does `active = (params.active == 'on' || params.active == true)` unconditionally,
 	// which overrides the domain default of true. If omitted, the group is created INACTIVE.

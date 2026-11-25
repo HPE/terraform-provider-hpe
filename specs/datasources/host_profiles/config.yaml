@@ -1,0 +1,36 @@
+# Host Profiles data source (plural, filtered). GET /api/host-profiles.
+# Filter params: max, offset, phrase. Emits a computed list of host profile
+# summaries (no config / versions in list items). Follows the established
+# plural-filtered pattern (see datasources/clusters).
+host_profiles:
+  removes:
+    - meta                                     # pagination envelope (paths./api/host-profiles.get)
+    - success                                  # read envelope flag
+
+  overrides:
+    max:
+      computed_optional_required: computed_optional
+      description: Maximum number of host profiles to return.
+    offset:
+      computed_optional_required: computed_optional
+      description: Offset into the result set.
+    phrase:
+      computed_optional_required: computed_optional
+      description: Search phrase to filter host profiles by name.
+    host_profiles:
+      computed_optional_required: computed
+      description: The list of host profiles matching the supplied filters.
+    host_profiles.id:
+      description: The Morpheus ID of the host profile.
+    host_profiles.code:
+      description: Read-only unique code identifying the profile.
+    host_profiles.name:
+      description: Profile name.
+    host_profiles.description:
+      description: Description of the host profile.
+    host_profiles.enabled:
+      description: Whether the host profile is enabled.
+    host_profiles.server_count:
+      description: Number of servers currently attached to this profile.
+    host_profiles.compliance_status:
+      description: Aggregated compliance status across all attached hosts.

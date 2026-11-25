@@ -57,6 +57,7 @@ func getNetworkAsState(
 
 	state.Id = convert.Int64ToType(net.Id)
 	state.Name = convert.StrToType(net.Name)
+	state.UniqueId = convert.StrToType(net.UniqueId.Get())
 	if net.DisplayName.IsSet() {
 		state.DisplayName = convert.StrToType(net.DisplayName.Get())
 	}

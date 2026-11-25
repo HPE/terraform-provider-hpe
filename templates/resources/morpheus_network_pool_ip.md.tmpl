@@ -1,0 +1,27 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+  Manages a Morpheus network pool IP reservation.
+---
+# {{.Name}} ({{.Type}})
+
+Manages a Morpheus network pool IP reservation. A reservation claims an address from a network pool for a hostname.
+
+Omit `ip_address` to have the pool allocate its next free address, which is returned as the computed `ip_address`. Supply `ip_address` to pin a specific address, which must lie within the pool's IP ranges. Use `ref_type` and `ref_id` to associate the reservation with a resource such as a server; both can be added or removed after creation. Setting `create_dns` (which requires `domain_id`) creates DNS records for the reservation; both are applied at creation only and changing either replaces the reservation.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_network_pool_ip/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Network pool IP reservations can be imported using the network pool ID and reservation ID separated by a colon, e.g.
+
+```shell
+terraform import hpe_morpheus_network_pool_ip.example <network_pool_id>:<id>
+```
+
+Morpheus does not return `domain_id` or `create_dns`, so they are not recoverable on import: an imported reservation has `domain_id` null and `create_dns` false regardless of how it was created. Leave both out of the configuration of an imported reservation and no change is planned. Both are inputs Morpheus accepts only at creation (DNS records are created, or not, when the address is reserved), so setting either on an imported reservation plans a replacement — the address is released and reserved again with records — which is the only way the API can honour the request.

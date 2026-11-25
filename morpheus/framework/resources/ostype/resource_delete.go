@@ -43,12 +43,13 @@ func (r *Resource) Delete(
 	}
 
 	// Wait until the OS type can no longer be read; a successful GET means it
-	// is still there and the loop tries again (see errfmt.PollDeleted).
+	// is still there and the loop tries again (see errfmt.DeletePoller).
 	what := fmt.Sprintf("os type %d", id)
+	poller := &errfmt.DeletePoller{What: what}
 	waitForDeleted := func() (struct{}, error) {
 		_, httpResp, err := client.LibraryAPI.GetOsType(ctx, id).Execute()
 
-		return struct{}{}, errfmt.PollDeleted(what, err, httpResp)
+		return struct{}{}, poller.Poll(ctx, err, httpResp)
 	}
 
 	if _, err := backoff.Retry(

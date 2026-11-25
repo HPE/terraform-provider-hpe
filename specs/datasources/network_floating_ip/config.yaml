@@ -1,0 +1,69 @@
+network_floating_ip:
+  description: >-
+    Looks up a single Morpheus network floating IP by id or by IP address.
+  moves:
+    - network_floating_ip: ""                          # unnest response wrapper (GET /api/networks/floating-ips/{id})
+    - cloud.id: cloud_id                               # (GET response.networkFloatingIp.cloud)
+    - cloud.name: cloud_name                           # (GET response.networkFloatingIp.cloud)
+    - server.id: server_id                             # (GET response.networkFloatingIp.server)
+    - server.name: server_name                         # (GET response.networkFloatingIp.server)
+    - ip_range.start_address: ip_range_start_address   # (GET response.networkFloatingIp.ipRange)
+    - ip_range.end_address: ip_range_end_address       # (GET response.networkFloatingIp.ipRange)
+    - network_domain.id: network_domain_id             # (GET response.networkFloatingIp.networkDomain)
+    - network_domain.name: network_domain_name         # (GET response.networkFloatingIp.networkDomain)
+  removes:
+    - cloud                                            # flattened into cloud_id / cloud_name
+    - server                                           # flattened into server_id / server_name
+    - ip_range                                         # flattened into ip_range_start_address / ip_range_end_address
+    - network_domain                                   # flattened into network_domain_id / network_domain_name
+    - created_by                                       # (GET response.networkFloatingIp.createdBy) - read-only user ref
+    - success                                          # API response wrapper
+    - cloud.type                                       # (GET response.networkFloatingIp.cloud.type) - not exposed
+  overrides:
+    id:
+      description: The ID of the network floating IP. Conflicts with `ip_address`.
+      computed_optional_required: computed_optional
+      conflicts_with: [ip_address]
+    ip_address:
+      description: The IP address of the network floating IP. Conflicts with `id`.
+      computed_optional_required: computed_optional
+      conflicts_with: [id]
+    ip_status:
+      description: The status of the floating IP, one of `assigned`, `free` or `pending`.
+      computed_optional_required: computed
+    external_id:
+      description: The external ID of the floating IP.
+      computed_optional_required: computed
+    cloud_id:
+      description: The ID of the cloud the floating IP belongs to.
+      computed_optional_required: computed
+    cloud_name:
+      description: The name of the cloud the floating IP belongs to.
+      computed_optional_required: computed
+    server_id:
+      description: The ID of the server (VM) the floating IP is attached to, if any.
+      computed_optional_required: computed
+    server_name:
+      description: The name of the server (VM) the floating IP is attached to, if any.
+      computed_optional_required: computed
+    ip_range_start_address:
+      description: The start address of the pool range the floating IP was allocated from.
+      computed_optional_required: computed
+    ip_range_end_address:
+      description: The end address of the pool range the floating IP was allocated from.
+      computed_optional_required: computed
+    ptr_id:
+      description: The PTR record ID of the floating IP.
+      computed_optional_required: computed
+    network_domain_id:
+      description: The ID of the network domain the floating IP belongs to, if any.
+      computed_optional_required: computed
+    network_domain_name:
+      description: The name of the network domain the floating IP belongs to, if any.
+      computed_optional_required: computed
+    date_created:
+      description: When the floating IP was created.
+      computed_optional_required: computed
+    last_updated:
+      description: When the floating IP was last updated.
+      computed_optional_required: computed

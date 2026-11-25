@@ -24,6 +24,13 @@ const EnvAffinityCloudID = "TF_VAR_testacc_morpheus_affinity_cloud_id"
 // capability. Only the mvm-cluster (HVM) cluster type supports them.
 const EnvAffinityClusterID = "TF_VAR_testacc_morpheus_affinity_cluster_id"
 
+// EnvHVMClusterID is the environment variable that supplies the ID of an
+// existing HVM cluster for the cluster host-profile attach/detach test. Cluster
+// IDs are allocated per appliance and host-profile support only exists on HVM
+// clusters, so there is no sensible fallback: a guessed ID turns a test that
+// should skip into one that fails against the API.
+const EnvHVMClusterID = "TF_VAR_testacc_morpheus_hvm_cluster_id"
+
 // EnvAffinityPoolID is the environment variable that supplies the ID of the
 // resource pool to scope cloud affinity groups to. Morpheus requires a pool
 // when creating a cloud affinity group, and it must be a resource pool of type
@@ -103,6 +110,17 @@ func AffinityClusterID(t *testing.T) string {
 
 	return envOrSkip(t, EnvAffinityClusterID,
 		"an HVM cluster that supports affinity groups")
+}
+
+// HVMClusterID returns the ID of an existing HVM cluster to run the cluster
+// host-profile attach/detach test against, skipping the test when
+// EnvHVMClusterID is unset. As with the affinity helpers there is no fallback:
+// host profiles only attach to HVM clusters, so a guessed ID fails rather than
+// skips.
+func HVMClusterID(t *testing.T) string {
+	t.Helper()
+
+	return envOrSkip(t, EnvHVMClusterID, "an existing HVM cluster")
 }
 
 // AffinityPoolID returns the resource pool ID to scope cloud affinity group
@@ -315,4 +333,22 @@ provider "hpe" {
 
 func ProviderBlockPceIdentity() string {
 	return providerConfigPceIdentity
+}
+
+// EnvAffinityMemberServerID names an existing compute server, on the affinity
+// fixture's cluster/cloud, that tests may place in an affinity group. Morpheus
+// 9.1 refuses a group with no members, so the group tests need it as well as
+// the member tests.
+const EnvAffinityMemberServerID = "TF_VAR_testacc_morpheus_affinity_member_server_id"
+
+// AffinityMemberServerID returns EnvAffinityMemberServerID or skips the test.
+func AffinityMemberServerID(t *testing.T) string {
+	t.Helper()
+
+	v := os.Getenv(EnvAffinityMemberServerID)
+	if v == "" {
+		t.Skip(EnvAffinityMemberServerID + " not set; skipping test that needs an existing compute server to place in an affinity group")
+	}
+
+	return v
 }

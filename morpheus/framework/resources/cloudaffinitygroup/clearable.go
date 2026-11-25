@@ -13,6 +13,7 @@ var clearableAttributes = clearable.Attributes{}
 // notClearable records why each remaining optional attribute is not cleared
 // when it is removed from the configuration.
 var notClearable = clearable.NotClearable{
+	"servers":              "removing it hands the membership back to hpe_morpheus_cloud_affinity_group_member and provisioning; the current members are kept, not evicted",
 	"active":               "boolean",
 	"resource_permissions": "a nested configuration block, sent as configured and not cleared as a whole",
 	"visibility":           "has a default; Terraform plans the default when it is removed",

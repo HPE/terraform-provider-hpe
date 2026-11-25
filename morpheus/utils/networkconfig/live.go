@@ -100,6 +100,8 @@ func FromAPI(networkType any) (TypeSpec, error) {
 		},
 	}
 
+	applyBehaviourOverrides(&spec)
+
 	type ordered struct {
 		spec  FieldSpec
 		order int64
@@ -182,5 +184,25 @@ func text(v any) string {
 		return x.String()
 	default:
 		return strings.TrimSpace(fmt.Sprint(x))
+	}
+}
+
+// behaviourOverrides corrects a type's declared editability where the
+// declaration is known to disagree with what the type's update path actually
+// accepts. A declaration says what the UI shows as editable; the update path
+// is what Terraform hits, and a change the type refuses must plan a
+// replacement, not an in-place update that fails at apply. Each entry cites
+// the behaviour it was verified against. Applied to live and built-in specs
+// alike, so the two cannot disagree.
+var behaviourOverrides = map[string]func(f *TypeFlags){
+	// HPE Morpheus SDN plugin 1.1.0 declares gatewayEditable but refuses the
+	// change: "Gateway cannot be modified after network creation. Changing the
+	// gateway would break connectivity for existing workloads".
+	"juniperSdn": func(f *TypeFlags) { f.Gateway = false },
+}
+
+func applyBehaviourOverrides(spec *TypeSpec) {
+	if fix, ok := behaviourOverrides[spec.Code]; ok {
+		fix(&spec.Flags)
 	}
 }

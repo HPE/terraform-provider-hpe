@@ -29,8 +29,8 @@ type ListVirtualImages200ResponseAllOfVirtualImagesInner struct {
 	// Array of label strings, can be used for filtering.
 	Labels []string `json:"labels,omitempty"`
 	// Owner of the image
-	OwnerId *int64                                                            `json:"ownerId,omitempty"`
-	Tenant  NullableListVirtualImages200ResponseAllOfVirtualImagesInnerTenant `json:"tenant,omitempty"`
+	OwnerId NullableInt64                                              `json:"ownerId,omitempty"`
+	Tenant  *ListVirtualImages200ResponseAllOfVirtualImagesInnerTenant `json:"tenant,omitempty"`
 	// Code of image type. eg. vmware, ami, etc.
 	ImageType *string `json:"imageType,omitempty"`
 	// Is uploaded by an user?
@@ -55,7 +55,7 @@ type ListVirtualImages200ResponseAllOfVirtualImagesInner struct {
 	// Minimum required disk size in bytes
 	MinDisk NullableInt64 `json:"minDisk,omitempty"`
 	// Minimum required disk size in gigabytes
-	MinDiskGB NullableString `json:"minDiskGB,omitempty"`
+	MinDiskGB NullableFloat64 `json:"minDiskGB,omitempty"`
 	// Size of image in bytes
 	RawSize NullableInt64 `json:"rawSize,omitempty"`
 	// Size of image in gigabytes
@@ -120,14 +120,14 @@ func (o ListVirtualImages200ResponseAllOfVirtualImagesInner) ToMap() (map[string
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.Labels) {
+	if o.Labels != nil {
 		toSerialize["labels"] = o.Labels
 	}
-	if !IsNil(o.OwnerId) {
-		toSerialize["ownerId"] = o.OwnerId
+	if o.OwnerId.IsSet() {
+		toSerialize["ownerId"] = o.OwnerId.Get()
 	}
-	if o.Tenant.IsSet() {
-		toSerialize["tenant"] = o.Tenant.Get()
+	if !IsNil(o.Tenant) {
+		toSerialize["tenant"] = o.Tenant
 	}
 	if !IsNil(o.ImageType) {
 		toSerialize["imageType"] = o.ImageType

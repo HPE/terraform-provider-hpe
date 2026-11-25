@@ -175,6 +175,22 @@ func SkipIfNotClient(t *testing.T) {
 	}
 }
 
+// SkipIfNotMSPWithClientOverride skips the test unless running with raw MSP
+// credentials and a target_client override is configured. Use for MSP-only
+// features that reference a specific client ID, e.g. organization_matching_type
+// INCLUDE/EXCLUDE with included_clients/excluded_clients.
+func SkipIfNotMSPWithClientOverride(t *testing.T) {
+	t.Helper()
+
+	if CredentialScope(t) != "MSP" {
+		t.Skip("skipping: test requires MSP credentials")
+	}
+
+	if _, ok := LookupProviderEnv(envTargetClientSuffix); !ok {
+		t.Skipf("skipping: TF_VAR_testacc_opsramp_%s not set", envTargetClientSuffix)
+	}
+}
+
 // RequireClientScope ensures the test can operate at CLIENT level.
 //   - CLIENT credentials: returns "" (no override needed).
 //   - MSP credentials + target_client: returns the target client ID.

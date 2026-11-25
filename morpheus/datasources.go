@@ -13,12 +13,18 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusterlayout"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusterlayouts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusters"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastores"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastoretypes"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/group"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/host"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/hostprofile"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/hostprofilecompliance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/hostprofiles"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/hosts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/images"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instance"
@@ -36,7 +42,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkedgecluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrulegroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfloatingip"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfloatingips"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpool"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpoolip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpoolservertype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterbgpneighbor"
@@ -97,6 +106,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancestoragecontroller"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkinterfacetype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkproxy"
+
+	// MORPH-17745: virtual switch data sources
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusteravailablenics"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/virtualswitch"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/virtualswitches"
 )
 
 func (p *MorpheusProvider) DataSources(
@@ -113,6 +127,11 @@ func (p *MorpheusProvider) DataSources(
 		datastoretypes.NewDataSource,
 		environment.NewDataSource,
 		group.NewDataSource,
+		hostprofile.NewDataSource,
+		hostprofiles.NewDataSource,
+		hostprofilecompliance.NewDataSource,
+		host.NewDataSource,
+		hosts.NewDataSource,
 		instance.NewDataSource,
 		instancetypelayout.NewDataSource,
 		image.NewDataSource,
@@ -149,9 +168,12 @@ func (p *MorpheusProvider) DataSources(
 		whoami.NewDataSource,
 		// hpegl VMaaS parity data sources
 		networkserver.NewDataSource,
+		networkfloatingip.NewDataSource,
+		networkfloatingips.NewDataSource,
 		networkedgecluster.NewDataSource,
 		networktransportzone.NewDataSource,
 		networkpool.NewDataSource,
+		networkpoolip.NewDataSource,
 		networktype.NewDataSource,
 		optionsourcevalue.NewDataSource,
 		optionsourcevalues.NewDataSource,
@@ -159,6 +181,7 @@ func (p *MorpheusProvider) DataSources(
 		// resource-reference lookup data sources (avoid hard-coded IDs)
 		backupjob.NewDataSource,
 		clusterlayout.NewDataSource,
+		clusterlayouts.NewDataSource,
 		monitoringchecktype.NewDataSource,
 		networkpoolservertype.NewDataSource,
 		networkroutertype.NewDataSource,
@@ -199,5 +222,10 @@ func (p *MorpheusProvider) DataSources(
 		instancedisktype.NewDataSource,
 		// Plugin lifecycle data source (Plugin Framework)
 		plugin.NewDataSource,
+
+		// MORPH-17745: virtual switch data sources
+		virtualswitch.NewDataSource,
+		virtualswitches.NewDataSource,
+		clusteravailablenics.NewDataSource,
 	}
 }

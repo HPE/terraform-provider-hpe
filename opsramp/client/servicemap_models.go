@@ -34,9 +34,16 @@ type Parent struct {
 }
 
 type ServiceAvailabilityMonitor struct {
-	AlertType string   `json:"alertType"`
-	Metrics   []string `json:"metrics"`
-	MatchType string   `json:"matchType,omitempty"`
+	AlertType      string                      `json:"alertType"`
+	Metrics        []string                    `json:"metrics"`
+	MatchType      string                      `json:"matchType,omitempty"`
+	MetricCriteria []ServicemapMetricCriterion `json:"metricCriteria,omitzero"`
+}
+
+type ServicemapMetricCriterion struct {
+	MetricName string   `json:"metricName"`
+	Operator   string   `json:"operator"`
+	Components []string `json:"components,omitempty"`
 }
 
 type AvailabilityThreshold struct {

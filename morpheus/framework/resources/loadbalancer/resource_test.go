@@ -5,6 +5,7 @@ package loadbalancer_test
 import (
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -245,6 +246,192 @@ resource "hpe_morpheus_load_balancer" "test" {
 				Config:             providerConfig + resourceConfig,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusLoadBalancerResourceJuniperSdnExampleOk creates an SDN
+// (juniper-sdn-lb) load balancer on a juniperSdn virtual network. The SDN LB
+// configuration is immutable after create, so this is a create-and-import test.
+func TestAccMorpheusLoadBalancerResourceJuniperSdnExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.JuniperSDN)
+	// Held: deleting any load balancer on Morpheus 9.1.x wipes every other load
+	// balancer's pool and virtual-server records (MORPH-18174), so this test
+	// must not run on a shared appliance until that fix lands.
+	if os.Getenv(testhelpers.EnvSdnLoadBalancer) == "" {
+		t.Skip("SDN load balancer test held for MORPH-18174; set " + testhelpers.EnvSdnLoadBalancer + "=1 to run")
+	}
+	f := testhelpers.RequireSdnFixture(t)
+
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow acceptance test in short mode")
+	}
+
+	name := acctest.RandomWithPrefix(t.Name())
+	name = name[0:16] + name[len(name)-16:]
+
+	// The SDN virtual network the LB's virtual_network_uid points at; created
+	// per-test so parallel runs do not collide.
+	network := `
+resource "hpe_morpheus_network" "sdn" {
+  name              = "` + name + `-net"
+  cloud_id          = ` + f.CloudID + `
+  group_id          = ` + f.GroupID + `
+  type_code         = "juniperSdn"
+  network_server_id = ` + f.NetworkServerID + `
+  zone_pool_id      = ` + f.ClusterPoolID + `
+  cidr              = "10.92.0.0/24"
+  gateway           = "10.92.0.1"
+  visibility        = "private"
+  tenant_ids        = [1]
+}
+`
+
+	lb, err := loadbalancer.RenderLoadBalancerJuniperSdnConfig(t, map[string]string{
+		"Name":              name,
+		"CloudId":           f.CloudID,
+		"NetworkServerId":   f.NetworkServerID,
+		"ResourcePoolId":    f.ClusterPoolID,
+		"VirtualNetworkUid": "hpe_morpheus_network.sdn.unique_id",
+		"VirtualIp":         "10.92.0.100",
+		"SourcePort":        "80",
+		"DestinationPort":   "8080",
+		"Protocol":          "TCP",
+	})
+	if err != nil {
+		t.Fatalf("failed to render config: %s", err)
+	}
+
+	resourceName := "hpe_morpheus_load_balancer.sdn"
+	config := testhelpers.ProviderBlock() + network + lb
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", name),
+					resource.TestCheckResourceAttr(resourceName, "type_code", "juniper-sdn-lb"),
+					resource.TestCheckResourceAttr(resourceName, "config_juniper_sdn.virtual_ip", "10.92.0.100"),
+					resource.TestCheckResourceAttr(resourceName, "config_juniper_sdn.source_port", "80"),
+					resource.TestCheckResourceAttr(resourceName, "config_juniper_sdn.destination_port", "8080"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"cloud_id",
+					"network_server_id",
+					"write_only_revision",
+				},
+			},
+		},
+	})
+}
+
+// TestAccMorpheusLoadBalancerResourceJuniperSdnTypeCodeOmittedOk creates the
+// same SDN load balancer with type_code left out: the config_juniper_sdn block
+// implies the type, so type_code is computed from the appliance, the next
+// plan is empty, and the import matches (MORPH-20774).
+func TestAccMorpheusLoadBalancerResourceJuniperSdnTypeCodeOmittedOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.JuniperSDN)
+	// Held: deleting any load balancer on Morpheus 9.1.x wipes every other load
+	// balancer's pool and virtual-server records (MORPH-18174), so this test
+	// must not run on a shared appliance until that fix lands.
+	if os.Getenv(testhelpers.EnvSdnLoadBalancer) == "" {
+		t.Skip("SDN load balancer test held for MORPH-18174; set " + testhelpers.EnvSdnLoadBalancer + "=1 to run")
+	}
+	f := testhelpers.RequireSdnFixture(t)
+
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow acceptance test in short mode")
+	}
+
+	name := acctest.RandomWithPrefix(t.Name())
+	name = name[0:16] + name[len(name)-16:]
+
+	// The SDN virtual network the LB's virtual_network_uid points at; created
+	// per-test so parallel runs do not collide.
+	network := `
+resource "hpe_morpheus_network" "sdn" {
+  name              = "` + name + `-net"
+  cloud_id          = ` + f.CloudID + `
+  group_id          = ` + f.GroupID + `
+  type_code         = "juniperSdn"
+  network_server_id = ` + f.NetworkServerID + `
+  zone_pool_id      = ` + f.ClusterPoolID + `
+  cidr              = "10.92.0.0/24"
+  gateway           = "10.92.0.1"
+  visibility        = "private"
+  tenant_ids        = [1]
+}
+`
+
+	lb, err := loadbalancer.RenderLoadBalancerJuniperSdnConfig(t, map[string]string{
+		"Name":              name,
+		"CloudId":           f.CloudID,
+		"NetworkServerId":   f.NetworkServerID,
+		"ResourcePoolId":    f.ClusterPoolID,
+		"VirtualNetworkUid": "hpe_morpheus_network.sdn.unique_id",
+		"VirtualIp":         "10.92.0.100",
+		"SourcePort":        "80",
+		"DestinationPort":   "8080",
+		"Protocol":          "TCP",
+	})
+	if err != nil {
+		t.Fatalf("failed to render config: %s", err)
+	}
+
+	// The example sets type_code; this variant drops the line.
+	lb = strings.Replace(lb, "\n  type_code         = \"juniper-sdn-lb\"", "", 1)
+	if strings.Contains(lb, "type_code") {
+		t.Fatal("type_code still present in the rendered configuration")
+	}
+
+	resourceName := "hpe_morpheus_load_balancer.sdn"
+	config := testhelpers.ProviderBlock() + network + lb
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", name),
+					resource.TestCheckResourceAttr(resourceName, "type_code", "juniper-sdn-lb"),
+					resource.TestCheckResourceAttr(resourceName, "config_juniper_sdn.virtual_ip", "10.92.0.100"),
+					resource.TestCheckResourceAttr(resourceName, "config_juniper_sdn.source_port", "80"),
+					resource.TestCheckResourceAttr(resourceName, "config_juniper_sdn.destination_port", "8080"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+				),
+			},
+			{
+				// Nothing to plan: the computed type_code is kept from state.
+				Config:   config,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"cloud_id",
+					"network_server_id",
+					"write_only_revision",
+				},
 			},
 		},
 	})

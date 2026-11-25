@@ -2,38 +2,61 @@ data "hpe_morpheus_cloud" "metal" {
   name = "Metal"
 }
 
+data "hpe_morpheus_storage_server" "alletra" {
+  name = "alletra-mp-1"
+}
+
+# The resource pool, by name. There is no resource pool data source yet, but
+# the zonePools option source lists a cloud's pools (the bare-metal provision
+# type is the provisioning context the source expects), and attributes["id"]
+# is the pool's id. Every HPE Bare Metal cloud has a "Default" pool.
+data "hpe_morpheus_option_source_value" "pool" {
+  source              = "zonePools"
+  cloud_id            = data.hpe_morpheus_cloud.metal.id
+  provision_type_code = "hpe-baremetal-plugin.provision"
+  name                = "Default"
+}
+
+data "hpe_morpheus_group" "example" {
+  name = "Default"
+}
+
+data "hpe_morpheus_tenant" "example" {
+  name = "Tenant A"
+}
+
 resource "hpe_morpheus_datastore" "example" {
   name = "TestAlletraDatastore"
   datastore_type = {
     code = "hpedatastore-alletra-mp-bmaas"
   }
   associated_resource_type = "Cloud"
+  associated_resource_id   = data.hpe_morpheus_cloud.metal.id
   visibility               = "private"
   active                   = true
-  associated_resource_id   = data.hpe_morpheus_cloud.metal.id
 
   config_alletramp_bmaas = {
     protocol_type = "iSCSI"
   }
 
   storage_server = {
-    id = 1
+    id = data.hpe_morpheus_storage_server.alletra.id
   }
 
   resource_pool = {
-    id = 1
+    id = data.hpe_morpheus_option_source_value.pool.attributes["id"]
   }
 
   resource_permissions = {
     groups = [
       {
-        id = 1
+        id = data.hpe_morpheus_group.example.id
       }
     ]
   }
   tenants = [
     {
-      id = 1
+      id = data.hpe_morpheus_tenant.example.id
     }
   ]
 }

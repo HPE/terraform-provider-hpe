@@ -1,0 +1,33 @@
+resource "hpe_morpheus_host_profile" "example" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+
+  config = {
+    storage = {
+      iscsi = {
+        transport    = "{{.IscsiTransport}}"
+        chap_enabled = {{.IscsiChapEnabled}}
+      }
+      multipath = {
+        find_multipaths     = {{.MultipathFindMultipaths}}
+        user_friendly_names = {{.MultipathUserFriendlyNames}}
+      }
+    }
+    system = {
+      # config sub-attributes are Optional: one you omit stays null and
+      # unmanaged, so Terraform neither sets nor reconciles it. Declare it
+      # explicitly (e.g. timezone = "America/Denver") to manage it, and remove
+      # it later to clear it.
+      cpu = {
+        power_management = "{{.CpuPowerManagement}}"
+      }
+      logging = {
+        level = "{{.LoggingLevel}}"
+      }
+    }
+    baseline = {
+      # Extra packages to install, one per line in package=version format.
+      additional_packages = "{{.AdditionalPackages}}"
+    }
+  }
+}

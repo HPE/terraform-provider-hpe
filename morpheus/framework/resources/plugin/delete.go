@@ -49,10 +49,11 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 
 	// Wait for the GET to turn 404.
 	what := fmt.Sprintf("plugin %d", id)
+	poller := &errfmt.DeletePoller{What: what}
 	waitForDeleted := func() (struct{}, error) {
 		_, httpResp, err := client.PluginsAPI.GetPlugin(ctx, id).Execute()
 
-		return struct{}{}, errfmt.PollDeleted(what, err, httpResp)
+		return struct{}{}, poller.Poll(ctx, err, httpResp)
 	}
 
 	if _, err := backoff.Retry(

@@ -28,11 +28,16 @@ network:
     - network.display_name
     - network.labels
     - network.visibility
+    - network.unique_id
   moves:
     - network: "" # unnest network to root
     - template-cloud_id: cloud_id
     - template-cluster_id: cluster_id
   overrides:
+    unique_id:
+      computed_optional_required: computed
+      description: >-
+        The controller's identifier for the network (a UUID for SDN virtual networks); what the SDN router and load balancer reference a virtual network by.
     id:
       computed_optional_required: computed_optional
       description: Morpheus ID of the network being referenced

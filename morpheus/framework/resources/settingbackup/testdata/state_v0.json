@@ -1,0 +1,14 @@
+{
+  "schema_version": 0,
+  "attributes": {
+    "id": "1",
+    "scheduled_backups": true,
+    "create_backups": true,
+    "backup_appliance": false,
+    "default_backup_storage_bucket_id": 17,
+    "default_backup_schedule_id": 3,
+    "retention_days": 21
+  },
+  "sensitive_attributes": [],
+  "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjAifQ=="
+}

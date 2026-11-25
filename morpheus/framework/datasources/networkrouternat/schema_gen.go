@@ -19,8 +19,9 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"action": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The NAT action (e.g. SNAT, DNAT, REFLEXIVE).",
-				MarkdownDescription: "The NAT action (e.g. SNAT, DNAT, REFLEXIVE).",
+				Description:         "Deprecated. Always null: the Morpheus API does not return a NAT rule's action (SNAT, DNAT, REFLEXIVE)\nwhen it is read, so this attribute is never populated. It will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated. Always null: the Morpheus API does not return a NAT rule's action (SNAT, DNAT, REFLEXIVE)\nwhen it is read, so this attribute is never populated. It will be removed in the 2.6 release.",
+				DeprecationMessage:  "Always null: the Morpheus API does not return a NAT rule's action when it is read. This attribute will be removed in the 2.6 release.",
 			},
 			"date_created": schema.StringAttribute{
 				Computed:            true,
@@ -53,7 +54,10 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The external ID of the NAT rule.",
 			},
 			"firewall": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Deprecated. Always null: the Morpheus API does not return the firewall match applied to a NAT rule\nwhen it is read, so this attribute is never populated. It will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated. Always null: the Morpheus API does not return the firewall match applied to a NAT rule\nwhen it is read, so this attribute is never populated. It will be removed in the 2.6 release.",
+				DeprecationMessage:  "Always null: the Morpheus API does not return the firewall match applied to a NAT rule when it is read. This attribute will be removed in the 2.6 release.",
 			},
 			"id": schema.Int64Attribute{
 				Optional:            true,

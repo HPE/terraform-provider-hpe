@@ -22,7 +22,8 @@ var _ MappedNullable = &GetClusterHostProfile200ResponseHostProfileAllOfAllOfCon
 
 // GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigSystemMemoryHugePages struct for GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigSystemMemoryHugePages
 type GetClusterHostProfile200ResponseHostProfileAllOfAllOfConfigSystemMemoryHugePages struct {
-	Enabled              *bool                  `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
+	// Huge page size: 2M (standard) or 1G (large). Requires host reboot to change.
 	Size                 *string                `json:"size,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }

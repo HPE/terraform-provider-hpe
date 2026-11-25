@@ -22,7 +22,9 @@ var _ MappedNullable = &PatchHostProfile200ResponseHostProfile{}
 
 // PatchHostProfile200ResponseHostProfile struct for PatchHostProfile200ResponseHostProfile
 type PatchHostProfile200ResponseHostProfile struct {
-	Id          *int64         `json:"id,omitempty"`
+	Id *int64 `json:"id,omitempty"`
+	// Read-only unique code identifying the profile; 'host-profile.hvm.default' marks the immutable seeded default (rejects update/delete/attach)
+	Code        NullableString `json:"code,omitempty"`
 	Name        *string        `json:"name,omitempty"`
 	Description NullableString `json:"description,omitempty"`
 	Enabled     *bool          `json:"enabled,omitempty"`
@@ -49,6 +51,9 @@ func (o PatchHostProfile200ResponseHostProfile) ToMap() (map[string]interface{},
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
+	}
+	if o.Code.IsSet() {
+		toSerialize["code"] = o.Code.Get()
 	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name

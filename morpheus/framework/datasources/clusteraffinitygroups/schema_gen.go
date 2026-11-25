@@ -160,8 +160,8 @@ func ClusterAffinityGroupsDataSourceSchema(ctx context.Context) schema.Schema {
 						"tenant_ids": schema.SetAttribute{
 							ElementType:         types.Int64Type,
 							Computed:            true,
-							Description:         "Tenant account IDs allowed access. The Morpheus API does not currently apply tenant assignment on affinity groups, so this is typically empty regardless of what has been requested. Tracked as MORPH-15806.",
-							MarkdownDescription: "Tenant account IDs allowed access. The Morpheus API does not currently apply tenant assignment on affinity groups, so this is typically empty regardless of what has been requested. Tracked as MORPH-15806.",
+							Description:         "Tenant account IDs allowed access. The listing the groups are read from does not carry tenants, so this is always null here; a group read on its own reports them from Morpheus 9.1.0 for the master tenant's groups and 9.1.2 for a sub-tenant's (on 9.0.x a group that was given tenant permissions answers that read with a server error from then on, MORPH-15806).",
+							MarkdownDescription: "Tenant account IDs allowed access. The listing the groups are read from does not carry tenants, so this is always null here; a group read on its own reports them from Morpheus 9.1.0 for the master tenant's groups and 9.1.2 for a sub-tenant's (on 9.0.x a group that was given tenant permissions answers that read with a server error from then on, MORPH-15806).",
 						},
 						"visibility": schema.StringAttribute{
 							Computed:            true,

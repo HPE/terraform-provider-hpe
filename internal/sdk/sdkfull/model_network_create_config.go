@@ -21,8 +21,9 @@ import (
 // very silly way of avoiding `"fmt" imported and not used` errors
 var _ fmt.Stringer
 
-// NetworkCreateConfig Configuration object. Settings vary by type.
+// NetworkCreateConfig Configuration object. Settings vary by type: the keys are the network type's config-context option types (see the network type detail API). Typed variants exist for the Azure, AWS, GCP and NSX-T segment types; any other type takes the generic map.
 type NetworkCreateConfig struct {
+	NSXTSegmentConfig1        *NSXTSegmentConfig1
 	NetworkCreateConfigAnyOf  *NetworkCreateConfigAnyOf
 	NetworkCreateConfigAnyOf1 *NetworkCreateConfigAnyOf1
 	NetworkCreateConfigAnyOf2 *NetworkCreateConfigAnyOf2
@@ -32,6 +33,12 @@ type NetworkCreateConfig struct {
 func (dst *NetworkCreateConfig) UnmarshalMapstructure(data any) (any, error) {
 	if dst == nil {
 		dst = &NetworkCreateConfig{}
+	}
+
+	mapstructDecode(data, &dst.NSXTSegmentConfig1)
+
+	if IsEmpty(dst.NSXTSegmentConfig1) {
+		dst.NSXTSegmentConfig1 = nil
 	}
 
 	mapstructDecode(data, &dst.NetworkCreateConfigAnyOf)
@@ -64,6 +71,26 @@ func (dst *NetworkCreateConfig) UnmarshalMapstructure(data any) (any, error) {
 // Unmarshal JSON data into any of the pointers in the struct
 func (dst *NetworkCreateConfig) UnmarshalJSON(data []byte) error {
 	var err error
+	// try to unmarshal JSON data into NSXTSegmentConfig1
+	err = json.Unmarshal(data, &dst.NSXTSegmentConfig1)
+	if err == nil {
+		jsonNSXTSegmentConfig1, merrNSXTSegmentConfig1 := json.Marshal(dst.NSXTSegmentConfig1)
+		var zeroNSXTSegmentConfig1 NSXTSegmentConfig1
+		jsonZeroNSXTSegmentConfig1, _ := json.Marshal(&zeroNSXTSegmentConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNSXTSegmentConfig1 != nil || string(jsonNSXTSegmentConfig1) == "{}" || (len(jsonNSXTSegmentConfig1) > 0 && jsonNSXTSegmentConfig1[0] == '{' && string(jsonNSXTSegmentConfig1) == string(jsonZeroNSXTSegmentConfig1)) {
+			dst.NSXTSegmentConfig1 = nil
+		} else {
+			return nil // data stored in dst.NSXTSegmentConfig1, return on the first match
+		}
+	} else {
+		dst.NSXTSegmentConfig1 = nil
+	}
+
 	// try to unmarshal JSON data into NetworkCreateConfigAnyOf
 	err = json.Unmarshal(data, &dst.NetworkCreateConfigAnyOf)
 	if err == nil {
@@ -155,6 +182,10 @@ func (dst *NetworkCreateConfig) UnmarshalJSON(data []byte) error {
 
 // Marshal data from the first non-nil pointers in the struct to JSON
 func (src NetworkCreateConfig) MarshalJSON() ([]byte, error) {
+	if src.NSXTSegmentConfig1 != nil {
+		return json.Marshal(&src.NSXTSegmentConfig1)
+	}
+
 	if src.NetworkCreateConfigAnyOf != nil {
 		return json.Marshal(&src.NetworkCreateConfigAnyOf)
 	}

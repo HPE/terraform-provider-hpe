@@ -2,4 +2,13 @@ resource "hpe_morpheus_cluster_affinity_group" "example" {
   cluster_id    = {{.ClusterId}}
   name          = "{{.Name}}"
   affinity_type = "KEEP_TOGETHER"
+{{- if .Servers}}
+
+  # Morpheus 9.1 and later refuse an affinity group with no members, so give
+  # the group its first members here (for a VM managed in this configuration,
+  # hpe_morpheus_instance.<name>.compute_servers). With servers set this
+  # resource owns the membership; leave it out to manage members one at a time
+  # with hpe_morpheus_cluster_affinity_group_member -- never both on one group.
+  servers = {{.Servers}}
+{{- end}}
 }

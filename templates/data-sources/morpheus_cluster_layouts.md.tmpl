@@ -1,0 +1,21 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+-> The `filter` block applies client-side filtering. Valid filter fields are `name`, `code`, `cluster_version`, `compute_version`, and `provision_type`. Each value is matched as a Go regular expression against the corresponding field, unanchored: `2.0` also matches `2.0.1` and `12.0`, so anchor the value — `^2\.0$` — for an exact match, as the example does. A layout matches a block when the field matches any of the block's values, and must match every block. The `provision_type` field is matched against each layout's provision type code (falling back to its name). `cluster_layouts` is a set; take the one layout a selection is expected to yield with `one(data.hpe_morpheus_cluster_layouts.hvm_2.cluster_layouts).id`, which fails the plan if the filters matched none or several.
+
+-> `cluster_version` is the version of the cluster software the layout deploys — the Kubernetes version for a Kubernetes layout (`1.33.x`), the HVM cluster version for an HVM layout (`1.3`, `2.0`). On Morpheus 9.1.0 and later, a layout with `cluster_version` 2.0 or greater is an HVM virtual-switch layout and is the one that accepts the `config_hvm` network settings of `hpe_morpheus_cluster`. The HVM cluster layouts carry the provision type `manual` and a code beginning `mvm-`; the Kubernetes-on-HVM layouts carry the provision type `kvm`.
+
+## Example Usage
+
+The HVM cluster layout 2.0 of a Morpheus 9.1.0 appliance; `one(data.hpe_morpheus_cluster_layouts.hvm_2.cluster_layouts).id` is its `id`, for `hpe_morpheus_cluster`'s `layout_id`:
+
+{{ tffile "examples/data-sources/morpheus_cluster_layouts/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

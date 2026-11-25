@@ -29,6 +29,9 @@ func TestAccMorpheusBackupHostRemovedAttributesAreCleared(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.Backup)
 
+	serverName := testhelpers.BackupServerName(t)
+	bucketName := testhelpers.BackupBucketName(t)
+
 	name := acctest.RandomWithPrefix(t.Name())
 	const rn = "hpe_morpheus_backup_host.test"
 
@@ -51,13 +54,13 @@ func TestAccMorpheusBackupHostRemovedAttributesAreCleared(t *testing.T) {
 			lines = append(lines, "  "+set[a])
 		}
 
-		return testhelpers.ProviderBlock() + jobConfig + fmt.Sprintf(`
+		return testhelpers.ProviderBlock() + testhelpers.BackupFixtureBlock("", serverName, bucketName, "") + jobConfig + fmt.Sprintf(`
 resource "hpe_morpheus_backup_host" "test" {
   name                = %q
-  host_id             = 139
+  host_id             = `+testhelpers.BackupServerIDRef+`
   job_id              = hpe_morpheus_backup_job.example.id
   backup_type_code    = "fileBackup"
-  storage_provider_id = 1
+  storage_provider_id = `+testhelpers.BackupBucketIDRef+`
 %s
 }
 `, name, strings.Join(lines, "\n"))

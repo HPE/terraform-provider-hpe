@@ -21,6 +21,8 @@ var clearableAttributes = clearable.Attributes{
 // notClearable records why each remaining optional attribute is not cleared
 // when it is removed from the configuration.
 var notClearable = clearable.NotClearable{
+	"file_path":               "removal relinquishes file management without deleting uploaded content",
+	"file_sha256":             "computed from file_path when omitted; not an API attribute",
 	"min_ram":                 "Morpheus rejects a null minimum memory with a server error and ignores zero; the current value is kept",
 	"description":             "not updatable through the API; a change replaces the image, and the current value is kept when it is removed",
 	"storage_provider_id":     "where the image was uploaded; Morpheus ignores it on update, a change replaces the image, and the current value is kept when it is removed",

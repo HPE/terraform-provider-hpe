@@ -1,0 +1,10 @@
+# Look up host profile compliance for an HVM cluster.
+data "hpe_morpheus_host_profile_compliance" "cluster" {
+  cluster_id = 1
+}
+
+# Look up host profile compliance for a single HVM host (compute server).
+# Exactly one of cluster_id or server_id may be set per data source.
+data "hpe_morpheus_host_profile_compliance" "server" {
+  server_id = 2
+}

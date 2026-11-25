@@ -80,9 +80,47 @@ resource "hpe_morpheus_datastore" "example" {
 
 -> Note that Morpheus version `8.0.13` or later is required for BMaaS datastore support.
 
+A BMaaS datastore is associated with an HPE Bare Metal cloud and must be created in a **resource pool of that
+cloud** (`resource_pool.id`). Resource pool IDs are allocated per appliance, so resolve the pool rather than
+writing an ID into the configuration. There is no resource pool data source yet, but the `zonePools` option
+source lists a cloud's pools, so `hpe_morpheus_option_source_value` resolves one by name -- every HPE Bare
+Metal cloud has a `Default` pool -- and that is what the example does, alongside the storage server, group and
+tenant resolved by name with their own data sources. To use an ID instead, list the cloud's pools with the API:
+
+```bash
+$ curl -H "Authorization: Bearer $MORPHEUS_API_TOKEN" <morpheus-url>/api/clouds/<cloud-id>/resource-pools | jq '.resourcePools[] | {id, name}'
+```
+
+An ID that names no resource pool is rejected by Morpheus as `zonePool.id: Required fields are missing`
+(`zonePool` is the API's name for `resource_pool`); the provider's error then lists the pools the cloud does
+have.
+
 ```terraform
 data "hpe_morpheus_cloud" "metal" {
   name = "Metal"
+}
+
+data "hpe_morpheus_storage_server" "alletra" {
+  name = "alletra-mp-1"
+}
+
+# The resource pool, by name. There is no resource pool data source yet, but
+# the zonePools option source lists a cloud's pools (the bare-metal provision
+# type is the provisioning context the source expects), and attributes["id"]
+# is the pool's id. Every HPE Bare Metal cloud has a "Default" pool.
+data "hpe_morpheus_option_source_value" "pool" {
+  source              = "zonePools"
+  cloud_id            = data.hpe_morpheus_cloud.metal.id
+  provision_type_code = "hpe-baremetal-plugin.provision"
+  name                = "Default"
+}
+
+data "hpe_morpheus_group" "example" {
+  name = "Default"
+}
+
+data "hpe_morpheus_tenant" "example" {
+  name = "Tenant A"
 }
 
 resource "hpe_morpheus_datastore" "example" {
@@ -91,32 +129,32 @@ resource "hpe_morpheus_datastore" "example" {
     code = "hpedatastore-alletra-mp-bmaas"
   }
   associated_resource_type = "Cloud"
+  associated_resource_id   = data.hpe_morpheus_cloud.metal.id
   visibility               = "private"
   active                   = true
-  associated_resource_id   = data.hpe_morpheus_cloud.metal.id
 
   config_alletramp_bmaas = {
     protocol_type = "iSCSI"
   }
 
   storage_server = {
-    id = 1
+    id = data.hpe_morpheus_storage_server.alletra.id
   }
 
   resource_pool = {
-    id = 1
+    id = data.hpe_morpheus_option_source_value.pool.attributes["id"]
   }
 
   resource_permissions = {
     groups = [
       {
-        id = 1
+        id = data.hpe_morpheus_group.example.id
       }
     ]
   }
   tenants = [
     {
-      id = 1
+      id = data.hpe_morpheus_tenant.example.id
     }
   ]
 }
@@ -142,8 +180,8 @@ resource "hpe_morpheus_datastore" "example" {
 - `datastores` (Attributes Set) List of datastores associated with this datastore, for use with vSphere clouds. (see [below for nested schema](#nestedatt--datastores))
 - `default_store` (Boolean)
 - `resource_permissions` (Attributes) (see [below for nested schema](#nestedatt--resource_permissions))
-- `resource_pool` (Attributes) The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores. (see [below for nested schema](#nestedatt--resource_pool))
-- `storage_server` (Attributes) (see [below for nested schema](#nestedatt--storage_server))
+- `resource_pool` (Attributes) The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores, which are created in a resource pool of the associated cloud. (see [below for nested schema](#nestedatt--resource_pool))
+- `storage_server` (Attributes) The storage server the datastore is backed by. Required for Cluster datastores and for HPE Alletra MP Bare Metal (BMaaS) datastores. (see [below for nested schema](#nestedatt--storage_server))
 - `tenants` (Attributes Set) (see [below for nested schema](#nestedatt--tenants))
 - `visibility` (String) Visibility level of the datastore, can be 'private' or 'public'. If not specified, defaults to 'private'.
 
@@ -263,7 +301,7 @@ Optional:
 
 Optional:
 
-- `id` (Number)
+- `id` (Number) The ID of a resource pool of the associated cloud. GET /api/clouds/{associated_resource_id}/resource-pools lists them, and the hpe_morpheus_option_source_value data source (source zonePools) resolves one by name; an id that names no resource pool is rejected by Morpheus as 'zonePool.id - Required fields are missing'.
 
 
 <a id="nestedatt--storage_server"></a>
@@ -271,7 +309,7 @@ Optional:
 
 Optional:
 
-- `id` (Number)
+- `id` (Number) The ID of the storage server. The hpe_morpheus_storage_server data source resolves one by name.
 
 
 <a id="nestedatt--tenants"></a>

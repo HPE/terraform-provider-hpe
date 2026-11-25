@@ -34,6 +34,10 @@ func (r *Resource) ModifyPlan(
 	// update; see write_only.go. It runs first, as on every resource that
 	// has both.
 	wo.ModifyPlan(ctx, req, resp)
+	planLocalFile(ctx, req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Attributes removed from the configuration since they were last applied
 	// are planned as clears; see clearableAttributes.

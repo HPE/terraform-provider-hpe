@@ -2745,7 +2745,7 @@ type ApiRestartHostRequest struct {
 	id         UpdateHostIdParameter
 }
 
-func (r ApiRestartHostRequest) Execute() (*UpdateHostResize200Response, *http.Response, error) {
+func (r ApiRestartHostRequest) Execute() (*RestartHost200Response, *http.Response, error) {
 	return r.ApiService.RestartHostExecute(r)
 }
 
@@ -2768,13 +2768,13 @@ func (a *HostsAPIService) RestartHost(ctx context.Context, id UpdateHostIdParame
 
 // Execute executes the request
 //
-//	@return UpdateHostResize200Response
-func (a *HostsAPIService) RestartHostExecute(r ApiRestartHostRequest) (*UpdateHostResize200Response, *http.Response, error) {
+//	@return RestartHost200Response
+func (a *HostsAPIService) RestartHostExecute(r ApiRestartHostRequest) (*RestartHost200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateHostResize200Response
+		localVarReturnValue *RestartHost200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "HostsAPIService.RestartHost")
@@ -3268,7 +3268,7 @@ func (r ApiUpdateHostRequest) UpdateHostRequest(updateHostRequest UpdateHostRequ
 	return r
 }
 
-func (r ApiUpdateHostRequest) Execute() (*GetHost200Response, *http.Response, error) {
+func (r ApiUpdateHostRequest) Execute() (*UpdateHost200Response, *http.Response, error) {
 	return r.ApiService.UpdateHostExecute(r)
 }
 
@@ -3291,13 +3291,13 @@ func (a *HostsAPIService) UpdateHost(ctx context.Context, id UpdateHostIdParamet
 
 // Execute executes the request
 //
-//	@return GetHost200Response
-func (a *HostsAPIService) UpdateHostExecute(r ApiUpdateHostRequest) (*GetHost200Response, *http.Response, error) {
+//	@return UpdateHost200Response
+func (a *HostsAPIService) UpdateHostExecute(r ApiUpdateHostRequest) (*UpdateHost200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *GetHost200Response
+		localVarReturnValue *UpdateHost200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "HostsAPIService.UpdateHost")

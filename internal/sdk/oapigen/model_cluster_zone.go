@@ -20,10 +20,10 @@ var _ MappedNullable = &ClusterZone{}
 
 // ClusterZone struct for ClusterZone
 type ClusterZone struct {
-	Id                   *int64                 `json:"id,omitempty"`
-	Name                 *string                `json:"name,omitempty"`
-	ZoneType             *ClusterZoneZoneType   `json:"zoneType,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	Id                   *int64                                         `json:"id,omitempty"`
+	Name                 *string                                        `json:"name,omitempty"`
+	ZoneType             *AddCluster200ResponseAllOfClusterZoneZoneType `json:"zoneType,omitempty"`
+	AdditionalProperties map[string]interface{}                         `json:",remain"`
 }
 
 type _ClusterZone ClusterZone

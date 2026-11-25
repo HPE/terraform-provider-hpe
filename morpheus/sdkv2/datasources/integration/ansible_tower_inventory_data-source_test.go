@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
@@ -24,10 +23,17 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+// TestAccMorpheusDataSourceAnsibleTowerInventoryExampleOk looks an inventory
+// up by name on the Ansible Tower integration the environment names
+// (testhelpers/tower_fixture.go); the integration is resolved by name too, so
+// no id is assumed.
 func TestAccMorpheusDataSourceAnsibleTowerInventoryExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.AnsibleTower)
+
+	integrationName := testhelpers.AnsibleTowerIntegrationName(t)
+	inventoryName := testhelpers.AnsibleTowerInventoryName(t)
 
 	t.Parallel()
 
@@ -37,29 +43,29 @@ func TestAccMorpheusDataSourceAnsibleTowerInventoryExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix(t.Name())
-
-	var dependenciesConfig string
+	dependenciesConfig := testhelpers.AnsibleTowerIntegrationBlock(integrationName)
 
 	datasourceConfig, err := dsintegration.RenderAnsibleTowerInventoryConfig(t, map[string]string{
-		"Name": name,
+		"Name":                      testhelpers.HCLQuote(inventoryName),
+		"AnsibleTowerIntegrationId": testhelpers.AnsibleTowerIntegrationIDRef,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	t.Log(providerConfig + dependenciesConfig + datasourceConfig)
-
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_ansible_tower_inventory.example",
 			"name",
-			"Demo Inventory",
+			inventoryName,
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_ansible_tower_inventory.example",
-			"ansible_tower_integration_id",
-			"1",
+			"id",
+		),
+		resource.TestCheckResourceAttrPair(
+			"data.hpe_morpheus_ansible_tower_inventory.example", "ansible_tower_integration_id",
+			"data.hpe_morpheus_integration.ansible_tower", "id",
 		),
 	}
 

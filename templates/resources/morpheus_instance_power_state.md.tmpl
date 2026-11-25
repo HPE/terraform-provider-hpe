@@ -8,6 +8,8 @@ description: |-
 
 {{ .Description | trimspace }}
 
+~> **Note:** `stopped` and `running` act on the instance's underlying server(s) — the same as the **Stop** and **Start** actions in the Morpheus UI — so the virtual machine is powered off or on, not just the instance's service. Any shutdown- or startup-phase workflows attached to the layout still run. The resource waits for both the instance status and the server power state to confirm the transition.
+
 ~> **Note:** Not all cloud types support the `suspended` state. Setting `desired_state = "suspended"` on an instance whose cloud does not support suspend fails at apply time with the underlying API error.
 
 ## Example Usage

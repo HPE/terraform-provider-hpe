@@ -79,7 +79,6 @@ func natAsState(
 		Id:                 convert.Int64ToType(idPtr),
 		RouterId:           types.Int64Value(routerID),
 		Name:               convert.StrToType(nat.Name),
-		Action:             convert.StrToType(nat.Action),
 		Description:        convert.StrToType(nat.Description),
 		Enabled:            convert.BoolToType(nat.Enabled),
 		SourceNetwork:      convert.StrToType(nat.SourceNetwork),
@@ -91,12 +90,18 @@ func natAsState(
 		Priority:           convert.Int64ToType(priorityPtr),
 		Protocol:           convert.StrToType(nat.Protocol.Get()),
 		ExternalId:         convert.StrToType(nat.ExternalId),
-		Firewall:           convert.StrToType(nat.Firewall),
 		Service:            convert.StrToType(nat.Service),
 		ProviderId:         convert.StrToType(nat.ProviderId),
 		SyncSource:         convert.StrToType(nat.SyncSource),
 		DateCreated:        convert.TimeToType(nat.DateCreated),
 		LastUpdated:        convert.TimeToType(nat.LastUpdated),
+
+		// action and firewall are deprecated (MORPH-14596): the NAT read API
+		// does not return either, so they have never held a value here. They
+		// are kept null until their removal in 2.6 so the documented contract
+		// holds even if a future API build starts returning them.
+		Action:   types.StringNull(),
+		Firewall: types.StringNull(),
 	}
 
 	// RefType — nullable

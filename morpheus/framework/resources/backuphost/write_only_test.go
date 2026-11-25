@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupjob"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
@@ -22,6 +23,9 @@ func TestAccMorpheusBackupHostResourceWriteOnlyOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.Backup)
+
+	serverName := testhelpers.BackupServerName(t)
+	bucketName := testhelpers.BackupBucketName(t)
 	testhelpers.SkipUnlessAcc(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -47,14 +51,14 @@ func TestAccMorpheusBackupHostResourceWriteOnlyOk(t *testing.T) {
 				path = "/etc/hosts"
 			}
 
-			return testhelpers.ProviderBlock() + job + `
+			return testhelpers.ProviderBlock() + testhelpers.BackupFixtureBlock("", serverName, bucketName, "") + job + `
 resource "hpe_morpheus_backup_host" "wo" {
   name                = "` + name + `"
-  host_id             = 139
+  host_id             = ` + testhelpers.BackupServerIDRef + `
   job_id              = hpe_morpheus_backup_job.example.id
   backup_type_code    = "fileBackup"
   path                = "` + path + `"
-  storage_provider_id = 1
+  storage_provider_id = ` + testhelpers.BackupBucketIDRef + `
   enabled             = true
   ssh_username        = "root"
   ssh_password_wo     = "` + value + `"` + extra + `
@@ -73,12 +77,15 @@ resource "hpe_morpheus_backup_host" "wo" {
 	// Destroying the backup host also destroys its job on the appliance, so
 	// remove the host first and then refresh, as the existing tests do.
 	steps = append(steps,
-		resource.TestStep{Config: testhelpers.ProviderBlock() + job, ExpectNonEmptyPlan: true},
+		resource.TestStep{
+			Config:             testhelpers.ProviderBlock() + testhelpers.BackupFixtureBlock("", serverName, bucketName, "") + job,
+			ExpectNonEmptyPlan: true,
+		},
 		resource.TestStep{RefreshState: true, ExpectNonEmptyPlan: true},
 	)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps:                    steps,
 	})
 }

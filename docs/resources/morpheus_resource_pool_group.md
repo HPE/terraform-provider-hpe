@@ -40,7 +40,7 @@ resource "hpe_morpheus_resource_pool_group" "example" {
 - `all_group_access` (Boolean) Whether all groups will be granted access to the resource pool group
 - `description` (String) The description of the resource pool group
 - `group_access` (Block List) A list of Morpheus group configuration to enable group access to the resource pool group (see [below for nested schema](#nestedblock--group_access))
-- `tenant_ids` (Set of Number) A list of tenant ids associated with the resource pool group
+- `tenant_ids` (Set of Number) A list of tenant ids granted access to the resource pool group. The owning tenant always has access and does not need to be listed.
 - `visibility` (String) Whether the resource pool group is visible in sub-tenants or not
 
 ### Read-Only

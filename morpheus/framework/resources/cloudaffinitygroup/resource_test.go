@@ -31,12 +31,17 @@ func TestAccMorpheusCloudAffinityGroupResourceExampleOk(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.VMware, capabilities.AffinityGroup)
 
 	cloudID := testhelpers.AffinityCloudID(t)
+	serverID := testhelpers.AffinityMemberServerID(t)
 	poolID := testhelpers.AffinityPoolID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
+	// Serialised across packages: every test seeds its group with the same
+	// fixture VM, and on a VMware cloud Morpheus pushes each group to vCenter
+	// as a DRS rule -- vCenter refuses the same VM in several KEEP_TOGETHER
+	// rules at once, so the groups must be created one at a time.
+	testhelpers.LockFixture(t, "affinity-member-server")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -45,6 +50,7 @@ func TestAccMorpheusCloudAffinityGroupResourceExampleOk(t *testing.T) {
 		"CloudId": cloudID,
 		"Name":    name,
 		"PoolId":  poolID,
+		"Servers": "[" + serverID + "]",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -101,21 +107,29 @@ func TestAccMorpheusCloudAffinityGroupResourceUpdateOk(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.VMware, capabilities.AffinityGroup)
 
 	cloudID := testhelpers.AffinityCloudID(t)
+	serverID := testhelpers.AffinityMemberServerID(t)
 	poolID := testhelpers.AffinityPoolID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
+	// Serialised across packages: every test seeds its group with the same
+	// fixture VM, and on a VMware cloud Morpheus pushes each group to vCenter
+	// as a DRS rule -- vCenter refuses the same VM in several KEEP_TOGETHER
+	// rules at once, so the groups must be created one at a time.
+	testhelpers.LockFixture(t, "affinity-member-server")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
-	updatedName := name + "-updated"
+	// The in-place change is `active`, not `name`: on Morpheus 9.1 VMware a renamed
+	// cloud group's DRS rule is leaked in vCenter when the group is destroyed
+	// (MORPH-20098), which poisons the fixture VM for every later test.
 
 	createConfig, err := cloudaffinitygroup.RenderCloudAffinityGroupConfig(t, map[string]string{
 		"CloudId": cloudID,
 		"Name":    name,
 		"PoolId":  poolID,
+		"Servers": "[" + serverID + "]",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -123,8 +137,10 @@ func TestAccMorpheusCloudAffinityGroupResourceUpdateOk(t *testing.T) {
 
 	updateConfig, err := cloudaffinitygroup.RenderCloudAffinityGroupConfig(t, map[string]string{
 		"CloudId": cloudID,
-		"Name":    updatedName,
+		"Name":    name,
+		"Active":  "false",
 		"PoolId":  poolID,
+		"Servers": "[" + serverID + "]",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -139,7 +155,8 @@ func TestAccMorpheusCloudAffinityGroupResourceUpdateOk(t *testing.T) {
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "cloud_id", cloudID),
-		resource.TestCheckResourceAttr(resourceName, "name", updatedName),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "active", "false"),
 	)
 
 	checkInPlaceUpdate := resource.ConfigPlanChecks{
@@ -170,12 +187,17 @@ func TestAccMorpheusCloudAffinityGroupResourceRequiresReplace(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.VMware, capabilities.AffinityGroup)
 
 	cloudID := testhelpers.AffinityCloudID(t)
+	serverID := testhelpers.AffinityMemberServerID(t)
 	poolID := testhelpers.AffinityPoolID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
+	// Serialised across packages: every test seeds its group with the same
+	// fixture VM, and on a VMware cloud Morpheus pushes each group to vCenter
+	// as a DRS rule -- vCenter refuses the same VM in several KEEP_TOGETHER
+	// rules at once, so the groups must be created one at a time.
+	testhelpers.LockFixture(t, "affinity-member-server")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -184,6 +206,7 @@ func TestAccMorpheusCloudAffinityGroupResourceRequiresReplace(t *testing.T) {
 		"CloudId": cloudID,
 		"Name":    name,
 		"PoolId":  poolID,
+		"Servers": "[" + serverID + "]",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -195,13 +218,13 @@ func TestAccMorpheusCloudAffinityGroupResourceRequiresReplace(t *testing.T) {
 	// because Morpheus rejects a cloud affinity group created without one.
 	replaceConfig := fmt.Sprintf(`
 resource "hpe_morpheus_cloud_affinity_group" "example" {
-  cloud_id      = %s
-  name          = "%s"
-  affinity_type = "KEEP_SEPARATE"
-
-  pool_id = %s
+  cloud_id        = %s
+  name            = "%s"
+  affinity_type   = "KEEP_SEPARATE"
+  pool_id         = %s
+  servers         = [%s]
 }
-`, cloudID, name, poolID)
+`, cloudID, name, poolID, serverID)
 
 	resourceName := "hpe_morpheus_cloud_affinity_group.example"
 

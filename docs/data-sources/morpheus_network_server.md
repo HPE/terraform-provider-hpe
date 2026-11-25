@@ -28,7 +28,7 @@ data "hpe_morpheus_network_server" "example" {
 ### Optional
 
 - `id` (Number) The ID of the network server (integration)
-- `name` (String) The name of the network server (integration). Must not be empty.
+- `name` (String) The name of the network server (integration). Must not be empty. Servers hidden from the ordinary listing — a cluster's own, such as an HVM cluster's `<cluster> HVM Network Server` — are found too, by name or by `id`.
 
 ### Read-Only
 

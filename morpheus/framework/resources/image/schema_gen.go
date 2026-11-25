@@ -5,6 +5,7 @@ package image
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
@@ -12,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -99,6 +101,35 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"external_id": schema.StringAttribute{
 				Computed: true,
+			},
+			"file_name": schema.StringAttribute{
+				Computed:            true,
+				Description:         "Basename of the managed local image file.",
+				MarkdownDescription: "Basename of the managed local image file.",
+			},
+			"file_path": schema.StringAttribute{
+				Optional:            true,
+				Description:         "Local image file to stream to Morpheus. Conflicts with url. File changes update the existing image without replacing its ID. Removing this attribute stops managing the file without deleting it.",
+				MarkdownDescription: "Local image file to stream to Morpheus. Conflicts with url. File changes update the existing image without replacing its ID. Removing this attribute stops managing the file without deleting it.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("url")),
+					stringvalidator.LengthAtLeast(1),
+				},
+			},
+			"file_sha256": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "SHA-256 of file_path, computed locally when omitted. An explicit checksum is verified before uploading. A changed checksum re-uploads in place; initial adoption checks filename and size because Morpheus does not report remote checksums.",
+				MarkdownDescription: "SHA-256 of file_path, computed locally when omitted. An explicit checksum is verified before uploading. A changed checksum re-uploads in place; initial adoption checks filename and size because Morpheus does not report remote checksums.",
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.MatchRoot("file_path")),
+					stringvalidator.RegexMatches(regexp.MustCompile(`^[0-9a-fA-F]{64}$`), "must be 64 hexadecimal characters"),
+				},
+			},
+			"file_size": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Managed file size in bytes from the image file listing, not the asynchronously computed image raw_size.",
+				MarkdownDescription: "Managed file size in bytes from the image file listing, not the asynchronously computed image raw_size.",
 			},
 			"fips_enabled": schema.BoolAttribute{
 				Optional:            true,
@@ -272,6 +303,9 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("file_path")}...),
+				},
 			},
 			"user_data": schema.StringAttribute{
 				Optional:            true,
@@ -324,6 +358,10 @@ type ImageModel struct {
 	ConfigAzure          ConfigAzureValue `tfsdk:"config_azure"`
 	Description          types.String     `tfsdk:"description"`
 	ExternalId           types.String     `tfsdk:"external_id"`
+	FileName             types.String     `tfsdk:"file_name"`
+	FilePath             types.String     `tfsdk:"file_path"`
+	FileSha256           types.String     `tfsdk:"file_sha256"`
+	FileSize             types.Int64      `tfsdk:"file_size"`
 	FipsEnabled          types.Bool       `tfsdk:"fips_enabled"`
 	ForceCustomization   types.Bool       `tfsdk:"force_customization"`
 	Id                   types.Int64      `tfsdk:"id"`

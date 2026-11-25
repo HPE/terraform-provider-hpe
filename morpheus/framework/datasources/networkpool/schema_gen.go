@@ -4,12 +4,18 @@ package networkpool
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -69,6 +75,56 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
 			},
+			"ip_address_ranges": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"active": schema.BoolAttribute{
+							Computed: true,
+						},
+						"address_count": schema.Int64Attribute{
+							Computed: true,
+						},
+						"cidr": schema.StringAttribute{
+							Computed: true,
+						},
+						"cidr_ipv6": schema.StringAttribute{
+							Computed: true,
+						},
+						"date_created": schema.StringAttribute{
+							Computed: true,
+						},
+						"description": schema.StringAttribute{
+							Computed: true,
+						},
+						"ending_address": schema.StringAttribute{
+							Computed: true,
+						},
+						"external_id": schema.StringAttribute{
+							Computed: true,
+						},
+						"id": schema.Int64Attribute{
+							Computed: true,
+						},
+						"internal_id": schema.StringAttribute{
+							Computed: true,
+						},
+						"last_updated": schema.StringAttribute{
+							Computed: true,
+						},
+						"starting_address": schema.StringAttribute{
+							Computed: true,
+						},
+					},
+					CustomType: IpAddressRangesType{
+						ObjectType: types.ObjectType{
+							AttrTypes: IpAddressRangesValue{}.AttributeTypes(ctx),
+						},
+					},
+				},
+				Computed:            true,
+				Description:         "The IP address ranges of the pool.",
+				MarkdownDescription: "The IP address ranges of the pool.",
+			},
 			"ip_count": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The total number of IPs in the pool",
@@ -104,19 +160,943 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkPoolModel struct {
-	Category      types.String `tfsdk:"category"`
-	Code          types.String `tfsdk:"code"`
-	DhcpIp        types.String `tfsdk:"dhcp_ip"`
-	DhcpServer    types.Bool   `tfsdk:"dhcp_server"`
-	DisplayName   types.String `tfsdk:"display_name"`
-	DnsDomain     types.String `tfsdk:"dns_domain"`
-	ExternalId    types.String `tfsdk:"external_id"`
-	FreeCount     types.Int64  `tfsdk:"free_count"`
-	Gateway       types.String `tfsdk:"gateway"`
-	Id            types.Int64  `tfsdk:"id"`
-	IpCount       types.Int64  `tfsdk:"ip_count"`
-	Name          types.String `tfsdk:"name"`
-	Netmask       types.String `tfsdk:"netmask"`
-	PoolEnabled   types.Bool   `tfsdk:"pool_enabled"`
-	SubnetAddress types.String `tfsdk:"subnet_address"`
+	Category        types.String `tfsdk:"category"`
+	Code            types.String `tfsdk:"code"`
+	DhcpIp          types.String `tfsdk:"dhcp_ip"`
+	DhcpServer      types.Bool   `tfsdk:"dhcp_server"`
+	DisplayName     types.String `tfsdk:"display_name"`
+	DnsDomain       types.String `tfsdk:"dns_domain"`
+	ExternalId      types.String `tfsdk:"external_id"`
+	FreeCount       types.Int64  `tfsdk:"free_count"`
+	Gateway         types.String `tfsdk:"gateway"`
+	Id              types.Int64  `tfsdk:"id"`
+	IpAddressRanges types.Set    `tfsdk:"ip_address_ranges"`
+	IpCount         types.Int64  `tfsdk:"ip_count"`
+	Name            types.String `tfsdk:"name"`
+	Netmask         types.String `tfsdk:"netmask"`
+	PoolEnabled     types.Bool   `tfsdk:"pool_enabled"`
+	SubnetAddress   types.String `tfsdk:"subnet_address"`
+}
+
+var _ basetypes.ObjectTypable = IpAddressRangesType{}
+
+type IpAddressRangesType struct {
+	basetypes.ObjectType
+}
+
+func (t IpAddressRangesType) Equal(o attr.Type) bool {
+	other, ok := o.(IpAddressRangesType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t IpAddressRangesType) String() string {
+	return "IpAddressRangesType"
+}
+
+func (t IpAddressRangesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewIpAddressRangesValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewIpAddressRangesValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	activeAttribute, ok := attributes["active"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`active is missing from object`)
+
+		return nil, diags
+	}
+
+	activeVal, ok := activeAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`active expected to be basetypes.BoolValue, was: %T`, activeAttribute))
+	}
+
+	addressCountAttribute, ok := attributes["address_count"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`address_count is missing from object`)
+
+		return nil, diags
+	}
+
+	addressCountVal, ok := addressCountAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`address_count expected to be basetypes.Int64Value, was: %T`, addressCountAttribute))
+	}
+
+	cidrAttribute, ok := attributes["cidr"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cidr is missing from object`)
+
+		return nil, diags
+	}
+
+	cidrVal, ok := cidrAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cidr expected to be basetypes.StringValue, was: %T`, cidrAttribute))
+	}
+
+	cidrIpv6Attribute, ok := attributes["cidr_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cidr_ipv6 is missing from object`)
+
+		return nil, diags
+	}
+
+	cidrIpv6Val, ok := cidrIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cidr_ipv6 expected to be basetypes.StringValue, was: %T`, cidrIpv6Attribute))
+	}
+
+	dateCreatedAttribute, ok := attributes["date_created"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`date_created is missing from object`)
+
+		return nil, diags
+	}
+
+	dateCreatedVal, ok := dateCreatedAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`date_created expected to be basetypes.StringValue, was: %T`, dateCreatedAttribute))
+	}
+
+	descriptionAttribute, ok := attributes["description"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`description is missing from object`)
+
+		return nil, diags
+	}
+
+	descriptionVal, ok := descriptionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`description expected to be basetypes.StringValue, was: %T`, descriptionAttribute))
+	}
+
+	endingAddressAttribute, ok := attributes["ending_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ending_address is missing from object`)
+
+		return nil, diags
+	}
+
+	endingAddressVal, ok := endingAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ending_address expected to be basetypes.StringValue, was: %T`, endingAddressAttribute))
+	}
+
+	externalIdAttribute, ok := attributes["external_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`external_id is missing from object`)
+
+		return nil, diags
+	}
+
+	externalIdVal, ok := externalIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`external_id expected to be basetypes.StringValue, was: %T`, externalIdAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	internalIdAttribute, ok := attributes["internal_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`internal_id is missing from object`)
+
+		return nil, diags
+	}
+
+	internalIdVal, ok := internalIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`internal_id expected to be basetypes.StringValue, was: %T`, internalIdAttribute))
+	}
+
+	lastUpdatedAttribute, ok := attributes["last_updated"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`last_updated is missing from object`)
+
+		return nil, diags
+	}
+
+	lastUpdatedVal, ok := lastUpdatedAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`last_updated expected to be basetypes.StringValue, was: %T`, lastUpdatedAttribute))
+	}
+
+	startingAddressAttribute, ok := attributes["starting_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`starting_address is missing from object`)
+
+		return nil, diags
+	}
+
+	startingAddressVal, ok := startingAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`starting_address expected to be basetypes.StringValue, was: %T`, startingAddressAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return IpAddressRangesValue{
+		Active:          activeVal,
+		AddressCount:    addressCountVal,
+		Cidr:            cidrVal,
+		CidrIpv6:        cidrIpv6Val,
+		DateCreated:     dateCreatedVal,
+		Description:     descriptionVal,
+		EndingAddress:   endingAddressVal,
+		ExternalId:      externalIdVal,
+		Id:              idVal,
+		InternalId:      internalIdVal,
+		LastUpdated:     lastUpdatedVal,
+		StartingAddress: startingAddressVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewIpAddressRangesValueNull() IpAddressRangesValue {
+	return IpAddressRangesValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewIpAddressRangesValueUnknown() IpAddressRangesValue {
+	return IpAddressRangesValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewIpAddressRangesValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (IpAddressRangesValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing IpAddressRangesValue Attribute Value",
+				"While creating a IpAddressRangesValue value, a missing attribute value was detected. "+
+					"A IpAddressRangesValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("IpAddressRangesValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid IpAddressRangesValue Attribute Type",
+				"While creating a IpAddressRangesValue value, an invalid attribute value was detected. "+
+					"A IpAddressRangesValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("IpAddressRangesValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("IpAddressRangesValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra IpAddressRangesValue Attribute Value",
+				"While creating a IpAddressRangesValue value, an extra attribute value was detected. "+
+					"A IpAddressRangesValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra IpAddressRangesValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	activeAttribute, ok := attributes["active"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`active is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	activeVal, ok := activeAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`active expected to be basetypes.BoolValue, was: %T`, activeAttribute))
+	}
+
+	addressCountAttribute, ok := attributes["address_count"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`address_count is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	addressCountVal, ok := addressCountAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`address_count expected to be basetypes.Int64Value, was: %T`, addressCountAttribute))
+	}
+
+	cidrAttribute, ok := attributes["cidr"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cidr is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	cidrVal, ok := cidrAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cidr expected to be basetypes.StringValue, was: %T`, cidrAttribute))
+	}
+
+	cidrIpv6Attribute, ok := attributes["cidr_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cidr_ipv6 is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	cidrIpv6Val, ok := cidrIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cidr_ipv6 expected to be basetypes.StringValue, was: %T`, cidrIpv6Attribute))
+	}
+
+	dateCreatedAttribute, ok := attributes["date_created"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`date_created is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	dateCreatedVal, ok := dateCreatedAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`date_created expected to be basetypes.StringValue, was: %T`, dateCreatedAttribute))
+	}
+
+	descriptionAttribute, ok := attributes["description"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`description is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	descriptionVal, ok := descriptionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`description expected to be basetypes.StringValue, was: %T`, descriptionAttribute))
+	}
+
+	endingAddressAttribute, ok := attributes["ending_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ending_address is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	endingAddressVal, ok := endingAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ending_address expected to be basetypes.StringValue, was: %T`, endingAddressAttribute))
+	}
+
+	externalIdAttribute, ok := attributes["external_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`external_id is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	externalIdVal, ok := externalIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`external_id expected to be basetypes.StringValue, was: %T`, externalIdAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	internalIdAttribute, ok := attributes["internal_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`internal_id is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	internalIdVal, ok := internalIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`internal_id expected to be basetypes.StringValue, was: %T`, internalIdAttribute))
+	}
+
+	lastUpdatedAttribute, ok := attributes["last_updated"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`last_updated is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	lastUpdatedVal, ok := lastUpdatedAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`last_updated expected to be basetypes.StringValue, was: %T`, lastUpdatedAttribute))
+	}
+
+	startingAddressAttribute, ok := attributes["starting_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`starting_address is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	startingAddressVal, ok := startingAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`starting_address expected to be basetypes.StringValue, was: %T`, startingAddressAttribute))
+	}
+
+	if diags.HasError() {
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	return IpAddressRangesValue{
+		Active:          activeVal,
+		AddressCount:    addressCountVal,
+		Cidr:            cidrVal,
+		CidrIpv6:        cidrIpv6Val,
+		DateCreated:     dateCreatedVal,
+		Description:     descriptionVal,
+		EndingAddress:   endingAddressVal,
+		ExternalId:      externalIdVal,
+		Id:              idVal,
+		InternalId:      internalIdVal,
+		LastUpdated:     lastUpdatedVal,
+		StartingAddress: startingAddressVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewIpAddressRangesValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) IpAddressRangesValue {
+	object, diags := NewIpAddressRangesValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewIpAddressRangesValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t IpAddressRangesType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewIpAddressRangesValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewIpAddressRangesValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewIpAddressRangesValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewIpAddressRangesValueMust(IpAddressRangesValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t IpAddressRangesType) ValueType(ctx context.Context) attr.Value {
+	return IpAddressRangesValue{}
+}
+
+var _ basetypes.ObjectValuable = IpAddressRangesValue{}
+
+type IpAddressRangesValue struct {
+	Active          basetypes.BoolValue   `tfsdk:"active"`
+	AddressCount    basetypes.Int64Value  `tfsdk:"address_count"`
+	Cidr            basetypes.StringValue `tfsdk:"cidr"`
+	CidrIpv6        basetypes.StringValue `tfsdk:"cidr_ipv6"`
+	DateCreated     basetypes.StringValue `tfsdk:"date_created"`
+	Description     basetypes.StringValue `tfsdk:"description"`
+	EndingAddress   basetypes.StringValue `tfsdk:"ending_address"`
+	ExternalId      basetypes.StringValue `tfsdk:"external_id"`
+	Id              basetypes.Int64Value  `tfsdk:"id"`
+	InternalId      basetypes.StringValue `tfsdk:"internal_id"`
+	LastUpdated     basetypes.StringValue `tfsdk:"last_updated"`
+	StartingAddress basetypes.StringValue `tfsdk:"starting_address"`
+	state           attr.ValueState
+}
+
+func (v IpAddressRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 12)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["active"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["address_count"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["cidr"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["cidr_ipv6"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["date_created"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["description"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["ending_address"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["external_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["internal_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["last_updated"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["starting_address"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 12)
+
+		val, err = v.Active.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["active"] = val
+
+		val, err = v.AddressCount.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["address_count"] = val
+
+		val, err = v.Cidr.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cidr"] = val
+
+		val, err = v.CidrIpv6.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cidr_ipv6"] = val
+
+		val, err = v.DateCreated.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["date_created"] = val
+
+		val, err = v.Description.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["description"] = val
+
+		val, err = v.EndingAddress.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ending_address"] = val
+
+		val, err = v.ExternalId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["external_id"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.InternalId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["internal_id"] = val
+
+		val, err = v.LastUpdated.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["last_updated"] = val
+
+		val, err = v.StartingAddress.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["starting_address"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v IpAddressRangesValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v IpAddressRangesValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v IpAddressRangesValue) String() string {
+	return "IpAddressRangesValue"
+}
+
+func (v IpAddressRangesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"active":           basetypes.BoolType{},
+		"address_count":    basetypes.Int64Type{},
+		"cidr":             basetypes.StringType{},
+		"cidr_ipv6":        basetypes.StringType{},
+		"date_created":     basetypes.StringType{},
+		"description":      basetypes.StringType{},
+		"ending_address":   basetypes.StringType{},
+		"external_id":      basetypes.StringType{},
+		"id":               basetypes.Int64Type{},
+		"internal_id":      basetypes.StringType{},
+		"last_updated":     basetypes.StringType{},
+		"starting_address": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"active":           v.Active,
+			"address_count":    v.AddressCount,
+			"cidr":             v.Cidr,
+			"cidr_ipv6":        v.CidrIpv6,
+			"date_created":     v.DateCreated,
+			"description":      v.Description,
+			"ending_address":   v.EndingAddress,
+			"external_id":      v.ExternalId,
+			"id":               v.Id,
+			"internal_id":      v.InternalId,
+			"last_updated":     v.LastUpdated,
+			"starting_address": v.StartingAddress,
+		})
+
+	return objVal, diags
+}
+
+func (v IpAddressRangesValue) Equal(o attr.Value) bool {
+	other, ok := o.(IpAddressRangesValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Active.Equal(other.Active) {
+		return false
+	}
+
+	if !v.AddressCount.Equal(other.AddressCount) {
+		return false
+	}
+
+	if !v.Cidr.Equal(other.Cidr) {
+		return false
+	}
+
+	if !v.CidrIpv6.Equal(other.CidrIpv6) {
+		return false
+	}
+
+	if !v.DateCreated.Equal(other.DateCreated) {
+		return false
+	}
+
+	if !v.Description.Equal(other.Description) {
+		return false
+	}
+
+	if !v.EndingAddress.Equal(other.EndingAddress) {
+		return false
+	}
+
+	if !v.ExternalId.Equal(other.ExternalId) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.InternalId.Equal(other.InternalId) {
+		return false
+	}
+
+	if !v.LastUpdated.Equal(other.LastUpdated) {
+		return false
+	}
+
+	if !v.StartingAddress.Equal(other.StartingAddress) {
+		return false
+	}
+
+	return true
+}
+
+func (v IpAddressRangesValue) Type(ctx context.Context) attr.Type {
+	return IpAddressRangesType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v IpAddressRangesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"active":           basetypes.BoolType{},
+		"address_count":    basetypes.Int64Type{},
+		"cidr":             basetypes.StringType{},
+		"cidr_ipv6":        basetypes.StringType{},
+		"date_created":     basetypes.StringType{},
+		"description":      basetypes.StringType{},
+		"ending_address":   basetypes.StringType{},
+		"external_id":      basetypes.StringType{},
+		"id":               basetypes.Int64Type{},
+		"internal_id":      basetypes.StringType{},
+		"last_updated":     basetypes.StringType{},
+		"starting_address": basetypes.StringType{},
+	}
 }

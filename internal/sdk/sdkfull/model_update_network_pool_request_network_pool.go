@@ -20,13 +20,25 @@ import (
 // checks if the UpdateNetworkPoolRequestNetworkPool type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdateNetworkPoolRequestNetworkPool{}
 
-// UpdateNetworkPoolRequestNetworkPool struct for UpdateNetworkPoolRequestNetworkPool
+// UpdateNetworkPoolRequestNetworkPool The pool attributes a create or update request may carry. The keys below are bound for every pool type the API can create; settings particular to a type go in config. The server also accepts keys of the pool object that are not listed here.
 type UpdateNetworkPoolRequestNetworkPool struct {
 	// Name
 	Name *string                                  `json:"name,omitempty"`
 	Type *UpdateNetworkPoolRequestNetworkPoolType `json:"type,omitempty"`
-	// Array of IP range objects. Type 'morpheus' expects startAddress and endAddress. Type 'morpheusipv6' expects a cidrIPv6.
+	// Array of IP range objects. Type 'morpheus' expects startAddress and endAddress. Type 'morpheusipv6' expects a cidrIPv6. On update the list is reconciled by id: a range sent with its id is edited in place, a range without an id is created, and a range of the pool that is absent from the list is deleted (refused if it has reservations).
 	IpRanges []UpdateNetworkPoolRequestNetworkPoolIpRangesInner `json:"ipRanges,omitempty"`
+	// DNS domain. Null clears it on update.
+	DnsDomain NullableString `json:"dnsDomain,omitempty"`
+	// Gateway IP address. Null clears it on update.
+	Gateway NullableString `json:"gateway,omitempty"`
+	// Netmask. Null clears it on update.
+	Netmask NullableString `json:"netmask,omitempty"`
+	// Subnet IP address. Null clears it on update.
+	SubnetAddress NullableString `json:"subnetAddress,omitempty"`
+	// Whether DHCP server is enabled. A pool is created with false when omitted.
+	DhcpServer *bool `json:"dhcpServer,omitempty"`
+	// Whether the pool is enabled. Create ignores false: a pool is always created enabled. Disable it with an update, which honours false.
+	PoolEnabled *bool `json:"poolEnabled,omitempty"`
 	// Configuration object with parameters that vary by pool type.
 	Config               map[string]interface{} `json:"config,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -52,6 +64,24 @@ func (o UpdateNetworkPoolRequestNetworkPool) ToMap() (map[string]interface{}, er
 	}
 	if !IsNil(o.IpRanges) {
 		toSerialize["ipRanges"] = o.IpRanges
+	}
+	if o.DnsDomain.IsSet() {
+		toSerialize["dnsDomain"] = o.DnsDomain.Get()
+	}
+	if o.Gateway.IsSet() {
+		toSerialize["gateway"] = o.Gateway.Get()
+	}
+	if o.Netmask.IsSet() {
+		toSerialize["netmask"] = o.Netmask.Get()
+	}
+	if o.SubnetAddress.IsSet() {
+		toSerialize["subnetAddress"] = o.SubnetAddress.Get()
+	}
+	if !IsNil(o.DhcpServer) {
+		toSerialize["dhcpServer"] = o.DhcpServer
+	}
+	if !IsNil(o.PoolEnabled) {
+		toSerialize["poolEnabled"] = o.PoolEnabled
 	}
 	if !IsNil(o.Config) {
 		toSerialize["config"] = o.Config

@@ -4,12 +4,10 @@ package integration
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/convert"
@@ -25,6 +23,10 @@ func ResourceIntegrationChef() *schema.Resource {
 		ReadContext:   resourceIntegrationChefRead,
 		UpdateContext: resourceIntegrationChefUpdate,
 		DeleteContext: resourceIntegrationChefDelete,
+		CustomizeDiff: customdiff.All(
+			helpers.SecretHashUnknownWhenSent("private_key", "private_key_hash"),
+			helpers.SecretHashUnknownWhenSent("organization_validator_key", "organization_validator_key_hash"),
+		),
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -81,19 +83,13 @@ func ResourceIntegrationChef() *schema.Resource {
 				ConflictsWith: []string{"credential_id"},
 			},
 			"private_key": {
-				Type:        schema.TypeString,
-				Description: "The private key of the account used to connect to the Chef server",
-				Optional:    true,
-				Sensitive:   true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
+				Type:          schema.TypeString,
+				Description:   "The private key of the account used to connect to the Chef server",
+				Optional:      true,
+				Sensitive:     true,
 				ConflictsWith: []string{"credential_id"},
 			},
+			"private_key_hash": helpers.SecretHashSchema("private_key"),
 			"credential_id": {
 				Description:   "The ID of the credential store entry used for authentication",
 				Type:          schema.TypeInt,
@@ -106,14 +102,8 @@ func ResourceIntegrationChef() *schema.Resource {
 				Description: "The organization validator key used to connect to the Chef server",
 				Optional:    true,
 				Sensitive:   true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
 			},
+			"organization_validator_key_hash": helpers.SecretHashSchema("organization_validator_key"),
 			/* AWAITING API SUPPORT
 			"databags": {
 				Description: "",
@@ -365,17 +355,27 @@ func resourceIntegrationChefRead(ctx context.Context, d *schema.ResourceData, me
 	d.Set("organization", integration.Config.Org)
 	d.Set("use_fqdn_node_name", integration.Config.UseFqdn)
 
+	// The API reports the user key and the organization validator key only as
+	// hashes (userKeyHash, orgKeyHash); TrackSecret records the one read back
+	// when the key was sent and compares later reads with it (see
+	// helpers.TrackSecret).
 	if integration.Credential.ID == 0 {
 		d.Set("username", integration.Config.ChefUser)
+		if err := helpers.TrackSecret(
+			d, "private_key", "private_key_hash",
+			integration.Config.UserKeyHash, helpers.SecretSent(d, "private_key"),
+		); err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
 		d.Set("credential_id", integration.Credential.ID)
 	}
-
-	// private_key and organization_validator_key are write-only: the API
-	// returns only a salted hash (userKeyHash / orgKeyHash) that cannot be
-	// reproduced from the configured PEM, so reading it back would overwrite
-	// state with a value that never matches the configuration. Leave the
-	// values already held in state.
+	if err := helpers.TrackSecret(
+		d, "organization_validator_key", "organization_validator_key_hash",
+		integration.Config.OrgKeyHash, helpers.SecretSent(d, "organization_validator_key"),
+	); err != nil {
+		return diag.FromErr(err)
+	}
 
 	// databags
 	/* AWAITING API SUPPORT

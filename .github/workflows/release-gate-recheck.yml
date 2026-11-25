@@ -1,0 +1,139 @@
+# Copyright 2026 Hewlett Packard Enterprise Development LP
+
+# Keeps the release gate honest when a QA verdict changes.
+#
+# release-gate.yml checks the QA labels of the pull requests a release pull
+# request was picked from. Those labels live on OTHER pull requests, so
+# changing one does not re-run the gate: a release pull request would keep its
+# green check after one of its changes was sent back to QA, and could still be
+# merged.
+#
+# This workflow closes that gap. When a QA label is added to or removed from a
+# merged pull request, it re-runs the release gate on every open pull request
+# into a release branch. The gate reads the labels afresh, so a withdrawn
+# approval turns the required check red, and a new approval turns it green
+# without anyone re-running it by hand.
+#
+# pull_request_target, so the workflow is taken from the repository's default
+# branch (the current dev branch). That is what makes it fire for pull requests
+# merged before this file existed: on pull_request the file would have to be in
+# the old pull request's own branch.
+name: release-gate-recheck
+
+on:
+  pull_request_target:
+    types: [labeled, unlabeled]
+
+permissions:
+  actions: write        # re-run a workflow run
+  checks: read          # find the gate's check on a commit
+  contents: read
+  pull-requests: write  # tell a release pull request its gate was not re-run
+
+# No concurrency group, on purpose. A group would have to cover the whole
+# workflow, and GitHub cancels a pending run in a group when a newer one queues
+# behind it: any label added to any pull request would then be able to cancel a
+# pending re-check and skip itself, leaving a withdrawn approval unchecked.
+# Runs that overlap are handled in the job instead, by waiting and retrying.
+jobs:
+  recheck:
+    name: release-gate-recheck
+    # Only a QA label, and only on a merged pull request: an open one is not
+    # eligible for a release whatever its labels say.
+    if: >-
+      github.event.pull_request.merged == true &&
+      contains(fromJSON('["QA Approved", "QA Not Required", "Needs QA"]'), github.event.label.name)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Re-run the release gate on open pull requests into release branches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGED_PR: ${{ github.event.pull_request.number }}
+          CHANGED_LABEL: ${{ github.event.label.name }}
+          CHANGED_ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+
+          prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 200 \
+                  --json number,baseRefName,headRefName,headRefOid \
+                  --jq '.[] | select(.baseRefName | startswith("rel-")) | @json')
+          if [ -z "$prs" ]; then
+            echo "No open pull request into a release branch; nothing to re-check."
+            exit 0
+          fi
+
+          # A re-run that cannot be requested leaves the release pull request
+          # with a green check that no longer reflects the labels. This job
+          # failing is only visible in the Actions tab, on another pull
+          # request's commit, so say it where it will be seen: on the release
+          # pull request itself.
+          tell() { # <release pr number> <what went wrong>
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/$1/comments" \
+              -f body="⚠️ A QA label changed on #${CHANGED_PR} (\`${CHANGED_LABEL}\` ${CHANGED_ACTION}), but the \`release-gate\` check here could not be re-run: $2. **The check shown on this pull request may be out of date.** Re-run \`release-gate\` by hand before merging." \
+              >/dev/null || echo "::warning::#$1: could not comment on the pull request either."
+          }
+
+          failed=0
+          while IFS= read -r row; do
+            [ -n "$row" ] || continue
+            number=$(jq -r '.number' <<<"$row")
+            head=$(jq -r '.headRefName' <<<"$row")
+            oid=$(jq -r '.headRefOid' <<<"$row")
+
+            # The workflow run behind the latest release-gate check on the
+            # commit the pull request is at now. Found through the checks, not
+            # by branch name: a pull_request_target run is filed under the base
+            # branch, not the pull request's.
+            #
+            # Only the latest. A head collects one gate run per event (opened,
+            # reopened, each label change), and GitHub judges the required
+            # check by the most recent of them; re-running it also makes it the
+            # most recent, so it is the one that decides. Earlier runs are left
+            # alone: a re-run repeats a run with the workflow as it was when
+            # the run was first made, so re-running an old one could bring back
+            # the verdict of an outdated gate as the newest result.
+            if ! ids=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${oid}/check-runs?check_name=release-gate&per_page=100" \
+                         --jq '[.check_runs[] | select(.app.slug == "github-actions")] | sort_by(.started_at) | last // empty
+                               | .details_url | capture("/actions/runs/(?<id>[0-9]+)").id'); then
+              echo "::error::#${number} (${head}): could not list the release-gate checks on ${oid:0:12}. Re-run the gate by hand before merging."
+              tell "$number" "its release-gate checks could not be listed"
+              failed=$((failed + 1))
+              continue
+            fi
+            if [ -z "$ids" ]; then
+              echo "::error::#${number} (${head}): no release-gate check found on ${oid:0:12}, so it could not be re-checked. Re-run the gate by hand before merging."
+              tell "$number" "no release-gate run was found for its head commit ${oid:0:12}"
+              failed=$((failed + 1))
+              continue
+            fi
+
+            for id in $ids; do
+              # A run that is still going may have read the labels before this
+              # change, so it cannot be trusted to have seen it: wait for it to
+              # finish, then re-run it. Replacing "Needs QA" with "QA Approved"
+              # is two label events a moment apart, so another re-check may get
+              # its request in first; the re-run is then refused because the
+              # run is going again. Wait for that one and ask again, so the
+              # gate has always run once more AFTER this label change.
+              rerun_ok=false
+              for attempt in 1 2 3 4 5 6; do
+                waited=0
+                while [ "$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}" --jq '.status')" != "completed" ]; do
+                  if [ "$waited" -ge 300 ]; then break; fi
+                  sleep 10; waited=$((waited + 10))
+                done
+                if gh run rerun "$id" --repo "$GITHUB_REPOSITORY"; then rerun_ok=true; break; fi
+                sleep 10
+              done
+
+              if [ "$rerun_ok" = true ]; then
+                echo "#${number}: re-running release-gate (run ${id})."
+              else
+                echo "::error::#${number} (${head}): could not re-run release-gate (run ${id}). Re-run it by hand before merging."
+                tell "$number" "run ${id} could not be re-run after several attempts"
+                failed=$((failed + 1))
+              fi
+            done
+          done <<<"$prs"
+
+          [ "$failed" -eq 0 ]

@@ -4,15 +4,23 @@ package networkpool
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -37,7 +45,7 @@ func NetworkPoolResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The number of free IPs in the pool.",
 				MarkdownDescription: "The number of free IPs in the pool.",
 				PlanModifiers: []planmodifier.Int64{
-					modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges")),
+					modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges"), path.Root("ip_address_ranges")),
 				},
 			},
 			"gateway": schema.StringAttribute{
@@ -54,12 +62,51 @@ func NetworkPoolResourceSchema(ctx context.Context) schema.Schema {
 					int64planmodifier.UseStateForUnknown(),
 				},
 			},
+			"ip_address_ranges": schema.ListNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"ending_address": schema.StringAttribute{
+							Optional:            true,
+							Computed:            true,
+							Description:         "The last address of the range. Required.",
+							MarkdownDescription: "The last address of the range. Required.",
+						},
+						"id": schema.Int64Attribute{
+							Computed:            true,
+							Description:         "The ID of the range in Morpheus.",
+							MarkdownDescription: "The ID of the range in Morpheus.",
+							PlanModifiers: []planmodifier.Int64{
+								int64planmodifier.UseStateForUnknown(),
+							},
+						},
+						"starting_address": schema.StringAttribute{
+							Optional:            true,
+							Computed:            true,
+							Description:         "The first address of the range. Required.",
+							MarkdownDescription: "The first address of the range. Required.",
+						},
+					},
+					CustomType: IpAddressRangesType{
+						ObjectType: types.ObjectType{
+							AttrTypes: IpAddressRangesValue{}.AttributeTypes(ctx),
+						},
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "The IP address ranges of the pool, in configuration order. Each range is edited in place by its `id`,\nso a range's reservations survive a change to its addresses; a range removed from the list is deleted\n(Morpheus refuses when it still has reservations). Exactly one of `ip_address_ranges` and the deprecated\n`ip_ranges` must be set.",
+				MarkdownDescription: "The IP address ranges of the pool, in configuration order. Each range is edited in place by its `id`,\nso a range's reservations survive a change to its addresses; a range removed from the list is deleted\n(Morpheus refuses when it still has reservations). Exactly one of `ip_address_ranges` and the deprecated\n`ip_ranges` must be set.",
+				Validators: []validator.List{
+					listvalidator.ExactlyOneOf(path.MatchRoot("ip_ranges")),
+					listvalidator.SizeAtLeast(1),
+				},
+			},
 			"ip_count": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The total number of IPs in the pool.",
 				MarkdownDescription: "The total number of IPs in the pool.",
 				PlanModifiers: []planmodifier.Int64{
-					modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges")),
+					modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges"), path.Root("ip_address_ranges")),
 				},
 			},
 			"ip_ranges": schema.ObjectAttribute{
@@ -67,9 +114,14 @@ func NetworkPoolResourceSchema(ctx context.Context) schema.Schema {
 					"starting_address": types.StringType,
 					"ending_address":   types.StringType,
 				},
-				Required:            true,
-				Description:         "The IPv4 IP address pool IP ranges.",
-				MarkdownDescription: "The IPv4 IP address pool IP ranges.",
+				Optional:            true,
+				Computed:            true,
+				Description:         "Deprecated: a single IP range as `{ starting_address, ending_address }`. Use `ip_address_ranges`, which\nholds every range of the pool. Only one of the two may be set in the configuration. A pool with more\nthan one range cannot be managed through this attribute. Will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated: a single IP range as `{ starting_address, ending_address }`. Use `ip_address_ranges`, which\nholds every range of the pool. Only one of the two may be set in the configuration. A pool with more\nthan one range cannot be managed through this attribute. Will be removed in the 2.6 release.",
+				DeprecationMessage:  "Use ip_address_ranges instead; it holds every range of the pool. This attribute will be removed in the 2.6 release.",
+				Validators: []validator.Object{
+					objectvalidator.ExactlyOneOf(path.MatchRoot("ip_address_ranges")),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
@@ -111,16 +163,454 @@ func NetworkPoolResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkPoolModel struct {
-	DhcpServer    types.Bool   `tfsdk:"dhcp_server"`
-	DnsDomain     types.String `tfsdk:"dns_domain"`
-	FreeCount     types.Int64  `tfsdk:"free_count"`
-	Gateway       types.String `tfsdk:"gateway"`
-	Id            types.Int64  `tfsdk:"id"`
-	IpCount       types.Int64  `tfsdk:"ip_count"`
-	IpRanges      types.Object `tfsdk:"ip_ranges"`
-	Name          types.String `tfsdk:"name"`
-	Netmask       types.String `tfsdk:"netmask"`
-	PoolEnabled   types.Bool   `tfsdk:"pool_enabled"`
-	SubnetAddress types.String `tfsdk:"subnet_address"`
-	TypeCode      types.String `tfsdk:"type_code"`
+	DhcpServer      types.Bool   `tfsdk:"dhcp_server"`
+	DnsDomain       types.String `tfsdk:"dns_domain"`
+	FreeCount       types.Int64  `tfsdk:"free_count"`
+	Gateway         types.String `tfsdk:"gateway"`
+	Id              types.Int64  `tfsdk:"id"`
+	IpAddressRanges types.List   `tfsdk:"ip_address_ranges"`
+	IpCount         types.Int64  `tfsdk:"ip_count"`
+	IpRanges        types.Object `tfsdk:"ip_ranges"`
+	Name            types.String `tfsdk:"name"`
+	Netmask         types.String `tfsdk:"netmask"`
+	PoolEnabled     types.Bool   `tfsdk:"pool_enabled"`
+	SubnetAddress   types.String `tfsdk:"subnet_address"`
+	TypeCode        types.String `tfsdk:"type_code"`
+}
+
+var _ basetypes.ObjectTypable = IpAddressRangesType{}
+
+type IpAddressRangesType struct {
+	basetypes.ObjectType
+}
+
+func (t IpAddressRangesType) Equal(o attr.Type) bool {
+	other, ok := o.(IpAddressRangesType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t IpAddressRangesType) String() string {
+	return "IpAddressRangesType"
+}
+
+func (t IpAddressRangesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewIpAddressRangesValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewIpAddressRangesValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	endingAddressAttribute, ok := attributes["ending_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ending_address is missing from object`)
+
+		return nil, diags
+	}
+
+	endingAddressVal, ok := endingAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ending_address expected to be basetypes.StringValue, was: %T`, endingAddressAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	startingAddressAttribute, ok := attributes["starting_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`starting_address is missing from object`)
+
+		return nil, diags
+	}
+
+	startingAddressVal, ok := startingAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`starting_address expected to be basetypes.StringValue, was: %T`, startingAddressAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return IpAddressRangesValue{
+		EndingAddress:   endingAddressVal,
+		Id:              idVal,
+		StartingAddress: startingAddressVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewIpAddressRangesValueNull() IpAddressRangesValue {
+	return IpAddressRangesValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewIpAddressRangesValueUnknown() IpAddressRangesValue {
+	return IpAddressRangesValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewIpAddressRangesValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (IpAddressRangesValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing IpAddressRangesValue Attribute Value",
+				"While creating a IpAddressRangesValue value, a missing attribute value was detected. "+
+					"A IpAddressRangesValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("IpAddressRangesValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid IpAddressRangesValue Attribute Type",
+				"While creating a IpAddressRangesValue value, an invalid attribute value was detected. "+
+					"A IpAddressRangesValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("IpAddressRangesValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("IpAddressRangesValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra IpAddressRangesValue Attribute Value",
+				"While creating a IpAddressRangesValue value, an extra attribute value was detected. "+
+					"A IpAddressRangesValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra IpAddressRangesValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	endingAddressAttribute, ok := attributes["ending_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ending_address is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	endingAddressVal, ok := endingAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ending_address expected to be basetypes.StringValue, was: %T`, endingAddressAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	startingAddressAttribute, ok := attributes["starting_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`starting_address is missing from object`)
+
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	startingAddressVal, ok := startingAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`starting_address expected to be basetypes.StringValue, was: %T`, startingAddressAttribute))
+	}
+
+	if diags.HasError() {
+		return NewIpAddressRangesValueUnknown(), diags
+	}
+
+	return IpAddressRangesValue{
+		EndingAddress:   endingAddressVal,
+		Id:              idVal,
+		StartingAddress: startingAddressVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewIpAddressRangesValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) IpAddressRangesValue {
+	object, diags := NewIpAddressRangesValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewIpAddressRangesValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t IpAddressRangesType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewIpAddressRangesValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewIpAddressRangesValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewIpAddressRangesValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewIpAddressRangesValueMust(IpAddressRangesValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t IpAddressRangesType) ValueType(ctx context.Context) attr.Value {
+	return IpAddressRangesValue{}
+}
+
+var _ basetypes.ObjectValuable = IpAddressRangesValue{}
+
+type IpAddressRangesValue struct {
+	EndingAddress   basetypes.StringValue `tfsdk:"ending_address"`
+	Id              basetypes.Int64Value  `tfsdk:"id"`
+	StartingAddress basetypes.StringValue `tfsdk:"starting_address"`
+	state           attr.ValueState
+}
+
+func (v IpAddressRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["ending_address"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["starting_address"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.EndingAddress.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ending_address"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.StartingAddress.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["starting_address"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v IpAddressRangesValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v IpAddressRangesValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v IpAddressRangesValue) String() string {
+	return "IpAddressRangesValue"
+}
+
+func (v IpAddressRangesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"ending_address":   basetypes.StringType{},
+		"id":               basetypes.Int64Type{},
+		"starting_address": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"ending_address":   v.EndingAddress,
+			"id":               v.Id,
+			"starting_address": v.StartingAddress,
+		})
+
+	return objVal, diags
+}
+
+func (v IpAddressRangesValue) Equal(o attr.Value) bool {
+	other, ok := o.(IpAddressRangesValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.EndingAddress.Equal(other.EndingAddress) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.StartingAddress.Equal(other.StartingAddress) {
+		return false
+	}
+
+	return true
+}
+
+func (v IpAddressRangesValue) Type(ctx context.Context) attr.Type {
+	return IpAddressRangesType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v IpAddressRangesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"ending_address":   basetypes.StringType{},
+		"id":               basetypes.Int64Type{},
+		"starting_address": basetypes.StringType{},
+	}
 }

@@ -4,11 +4,13 @@ package network
 
 import (
 	"context"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/networkconfig"
 )
@@ -98,6 +100,84 @@ func TestUnitResolveConfigInputsRoutesTheBlockForTheType(t *testing.T) {
 	}
 }
 
+// nsxtBlock is a config_nsxt block with every attribute null except the given
+// ones (a configuration that sets only those).
+func nsxtBlock(ctx context.Context, set map[string]attr.Value) ConfigNsxtValue {
+	attrTypes := ConfigNsxtValue{}.AttributeTypes(ctx)
+	attrs := make(map[string]attr.Value, len(attrTypes))
+
+	for name, typ := range attrTypes {
+		attrs[name] = tftypesNull(typ)
+	}
+
+	for name, v := range set {
+		attrs[name] = v
+	}
+
+	return NewConfigNsxtValueMust(attrTypes, attrs)
+}
+
+func tftypesNull(typ attr.Type) attr.Value {
+	switch typ.(type) {
+	case basetypes.Int64Type:
+		return types.Int64Null()
+	case basetypes.BoolType:
+		return types.BoolNull()
+	default:
+		return types.StringNull()
+	}
+}
+
+// subnet_ip_server_id (deprecated) and subnet_ip_server_path share the config
+// key subnetIpServerId. A null attribute is dropped before routing (blockValues
+// skips null and unknown values), so the unset one of the pair never reaches
+// the wire map -- an unset path does not clobber a set id, nor the reverse.
+func TestUnitResolveConfigInputsNullDhcpProfileAttributeIsNotSent(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	nsxt := typeSpecFor("nsxtLogicalSwitch")
+
+	if nsxt == nil {
+		t.Fatal("the catalogue must know nsxtLogicalSwitch")
+	}
+
+	cases := []struct {
+		name string
+		set  map[string]attr.Value
+		want any
+	}{
+		{
+			"deprecated id only",
+			map[string]attr.Value{"subnet_ip_server_id": types.Int64Value(7)},
+			int64(7),
+		},
+		{
+			"path only",
+			map[string]attr.Value{"subnet_ip_server_path": types.StringValue("/infra/dhcp-server-configs/x")},
+			"/infra/dhcp-server-configs/x",
+		},
+	}
+
+	for _, tc := range cases {
+		model := seedModel(t, ctx, nil)
+		model.ConfigNsxt = nsxtBlock(ctx, tc.set)
+
+		inputs, diags := resolveConfigInputs(ctx, model, nsxt)
+		if diags.HasError() {
+			t.Fatalf("%s: %v", tc.name, diags)
+		}
+
+		if got := inputs.all["subnetIpServerId"]; got != tc.want {
+			t.Errorf("%s: subnetIpServerId = %#v, want %#v (all=%v)", tc.name, got, tc.want, inputs.all)
+		}
+
+		if len(inputs.all) != 1 {
+			t.Errorf("%s: only the set attribute may be sent, got %v", tc.name, inputs.all)
+		}
+	}
+}
+
 func TestUnitCheckBlockMatchesType(t *testing.T) {
 	t.Parallel()
 
@@ -184,7 +264,7 @@ func TestUnitTypeSpecFallsBackToTheTable(t *testing.T) {
 		t.Errorf("an id alone cannot be resolved without the appliance: got %v", spec)
 	}
 
-	if spec := typeSpec(ctx, nil, 0, "juniperSdn"); spec != nil {
+	if spec := typeSpec(ctx, nil, 0, "somePluginNetwork"); spec != nil {
 		t.Errorf("a type in neither place is generic: got %v", spec)
 	}
 
@@ -261,5 +341,41 @@ func TestUnitCheckDeclared(t *testing.T) {
 	inputs.typ = nil
 	if diags := checkDeclared(ctx, nil, inputs); len(diags) != 0 {
 		t.Errorf("no type, no diagnostics: %v", diags)
+	}
+}
+
+// The SDN plugin's virtual network is known from the plugin table: it has no
+// typed block (its only input is zone_pool_id), the pool is its cluster, and
+// nothing is edited in place after create (the plugin declares the gateway
+// editable but refuses the change), so every change replaces the network.
+func TestUnitJuniperSdnNetworkTypeShape(t *testing.T) {
+	t.Parallel()
+
+	spec := typeSpecFor("juniperSdn")
+	if spec == nil {
+		t.Fatal("the catalogue must know juniperSdn")
+	}
+
+	if _, ok := networkconfig.BlockForType("juniperSdn"); ok {
+		t.Error("juniperSdn must have no typed block: zone_pool_id is its only input")
+	}
+
+	if !poolIsCluster["juniperSdn"] {
+		t.Error("juniperSdn's zone_pool_id is the HVM cluster and must not be clearable")
+	}
+
+	ovsBlock, _ := networkconfig.BlockFor("config_ovs_port_group")
+	if d := checkBlockMatchesType(&ovsBlock, spec); d == nil || !strings.Contains(d.Detail(), "free-form config map") {
+		t.Errorf("a block set with juniperSdn must be rejected towards config: %v", d)
+	}
+
+	// The plugin declares the gateway editable but refuses the change at update
+	// time ("Gateway cannot be modified after network creation", verified live
+	// against plugin 1.1.0); the provider follows the behaviour and replaces.
+	immutable := networkconfig.ImmutableAttributes(*spec)
+	for _, want := range []string{"name", "cidr", "vlan_id", "gateway"} {
+		if !slices.Contains(immutable, want) {
+			t.Errorf("%s must replace a juniperSdn network when it changes; immutable = %v", want, immutable)
+		}
 	}
 }

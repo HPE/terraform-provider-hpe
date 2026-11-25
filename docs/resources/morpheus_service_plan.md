@@ -52,12 +52,12 @@ resource "hpe_morpheus_service_plan" "example_service_plan" {
 - `custom_max_memory` (Boolean) Can be used to enable / disable customizable memory.
 - `custom_max_storage` (Boolean) Can be used to enable / disable customizable storage
 - `description` (String) Service plan description
-- `id` (Number) The ID of the role
+- `id` (Number) The ID of the service plan
 - `max_cores` (Number) Max number of total cores
 - `max_cpu` (Number) Max CPU's
 - `max_disks` (Number) Max disks allowed
 - `memory_size_type` (String) Specifies range min / max memory multiplier
-- `price_set_ids` (Set of Number)
+- `price_set_ids` (Set of Number) The IDs of the price sets included in the service plan
 - `sort_order` (Number) Sort order
 - `storage_size_type` (String) Specifies range min / max storage multiplier
 

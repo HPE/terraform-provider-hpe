@@ -4,10 +4,7 @@ package networkserver
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -15,16 +12,18 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	providererrors "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/networkserverlookup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 const (
-	summary                     = "read network server data source"
-	ErrorNoValidSearchTerms     = `no valid search terms - an id or name is required`
-	ErrorRunningPreApply        = `Error running pre-apply plan: exit status 1`
-	ErrorNoNetworkServerFound   = `no network server found`
-	ErrorMultipleNetworkServers = `multiple network servers were returned`
+	summary                 = "read network server data source"
+	ErrorNoValidSearchTerms = `no valid search terms - an id or name is required`
+	ErrorRunningPreApply    = `Error running pre-apply plan: exit status 1`
+	// The lookup's messages (networkserverlookup.ErrNotFound / ErrMultiple),
+	// under the names tests have always used; a unit test pins them equal.
+	ErrorNoNetworkServerFound   = "no network server found"
+	ErrorMultipleNetworkServers = "multiple network servers were returned"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -111,83 +110,17 @@ func networkServerAsState(
 	return state, nil
 }
 
-func getNetworkServerByID(
-	ctx context.Context,
-	id int64,
-	apiClient *sdk.APIClient,
-) (*sdk.GetNetworkServer200ResponseNetworkServer, error) {
-	r, hresp, err := apiClient.NetworksAPI.GetNetworkServer(ctx, id).Execute()
-	if r == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for network server %d: %s", id, providererrors.ErrMsg(err, hresp))
-	}
-
-	if r.NetworkServer == nil {
-		return nil, fmt.Errorf("GET failed for network server %d: response missing networkServer", id)
-	}
-
-	ns := *r.NetworkServer
-
-	return &ns, nil
-}
-
-func getNetworkServerByName(
-	ctx context.Context,
-	name string,
-	apiClient *sdk.APIClient,
-) (*sdk.GetNetworkServer200ResponseNetworkServer, error) {
-	rs, hresp, err := apiClient.NetworksAPI.ListNetworkServers(ctx).Name(name).Execute()
-	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for network server %s: %s", name, providererrors.ErrMsg(err, hresp))
-	}
-
-	// The List response returns NetworkServers as interface{} in some SDK versions,
-	// but in this version it's a typed slice — use JSON round-trip for safety.
-	raw, marshalErr := json.Marshal(rs.NetworkServers)
-	if marshalErr != nil {
-		return nil, fmt.Errorf("error marshaling network servers: %w", marshalErr)
-	}
-
-	var servers []struct {
-		Id   *int64  `json:"id"`
-		Name *string `json:"name"`
-	}
-
-	if unmarshalErr := json.Unmarshal(raw, &servers); unmarshalErr != nil {
-		return nil, fmt.Errorf("error decoding network servers: %w", unmarshalErr)
-	}
-
-	var matchedID int64
-
-	var matchCount int
-
-	for _, s := range servers {
-		if s.Name != nil && *s.Name == name {
-			if s.Id != nil {
-				matchedID = *s.Id
-			}
-
-			matchCount++
-		}
-	}
-
-	if matchCount == 0 {
-		return nil, errors.New(ErrorNoNetworkServerFound)
-	} else if matchCount > 1 {
-		return nil, errors.New(ErrorMultipleNetworkServers)
-	}
-
-	return getNetworkServerByID(ctx, matchedID, apiClient)
-}
-
 func getNetworkServer(
 	ctx context.Context,
 	config *NetworkServerModel,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetNetworkServer200ResponseNetworkServer, error) {
+	// Hidden servers — a cluster's own — are found by either lookup; see
+	// networkserverlookup.
 	if !config.Id.IsNull() {
-		return getNetworkServerByID(ctx, config.Id.ValueInt64(), apiClient)
+		return networkserverlookup.ByID(ctx, apiClient, config.Id.ValueInt64())
 	} else if !config.Name.IsNull() {
-		return getNetworkServerByName(ctx, config.Name.ValueString(), apiClient)
+		return networkserverlookup.ByName(ctx, apiClient, config.Name.ValueString())
 	}
 
 	return nil, errors.New(ErrorNoValidSearchTerms)

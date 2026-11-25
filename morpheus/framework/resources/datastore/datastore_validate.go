@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // ValidateConfig enforces the cross-attribute requirements for BMaaS datastores
@@ -45,11 +46,16 @@ func validateBmaasConfig(config DatastoreModel) diag.Diagnostics {
 
 	// storage_server and resource_pool are Optional+Computed with an
 	// Optional+Computed nested id, so an empty block (e.g. storage_server = {})
-	// satisfies !IsNull() while leaving a nil id that the API would reject. The
-	// short-circuit || only reaches the nested id checks when the block itself
-	// is known and non-null, so accessing .Id is always safe.
-	if config.StorageServer.IsNull() || config.StorageServer.IsUnknown() ||
-		config.StorageServer.Id.IsNull() || config.StorageServer.Id.IsUnknown() {
+	// satisfies !IsNull() while leaving a null id that the API would reject.
+	//
+	// Unknown is different from null: an unknown block or id is a reference
+	// Terraform has not resolved yet (a data source during validate, say, or
+	// a plan that depends on another change). It cannot be judged here --
+	// the check runs again once the value is known, and the API has the final
+	// say on apply -- so it is let through rather than reported as missing,
+	// which would fail `terraform validate` for every configuration that
+	// resolves its storage server or pool by name.
+	if nestedIDMissing(config.StorageServer.IsNull(), config.StorageServer.IsUnknown(), config.StorageServer.Id) {
 		diags.AddAttributeError(
 			path.Root("storage_server"),
 			"Missing storage_server for BMaaS datastore",
@@ -59,8 +65,7 @@ func validateBmaasConfig(config DatastoreModel) diag.Diagnostics {
 		)
 	}
 
-	if config.ResourcePool.IsNull() || config.ResourcePool.IsUnknown() ||
-		config.ResourcePool.Id.IsNull() || config.ResourcePool.Id.IsUnknown() {
+	if nestedIDMissing(config.ResourcePool.IsNull(), config.ResourcePool.IsUnknown(), config.ResourcePool.Id) {
 		diags.AddAttributeError(
 			path.Root("resource_pool"),
 			"Missing resource_pool for BMaaS datastore",
@@ -81,4 +86,20 @@ func validateBmaasConfig(config DatastoreModel) diag.Diagnostics {
 	}
 
 	return diags
+}
+
+// nestedIDMissing reports whether a single-nested block with an id is
+// decidably missing: the block is null, or it is known and its id is null. An
+// unknown block or id is not missing -- it is not yet known -- and reports
+// false. The block's own id is only consulted when the block is known and
+// non-null, since an unknown or null block carries a zero-value id.
+func nestedIDMissing(blockNull, blockUnknown bool, id types.Int64) bool {
+	switch {
+	case blockUnknown:
+		return false
+	case blockNull:
+		return true
+	default:
+		return id.IsNull()
+	}
 }

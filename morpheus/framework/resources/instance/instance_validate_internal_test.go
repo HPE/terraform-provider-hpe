@@ -121,6 +121,8 @@ func hvmValidateReq(
 		"kvm_host_id":           tftypes.Number,
 		"nested_virtualization": tftypes.String,
 		"no_agent":              tftypes.Bool,
+		"placement_strategy":    tftypes.String,
+		"preferred_host_id":     tftypes.Number,
 		"resource_pool_id":      tftypes.String,
 		"user_data":             tftypes.String,
 	}}
@@ -130,6 +132,8 @@ func hvmValidateReq(
 		"image_id":              tftypes.NewValue(tftypes.Number, nil),
 		"nested_virtualization": tftypes.NewValue(tftypes.String, nil),
 		"no_agent":              tftypes.NewValue(tftypes.Bool, nil),
+		"placement_strategy":    tftypes.NewValue(tftypes.String, nil),
+		"preferred_host_id":     tftypes.NewValue(tftypes.Number, nil),
 		"resource_pool_id":      tftypes.NewValue(tftypes.String, nil),
 		"user_data":             tftypes.NewValue(tftypes.String, nil),
 	}

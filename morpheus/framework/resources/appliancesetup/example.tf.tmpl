@@ -1,0 +1,31 @@
+# The password and licence key never reach the plan or the state: they are
+# write-only attributes. Read them from a secret store or an ephemeral resource.
+variable "{{.PasswordVariable}}" {
+  type      = string
+  sensitive = true
+  ephemeral = true
+}
+
+variable "{{.LicenseVariable}}" {
+  type      = string
+  sensitive = true
+  ephemeral = true
+  default   = null
+}
+
+# The provider's url points at the new appliance; its credentials are the
+# administrator this resource creates, so every other resource depends on it.
+resource "hpe_morpheus_appliance_setup" "{{.ResourceName}}" {
+  appliance_name = "{{.ApplianceName}}"
+  account_name   = "{{.AccountName}}"
+  username       = "{{.Username}}"
+  password_wo    = var.{{.PasswordVariable}}
+  email          = "{{.Email}}"
+  first_name     = "{{.FirstName}}"
+  last_name      = "{{.LastName}}"
+  license_key_wo = var.{{.LicenseVariable}}
+
+  timeouts = {
+    create = "{{.CreateTimeout}}"
+  }
+}

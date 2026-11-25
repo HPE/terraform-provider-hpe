@@ -1,0 +1,82 @@
+network_pool_ip:
+  # Look up a single reserved IP from a network pool by id, ip_address, or
+  # hostname. The read path's {networkPoolId} path param identifies the parent
+  # pool (required); {id} becomes a computed_optional lookup key. ip_address and
+  # hostname are resolved via the list endpoint's exact-match filters.
+  moves:
+    - network_pool_ip: ""                 # unnest the API envelope (standard pattern)
+  removes:
+    - success                             # API response envelope
+    - msg                                 # API response envelope
+    - internal_id                         # (networkPoolIp) read-only internal
+    - ptr_id                              # (networkPoolIp) read-only internal
+    - sub_ref_id                          # (networkPoolIp) read-only internal
+    - created_by                          # (networkPoolIp) read-only nested object
+    - network_domain                      # (networkPoolIp) read-only nested object
+  overrides:
+    network_pool_id:
+      computed_optional_required: required
+      description: The ID of the network pool to look the reservation up in.
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the network pool IP reservation to look up.
+      conflicts_with: ["ip_address", "hostname"]
+    ip_address:
+      computed_optional_required: computed_optional
+      description: The IP address of the reservation to look up.
+      conflicts_with: ["id", "hostname"]
+    hostname:
+      computed_optional_required: computed_optional
+      description: The hostname of the reservation to look up.
+      conflicts_with: ["id", "ip_address"]
+    ip_type:
+      computed_optional_required: computed
+      description: The IP version of the reservation (for example, A for IPv4 or AAAA for IPv6).
+    gateway_address:
+      computed_optional_required: computed
+      description: The gateway address for the reservation.
+    subnet_mask:
+      computed_optional_required: computed
+      description: The subnet mask for the reservation.
+    dns_server:
+      computed_optional_required: computed
+      description: The DNS server for the reservation.
+    domain_name:
+      computed_optional_required: computed
+      description: The network domain name for the reservation.
+    fqdn:
+      computed_optional_required: computed
+      description: The fully qualified domain name for the reservation.
+    interface_name:
+      computed_optional_required: computed
+      description: The interface name for the reservation.
+    description:
+      computed_optional_required: computed
+      description: A description of the reservation.
+    ref_type:
+      computed_optional_required: computed
+      description: The type of resource this reservation is associated with.
+    ref_id:
+      computed_optional_required: computed
+      description: The ID of the resource this reservation is associated with.
+    external_id:
+      computed_optional_required: computed
+      description: The external identifier of the reservation, assigned by the provider.
+    static_ip:
+      computed_optional_required: computed
+      description: Whether the reservation is a static IP.
+    active:
+      computed_optional_required: computed
+      description: Whether the reservation is active.
+    start_date:
+      computed_optional_required: computed
+      description: The start date of the reservation.
+    end_date:
+      computed_optional_required: computed
+      description: The end date of the reservation.
+    date_created:
+      computed_optional_required: computed
+      description: The date the reservation was created.
+    last_updated:
+      computed_optional_required: computed
+      description: The date the reservation was last updated.

@@ -233,6 +233,21 @@ func getInstanceAsState(
 		state.Config = plan.Config
 	}
 
+	// HVM host placement lives on the node compute servers, not in the
+	// instance config, so it is read separately via GET /api/servers/{id} for
+	// each node. Non-HVM instances have config_hvm null and are skipped. A
+	// failed read is a warning and keeps the prior values (state.ConfigHvm was
+	// seeded from the prior state above), so an auxiliary GET failure never
+	// fails the instance refresh.
+	if !state.ConfigHvm.IsNull() && !state.ConfigHvm.IsUnknown() {
+		placement, pdiags := refreshHostPlacement(ctx, client, instance)
+		diags.Append(pdiags...)
+		if placement.Read {
+			state.ConfigHvm.PlacementStrategy = placement.Strategy
+			state.ConfigHvm.PreferredHostId = placement.Preferred
+		}
+	}
+
 	// connection_info
 	cInfo, dc := getConnectionInfo(instance)
 	diags.Append(dc...)
@@ -441,37 +456,12 @@ func getInstanceAsState(
 	// timeouts
 	state.Timeouts = plan.Timeouts
 
-	// tags
-	// we store the Name from the plan in the state, and compare the name returned from the API against
-	// the state name while allowing for capitalisation changes
-	planTagNames := make(map[string]string) // lowercase name -> plan name
-	for _, planTag := range plan.Tags.Elements() {
-		pt := planTag.(TagsValue)
-		planTagNames[strings.ToLower(pt.Name.ValueString())] = pt.Name.ValueString()
-	}
-
-	tags, d := convert.ToSetType(
-		ctx,
-		instance.Tags,
-		func(
-			in sdk.AddInstance200ResponseAllOfOneOfInstanceTagsInner,
-		) TagsValue {
-			name := convert.StrToType(in.Name)
-			if in.Name != nil {
-				if planName, ok := planTagNames[strings.ToLower(*in.Name)]; ok {
-					name = types.StringValue(planName)
-				}
-			}
-
-			return TagsValue{
-				Name:  name,
-				Value: convert.StrToType(in.Value),
-				state: attr.ValueStateKnown,
-			}
-		},
-	)
+	// tags: the managed subset of what Morpheus holds, and tags_all for the
+	// rest (see tags.go, MORPH-20973).
+	tags, d := managedTags(ctx, id, plan.Tags, instance.Tags, refresh)
 	diags.Append(d...)
 	state.Tags = tags
+	state.TagsAll = tagsAllFromAPI(ctx, instance.Tags)
 
 	// task_set_id
 	// task_set_id is not included in the API response, it is a write only value

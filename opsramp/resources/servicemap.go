@@ -11,7 +11,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
@@ -20,13 +24,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // Ensure implementation satisfies the expected interfaces
 var (
-	_ resource.Resource                = &ServicemapResource{}
-	_ resource.ResourceWithImportState = &ServicemapResource{}
-	_ resource.ResourceWithModifyPlan  = &ServicemapResource{}
+	_ resource.Resource                   = &ServicemapResource{}
+	_ resource.ResourceWithImportState    = &ServicemapResource{}
+	_ resource.ResourceWithModifyPlan     = &ServicemapResource{}
+	_ resource.ResourceWithValidateConfig = &ServicemapResource{}
 )
 
 // ServicemapResource defines the resource implementation.
@@ -98,10 +104,33 @@ func (r *ServicemapResource) Schema(ctx context.Context, req resource.SchemaRequ
 			},
 			// metrics for critical-alert type
 			"metrics": schema.SetAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
+				Optional:            true,
+				ElementType:         types.StringType,
+				MarkdownDescription: "Required and non-empty for critical-alert; must match the metric_name values in metric_criteria. Must be empty or omitted for any-critical-alert.",
+				Validators:          []validator.Set{setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1))},
 			},
-
+			"metric_criteria": schema.SetNestedAttribute{
+				Optional:            true,
+				MarkdownDescription: "Required and non-empty for critical-alert; must be omitted for other alert types. Each metric must have exactly one criterion.",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"metric_name": schema.StringAttribute{
+							Required:   true,
+							Validators: []validator.String{stringvalidator.LengthAtLeast(1)},
+						},
+						"operator": schema.StringAttribute{
+							Required:   true,
+							Validators: []validator.String{stringvalidator.OneOf("-", "=")},
+						},
+						"components": schema.SetAttribute{
+							Optional:            true,
+							ElementType:         types.StringType,
+							MarkdownDescription: "Required and non-empty when operator is \"=\". Must be omitted when operator is \"-\".",
+							Validators:          []validator.Set{setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1))},
+						},
+					},
+				},
+			},
 			"threshold_type": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
@@ -124,7 +153,7 @@ func (r *ServicemapResource) Schema(ctx context.Context, req resource.SchemaRequ
 	}
 }
 
-func translatePlanToModel(plan ServicemapModel) client.CreateServicemap {
+func translatePlanToModel(ctx context.Context, plan ServicemapModel) (client.CreateServicemap, diag.Diagnostics) {
 	var resources []string
 	for _, i := range plan.Resources {
 		resources = append(resources, i.ValueString())
@@ -138,26 +167,12 @@ func translatePlanToModel(plan ServicemapModel) client.CreateServicemap {
 		}
 	}
 
-	var serviceAvailabilityMonitor *client.ServiceAvailabilityMonitor
-	if !plan.AlertType.IsNull() && plan.AlertType.ValueString() != "" {
-		var metrics []string
-		for _, m := range plan.Metrics {
-			metrics = append(metrics, m.ValueString())
-		}
-		if metrics == nil {
-			metrics = []string{}
-		}
-		serviceAvailabilityMonitor = &client.ServiceAvailabilityMonitor{
-			AlertType: plan.AlertType.ValueString(),
-			Metrics:   metrics,
-			MatchType: "ANY",
-		}
-	}
-
 	availabilityThreshold := client.AvailabilityThreshold{
 		ThresholdType:  plan.ThresholdType.ValueString(),
 		ThresholdLimit: int(plan.ThresholdLimit.ValueInt64()),
 	}
+
+	monitor, diags := buildServicemapAvailabilityMonitor(ctx, plan)
 
 	return client.CreateServicemap{
 		Name:                       plan.Name.ValueString(),
@@ -166,9 +181,98 @@ func translatePlanToModel(plan ServicemapModel) client.CreateServicemap {
 		Parent:                     parent,
 		Resources:                  resources,
 		SearchQuery:                plan.SearchQuery.ValueString(),
-		ServiceAvailabilityMonitor: serviceAvailabilityMonitor,
+		ServiceAvailabilityMonitor: monitor,
 		AvailabilityThreshold:      availabilityThreshold,
+	}, diags
+}
+
+func buildServicemapAvailabilityMonitor(
+	ctx context.Context,
+	plan ServicemapModel,
+) (*client.ServiceAvailabilityMonitor, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	if plan.AlertType.IsNull() || plan.AlertType.ValueString() == "" {
+		return nil, diags
 	}
+
+	monitor := &client.ServiceAvailabilityMonitor{
+		AlertType: plan.AlertType.ValueString(),
+		Metrics:   make([]string, 0, len(plan.Metrics)),
+		MatchType: "ANY",
+	}
+	if monitor.AlertType != "any-critical-alert" {
+		for _, metric := range plan.Metrics {
+			monitor.Metrics = append(monitor.Metrics, metric.ValueString())
+		}
+	}
+	if monitor.AlertType == "critical-alert" {
+		var criteria []ServicemapMetricCriterionModel
+		diags.Append(plan.MetricCriteria.ElementsAs(ctx, &criteria, false)...)
+		for _, criterion := range criteria {
+			entry := client.ServicemapMetricCriterion{
+				MetricName: criterion.MetricName.ValueString(),
+				Operator:   criterion.Operator.ValueString(),
+			}
+			if entry.Operator == "=" {
+				diags.Append(criterion.Components.ElementsAs(ctx, &entry.Components, false)...)
+			}
+			monitor.MetricCriteria = append(monitor.MetricCriteria, entry)
+		}
+	}
+
+	return monitor, diags
+}
+
+// mapServiceAvailabilityMonitorToModel maps alert_type/metrics/metric_criteria from a service
+// availability monitor returned by the API, the inverse of buildServicemapAvailabilityMonitor.
+// A nil monitor, or one without metric criteria, maps metric_criteria to a typed null set (not
+// an empty one), and a criterion without components maps its components to a typed null set, so
+// Terraform doesn't report a "produced an unexpected new value" plan inconsistency.
+func mapServiceAvailabilityMonitorToModel(
+	monitor *client.ServiceAvailabilityMonitor,
+) (alertType types.String, metrics []types.String, metricCriteria types.Set, diags diag.Diagnostics) {
+	metricCriteria = types.SetNull(servicemapMetricCriterionType)
+
+	if monitor == nil {
+		return types.StringNull(), nil, metricCriteria, diags
+	}
+
+	alertType = types.StringValue(monitor.AlertType)
+	for _, m := range monitor.Metrics {
+		metrics = append(metrics, types.StringValue(m))
+	}
+
+	if len(monitor.MetricCriteria) == 0 {
+		return alertType, metrics, metricCriteria, diags
+	}
+
+	elems := make([]attr.Value, len(monitor.MetricCriteria))
+	for i, criterion := range monitor.MetricCriteria {
+		components := types.SetNull(types.StringType)
+		if len(criterion.Components) > 0 {
+			componentElems := make([]attr.Value, len(criterion.Components))
+			for j, c := range criterion.Components {
+				componentElems[j] = types.StringValue(c)
+			}
+			componentsSet, componentsDiags := types.SetValue(types.StringType, componentElems)
+			diags.Append(componentsDiags...)
+			components = componentsSet
+		}
+
+		obj, objDiags := types.ObjectValue(servicemapMetricCriterionType.AttrTypes, map[string]attr.Value{
+			"metric_name": types.StringValue(criterion.MetricName),
+			"operator":    types.StringValue(criterion.Operator),
+			"components":  components,
+		})
+		diags.Append(objDiags...)
+		elems[i] = obj
+	}
+
+	criteriaSet, criteriaDiags := types.SetValue(servicemapMetricCriterionType, elems)
+	diags.Append(criteriaDiags...)
+	metricCriteria = criteriaSet
+
+	return alertType, metrics, metricCriteria, diags
 }
 
 func (r *ServicemapResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -180,7 +284,12 @@ func (r *ServicemapResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Use the JSON from the plan
-	createServicemap := translatePlanToModel(plan)
+	resp.Diagnostics.Append(validateServicemapMonitor(ctx, plan.AlertType, servicemapMetricsSet(plan.Metrics), plan.MetricCriteria)...)
+	createServicemap, diags := translatePlanToModel(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	tenantId := r.apiClient.TenantId
 	if !plan.Client.IsNull() && plan.Client.ValueString() != "" {
 		tenantId = plan.Client.ValueString()
@@ -234,6 +343,23 @@ func (r *ServicemapResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
+	// Only refresh the monitor fields when the API actually returns one: some service map node
+	// types (e.g. child "Resource" nodes) omit "serviceAvailabilityMonitor" from the read
+	// response even though it was accepted on create/update, so treating that omission as "the
+	// monitor was removed remotely" would wipe out a still-valid configuration on every refresh.
+	if backendServicemap.ServiceAvailabilityMonitor != nil {
+		alertType, metrics, metricCriteria, monitorDiags := mapServiceAvailabilityMonitorToModel(
+			backendServicemap.ServiceAvailabilityMonitor,
+		)
+		resp.Diagnostics.Append(monitorDiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		state.AlertType = alertType
+		state.Metrics = metrics
+		state.MetricCriteria = metricCriteria
+	}
+
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -257,7 +383,9 @@ func (r *ServicemapResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Use the JSON from the state
-	updateServicemap := translatePlanToModel(state)
+	resp.Diagnostics.Append(validateServicemapMonitor(ctx, plan.AlertType, servicemapMetricsSet(plan.Metrics), plan.MetricCriteria)...)
+	updateServicemap, diags := translatePlanToModel(ctx, state)
+	resp.Diagnostics.Append(diags...)
 	tenantId := r.apiClient.TenantId
 	if !plan.Client.IsNull() && plan.Client.ValueString() != "" {
 		tenantId = plan.Client.ValueString()
@@ -279,18 +407,12 @@ func (r *ServicemapResource) Update(ctx context.Context, req resource.UpdateRequ
 		updateServicemap.SearchQuery = plan.SearchQuery.ValueString()
 	}
 	if !plan.AlertType.IsNull() && plan.AlertType.ValueString() != "" {
-		var metrics []string
-		for _, m := range plan.Metrics {
-			metrics = append(metrics, m.ValueString())
-		}
-		if metrics == nil {
-			metrics = []string{}
-		}
-		updateServicemap.ServiceAvailabilityMonitor = &client.ServiceAvailabilityMonitor{
-			AlertType: plan.AlertType.ValueString(),
-			Metrics:   metrics,
-			MatchType: "ANY",
-		}
+		var monitorDiags diag.Diagnostics
+		updateServicemap.ServiceAvailabilityMonitor, monitorDiags = buildServicemapAvailabilityMonitor(ctx, plan)
+		resp.Diagnostics.Append(monitorDiags...)
+	}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	updateServicemap.AvailabilityThreshold = client.AvailabilityThreshold{
@@ -315,9 +437,11 @@ func (r *ServicemapResource) Update(ctx context.Context, req resource.UpdateRequ
 	state.ThresholdType = types.StringValue(updatedServicemap.AvailabilityThreshold.ThresholdType)
 	state.SearchQuery = plan.SearchQuery
 	state.AlertType = plan.AlertType
+	state.Metrics = plan.Metrics
+	state.MetricCriteria = plan.MetricCriteria
 
 	// Save
-	resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 // Delete removes the resource from the API.
@@ -376,6 +500,12 @@ func (r *ServicemapResource) ImportState(ctx context.Context, req resource.Impor
 		return
 	}
 
+	alertType, metrics, metricCriteria, monitorDiags := mapServiceAvailabilityMonitorToModel(existing.ServiceAvailabilityMonitor)
+	resp.Diagnostics.Append(monitorDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	state := ServicemapModel{
 		Client:         parsed.Client,
 		Id:             types.StringValue(existing.Id),
@@ -383,10 +513,19 @@ func (r *ServicemapResource) ImportState(ctx context.Context, req resource.Impor
 		Type:           types.StringValue(existing.Type),
 		ThresholdType:  types.StringValue(existing.AvailabilityThreshold.ThresholdType),
 		ThresholdLimit: types.Int64Value(int64(existing.AvailabilityThreshold.ThresholdLimit)),
+		AlertType:      alertType,
+		Metrics:        metrics,
+		MetricCriteria: metricCriteria,
 	}
 
-	resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
+
+var servicemapMetricCriterionType = types.ObjectType{AttrTypes: map[string]attr.Type{
+	"metric_name": types.StringType,
+	"operator":    types.StringType,
+	"components":  types.SetType{ElemType: types.StringType},
+}}
 
 type ServicemapModel struct {
 	Client         types.String   `tfsdk:"client"`
@@ -399,8 +538,151 @@ type ServicemapModel struct {
 	SearchQuery    types.String   `tfsdk:"search_query"`
 	AlertType      types.String   `tfsdk:"alert_type"`
 	Metrics        []types.String `tfsdk:"metrics"`
+	MetricCriteria types.Set      `tfsdk:"metric_criteria"`
 	ThresholdType  types.String   `tfsdk:"threshold_type"`
 	ThresholdLimit types.Int64    `tfsdk:"threshold_limit"`
+}
+
+type ServicemapMetricCriterionModel struct {
+	MetricName types.String `tfsdk:"metric_name"`
+	Operator   types.String `tfsdk:"operator"`
+	Components types.Set    `tfsdk:"components"`
+}
+
+func servicemapMetricsSet(metrics []types.String) types.Set {
+	values := make([]attr.Value, len(metrics))
+	for i, metric := range metrics {
+		values[i] = metric
+	}
+
+	return types.SetValueMust(types.StringType, values)
+}
+
+func (r *ServicemapResource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var alertType types.String
+	var metrics, criteria types.Set
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("alert_type"), &alertType)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("metrics"), &metrics)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("metric_criteria"), &criteria)...)
+	if !resp.Diagnostics.HasError() {
+		resp.Diagnostics.Append(validateServicemapMonitor(ctx, alertType, metrics, criteria)...)
+	}
+}
+
+func validateServicemapMonitor(ctx context.Context, alertType types.String, metrics, criteria types.Set) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if alertType.IsUnknown() {
+		return diags
+	}
+	if alertType.ValueString() != "critical-alert" {
+		if !criteria.IsNull() && !criteria.IsUnknown() {
+			diags.AddAttributeError(
+				path.Root("metric_criteria"),
+				"Unexpected Metric Criteria",
+				"metric_criteria must be omitted unless alert_type is critical-alert.",
+			)
+		}
+		if alertType.ValueString() == "any-critical-alert" && !metrics.IsUnknown() && len(metrics.Elements()) > 0 {
+			diags.AddAttributeError(
+				path.Root("metrics"),
+				"Unexpected Metrics",
+				"metrics must be empty or omitted when alert_type is any-critical-alert.",
+			)
+		}
+
+		return diags
+	}
+	if !metrics.IsUnknown() && len(metrics.Elements()) == 0 {
+		diags.AddAttributeError(path.Root("metrics"), "Missing Metrics", "critical-alert requires a non-empty metrics set.")
+	}
+	if criteria.IsUnknown() {
+		return diags
+	}
+	if len(criteria.Elements()) == 0 {
+		diags.AddAttributeError(
+			path.Root("metric_criteria"),
+			"Missing Metric Criteria",
+			"critical-alert requires a non-empty metric_criteria set.",
+		)
+
+		return diags
+	}
+	names := make(map[string]bool)
+	allNamesKnown := true
+	for _, element := range criteria.Elements() {
+		if element.IsUnknown() {
+			allNamesKnown = false
+
+			continue
+		}
+		var criterion ServicemapMetricCriterionModel
+		object, ok := element.(types.Object)
+		if !ok || object.IsNull() {
+			diags.AddAttributeError(
+				path.Root("metric_criteria"),
+				"Invalid Metric Criterion",
+				"Each criterion must be an object with metric_name and operator.",
+			)
+
+			continue
+		}
+		diags.Append(object.As(ctx, &criterion, basetypes.ObjectAsOptions{})...)
+		if criterion.MetricName.IsUnknown() {
+			allNamesKnown = false
+		} else {
+			name := criterion.MetricName.ValueString()
+			if strings.TrimSpace(name) == "" || names[name] {
+				diags.AddAttributeError(
+					path.Root("metric_criteria"),
+					"Invalid Metric Name",
+					"Each criterion must have a non-empty, unique metric_name.",
+				)
+			}
+			names[name] = true
+		}
+		switch criterion.Operator.ValueString() {
+		case "=":
+			if !criterion.Components.IsUnknown() && len(criterion.Components.Elements()) == 0 {
+				diags.AddAttributeError(path.Root("metric_criteria"), "Missing Components", "operator = requires a non-empty components set.")
+			}
+		case "-":
+			if !criterion.Components.IsNull() && !criterion.Components.IsUnknown() {
+				diags.AddAttributeError(path.Root("metric_criteria"), "Unexpected Components", "components must be omitted when operator is -.")
+			}
+		default:
+			if !criterion.Operator.IsUnknown() {
+				diags.AddAttributeError(path.Root("metric_criteria"), "Invalid Operator", "operator must be - or =.")
+			}
+		}
+	}
+	if allNamesKnown && !metrics.IsUnknown() {
+		metricsKnown := true
+		metricNames := make(map[string]bool)
+		for _, element := range metrics.Elements() {
+			if element.IsUnknown() {
+				metricsKnown = false
+
+				continue
+			}
+			value, ok := element.(types.String)
+			if ok {
+				metricNames[value.ValueString()] = true
+			}
+		}
+		if metricsKnown && !reflect.DeepEqual(names, metricNames) {
+			diags.AddAttributeError(
+				path.Root("metric_criteria"),
+				"Mismatched Metric Names",
+				"metrics and metric_criteria must contain exactly the same metric names.",
+			)
+		}
+	}
+
+	return diags
 }
 
 func (r *ServicemapResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -416,6 +698,11 @@ func (r *ServicemapResource) ModifyPlan(ctx context.Context, req resource.Modify
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	req.State.Get(ctx, &state)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(validateServicemapMonitor(ctx, plan.AlertType, servicemapMetricsSet(plan.Metrics), plan.MetricCriteria)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

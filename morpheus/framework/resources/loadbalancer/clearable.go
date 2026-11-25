@@ -20,6 +20,7 @@ var notClearable = clearable.NotClearable{
 	"config":                    "free-form configuration; removing the whole map is not yet supported",
 	"config_haproxy":            "nested block; removing a whole block is not yet supported",
 	"config_nsxt":               "nested block; removing a whole block is not yet supported",
+	"config_juniper_sdn":        "nested block; removing a whole block is not yet supported",
 	"permissions":               "nested block; removing a whole block is not yet supported",
 	"tenants":                   "nested block; removing a whole block is not yet supported",
 	"group_id_version":          "version companion of a write-only value",

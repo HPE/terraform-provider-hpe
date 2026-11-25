@@ -1,0 +1,23 @@
+# NSX-T Network Server
+#
+# A generic network controller integration. Its type-specific option values go
+# in the free-form config map; the common connection fields are attributes. A
+# non-SDN network server is attached to the cloud it serves (cloud_id).
+resource "hpe_morpheus_network_server" "nsxt" {
+  name                = "{{.Name}}"
+  type_code           = "{{.TypeCode}}"
+  cloud_id            = {{.CloudId}}
+  service_url         = "{{.ServiceUrl}}"
+  service_username    = "{{.ServiceUsername}}"
+  service_password_wo = "{{.ServicePassword}}"
+}
+
+# Using a stored credential instead of a username and password:
+#
+# resource "hpe_morpheus_network_server" "nsxt" {
+#   name          = "{{.Name}}"
+#   type_code     = "{{.TypeCode}}"
+#   cloud_id      = {{.CloudId}}
+#   service_url   = "{{.ServiceUrl}}"
+#   credential_id = 42
+# }

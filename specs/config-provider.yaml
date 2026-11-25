@@ -14,16 +14,6 @@ resources:
     delete:
       path: /api/user-sources/{id}
       method: DELETE
-  backup_setting:
-    create:
-      path: /api/backup-settings
-      method: PUT
-    read:
-      path: /api/backup-settings
-      method: GET
-    update:
-      path: /api/backup-settings
-      method: PUT
   blueprint:
     create:
       path: /api/blueprints
@@ -320,6 +310,19 @@ resources:
     delete:
       path: /api/groups/{id}
       method: DELETE
+  host:
+    create:
+      path: /api/servers
+      method: POST
+    read:
+      path: /api/servers/{id}
+      method: GET
+    update:
+      path: /api/servers/{id}
+      method: PUT
+    delete:
+      path: /api/servers/{id}
+      method: DELETE
   guidance_setting:
     create:
       path: /api/guidance-settings
@@ -330,6 +333,19 @@ resources:
     update:
       path: /api/guidance-settings
       method: PUT
+  host_profile:
+    create:
+      path: /api/host-profiles
+      method: POST
+    read:
+      path: /api/host-profiles/{id}
+      method: GET
+    update:
+      path: /api/host-profiles/{id}
+      method: PUT
+    delete:
+      path: /api/host-profiles/{id}
+      method: DELETE
   image:
     create:
       path: /api/virtual-images
@@ -1082,6 +1098,32 @@ resources:
     delete:
       path: /api/networks/pools/{id}
       method: DELETE
+  network_pool_ip:
+    create:
+      path: /api/networks/pools/{id}/ips
+      method: POST
+    read:
+      path: /api/networks/pools/{networkPoolId}/ips/{id}
+      method: GET
+    update:
+      path: /api/networks/pools/{networkPoolId}/ips/{id}
+      method: PUT
+    delete:
+      path: /api/networks/pools/{networkPoolId}/ips/{id}
+      method: DELETE
+  network_server:
+    create:
+      path: /api/networks/servers
+      method: POST
+    read:
+      path: /api/networks/servers/{id}
+      method: GET
+    update:
+      path: /api/networks/servers/{id}
+      method: PUT
+    delete:
+      path: /api/networks/servers/{id}
+      method: DELETE
   network_pool_server:
     create:
       path: /api/networks/pool-servers
@@ -1095,6 +1137,16 @@ resources:
     delete:
       path: /api/networks/pool-servers/{id}
       method: DELETE
+  network_floating_ip:
+    create:
+      path: /api/networks/floating-ips/allocate
+      method: POST
+    read:
+      path: /api/networks/floating-ips/{id}
+      method: GET
+    delete:
+      path: /api/networks/floating-ips/{id}/release
+      method: PUT
   network_router_firewall_rule:
     create:
       path: /api/networks/routers/{routerId}/firewall-rules
@@ -1277,6 +1329,32 @@ resources:
     delete:
       path: /api/vdi-pools/{id}
       method: DELETE
+  # The appliance's settings: one object that always exists. The API has no
+  # DELETE for it, and create and update are the same PUT. Both the Terraform
+  # resource (framework/resources/settingappliance) and the Ansible module are
+  # generated from this spec.
+  setting_appliance:
+    create:
+      path: /api/appliance-settings
+      method: PUT
+    read:
+      path: /api/appliance-settings
+      method: GET
+    update:
+      path: /api/appliance-settings
+      method: PUT
+  # The appliance's backup settings: the same shape -- one object, no DELETE,
+  # create and update the same PUT -- and the same two consumers.
+  setting_backup:
+    create:
+      path: /api/backup-settings
+      method: PUT
+    read:
+      path: /api/backup-settings
+      method: GET
+    update:
+      path: /api/backup-settings
+      method: PUT
   setting_whitelabel:
     create:
       path: /api/whitelabel-settings
@@ -1287,6 +1365,19 @@ resources:
     update:
       path: /api/whitelabel-settings
       method: PUT
+  virtual_switch:
+    create:
+      path: /api/virtual-switches
+      method: POST
+    read:
+      path: /api/virtual-switches/{id}
+      method: GET
+    update:
+      path: /api/virtual-switches/{id}
+      method: PUT
+    delete:
+      path: /api/virtual-switches/{id}
+      method: DELETE
 data_sources:
   ansible_tower_inventory:
     read:
@@ -1380,6 +1471,10 @@ data_sources:
     read:
       path: /api/library/cluster-layouts/{id}
       method: GET
+  cluster_layouts:
+    read:
+      path: /api/library/cluster-layouts
+      method: GET
   cluster_namespace:
     read:
       path: /api/clusters/{clusterId}/namespaces/{id}
@@ -1427,6 +1522,14 @@ data_sources:
   group:
     read:
       path: /api/groups/{id}
+      method: GET
+  host:
+    read:
+      path: /api/servers/{id}
+      method: GET
+  hosts:
+    read:
+      path: /api/servers
       method: GET
   instance_snapshot:
     read:
@@ -1529,9 +1632,21 @@ data_sources:
     read:
       path: /api/networks/pools/{id}
       method: GET
+  network_pool_ip:
+    read:
+      path: /api/networks/pools/{networkPoolId}/ips/{id}
+      method: GET
   network_pool_server_type:
     read:
       path: /api/networks/pool-server-types/{id}
+      method: GET
+  network_floating_ip:
+    read:
+      path: /api/networks/floating-ips/{id}
+      method: GET
+  network_floating_ips:
+    read:
+      path: /api/networks/floating-ips
       method: GET
   network_server:
     read:
@@ -1705,6 +1820,18 @@ data_sources:
     read:
       path: /api/vdi-pools/{id}
       method: GET
+  host_profile:
+    read:
+      path: /api/host-profiles/{id}
+      method: GET
+  host_profiles:
+    read:
+      path: /api/host-profiles
+      method: GET
+  host_profile_compliance:
+    read:
+      path: /api/clusters/{clusterId}/host-profile/compliance
+      method: GET
   image:
     read:
       path: /api/virtual-images/{virtualImageId}
@@ -1764,4 +1891,16 @@ data_sources:
   whoami:
     read:
       path: /api/whoami
+      method: GET
+  virtual_switch:
+    read:
+      path: /api/virtual-switches/{id}
+      method: GET
+  virtual_switches:
+    read:
+      path: /api/virtual-switches
+      method: GET
+  cluster_available_nics:
+    read:
+      path: /api/clusters/{clusterId}/available-nics
       method: GET

@@ -23,7 +23,7 @@ var _ MappedNullable = &AddBaremetalHostRequestServerComputeServerTypeAnyOf1{}
 // AddBaremetalHostRequestServerComputeServerTypeAnyOf1 struct for AddBaremetalHostRequestServerComputeServerTypeAnyOf1
 type AddBaremetalHostRequestServerComputeServerTypeAnyOf1 struct {
 	// The ComputeServerType's id
-	Id                   *int32                 `json:"id,omitempty"`
+	Id                   *int64                 `json:"id,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 

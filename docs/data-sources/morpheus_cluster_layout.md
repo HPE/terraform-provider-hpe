@@ -32,7 +32,7 @@ data "hpe_morpheus_cluster_layout" "example" {
 
 ### Read-Only
 
-- `cluster_version` (String) The cluster version associated with the layout
+- `cluster_version` (String) The version of the cluster software the layout deploys: the Kubernetes version for a Kubernetes layout (for example "1.33.x"), or the HVM cluster version for an HVM layout (for example "1.3" or "2.0"; a layout 2.0 builds on virtual switches and accepts the config_hvm network settings of hpe_morpheus_cluster). Set by Morpheus; it cannot be set through the API.
 - `code` (String) The code identifier of the cluster layout
 - `compute_version` (String) The compute version associated with the layout
 - `creatable` (Boolean) Whether clusters of this layout can be created

@@ -122,6 +122,26 @@ what you see.
 such a configuration. An affinity group silently overrides an explicit host pin, so the instance would
 land on a host chosen by the group rather than the one named by `kvm_host_id`.
 
+~> **HVM host placement** `config_hvm.placement_strategy` sets the steady-state placement policy and
+`config_hvm.preferred_host_id` names the host it refers to. The strategies, in precedence order, are:
+**`pinned`** (keep the VM on `preferred_host_id`, or the current host if none is given — this outranks
+a `MUST` affinity rule, so Morpheus raises an affinity-violation alarm rather than moving a pinned VM),
+a **`MUST` affinity group** rule, **`failover`** (prefer `preferred_host_id`, which is required, but
+allow the VM to move), and **`auto`** (no preference — what the appliance applies when nothing is set;
+the attributes have no schema default and read back whatever the appliance holds). Setting
+`preferred_host_id` without `placement_strategy`, with `auto`, or `failover` without `preferred_host_id`,
+is rejected. Changing `preferred_host_id` on an existing instance triggers a **live migration** to the new
+host; the provider waits for the VM to arrive on it, within `timeouts.update`, and fails the apply if it
+does not.
+Morpheus refuses to move a running VM whose volumes are on **local** storage ("Server must be powered
+off to move hosts because it is on local storage"), so a host change is only possible live for VMs on
+shared storage; the create fails with that message rather than silently keeping the old host. To avoid
+a migration straight after provisioning, set `kvm_host_id` (the initial host) to the same host as
+`preferred_host_id`. Setting `placement_strategy = "auto"` **releases** any pin or host preference;
+removing the attributes from the configuration does not clear them (they are computed, so an omitted
+attribute keeps the value read from the appliance and plans no change).
+
+
 -> `affinity_group_id` reflects what was requested when the instance was created, not its live
 membership. Morpheus returns the value but never updates it, so it does not follow membership changes
 made elsewhere. Actual membership is reported by the `servers` attribute of the
@@ -677,6 +697,29 @@ resource "hpe_morpheus_instance" "example" {
   }
 }
 ```
+
+## Tags
+
+`tags` is the set of metadata tags this resource **manages**, each a `name` and `value`. Morpheus
+may hold further tags it adds itself -- from a provisioning workflow, a layout option type or the
+cloud's tag sync (vCenter tags, for instance). Those are not managed here and never cause a diff;
+the computed `tags_all` lists everything Morpheus holds. Tags are matched by name
+case-insensitively, and a value that differs from the configured one **only in case** is treated
+as the configured value: a VMware cloud reports a tag in the case of the vCenter tag it matched
+(`env = "prod"` comes back as `Prod`), which is not drift. Any other change Morpheus makes to a
+managed tag's value, or a managed tag it removes, is reported as drift and put back on the next
+apply. Tag names must be unique ignoring case.
+
+Changing, adding or removing a managed tag updates only that tag (Morpheus's `addTags` /
+`removeTags`), so Morpheus's own tags survive. Emptying `tags` (`tags = []`) or omitting it
+removes the tags this resource previously managed and leaves Morpheus's own alone. Right after a
+create or update, a configured tag Morpheus does not yet report, or reports with another value,
+is kept as configured with a warning (some clouds apply tags asynchronously); the next refresh
+shows what Morpheus holds.
+
+On import `tags` is left unset -- the resource cannot tell which of Morpheus's tags a configuration
+means to manage -- and `tags_all` shows them all. Configure the tags you want managed and apply:
+they are added (or re-valued) through Morpheus's `addTags` and managed from then on.
 
 ## VMware VM Instance
 
@@ -1302,7 +1345,12 @@ the provider detects that after create and fails the apply. Set at
 provision time only; changing it forces replacement. When not set,
 Morpheus generates the UUIDs and they are read back here.
 - `service_plan_options` (Attributes) Custom options for selected service plan - the supported options depend on the service plan selected (see [below for nested schema](#nestedatt--service_plan_options))
-- `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--tags))
+- `tags` (Attributes Set) Metadata tags this resource manages, each a name and value. Morpheus may hold further tags
+it adds itself (tag policies, provisioning workflows, cloud tag sync): those are not managed
+here and never cause a diff -- see `tags_all`. Names are matched ignoring case and must be
+unique; a value differing only in case is the configured one (VMware re-cases tags).
+Changing or removing a tag here updates only that tag (`addTags`/`removeTags`); emptying or
+omitting the set removes the previously managed tags and leaves Morpheus's own alone. (see [below for nested schema](#nestedatt--tags))
 - `task_set_id` (Number) The Workflow ID to execute.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `user_group` (Number) The id of the user group to associate with the instance. When create_user is enabled on
@@ -1330,6 +1378,9 @@ scope the server_uuid read-back to the owned container only.
 - `status` (String) The status of the instance (e.g. running, stopped, failed, unknown). The provider
 refreshes this on read, so an out-of-band deletion of the underlying VM - which Morpheus
 reports as "unknown" while retaining the instance record - surfaces as a change on the next plan.
+- `tags_all` (Attributes Set) Every metadata tag Morpheus holds for the instance, including the ones it adds itself
+(tag policies, provisioning workflows, cloud tag sync) -- read-only. `tags` carries only
+the tags this resource manages (MORPH-20973). (see [below for nested schema](#nestedatt--tags_all))
 
 <a id="nestedatt--network_interfaces"></a>
 ### Nested Schema for `network_interfaces`
@@ -1474,6 +1525,8 @@ Create-only: changing it replaces the instance.
 - `nested_virtualization` (String) Enable nested virtualization on the instance. Can be a number of valid string values:
    "on", "off", "0", "1", "true", "false", "yes", "no", "".  The default is "off".
 - `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
+- `placement_strategy` (String) How firmly the virtual machine is kept on `preferred_host_id`: `auto` (the cluster's placement loop may move it), `failover` (kept on the preferred host while that host is healthy, moved only on failure) or `pinned` (never moved automatically; a pin outranks affinity group rules, which then raise an alarm instead of moving the VM). Applied through the host placement operation after provisioning; changing it does not replace the instance.
+- `preferred_host_id` (Number) The id of the hypervisor host (its compute server id) the virtual machine should run on, used with `placement_strategy`. Must be a provisioned host in the instance's cluster. Changing it live-migrates the VM to the new host; set `timeouts.update` to bound the migration.
 - `user_data` (String) Cloud-init user data for the virtual machine: cloud-config YAML (starting `#cloud-config`)
 or a plain script. Applied once, when the virtual machine is first provisioned, so changing
 it replaces the instance; use `lifecycle { ignore_changes }` to update the stored value for
@@ -1621,3 +1674,12 @@ with an image occupying a little over 10GB yields an 11GB volume.
 This is also where an out-of-band resize becomes visible: a disk grown
 outside Terraform is reflected here on the next refresh.
 - `id` (Number) The id for the LV configuration being created.
+
+
+<a id="nestedatt--tags_all"></a>
+### Nested Schema for `tags_all`
+
+Read-Only:
+
+- `name` (String)
+- `value` (String)

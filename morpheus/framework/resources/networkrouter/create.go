@@ -14,6 +14,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -103,6 +104,28 @@ func (r *Resource) Create(
 			return
 		}
 		router.Type = sdk.CreateNetworkRouterRequestNetworkRouterType{Id: *typeId}
+	case !plan.ConfigJuniperSdn.IsNull() && !plan.ConfigJuniperSdn.IsUnknown():
+		typeId, err := typeIdFromCode(ctx, client, codeJuniperSdnRouter)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				createOperation,
+				"failed to find network type (is the HPE Morpheus SDN plugin installed?): "+err.Error(),
+			)
+
+			return
+		}
+		router.Type = sdk.CreateNetworkRouterRequestNetworkRouterType{Id: *typeId}
+	case !plan.ConfigJuniperBgp.IsNull() && !plan.ConfigJuniperBgp.IsUnknown():
+		typeId, err := typeIdFromCode(ctx, client, codeJuniperBgpSdnRouter)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				createOperation,
+				"failed to find network type (is the HPE Morpheus SDN plugin installed?): "+err.Error(),
+			)
+
+			return
+		}
+		router.Type = sdk.CreateNetworkRouterRequestNetworkRouterType{Id: *typeId}
 	}
 
 	// Set site (group_id)
@@ -139,7 +162,7 @@ func (r *Resource) Create(
 	}
 
 	// Set config from the dynamic config attribute or typed config blocks
-	routerConfig, diags := buildRouterConfig(ctx, plan)
+	routerConfig, diags := buildRouterConfig(ctx, plan, configuredMd5Key(config))
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -214,6 +237,10 @@ func (r *Resource) Create(
 		state.Config = plan.Config
 	}
 
+	// Write-only digests: what Create sent, so the next plan can tell a change.
+	state.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(
@@ -229,6 +256,7 @@ func (r *Resource) Create(
 func buildRouterConfig(
 	ctx context.Context,
 	plan NetworkRouterModel,
+	md5Key types.String,
 ) (*sdk.CreateNetworkRouterRequestNetworkRouterConfig, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -241,6 +269,17 @@ func buildRouterConfig(
 	// Typed NSX Tier1 config
 	case !plan.ConfigNsxtGatewayTier1.IsNull() && !plan.ConfigNsxtGatewayTier1.IsUnknown():
 		cfg := nsxTier1Config(plan.ConfigNsxtGatewayTier1)
+
+		return &cfg, diags
+	// Typed HPE Morpheus SDN configs
+	case !plan.ConfigJuniperSdn.IsNull() && !plan.ConfigJuniperSdn.IsUnknown():
+		cfg, d := juniperSdnConfig(ctx, plan.ConfigJuniperSdn)
+		diags.Append(d...)
+
+		return &cfg, diags
+	case !plan.ConfigJuniperBgp.IsNull() && !plan.ConfigJuniperBgp.IsUnknown():
+		cfg, d := juniperBgpConfig(ctx, plan.ConfigJuniperBgp, md5Key)
+		diags.Append(d...)
 
 		return &cfg, diags
 

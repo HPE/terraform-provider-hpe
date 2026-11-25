@@ -3,9 +3,13 @@
 name: Open PR digest
 
 # Posts a daily digest of this repo's open pull requests to Slack. Approved
-# PRs are marked with a ✅. PRs that are approved AND labelled "Needs QA" are
-# left out: they are waiting only on QA sign-off, and the companion QA PR
-# Digest workflow (qa-pr-digest.yaml) reports those instead.
+# PRs are marked with a ✅. The mark means the review is approved, not that
+# the pull request can be merged: required checks are not looked at, so a pull
+# request into a release branch can carry a ✅ while its release-gate check
+# fails. Changes waiting on QA are
+# not here, because a pull request merges once it is reviewed and QA test it
+# on the dev branch afterwards; the companion QA PR Digest workflow
+# (qa-pr-digest.yaml) reports the merged pull requests still awaiting QA.
 #
 # Delivery is via a Slack Workflow Builder *webhook trigger* (a
 # https://hooks.slack.com/triggers/... URL), which needs no Slack app.
@@ -36,8 +40,6 @@ concurrency:
 env:
   TZ_NAME: Europe/Dublin
   MAX_PRS: '20'
-  # Exact label name; the same string the needs-qa workflow matches on.
-  QA_LABEL: 'Needs QA'
 
 jobs:
   digest:
@@ -67,13 +69,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Drop drafts, and PRs that are approved AND labelled Needs QA: those
-          # are waiting only on QA sign-off and belong to the QA PR Digest
-          # (qa-pr-digest.yaml), which applies the complementary rule, so every
-          # open PR is listed by exactly one of the two workflows. Change the
-          # two rules together. Bot PRs (dependabot, renovate, ...) are included
-          # deliberately: a dependency bump still needs a human to review and
-          # merge it, and those are exactly the ones that rot unnoticed.
+          # Drop drafts; list every other open PR. Bot PRs (dependabot,
+          # renovate, ...) are included deliberately: a dependency bump still
+          # needs a human to review and merge it, and those are exactly the
+          # ones that rot unnoticed.
           #
           # "approved" is GitHub's own merge-gate verdict. reviewDecision is
           # APPROVED only when the required approvals are present, nothing is
@@ -83,21 +82,19 @@ jobs:
           # blocked by an open thread therefore counts as not approved, which
           # is right: the developers still have to act on it.
           prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
-                  --json title,url,isDraft,labels,reviewDecision \
-                | jq -c --arg label "$QA_LABEL" '
+                  --json title,url,isDraft,reviewDecision \
+                | jq -c '
                     [ .[] | select(.isDraft | not)
                       | { title, url,
-                          approved: (.reviewDecision == "APPROVED"),
-                          needs_qa: any(.labels[]; .name == $label) }
-                      | select((.approved and .needs_qa) | not) ]')
+                          approved: (.reviewDecision == "APPROVED") } ]')
 
           count=$(jq -r 'length' <<<"$prs")
 
           if [ "$count" -eq 0 ]; then
             body='None open'
           else
-            # Approved PRs get a ✅ after the title. A labelled PR that is not
-            # yet approved is listed here, without one, until it is.
+            # Approved PRs get a ✅ after the title. It marks review approval
+            # only; required status checks are not part of reviewDecision.
             body=$(jq -r --argjson max "${MAX_PRS}" '
                      length as $n
                      | (.[:$max]

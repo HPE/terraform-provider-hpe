@@ -22,6 +22,16 @@ description: |-
 
 {{ tffile "examples/resources/morpheus_network_router/example_nsxt_gateway_tier1.tf" }}
 
+### HPE Morpheus SDN
+
+#### Logical router (`juniperSdnRouter`)
+
+{{ tffile "examples/resources/morpheus_network_router/example_juniper_sdn.tf" }}
+
+#### BGP router (`juniperBGPSdnRouter`)
+
+{{ tffile "examples/resources/morpheus_network_router/example_juniper_bgp.tf" }}
+
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import
@@ -31,3 +41,19 @@ Network routers can be imported using their ID:
 ```shell
 terraform import hpe_morpheus_network_router.example 42
 ```
+
+The write-only value `config_juniper_bgp.md5_key_wo` of an HPE Morpheus SDN BGP
+router is not stored in state, so the import cannot tell whether the value in your
+configuration matches the appliance: it is taken as already applied, the plan
+after import is empty, and a later change to it is only detected once the
+resource is next updated for another reason (Terraform warns about this on every
+plan until then). To have changes detected from the start, append the sha256
+digest of the configured key to the import ID:
+
+```shell
+terraform import hpe_morpheus_network_router.example "42#config_juniper_bgp.md5_key_wo=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function
+produces the digest:
+`id = "42#config_juniper_bgp.md5_key_wo=${sha256(var.md5_key)}"`.

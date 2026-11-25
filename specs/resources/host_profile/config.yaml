@@ -1,0 +1,132 @@
+# Host Profile resource.
+# NOTE: the create request body (POST /api/host-profiles) is already flat
+# ({name, description, config}) so there is NO wrapper object to unnest. The
+# read (GET /api/host-profiles/{id}) response wraps the detail under
+# `hostProfile`, which tfplugingen surfaces as a duplicate `host_profile`
+# single_nested alongside the flat create-200 fields (id, code, enabled,
+# server_count, compliance_status). We lift the read-only `versions` list out
+# of that wrapper, then drop the wrapper and the `success` envelope flag.
+host_profile:
+  moves:
+    - host_profile.versions: versions          # lift computed version history to top level (components/schemas/hostProfileDetail.yaml)
+
+  removes:
+    - host_profile                             # read wrapper; flat fields already surfaced from create 200 (components/schemas/hostProfileDetail.yaml)
+    - success                                  # read envelope flag (paths./api/host-profiles/{id}.get)
+
+  overrides:
+    id:
+      state_for_unknown: true
+      computed_optional_required: computed
+      description: The Morpheus ID of the host profile.
+    name:
+      computed_optional_required: required
+      description: Profile name.
+    description:
+      computed_optional_required: optional
+      description: Optional description of the host profile.
+    config:
+      computed_optional_required: optional
+      description: Host profile configuration document.
+    # Path A (MORPH-17747): the config document must be *clearable*. Every
+    # config block and leaf is forced to plain `optional` (never computed) so
+    # that removing a field from the Terraform config actually drops it from
+    # the plan instead of being re-populated from prior state (the
+    # computed-stickiness that made config set/change-only). The API echoes the
+    # config map faithfully with no server-side defaulting, so optional is
+    # consistent. The whole-document clear is handled in Update by sending an
+    # empty config object.
+    config.baseline:
+      computed_optional_required: optional
+    config.baseline.additional_packages:
+      computed_optional_required: optional
+    config.baseline.kernel_version:
+      computed_optional_required: optional
+    config.baseline.package_versions:
+      computed_optional_required: optional
+    config.baseline.package_versions.corosync:
+      computed_optional_required: optional
+    config.baseline.package_versions.libvirt:
+      computed_optional_required: optional
+    config.baseline.package_versions.qemu:
+      computed_optional_required: optional
+    config.storage:
+      computed_optional_required: optional
+    config.storage.iscsi:
+      computed_optional_required: optional
+    config.storage.iscsi.chap_enabled:
+      computed_optional_required: optional
+    config.storage.iscsi.transport:
+      computed_optional_required: optional
+    config.storage.multipath:
+      computed_optional_required: optional
+    config.storage.multipath.enabled:
+      computed_optional_required: optional
+    config.storage.multipath.find_multipaths:
+      computed_optional_required: optional
+    config.storage.multipath.user_friendly_names:
+      computed_optional_required: optional
+    config.system:
+      computed_optional_required: optional
+    config.system.cpu:
+      computed_optional_required: optional
+    config.system.cpu.hyper_threading:
+      computed_optional_required: optional
+    config.system.cpu.power_management:
+      computed_optional_required: optional
+    config.system.locale:
+      computed_optional_required: optional
+    config.system.logging:
+      computed_optional_required: optional
+    config.system.logging.level:
+      computed_optional_required: optional
+    config.system.memory:
+      computed_optional_required: optional
+    config.system.memory.huge_pages:
+      computed_optional_required: optional
+    config.system.memory.huge_pages.enabled:
+      computed_optional_required: optional
+    config.system.memory.huge_pages.size:
+      computed_optional_required: optional
+    config.system.ntp:
+      computed_optional_required: optional
+    config.system.ntp.enabled:
+      computed_optional_required: optional
+    config.system.ntp.servers:
+      computed_optional_required: optional
+    config.system.security:
+      computed_optional_required: optional
+    config.system.security.fips:
+      computed_optional_required: optional
+    config.system.security.selinux:
+      computed_optional_required: optional
+    config.system.syslog:
+      computed_optional_required: optional
+    config.system.syslog.enabled:
+      computed_optional_required: optional
+    config.system.syslog.port:
+      computed_optional_required: optional
+    config.system.syslog.protocol:
+      computed_optional_required: optional
+    config.system.syslog.server:
+      computed_optional_required: optional
+    config.system.timezone:
+      computed_optional_required: optional
+    code:
+      computed_optional_required: computed
+      description: >-
+        Read-only unique code identifying the profile;
+        'host-profile.hvm.default' marks the immutable seeded default
+        (rejects update/delete/attach).
+    enabled:
+      computed_optional_required: computed
+      description: Whether the host profile is enabled.
+    server_count:
+      computed_optional_required: computed
+      description: Number of servers currently attached to this profile.
+    compliance_status:
+      computed_optional_required: computed
+      description: Aggregated compliance status across all attached hosts.
+    versions:
+      computed_optional_required: computed
+      description: Version history of the host profile configuration document.

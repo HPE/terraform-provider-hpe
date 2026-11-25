@@ -40,14 +40,16 @@ data "hpe_morpheus_network_router_nat" "example" {
 
 ### Read-Only
 
-- `action` (String) The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
+- `action` (String, Deprecated) Deprecated. Always null: the Morpheus API does not return a NAT rule's action (SNAT, DNAT, REFLEXIVE)
+when it is read, so this attribute is never populated. It will be removed in the 2.6 release.
 - `date_created` (String) The date the NAT rule was created.
 - `description` (String) The description of the NAT rule.
 - `destination_network` (String) Destination network.
 - `destination_ports` (String) The destination ports.
 - `enabled` (Boolean) Whether the NAT rule is enabled.
 - `external_id` (String) The external ID of the NAT rule.
-- `firewall` (String)
+- `firewall` (String, Deprecated) Deprecated. Always null: the Morpheus API does not return the firewall match applied to a NAT rule
+when it is read, so this attribute is never populated. It will be removed in the 2.6 release.
 - `internal_id` (String) The internal ID of the NAT rule.
 - `last_updated` (String) The date the NAT rule was last updated.
 - `match_ipv6destination_prefix` (String) The IPv6 destination prefix to match.

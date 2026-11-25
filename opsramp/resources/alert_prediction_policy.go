@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -34,6 +35,7 @@ type AlertPredictionPolicyModel struct {
 	Id                       types.String `tfsdk:"id"`
 	Name                     types.String `tfsdk:"name"`
 	OrganizationMatchingType types.String `tfsdk:"organization_matching_type"`
+	IncludedClients          types.List   `tfsdk:"included_clients"`
 	EnabledMode              types.String `tfsdk:"enabled_mode"`
 	SeasonalityTimeFrame     types.String `tfsdk:"seasonality_time_frame"`
 	GeneratePredictionAlert  types.Bool   `tfsdk:"generate_prediction_alert"`
@@ -48,6 +50,17 @@ func NewAlertPredictionPolicy() resource.Resource {
 // Metadata returns the resource type name.
 func (r *AlertPredictionPolicyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_alert_prediction_policy"
+}
+
+// ModifyPlan enforces the shared "client" attribute check plus organization_matching_type /
+// included_clients scope rules.
+func (r *AlertPredictionPolicyResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	r.BaseResource.ModifyPlan(ctx, req, resp)
+	r.ValidateOrganizationMatching(ctx, req, resp)
 }
 
 // Schema defines the schema for the resource.
@@ -110,16 +123,32 @@ func (r *AlertPredictionPolicyResource) Schema(_ context.Context, _ resource.Sch
 			},
 			"organization_matching_type": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: "Organization matching type. Required when using MSP credentials. Valid values: `ALL`, `INCLUDE`.",
+				Computed:            true,
+				MarkdownDescription: "The organization matching type for the policy. Applies only when the operation is performed at the MSP level; must not be set at the client level. Defaults to `ALL` when omitted at the MSP level. Valid values: `ALL`, `INCLUDE`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf("ALL", "INCLUDE"),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"included_clients": schema.ListAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "List of client names or UUIDs to include when `organization_matching_type` is `INCLUDE`. Required and must be non-empty in that case; must not be set at the client level.",
+				ElementType:         types.StringType,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
 				},
 			},
 		},
 	}
 }
 
-func buildAlertPredictionPolicyRequest(plan AlertPredictionPolicyModel) client.AlertPredictionPolicy {
+func buildAlertPredictionPolicyRequest(
+	plan AlertPredictionPolicyModel,
+	apiClient *client.OpsRampClient,
+) client.AlertPredictionPolicy {
 	policy := client.AlertPredictionPolicy{
 		Name:                 plan.Name.ValueString(),
 		EnabledMode:          plan.EnabledMode.ValueString(),
@@ -127,25 +156,38 @@ func buildAlertPredictionPolicyRequest(plan AlertPredictionPolicyModel) client.A
 		FilterQuery:          plan.FilterQuery.ValueString(),
 	}
 
-	if !plan.OrganizationMatchingType.IsNull() && !plan.OrganizationMatchingType.IsUnknown() {
-		policy.OrganizationMatchingType = plan.OrganizationMatchingType.ValueString()
+	isMSP := apiClient.Scope == "MSP" && (plan.Client.IsNull() || plan.Client.ValueString() == "")
+	if isMSP {
+		if !plan.OrganizationMatchingType.IsNull() && !plan.OrganizationMatchingType.IsUnknown() {
+			policy.OrganizationMatchingType = plan.OrganizationMatchingType.ValueString()
+		}
+
+		if !plan.IncludedClients.IsNull() && !plan.IncludedClients.IsUnknown() {
+			var includedClients []types.String
+			_ = plan.IncludedClients.ElementsAs(context.Background(), &includedClients, false)
+			for _, c := range includedClients {
+				policy.IncludedClients = append(policy.IncludedClients, c.ValueString())
+			}
+		}
 	}
 
 	return policy
 }
 
-func mapAlertPredictionPolicyToState(resp *client.AlertPredictionPolicy, state *AlertPredictionPolicyModel) {
+func mapAlertPredictionPolicyToState(
+	resp *client.AlertPredictionPolicy, state *AlertPredictionPolicyModel, isMSP bool, fromRead bool,
+) {
 	state.Id = types.StringValue(resp.Id)
 	state.Name = types.StringValue(resp.Name)
 	state.EnabledMode = types.StringValue(resp.EnabledMode)
 	state.SeasonalityTimeFrame = types.StringValue(resp.SeasonalityTimeFrame)
 	state.FilterQuery = types.StringValue(resp.FilterQuery)
 
-	if resp.OrganizationMatchingType != "" {
-		state.OrganizationMatchingType = types.StringValue(resp.OrganizationMatchingType)
-	} else if state.OrganizationMatchingType.IsNull() || state.OrganizationMatchingType.IsUnknown() {
-		state.OrganizationMatchingType = types.StringNull()
-	}
+	// The API reports MSP scope via either a populated "includedClients" list (INCLUDE) or
+	// "clientsIncluded":"ALL" (ALL); it never echoes back "organizationMatchingType".
+	applyIncludedClientsTargeting(
+		resp.IncludedClients, resp.ClientsIncluded, isMSP, fromRead, &state.OrganizationMatchingType, &state.IncludedClients,
+	)
 }
 
 // Create handles the creation of the resource.
@@ -162,7 +204,7 @@ func (r *AlertPredictionPolicyResource) Create(ctx context.Context, req resource
 		tenantId = plan.Client.ValueString()
 	}
 
-	policy := buildAlertPredictionPolicyRequest(plan)
+	policy := buildAlertPredictionPolicyRequest(plan, r.apiClient)
 
 	created, err := r.apiClient.CreateAlertPredictionPolicy(tenantId, policy)
 	if err != nil {
@@ -171,7 +213,8 @@ func (r *AlertPredictionPolicyResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	mapAlertPredictionPolicyToState(created, &plan)
+	isMSP := r.apiClient.Scope == "MSP" && (plan.Client.IsNull() || plan.Client.ValueString() == "")
+	mapAlertPredictionPolicyToState(created, &plan, isMSP, false)
 
 	diags = resp.State.Set(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -203,7 +246,9 @@ func (r *AlertPredictionPolicyResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	mapAlertPredictionPolicyToState(existing, &state)
+	mapAlertPredictionPolicyToState(
+		existing, &state, r.apiClient.Scope == "MSP" && (state.Client.IsNull() || state.Client.ValueString() == ""), true,
+	)
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -225,7 +270,7 @@ func (r *AlertPredictionPolicyResource) Update(ctx context.Context, req resource
 		tenantId = state.Client.ValueString()
 	}
 
-	policy := buildAlertPredictionPolicyRequest(plan)
+	policy := buildAlertPredictionPolicyRequest(plan, r.apiClient)
 
 	updated, err := r.apiClient.UpdateAlertPredictionPolicy(tenantId, state.Id.ValueString(), policy)
 	if err != nil {
@@ -235,7 +280,8 @@ func (r *AlertPredictionPolicyResource) Update(ctx context.Context, req resource
 	}
 
 	plan.Client = state.Client
-	mapAlertPredictionPolicyToState(updated, &plan)
+	isMSP := r.apiClient.Scope == "MSP" && (plan.Client.IsNull() || plan.Client.ValueString() == "")
+	mapAlertPredictionPolicyToState(updated, &plan, isMSP, false)
 
 	diags = resp.State.Set(ctx, &plan)
 	resp.Diagnostics.Append(diags...)

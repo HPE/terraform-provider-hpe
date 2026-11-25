@@ -25,6 +25,7 @@ type WhoamiPermissionObject struct {
 
 type WhoamiUserResult struct {
 	ID        int64  `json:"id"`
+	AccountID int64  `json:"accountId"`
 	Username  string `json:"username"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`

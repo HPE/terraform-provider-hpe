@@ -11,6 +11,8 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	hpeErrors "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/provisionhint"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -238,10 +240,19 @@ func datastoreCreateCluster(ctx context.Context,
 	response, hresp, err := client.ClustersAPI.SaveClusterDatastore(ctx, associatedResourceId).
 		SaveClusterDatastoreRequest(*datastoreRequest).Execute()
 	if response == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"create cluster datastore resource",
-			"datastore "+name+" POST failed: "+hpeErrors.ErrMsg(err, hresp),
-		)
+		// A storage_server.id that names no storage server comes back as
+		// "storageServer.id: Required fields are missing"; say which storage
+		// servers exist. Any failure to explain leaves the API's error as it is.
+		body := provisionhint.ErrorBody(err, hresp)
+		msg := "datastore " + name + " POST failed: " + hpeErrors.ErrMsg(err, hresp)
+
+		if hint := provisionhint.DatastoreRejection(ctx, client, body, provisionhint.DatastoreRequest{
+			StorageServerID: getsafe.Get(getsafe.Get(datastoreCreate.StorageServer).Id),
+		}); hint != "" {
+			msg += "\n\n" + hint
+		}
+
+		resp.Diagnostics.AddError("create cluster datastore resource", msg)
 
 		return 0
 	}

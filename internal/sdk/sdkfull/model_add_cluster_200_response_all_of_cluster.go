@@ -70,30 +70,31 @@ type AddCluster200ResponseAllOfCluster struct {
 	// Use the Agent to relay communications for the Kubernetes API instead of direct.
 	UseAgent NullableString `json:"useAgent,omitempty"`
 	// Changes from false to true once provisioning is finished.
-	ProvisionComplete    *bool                                           `json:"provisionComplete,omitempty"`
-	ServiceEntry         NullableString                                  `json:"serviceEntry,omitempty"`
-	CreatedBy            *AddCluster200ResponseAllOfClusterCreatedBy     `json:"createdBy,omitempty"`
-	UserGroup            NullableString                                  `json:"userGroup,omitempty"`
-	Layout               *AddCluster200ResponseAllOfClusterLayout        `json:"layout,omitempty"`
-	Owner                NullableAddCluster200ResponseAllOfClusterOwner  `json:"owner,omitempty"`
-	Servers              []AddCluster200ResponseAllOfClusterServersInner `json:"servers,omitempty"`
-	Accounts             []map[string]interface{}                        `json:"accounts,omitempty"`
-	Integrations         []map[string]interface{}                        `json:"integrations,omitempty"`
-	Site                 NullableAddCluster200ResponseAllOfClusterSite   `json:"site,omitempty"`
-	Type                 NullableAddCluster200ResponseAllOfClusterType   `json:"type,omitempty"`
-	Zone                 *AddCluster200ResponseAllOfClusterZone          `json:"zone,omitempty"`
-	WorkerStats          *AddCluster200ResponseAllOfClusterWorkerStats   `json:"workerStats,omitempty"`
-	ContainersCount      *int64                                          `json:"containersCount,omitempty"`
-	DeploymentsCount     *int64                                          `json:"deploymentsCount,omitempty"`
-	PodsCount            *int64                                          `json:"podsCount,omitempty"`
-	JobsCount            *int64                                          `json:"jobsCount,omitempty"`
-	VolumesCount         *int64                                          `json:"volumesCount,omitempty"`
-	NamespacesCount      *int64                                          `json:"namespacesCount,omitempty"`
-	WorkersCount         *int64                                          `json:"workersCount,omitempty"`
-	ServicesCount        *int64                                          `json:"servicesCount,omitempty"`
-	Permissions          *AddCluster200ResponseAllOfClusterPermissions   `json:"permissions,omitempty"`
-	Config               map[string]interface{}                          `json:"config,omitempty"`
-	AdditionalProperties map[string]interface{}                          `json:",remain"`
+	ProvisionComplete *bool                                           `json:"provisionComplete,omitempty"`
+	ServiceEntry      NullableString                                  `json:"serviceEntry,omitempty"`
+	CreatedBy         *AddCluster200ResponseAllOfClusterCreatedBy     `json:"createdBy,omitempty"`
+	UserGroup         NullableString                                  `json:"userGroup,omitempty"`
+	Layout            *AddCluster200ResponseAllOfClusterLayout        `json:"layout,omitempty"`
+	Owner             NullableAddCluster200ResponseAllOfClusterOwner  `json:"owner,omitempty"`
+	Servers           []AddCluster200ResponseAllOfClusterServersInner `json:"servers,omitempty"`
+	Accounts          []map[string]interface{}                        `json:"accounts,omitempty"`
+	Integrations      []map[string]interface{}                        `json:"integrations,omitempty"`
+	Site              NullableAddCluster200ResponseAllOfClusterSite   `json:"site,omitempty"`
+	Type              NullableAddCluster200ResponseAllOfClusterType   `json:"type,omitempty"`
+	Zone              *AddCluster200ResponseAllOfClusterZone          `json:"zone,omitempty"`
+	WorkerStats       *AddCluster200ResponseAllOfClusterWorkerStats   `json:"workerStats,omitempty"`
+	ContainersCount   *int64                                          `json:"containersCount,omitempty"`
+	DeploymentsCount  *int64                                          `json:"deploymentsCount,omitempty"`
+	PodsCount         *int64                                          `json:"podsCount,omitempty"`
+	JobsCount         *int64                                          `json:"jobsCount,omitempty"`
+	VolumesCount      *int64                                          `json:"volumesCount,omitempty"`
+	NamespacesCount   *int64                                          `json:"namespacesCount,omitempty"`
+	WorkersCount      *int64                                          `json:"workersCount,omitempty"`
+	ServicesCount     *int64                                          `json:"servicesCount,omitempty"`
+	Permissions       *AddCluster200ResponseAllOfClusterPermissions   `json:"permissions,omitempty"`
+	// The cluster's configuration, as stored: the keys the cluster's layout and cloud type read (for example cpuArch, cpuModel, dynamicPlacementMode and powerPolicy on an HVM cluster) and the keys the server adds itself. The keys vary by layout, so none is listed.
+	Config               map[string]interface{} `json:"config,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _AddCluster200ResponseAllOfCluster AddCluster200ResponseAllOfCluster

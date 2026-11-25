@@ -32,7 +32,13 @@ Morpheus enables affinity groups on the following cloud types:
 
 !> **Warning** On VMware clouds, Morpheus imports the vCenter DRS rules it finds on the cloud referenced by `cloud_id` as affinity groups of their own (`source = "sync"`). Those imported groups cannot be managed by this resource: every cloud sync rewrites their affinity type, active flag and membership from vCenter, so Terraform would fight the sync loop indefinitely. Use the [`hpe_morpheus_cloud_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_cloud_affinity_group) data source to reference such a group instead.
 
--> `servers` always shows as "known after apply" in a plan, even when the membership has not changed. Membership can change outside Terraform, so the provider deliberately does not assume the set it last recorded is still current. Where nothing has actually changed, the apply is a no-op.
+-> There are two ways to manage a group's membership, and a group should use one or the other, never both. Set `servers` here to make this resource the owner of the membership: the group is created with those servers and every apply re-asserts exactly that set. Leave `servers` out to manage membership one server at a time with `hpe_morpheus_cloud_affinity_group_member`, which leaves servers added by other means alone.
+
+-> Morpheus 9.1 refuses to create an affinity group with no members, so against 9.1 the group has to be created with `servers` set — where the members are instances managed in the same configuration, provision them first and point `servers` at their `compute_servers`. The provider checks the appliance version at plan time and refuses a plan that would create a memberless group on 9.1 or later. To use the member resource on a 9.1 group instead, bootstrap it: create the group with its first member in `servers`, then remove `servers` from the configuration — that plan is empty (the attribute is Optional+Computed, so dropping it changes nothing) and hands the membership to `hpe_morpheus_cloud_affinity_group_member` without evicting anyone. Removing the last member of a 9.1 group is refused by Morpheus; the provider leaves the server in place with a warning, and destroying the group removes it.
+
+-> On a VMware cloud, do not rename a cloud affinity group that will later be destroyed: Morpheus 9.1 deletes the vCenter DRS rule by the group's current name while the rule keeps its original one, so the rule is left behind and later `KEEP_TOGETHER` groups containing the same VMs are refused by vCenter (Morpheus core defect MORPH-20098).
+
+-> When `servers` is not set it shows as "known after apply" in a plan that changes anything else about the group, even when the membership has not changed. Membership can change outside Terraform, so the provider deliberately does not assume the set it last recorded is still current. Where nothing has actually changed, the apply is a no-op.
 
 ~> **Note** `pool_id` is effectively required. Morpheus rejects the creation of a cloud affinity group that has no pool, so although the schema marks `pool_id` optional, omitting it fails at apply time with `No pool specified for affinity group`. The pool must be a resource pool of type Cluster on the cloud referenced by `cloud_id`, because the group is realised as a DRS rule on that cluster.
 
@@ -70,6 +76,18 @@ resource "hpe_morpheus_cloud_affinity_group" "example" {
 - `affinity_type` (String) The affinity type. Valid values are KEEP_TOGETHER and KEEP_SEPARATE.
 - `pool_id` (Number) The ID of the resource pool to scope the affinity group to.
 - `resource_permissions` (Attributes) Resource permissions for group access. (see [below for nested schema](#nestedatt--resource_permissions))
+- `servers` (Set of Number) The compute servers in this affinity group, as the API reports them.
+Set it to make this resource the owner of the group's membership: the
+group is created with these members and every apply re-asserts exactly
+this set, so a server added by other means -- an instance provisioned
+into the group, a node added to one -- plans a correction. Leave it out
+to manage membership one server at a time with
+hpe_morpheus_cloud_affinity_group_member (never both on one group).
+Morpheus 9.1 refuses to create an affinity group with no members: a
+VM-to-VM rule needs this set, and the other shape it accepts -- a
+VM-to-host rule from a VM group and a host group -- is read-only on
+this resource, so against 9.1 a group can only be created with this set
+(the provider refuses such a plan up front on 9.1 and later).
 - `tenant_ids` (Set of Number, Deprecated) Deprecated: has no effect. The Morpheus API rejects tenant assignment on affinity groups and does not apply it, so the value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806.
 - `visibility` (String) The visibility of the affinity group (public or private).
 
@@ -78,11 +96,6 @@ resource "hpe_morpheus_cloud_affinity_group" "example" {
 - `host_group` (Attributes) The Host Group side of a combined VM-to-Host rule. Must be sent together with `vmGroup`, and `servers` must be empty. (see [below for nested schema](#nestedatt--host_group))
 - `id` (Number) The ID of the cloud affinity group.
 - `owner` (Attributes) Owning tenant account (see [below for nested schema](#nestedatt--owner))
-- `servers` (Set of Number) The compute servers currently in this affinity group, reported by the
-API. Read-only: membership is managed with
-hpe_morpheus_cloud_affinity_group_member, one resource per member, so
-that servers added by other means -- an instance provisioned into the
-group, or a node added to one -- are not evicted.
 - `source` (String) The source of the affinity group (e.g. user, sync).
 - `vm_group` (Attributes) The VM Group side of a combined VM-to-Host rule. Must be sent together with `hostGroup`, and `servers` must be empty. Send `null` for both group fields to clear a combined rule. (see [below for nested schema](#nestedatt--vm_group))
 

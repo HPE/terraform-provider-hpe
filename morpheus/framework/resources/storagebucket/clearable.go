@@ -14,11 +14,13 @@ var clearableAttributes = clearable.Attributes{
 // notClearable records why each remaining optional attribute is not cleared
 // when it is removed from the configuration.
 var notClearable = clearable.NotClearable{
-	"access_key":            "write-only",
-	"access_key_version":    "version companion of a write-only value",
-	"bucket_name":           "Morpheus gives it a default for the provider type; the current name is kept when it is removed",
-	"default_backup_target": "boolean",
-	"endpoint":              "part of the provider configuration; the current endpoint is kept when it is removed",
-	"secret_key":            "write-only",
-	"secret_key_version":    "version companion of a write-only value",
+	"access_key":                   "write-only",
+	"access_key_version":           "version companion of a write-only value",
+	"base_path":                    "required for the local provider type and not accepted for any other; never removed on its own",
+	"bucket_name":                  "Morpheus gives it a default for the provider type; the current name is kept when it is removed",
+	"default_backup_target":        "boolean",
+	"default_virtual_image_target": "keeps the bucket's current value when removed; set it to false to take the default away",
+	"endpoint":                     "part of the provider configuration; the current endpoint is kept when it is removed",
+	"secret_key":                   "write-only",
+	"secret_key_version":           "version companion of a write-only value",
 }

@@ -24,6 +24,12 @@ const NetworkDeleteTimeout = 5 * time.Minute
 // (MORPH-15506.)
 const AffinityGroupMinVersion = ">= 8.0.10"
 
+// AffinityRuleShapeMinVersion is the appliance version from which an affinity
+// group must have at least one server (or a VM Group and Host Group): Morpheus
+// 9.1 validates the group's "rule shape" and refuses empty groups, on create and
+// when the last server is removed (MORPH-20083). See utils/affinityshape.
+const AffinityRuleShapeMinVersion = ">= 9.1.0"
+
 // TenantParentMinVersion is the minimum Morpheus appliance version on which
 // the tenant resource's parent_id attribute is honoured.
 //
@@ -41,3 +47,10 @@ const TenantParentMinVersion = ">= 8.1.0"
 // 9.0.x, but the API response only carries it from 9.0.2, so below that the
 // provider cannot read the value back and preserves what was configured.
 const CloudBackupProvidersMinVersion = ">= 9.0.2"
+
+// VirtualSwitchMinVersion is the minimum Morpheus appliance version required by
+// the virtual switch resource and data sources. The HVM virtual switch API
+// (/api/virtual-switches, the async process envelope, and the composite-edit
+// endpoint) arrived in Morpheus 9.1.0; before that release the routes do not
+// exist. (MORPH-17745.)
+const VirtualSwitchMinVersion = ">= 9.1.0"

@@ -95,4 +95,5 @@ data "hpe_morpheus_network" "example" {
 - `description` (String) Description
 - `display_name` (String) Network Display Name
 - `labels` (Set of String)
+- `unique_id` (String) The controller's identifier for the network (a UUID for SDN virtual networks); what the SDN router and load balancer reference a virtual network by.
 - `visibility` (String)

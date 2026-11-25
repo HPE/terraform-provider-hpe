@@ -11,16 +11,11 @@ Provides a git integration resource
 ## Example Usage
 
 ```terraform
-data "morpheus_key_pair" "tf_example_key_pair" {
-  name = "morpheusgit"
-}
-
 resource "hpe_morpheus_integration_git" "tf_example_git_integration" {
-  name               = "tftest"
+  name               = "tfexample git integration"
   enabled            = true
-  url                = "https://github.com/gomorpheus/tfdemo.git"
+  url                = "https://github.com/gomorpheus/morpheus-automation-examples.git"
   default_branch     = "main"
-  key_pair_id        = data.morpheus_key_pair.tf_example_key_pair.id
   enable_git_caching = true
 }
 ```
@@ -45,7 +40,9 @@ resource "hpe_morpheus_integration_git" "tf_example_git_integration" {
 
 ### Read-Only
 
+- `access_token_hash` (String, Sensitive) The appliance's hash of access_token as read back when Terraform last set it. Each read compares the hash the appliance reports with it; a difference means the value was changed outside Terraform, and the next plan sets the configured value again.
 - `id` (String) The ID of the git integration
+- `password_hash` (String, Sensitive) The appliance's hash of password as read back when Terraform last set it. Each read compares the hash the appliance reports with it; a difference means the value was changed outside Terraform, and the next plan sets the configured value again.
 - `repository_ids` (Map of Number) A map of git repository ids for use with integrations that reference a git repository
 
 ## Import

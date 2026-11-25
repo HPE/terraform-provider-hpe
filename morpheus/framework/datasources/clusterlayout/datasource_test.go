@@ -77,6 +77,13 @@ func TestAccMorpheusFindClusterLayoutByName(t *testing.T) {
 	})
 }
 
+// TestAccMorpheusFindClusterLayoutById reads a cluster layout by id. Layout ids
+// differ from one appliance to the next, so the id is not hard-coded: the
+// hpe_morpheus_cluster_layouts data source resolves an HVM cluster layout
+// (code "mvm-..."; every one of them carries a cluster_version), the singular
+// data source reads that layout back by its id, and the id it returns is
+// checked against the id that was requested, so the lookup itself is proved
+// rather than just a read of some HVM layout.
 func TestAccMorpheusFindClusterLayoutById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -90,23 +97,47 @@ func TestAccMorpheusFindClusterLayoutById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	const pluralConfig = `
+data "hpe_morpheus_cluster_layouts" "hvm" {
+  filter {
+    name   = "code"
+    values = ["^mvm-"]
+  }
+}
+`
+
 	dataSourceConfig, err := clusterlayout.RenderClusterLayoutDataSourceByIDConfig(
 		t,
-		map[string]string{"Id": "449"},
+		map[string]string{
+			"Id": "tolist(data.hpe_morpheus_cluster_layouts.hvm.cluster_layouts)[0].id",
+		},
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_cluster_layout.example",
-			"id",
-			"449",
+		// The layout read back is the one whose id was requested.
+		resource.TestCheckResourceAttrPair(
+			"data.hpe_morpheus_cluster_layout.example", "id",
+			"data.hpe_morpheus_cluster_layouts.hvm", "cluster_layouts.0.id",
+		),
+		resource.TestCheckResourceAttrPair(
+			"data.hpe_morpheus_cluster_layout.example", "code",
+			"data.hpe_morpheus_cluster_layouts.hvm", "cluster_layouts.0.code",
 		),
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_cluster_layout.example",
 			"name",
+		),
+		resource.TestMatchResourceAttr(
+			"data.hpe_morpheus_cluster_layout.example",
+			"code",
+			regexp.MustCompile(`^mvm-`),
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_cluster_layout.example",
+			"cluster_version",
 		),
 	}
 
@@ -116,7 +147,7 @@ func TestAccMorpheusFindClusterLayoutById(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + pluralConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},

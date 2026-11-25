@@ -187,6 +187,7 @@ func (r *Resource) Create(
 
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
 		sdkConfig := &sdk.CreateLoadBalancerMonitorRequestLoadBalancerMonitorConfig{}
+		sdkConfig.HttpMethod, sdkConfig.HttpUri, sdkConfig.HttpReturnCode, sdkConfig.HttpPort = httpHealthCheckConfig(plan.Config)
 
 		if !plan.Config.Monitor.IsNull() && !plan.Config.Monitor.IsUnknown() {
 			attrs := plan.Config.Monitor.Attributes()
@@ -221,6 +222,9 @@ func (r *Resource) Create(
 
 	createReq := &sdk.CreateLoadBalancerMonitorRequest{}
 	createReq.LoadBalancerMonitor = monitor
+	if monitor.Config != nil {
+		createReq.AdditionalProperties = topLevelConfig(monitor.Config.ToMap())
+	}
 
 	createResp, httpResp, err := client.LoadBalancersAPI.
 		CreateLoadBalancerMonitor(ctx, loadBalancerID).
@@ -283,14 +287,134 @@ func (r *Resource) Create(
 	// the configured-value digests were already stored above after the POST.
 	resp.Diagnostics.Append(wo.Observe(ctx, resp.Private, apiObj)...)
 
-	// Preserve plan config since the API may not return it verbatim.
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		state.Config = plan.Config
-	}
+	// Keep the planned config values the API may not echo verbatim, but take
+	// the read-back for anything the plan left unknown (monitor,
+	// monitor_config), so no unknown survives into state.
+	state.Config = overlayPlanConfig(ctx, plan.Config, state.Config)
 
 	// Restore fields the API accepts but does not return.
 	preserveUnreturnedFields(&state, plan)
 
 	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+// httpHealthCheckConfig returns the HTTP health-check fields of the config
+// block — the SDN load balancer type's monitor option types, kept in the
+// monitor's config map — as the nullable SDK values the requests take. A
+// field that is not set is left unsent (the zero NullableX).
+// topLevelConfig wraps the monitor's config block as the request's top-level
+// `config` key. The appliance builds the monitor's stored config from the
+// request's top-level `config` (one entry per option type of the load balancer
+// type with fieldContext "config"), not from `loadBalancerMonitor.config`,
+// which it ignores. The block is therefore sent at both places: under the
+// monitor, where the API contract documents it, and at the top level, where
+// the appliance reads it. Without the top-level copy the SDN plugin's http*
+// option types are stored empty, GET returns `config: {}` and an import has
+// no `config.http_*` to read back (MORPH-21017).
+func topLevelConfig(cfg map[string]interface{}, err error) map[string]interface{} {
+	if err != nil || len(cfg) == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{"config": cfg}
+}
+
+func httpHealthCheckConfig(cfg ConfigValue) (method, uri, code sdk.NullableString, port sdk.NullableInt64) {
+	if !cfg.HttpMethod.IsNull() && !cfg.HttpMethod.IsUnknown() {
+		method.Set(cfg.HttpMethod.ValueStringPointer())
+	}
+
+	if !cfg.HttpUri.IsNull() && !cfg.HttpUri.IsUnknown() {
+		uri.Set(cfg.HttpUri.ValueStringPointer())
+	}
+
+	if !cfg.HttpReturnCode.IsNull() && !cfg.HttpReturnCode.IsUnknown() {
+		code.Set(cfg.HttpReturnCode.ValueStringPointer())
+	}
+
+	if !cfg.HttpPort.IsNull() && !cfg.HttpPort.IsUnknown() {
+		port.Set(cfg.HttpPort.ValueInt64Pointer())
+	}
+
+	return method, uri, code, port
+}
+
+// httpHealthCheckUpdateConfig is httpHealthCheckConfig for an update: a field
+// the practitioner has removed from the configuration (null in the plan, a
+// value in the prior state) is sent as an explicit null so the monitor's
+// recorded value is cleared, rather than left to whatever the appliance does
+// with an omitted key. The attributes are Optional without Computed, so the
+// framework plans the null itself and no clearable record is needed.
+//
+// What the SDN controller then does is the plugin's: `http_uri` falls back to
+// `/` and `http_port` is dropped from the health-check URL, while
+// `http_method` and `http_return_code` keep their current value on the
+// controller (the health check cannot exist without them) even though the
+// Morpheus record is cleared.
+func httpHealthCheckUpdateConfig(
+	plan, prior ConfigValue,
+) (method, uri, code sdk.NullableString, port sdk.NullableInt64) {
+	method, uri, code, port = httpHealthCheckConfig(plan)
+
+	if prior.IsNull() || prior.IsUnknown() {
+		return method, uri, code, port
+	}
+
+	if plan.HttpMethod.IsNull() && !prior.HttpMethod.IsNull() {
+		method.Set(nil)
+	}
+
+	if plan.HttpUri.IsNull() && !prior.HttpUri.IsNull() {
+		uri.Set(nil)
+	}
+
+	if plan.HttpReturnCode.IsNull() && !prior.HttpReturnCode.IsNull() {
+		code.Set(nil)
+	}
+
+	if plan.HttpPort.IsNull() && !prior.HttpPort.IsNull() {
+		port.Set(nil)
+	}
+
+	return method, uri, code, port
+}
+
+// httpHealthCheckClearConfig is the update body for a config block removed
+// as a whole: every HTTP health-check value the prior state carried is sent
+// as an explicit null, exactly as removing the fields one at a time would.
+// It returns nil when the prior block held none of them, so no config is sent.
+func httpHealthCheckClearConfig(prior ConfigValue) *sdk.UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig {
+	if prior.IsNull() || prior.IsUnknown() {
+		return nil
+	}
+
+	cfg := &sdk.UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig{}
+	cleared := false
+
+	if !prior.HttpMethod.IsNull() {
+		cfg.HttpMethod.Set(nil)
+		cleared = true
+	}
+
+	if !prior.HttpUri.IsNull() {
+		cfg.HttpUri.Set(nil)
+		cleared = true
+	}
+
+	if !prior.HttpReturnCode.IsNull() {
+		cfg.HttpReturnCode.Set(nil)
+		cleared = true
+	}
+
+	if !prior.HttpPort.IsNull() {
+		cfg.HttpPort.Set(nil)
+		cleared = true
+	}
+
+	if !cleared {
+		return nil
+	}
+
+	return cfg
 }

@@ -20,24 +20,9 @@ import (
 // checks if the GetVirtualSwitch200ResponseVirtualSwitchAllOfSegmentsInner type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &GetVirtualSwitch200ResponseVirtualSwitchAllOfSegmentsInner{}
 
-// GetVirtualSwitch200ResponseVirtualSwitchAllOfSegmentsInner A traffic segment inside a virtual switch: one traffic type plus optional VLAN and IP settings. For VM traffic it also carries the OVS bridge / libvirt network metadata reported back by hvmcli.
+// GetVirtualSwitch200ResponseVirtualSwitchAllOfSegmentsInner struct for GetVirtualSwitch200ResponseVirtualSwitchAllOfSegmentsInner
 type GetVirtualSwitch200ResponseVirtualSwitchAllOfSegmentsInner struct {
-	Id          *int64  `json:"id,omitempty"`
-	TrafficType *string `json:"trafficType,omitempty"`
-	// OS interface carrying this traffic (e.g. bond0, bond0.220).
-	InterfaceName NullableString `json:"interfaceName,omitempty"`
-	IpAddress     NullableString `json:"ipAddress,omitempty"`
-	Netmask       NullableString `json:"netmask,omitempty"`
-	Gateway       NullableString `json:"gateway,omitempty"`
-	// VLAN tag (1-4094). Null means untagged.
-	VlanId NullableInt32 `json:"vlanId,omitempty"`
-	Mtu    NullableInt32 `json:"mtu,omitempty"`
-	// OVS bridge name reported by hvmcli (VM traffic only).
-	OvsBridge            NullableString         `json:"ovsBridge,omitempty"`
-	OvsUuid              NullableString         `json:"ovsUuid,omitempty"`
-	OvsLibvirtNetwork    NullableString         `json:"ovsLibvirtNetwork,omitempty"`
-	Status               *string                `json:"status,omitempty"`
-	StatusMessage        NullableString         `json:"statusMessage,omitempty"`
+	TrafficType          *string                `json:"trafficType,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -53,44 +38,8 @@ func (o GetVirtualSwitch200ResponseVirtualSwitchAllOfSegmentsInner) MarshalJSON(
 
 func (o GetVirtualSwitch200ResponseVirtualSwitchAllOfSegmentsInner) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Id) {
-		toSerialize["id"] = o.Id
-	}
 	if !IsNil(o.TrafficType) {
 		toSerialize["trafficType"] = o.TrafficType
-	}
-	if o.InterfaceName.IsSet() {
-		toSerialize["interfaceName"] = o.InterfaceName.Get()
-	}
-	if o.IpAddress.IsSet() {
-		toSerialize["ipAddress"] = o.IpAddress.Get()
-	}
-	if o.Netmask.IsSet() {
-		toSerialize["netmask"] = o.Netmask.Get()
-	}
-	if o.Gateway.IsSet() {
-		toSerialize["gateway"] = o.Gateway.Get()
-	}
-	if o.VlanId.IsSet() {
-		toSerialize["vlanId"] = o.VlanId.Get()
-	}
-	if o.Mtu.IsSet() {
-		toSerialize["mtu"] = o.Mtu.Get()
-	}
-	if o.OvsBridge.IsSet() {
-		toSerialize["ovsBridge"] = o.OvsBridge.Get()
-	}
-	if o.OvsUuid.IsSet() {
-		toSerialize["ovsUuid"] = o.OvsUuid.Get()
-	}
-	if o.OvsLibvirtNetwork.IsSet() {
-		toSerialize["ovsLibvirtNetwork"] = o.OvsLibvirtNetwork.Get()
-	}
-	if !IsNil(o.Status) {
-		toSerialize["status"] = o.Status
-	}
-	if o.StatusMessage.IsSet() {
-		toSerialize["statusMessage"] = o.StatusMessage.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

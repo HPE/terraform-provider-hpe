@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/appliancesetup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backuphost"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupinstance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupjob"
@@ -23,6 +24,9 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/deployment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/host"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/hostpowerstate"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/hostprofile"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instanceclone"
@@ -43,8 +47,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdomain"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfloatingip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkgroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkpool"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkpoolip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkpoolserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
@@ -52,6 +58,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouternat"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterroute"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/optionlist"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
@@ -63,6 +70,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/securitygroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/securitygrouprule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/serviceplan"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/settingappliance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/settingbackup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/settingwhitelabel"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storagebucket"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storageserver"
@@ -76,6 +85,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdiapp"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdigateway"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdipool"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/virtualswitch"
 )
 
 func (p *MorpheusProvider) Resources(
@@ -83,9 +93,13 @@ func (p *MorpheusProvider) Resources(
 ) []func() resource.Resource {
 	resources := []func() resource.Resource{
 		// Existing resources
+		appliancesetup.NewResource,
 		cloud.NewResource,
 		datastore.NewResource,
 		group.NewResource,
+		hostprofile.NewResource,
+		host.NewResource,
+		hostpowerstate.NewResource,
 		image.NewResource,
 		loadbalancer.NewResource,
 		loadbalancermonitor.NewResource,
@@ -126,10 +140,13 @@ func (p *MorpheusProvider) Resources(
 		// Sprint 2: Networking
 		networkgroup.NewResource,
 		networkpool.NewResource,
+		networkpoolip.NewResource,
 		networkpoolserver.NewResource,
 		networkrouternat.NewResource,
 		networkrouterfirewallrule.NewResource,
 		networkrouterfirewallrulegroup.NewResource,
+		networkfloatingip.NewResource,
+		networkserver.NewResource,
 		subnet.NewResource,
 		securitygroup.NewResource,
 		securitygrouprule.NewResource,
@@ -171,8 +188,20 @@ func (p *MorpheusProvider) Resources(
 		// key can be write-only, with its digest kept in private state.
 		license.NewResource,
 
+		// Appliance settings: ported from SDKv2 to the plugin framework so the
+		// SMTP and proxy passwords and the currency key can be write-only.
+		settingappliance.NewResource,
+
+		// Backup settings: ported from SDKv2 to the plugin framework, with
+		// retention_count beside the deprecated retention_days; the same spec
+		// generates the Ansible module.
+		settingbackup.NewResource,
+
 		// Plugin lifecycle management (Plugin Framework)
 		plugin.NewResource,
+
+		// MORPH-17745: virtual switch (framework)
+		virtualswitch.NewResource,
 	}
 
 	return resources

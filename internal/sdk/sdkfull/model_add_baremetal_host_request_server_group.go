@@ -20,9 +20,9 @@ import (
 // checks if the AddBaremetalHostRequestServerGroup type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &AddBaremetalHostRequestServerGroup{}
 
-// AddBaremetalHostRequestServerGroup struct for AddBaremetalHostRequestServerGroup
+// AddBaremetalHostRequestServerGroup The group to add the host to.
 type AddBaremetalHostRequestServerGroup struct {
-	Id                   *int32                 `json:"id,omitempty"`
+	Id                   *int64                 `json:"id,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 

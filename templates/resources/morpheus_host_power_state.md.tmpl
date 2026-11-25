@@ -1,0 +1,26 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+  Manages the power state (on/off) of a Morpheus host without owning the host resource.
+---
+# {{.Name}} ({{.Type}})
+
+Manages the power state of a Morpheus host — turning it `on` or `off` — by host ID. This is a
+separate resource from `hpe_morpheus_host` because the party flipping power is often not the owner
+of the host: discovered or imported metal, maintenance windows, and lab power-down are all cases
+where you want to control power without importing and managing the whole host. Applying this
+resource with `power_state = "off"` stops the host; `"on"` starts it. Destroying the resource leaves
+the host in its current power state.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_host_power_state/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Imported by the host ID.
+
+{{ codefile "shell" "examples/resources/morpheus_host_power_state/import.sh" }}

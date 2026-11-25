@@ -88,20 +88,31 @@ type TypeSpec struct {
 	Live bool
 }
 
-// Lookup returns the generated table's entry for a network type code. The
+// Lookup returns the catalogue's entry for a network type code — the
+// generated table, or the hand-maintained plugin table (pluginTypes). The
 // resource prefers the live shape from the appliance (FromAPI) and uses this
 // when the appliance cannot be read; the block-declaration tests use it as
 // their fixture.
 func Lookup(code string) (TypeSpec, bool) {
 	t, ok := knownTypes[code]
+	if !ok {
+		t, ok = pluginTypes[code]
+	}
+	if ok {
+		applyBehaviourOverrides(&t)
+	}
 
 	return t, ok
 }
 
-// Codes returns every network type code in the generated table, unordered.
+// Codes returns every network type code in the catalogue, unordered.
 func Codes() []string {
-	codes := make([]string, 0, len(knownTypes))
+	codes := make([]string, 0, len(knownTypes)+len(pluginTypes))
 	for code := range knownTypes {
+		codes = append(codes, code)
+	}
+
+	for code := range pluginTypes {
 		codes = append(codes, code)
 	}
 

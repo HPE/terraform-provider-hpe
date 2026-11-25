@@ -59,10 +59,11 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	// name races the job otherwise ("Cluster name must be unique",
 	// MORPH-18379). Morpheus is left to delete the cluster's servers.
 	what := fmt.Sprintf("cluster %d", id)
+	poller := &errfmt.DeletePoller{What: what}
 	waitForDeleted := func() (struct{}, error) {
 		_, httpResp, err := client.ClustersAPI.GetCluster(ctx, id).Execute()
 
-		return struct{}{}, errfmt.PollDeleted(what, err, httpResp)
+		return struct{}{}, poller.Poll(ctx, err, httpResp)
 	}
 
 	if _, err := backoff.Retry(

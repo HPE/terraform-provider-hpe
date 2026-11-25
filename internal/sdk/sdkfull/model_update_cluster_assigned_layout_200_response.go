@@ -22,9 +22,9 @@ var _ MappedNullable = &UpdateClusterAssignedLayout200Response{}
 
 // UpdateClusterAssignedLayout200Response struct for UpdateClusterAssignedLayout200Response
 type UpdateClusterAssignedLayout200Response struct {
-	Cluster              *UpdateCluster200ResponseAllOfCluster `json:"cluster,omitempty"`
-	Success              *bool                                 `json:"success,omitempty"`
-	AdditionalProperties map[string]interface{}                `json:",remain"`
+	Cluster              *UpdateClusterAssignedLayout200ResponseAllOfCluster `json:"cluster,omitempty"`
+	Success              *bool                                               `json:"success,omitempty"`
+	AdditionalProperties map[string]interface{}                              `json:",remain"`
 }
 
 type _UpdateClusterAssignedLayout200Response UpdateClusterAssignedLayout200Response

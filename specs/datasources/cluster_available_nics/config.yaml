@@ -1,0 +1,47 @@
+cluster_available_nics:
+  templates:
+    available_nics:
+      list_nested:
+        computed_optional_required: computed
+        description: Candidate physical NICs for each host in the cluster.
+        nested_object:
+          attributes:
+            - name: server_id
+              int64:
+                computed_optional_required: computed
+                description: The ID of the host (compute server).
+            - name: server_name
+              string:
+                computed_optional_required: computed
+                description: The name of the host.
+            - name: nics
+              list_nested:
+                computed_optional_required: computed
+                description: The physical NICs on the host.
+                nested_object:
+                  attributes:
+                    - name: name
+                      string:
+                        computed_optional_required: computed
+                        description: The NIC name (e.g. eno1).
+                    - name: mac_address
+                      string:
+                        computed_optional_required: computed
+                        description: The MAC address of the NIC.
+                    - name: active
+                      bool:
+                        computed_optional_required: computed
+                        description: Whether the NIC is active.
+                    - name: consumed
+                      bool:
+                        computed_optional_required: computed
+                        description: Whether this NIC is already consumed by an existing switch uplink.
+  moves:
+    - available_nics: available_nics_spec         # (paths/api@clusters@id@available-nics.yaml GET 200 availableNics[] -> components/schemas/availableNicHost.yaml) move spec-derived array out of the way (replaced by template list)
+    - template-available_nics: available_nics     # (components/schemas/availableNicHost.yaml) inject full nic list
+  overrides:
+    cluster_id:
+      computed_optional_required: required
+      description: The ID of the cluster (server group) whose available NICs are returned.
+  removes:
+    - available_nics_spec                         # spec-derived array, replaced by template (components/schemas/availableNicHost.yaml)

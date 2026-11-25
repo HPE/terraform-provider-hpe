@@ -4,6 +4,7 @@ package compute
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -85,10 +86,11 @@ func ResourceResourcePoolGroup() *schema.Resource {
 				Default:      "private",
 			},
 			"tenant_ids": {
-				Type:        schema.TypeSet,
-				Description: "A list of tenant ids associated with the resource pool group",
-				Optional:    true,
-				Elem:        &schema.Schema{Type: schema.TypeInt},
+				Type: schema.TypeSet,
+				Description: "A list of tenant ids granted access to the resource pool group. " +
+					"The owning tenant always has access and does not need to be listed.",
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeInt},
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -329,19 +331,96 @@ func resourceResourcePoolGroupRead(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 	d.Set("group_access", groupAccess)
-
-	// tenant ids
-	var tenantIDs []int64
-	// iterate over the array of tasks
-	if resourceResourcePoolGroup.Tenants != nil {
-		for _, tenant := range resourceResourcePoolGroup.Tenants {
-			tenantIDs = append(tenantIDs, tenant.ID)
-		}
-	}
-	d.Set("tenant_ids", tenantIDs)
 	d.Set("visibility", resourceResourcePoolGroup.Visibility)
 
+	// tenant ids
+	//
+	// MORPH-8207: the API always lists the owning tenant in `tenants`. Saving
+	// group access creates a ResourcePermission row for the owner, and the read
+	// serializer returns every row for the group without flagging which one is
+	// the owner. Writing that list straight into state produced a perpetual
+	// plan whenever the config did not list the owner (including when
+	// tenant_ids was not set at all), so the owner is reconciled out here.
+	apiTenantIDs := make([]int64, 0, len(resourceResourcePoolGroup.Tenants))
+	for _, tenant := range resourceResourcePoolGroup.Tenants {
+		apiTenantIDs = append(apiTenantIDs, tenant.ID)
+	}
+
+	ownerID, err := resourcePoolGroupOwnerID(client)
+	if err != nil {
+		// Read managed without whoami before this reconciliation existed, so a
+		// failed lookup must not take refresh, plan or import down with it.
+		// Keep the API's list, as Read always did, and say why a plan may show
+		// the owner being removed from tenant_ids.
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Could not determine the owning tenant of the resource pool group",
+			Detail: fmt.Sprintf("Resource pool group %s: %s. tenant_ids was read as the full list "+
+				"Morpheus reports, which includes the owning tenant, so a plan may show it being "+
+				"removed until the lookup succeeds.", id, err),
+		})
+		d.Set("tenant_ids", apiTenantIDs)
+
+		return diags
+	}
+
+	var priorTenantIDs []int
+	if attr, ok := d.GetOk("tenant_ids"); ok {
+		var priorSet *schema.Set
+		if v, ok := attr.(*schema.Set); ok {
+			priorSet = v
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("tenant_ids", attr))
+		}
+		for _, s := range priorSet.List() {
+			var tenantID int
+			if v, ok := s.(int); ok {
+				tenantID = v
+			} else {
+				return diag.FromErr(helpers.TypeAssertFailError("tenant_id", s))
+			}
+			priorTenantIDs = append(priorTenantIDs, tenantID)
+		}
+	}
+	d.Set("tenant_ids", reconcileTenantIDs(priorTenantIDs, apiTenantIDs, ownerID))
+
 	return diags
+}
+
+// resourcePoolGroupOwnerID resolves the tenant that owns the caller's resource
+// pool groups: the caller's own tenant, via whoami. A variable so tests can
+// drive Read's owner-lookup fallback without a whoami endpoint.
+var resourcePoolGroupOwnerID = helpers.CallerAccountID
+
+// reconcileTenantIDs returns the tenant_ids value to store in state given the
+// prior (configured or previously stored) IDs, the IDs the API reported, and
+// the ID of the tenant that owns the resource pool group.
+//
+// The API injects the owner into every response, so the owner is dropped
+// unless the user listed it explicitly, in which case it is kept so the state
+// matches the config. Every other reported tenant is kept, and every tenant
+// the API no longer reports is dropped, so changes made outside Terraform
+// still surface as drift. With no prior value (import) the result is the
+// reported tenants other than the owner.
+func reconcileTenantIDs(prior []int, api []int64, ownerID int64) []int {
+	keepOwner := false
+	for _, id := range prior {
+		if int64(id) == ownerID {
+			keepOwner = true
+
+			break
+		}
+	}
+
+	out := make([]int, 0, len(api))
+	for _, id := range api {
+		if id == ownerID && !keepOwner {
+			continue
+		}
+		out = append(out, int(id))
+	}
+
+	return out
 }
 
 func resourceResourcePoolGroupUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

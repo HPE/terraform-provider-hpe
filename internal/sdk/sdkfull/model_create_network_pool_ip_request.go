@@ -22,8 +22,10 @@ var _ MappedNullable = &CreateNetworkPoolIpRequest{}
 
 // CreateNetworkPoolIpRequest struct for CreateNetworkPoolIpRequest
 type CreateNetworkPoolIpRequest struct {
-	NetworkPoolIp        *CreateNetworkPoolIpRequestNetworkPoolIp `json:"networkPoolIp,omitempty"`
-	AdditionalProperties map[string]interface{}                   `json:",remain"`
+	NetworkPoolIp *CreateNetworkPoolIpRequestNetworkPoolIp `json:"networkPoolIp,omitempty"`
+	// Create DNS A and PTR records for the address in the domain given by networkPoolIp.domain. A domain must be selected when this is set.
+	CreateDns            *bool                  `json:"createDns,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _CreateNetworkPoolIpRequest CreateNetworkPoolIpRequest
@@ -40,6 +42,9 @@ func (o CreateNetworkPoolIpRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.NetworkPoolIp) {
 		toSerialize["networkPoolIp"] = o.NetworkPoolIp
+	}
+	if !IsNil(o.CreateDns) {
+		toSerialize["createDns"] = o.CreateDns
 	}
 
 	for key, value := range o.AdditionalProperties {

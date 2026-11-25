@@ -18,7 +18,11 @@ import (
 func TestAccMorpheusAppBlueprintCloudFormationGitExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.AWS)
+	capabilities.MustHaveOrSkip(t, capabilities.AWS, capabilities.Git)
+
+	integrationName := testhelpers.GitIntegrationName(t)
+	repositoryName := testhelpers.GitRepositoryName(t)
+	branch := testhelpers.GitRepositoryBranch(t)
 
 	t.Parallel()
 
@@ -31,8 +35,13 @@ func TestAccMorpheusAppBlueprintCloudFormationGitExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := blueprint.RenderAppBlueprintCloudFormationGitConfig(t, map[string]string{
-		"Name": name,
+		"Name":          name,
+		"IntegrationId": testhelpers.GitIntegrationIDRef,
+		"RepositoryId":  testhelpers.GitRepositoryIDRef(repositoryName),
+		"VersionRef":    testhelpers.HCLEscape(branch),
 	})
+
+	dependenciesConfig := testhelpers.GitIntegrationBlock(integrationName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,22 +89,20 @@ func TestAccMorpheusAppBlueprintCloudFormationGitExampleOk(t *testing.T) {
 			"true",
 		),
 
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_cloud_formation.example",
-			"integration_id",
-			"3",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_app_blueprint_cloud_formation.example", "integration_id",
+			"data.hpe_morpheus_integration_git.git", "id",
 		),
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_app_blueprint_cloud_formation.example",
 			"name",
-			"example_cloud_formation_app_blueprint_git",
+			name,
 		),
 
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_cloud_formation.example",
-			"repository_id",
-			"1",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_app_blueprint_cloud_formation.example", "repository_id",
+			"data.hpe_morpheus_integration_git.git", "repository_ids."+repositoryName,
 		),
 
 		resource.TestCheckResourceAttr(
@@ -107,7 +114,7 @@ func TestAccMorpheusAppBlueprintCloudFormationGitExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_app_blueprint_cloud_formation.example",
 			"version_ref",
-			"main",
+			branch,
 		),
 
 		resource.TestCheckResourceAttr(
@@ -123,13 +130,13 @@ func TestAccMorpheusAppBlueprintCloudFormationGitExampleOk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 			// Plan after apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

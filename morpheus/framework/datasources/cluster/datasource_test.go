@@ -268,3 +268,45 @@ func TestAccMorpheusFindClusterBothSearchAttrs(t *testing.T) {
 		},
 	})
 }
+
+// TestAccMorpheusClusterConfigWithholdsCredentials pins MORPH-19991 against a
+// live External Kubernetes cluster: the appliance returns its cluster-admin
+// token and kubeconfig in config, and the data source must not write them to
+// state. The cluster is the fixture's Kubernetes cluster
+// (TF_VAR_testacc_morpheus_k8s_cluster_id), which must be an External
+// Kubernetes cluster: config.apiUrl is asserted present, which only that type
+// has, so a fixture of another type fails the test rather than passing it
+// vacuously — and so the test shows redaction kept the rest of the config.
+func TestAccMorpheusClusterConfigWithholdsCredentials(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Kubernetes)
+
+	t.Parallel()
+
+	clusterID := testhelpers.KubernetesClusterID("571")
+
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", clusterID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	const rn = "data.hpe_morpheus_cluster.example"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: testhelpers.ProviderBlock() + dataSourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(rn, "id", clusterID),
+					resource.TestCheckResourceAttrSet(rn, "config.apiUrl"),
+					resource.TestCheckNoResourceAttr(rn, "config.apiToken"),
+					resource.TestCheckNoResourceAttr(rn, "config.serviceAccess"),
+					resource.TestCheckNoResourceAttr(rn, "config.serviceToken"),
+					resource.TestCheckNoResourceAttr(rn, "config.kubeToken"),
+				),
+			},
+		},
+	})
+}

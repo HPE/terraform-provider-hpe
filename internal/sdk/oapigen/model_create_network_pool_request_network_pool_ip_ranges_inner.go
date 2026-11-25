@@ -20,6 +20,8 @@ var _ MappedNullable = &CreateNetworkPoolRequestNetworkPoolIpRangesInner{}
 
 // CreateNetworkPoolRequestNetworkPoolIpRangesInner struct for CreateNetworkPoolRequestNetworkPoolIpRangesInner
 type CreateNetworkPoolRequestNetworkPoolIpRangesInner struct {
+	// ID of an existing range of this pool. Omit for a new range. Only meaningful on update.
+	Id *int64 `json:"id,omitempty"`
 	// Starting IP Address
 	StartAddress *string `json:"startAddress,omitempty"`
 	// Ending IP Address
@@ -41,6 +43,9 @@ func (o CreateNetworkPoolRequestNetworkPoolIpRangesInner) MarshalJSON() ([]byte,
 
 func (o CreateNetworkPoolRequestNetworkPoolIpRangesInner) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if !IsNil(o.Id) {
+		toSerialize["id"] = o.Id
+	}
 	if !IsNil(o.StartAddress) {
 		toSerialize["startAddress"] = o.StartAddress
 	}

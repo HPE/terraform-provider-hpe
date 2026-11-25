@@ -23,7 +23,8 @@ description: |-
 - `alert_type` (String)
 - `client` (String)
 - `link` (String)
-- `metrics` (Set of String)
+- `metric_criteria` (Attributes Set) Required and non-empty for critical-alert; must be omitted for other alert types. Each metric must have exactly one criterion. (see [below for nested schema](#nestedatt--metric_criteria))
+- `metrics` (Set of String) Required and non-empty for critical-alert; must match the metric_name values in metric_criteria. Must be empty or omitted for any-critical-alert.
 - `name` (String)
 - `parent` (String)
 - `resources` (Set of String)
@@ -34,5 +35,17 @@ description: |-
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+<a id="nestedatt--metric_criteria"></a>
+### Nested Schema for `metric_criteria`
+
+Required:
+
+- `metric_name` (String)
+- `operator` (String)
+
+Optional:
+
+- `components` (Set of String) Required and non-empty when operator is "=". Must be omitted when operator is "-".
 
 

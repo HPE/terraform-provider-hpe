@@ -50,6 +50,7 @@ data "hpe_morpheus_compute_server" "example" {
 - `compute_server_type_managed` (Boolean) Whether the compute server type is managed.
 - `compute_server_type_name` (String) The name of the compute server type.
 - `description` (String) The description of the compute server.
+- `display_name` (String) The display name of the compute server, when one is set.
 - `external_id` (String) The external ID of the compute server.
 - `external_ip` (String) The external IP address of the compute server.
 - `group_id` (Number) The ID of the group this compute server belongs to.
@@ -59,6 +60,8 @@ data "hpe_morpheus_compute_server" "example" {
 - `internal_id` (String) The internal ID of the compute server.
 - `internal_ip` (String) The internal IP address of the compute server.
 - `labels` (Set of String) The labels associated with the compute server.
+- `maintenance_mode` (Boolean) Whether the compute server is in maintenance mode.
+- `managed` (Boolean) Whether the compute server is managed by Morpheus (agent-managed, with Morpheus owning its lifecycle).
 - `max_memory` (Number) The maximum memory allocated to the compute server in bytes.
 - `max_storage` (Number) The maximum storage allocated to the compute server in bytes.
 - `parent_host_id` (Number) The ID of the hypervisor host this compute server runs on, or null for

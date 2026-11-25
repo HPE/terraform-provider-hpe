@@ -4,14 +4,12 @@ package integration
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	morpheus "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
@@ -56,7 +54,10 @@ func ResourceIntegrationServiceNow() *schema.Resource {
 		ReadContext:   resourceIntegrationServiceNowRead,
 		UpdateContext: resourceIntegrationServiceNowUpdate,
 		DeleteContext: resourceIntegrationServiceNowDelete,
-		CustomizeDiff: validateServiceNowAuth,
+		CustomizeDiff: customdiff.All(
+			validateServiceNowAuth,
+			helpers.SecretHashUnknownWhenSent("password", "password_hash"),
+		),
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -99,15 +100,8 @@ func ResourceIntegrationServiceNow() *schema.Resource {
 				Optional:      true,
 				Sensitive:     true,
 				ConflictsWith: []string{"credential_id"},
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
-				DiffSuppressOnRefresh: true,
 			},
+			"password_hash": helpers.SecretHashSchema("password"),
 			"cmdb_custom_mapping": {
 				Type: schema.TypeString,
 				Description: "A JSON encoded payload to populate a specific field in the ServiceNow table and " +
@@ -368,7 +362,11 @@ func resourceIntegrationServiceNowRead(ctx context.Context, d *schema.ResourceDa
 
 	if integration.Credential.ID == 0 {
 		d.Set("username", integration.Username)
-		d.Set("password", integration.PasswordHash)
+		if err := helpers.TrackSecret(
+			d, "password", "password_hash", integration.PasswordHash, helpers.SecretSent(d, "password"),
+		); err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
 		d.Set("credential_id", integration.Credential.ID)
 	}

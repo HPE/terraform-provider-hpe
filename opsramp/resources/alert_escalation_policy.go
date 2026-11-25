@@ -39,16 +39,17 @@ type AlertEscalationPolicyResource struct {
 
 // AlertEscalationPolicyModel maps Terraform schema attributes to the provider model.
 type AlertEscalationPolicyModel struct {
-	Client          types.String           `tfsdk:"client"`
-	Id              types.String           `tfsdk:"id"`
-	Name            types.String           `tfsdk:"name"`
-	Description     types.String           `tfsdk:"description"`
-	Precedence      types.Int64            `tfsdk:"precedence"`
-	EscalationType  types.String           `tfsdk:"escalation_type"`
-	PolicyType      types.String           `tfsdk:"policy_type"`
-	EnabledMode     types.String           `tfsdk:"enabled_mode"`
-	IncludedClients types.Set              `tfsdk:"included_clients"`
-	Escalations     []EscalationLevelModel `tfsdk:"escalations"`
+	Client                   types.String           `tfsdk:"client"`
+	Id                       types.String           `tfsdk:"id"`
+	Name                     types.String           `tfsdk:"name"`
+	Description              types.String           `tfsdk:"description"`
+	Precedence               types.Int64            `tfsdk:"precedence"`
+	EscalationType           types.String           `tfsdk:"escalation_type"`
+	PolicyType               types.String           `tfsdk:"policy_type"`
+	EnabledMode              types.String           `tfsdk:"enabled_mode"`
+	OrganizationMatchingType types.String           `tfsdk:"organization_matching_type"`
+	IncludedClients          types.Set              `tfsdk:"included_clients"`
+	Escalations              []EscalationLevelModel `tfsdk:"escalations"`
 
 	SearchQuery         types.String `tfsdk:"search_query"`
 	ResourceSearchQuery types.String `tfsdk:"resource_search_query"`
@@ -116,6 +117,17 @@ func NewAlertEscalationPolicy() resource.Resource {
 // Metadata returns the resource type name.
 func (r *AlertEscalationPolicyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_alert_escalation_policy"
+}
+
+// ModifyPlan enforces the shared "client" attribute check plus organization_matching_type /
+// included_clients scope rules.
+func (r *AlertEscalationPolicyResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	r.BaseResource.ModifyPlan(ctx, req, resp)
+	r.ValidateOrganizationMatchingSet(ctx, req, resp)
 }
 
 // Schema defines the schema for the resource.
@@ -190,11 +202,22 @@ func (r *AlertEscalationPolicyResource) Schema(_ context.Context, _ resource.Sch
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"organization_matching_type": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "The organization matching type for the policy. Applies only when the operation is performed at the MSP level; must not be set at the client level. Defaults to `ALL` when omitted at the MSP level. Valid values: `ALL`, `INCLUDE`.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("ALL", "INCLUDE"),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"included_clients": schema.SetAttribute{
 				Optional:            true,
 				Computed:            true,
 				ElementType:         types.StringType,
-				MarkdownDescription: "List of included client UUIDs. Only applicable when the provider is in MSP scope. If empty (or omitted), the policy applies to all clients.",
+				MarkdownDescription: "List of client names or UUIDs to include when `organization_matching_type` is `INCLUDE`. Required and must be non-empty in that case; must not be set at the client level.",
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 				},
@@ -472,12 +495,25 @@ func buildAlertEscalationPolicyRequest(
 	if isMSP {
 		// tenantScope = MSP
 
-		var elems []types.String
-		_ = plan.IncludedClients.ElementsAs(context.Background(), &elems, false)
-		for _, elem := range elems {
-			policy.IncludedClients = append(policy.IncludedClients, client.ClientRef{UniqueId: elem.ValueString()})
+		if plan.OrganizationMatchingType.ValueString() == "INCLUDE" {
+			var elems []types.String
+			_ = plan.IncludedClients.ElementsAs(context.Background(), &elems, false)
+			for _, elem := range elems {
+				regexp, _ := regexp.Compile("^[0-9a-fA-F-]{36}$")
+				if regexp.MatchString(elem.ValueString()) {
+					// validate if client is uuid
+					policy.IncludedClients = append(policy.IncludedClients, client.ClientRef{UniqueId: elem.ValueString()})
+				} else {
+					// client is name
+					policy.IncludedClients = append(policy.IncludedClients, client.ClientRef{Name: elem.ValueString()})
+				}
+			}
+			policy.AllClients = false
+		} else {
+			// "ALL", or unset/unknown (e.g. a brand-new resource whose Computed value hasn't
+			// been resolved yet): both default to all clients.
+			policy.AllClients = true
 		}
-		policy.AllClients = len(elems) == 0
 	} else {
 		// tenantScope = Client
 
@@ -634,7 +670,9 @@ func buildAlertEscalationPolicyRequest(
 	return policy
 }
 
-func mapAlertEscalationPolicyToState(resp *client.AlertEscalationPolicy, state *AlertEscalationPolicyModel, isMSP bool) {
+func mapAlertEscalationPolicyToState(
+	resp *client.AlertEscalationPolicy, state *AlertEscalationPolicyModel, isMSP bool, fromRead bool,
+) {
 	oldEscalations := state.Escalations
 
 	state.Id = types.StringValue(resp.Id)
@@ -645,16 +683,48 @@ func mapAlertEscalationPolicyToState(resp *client.AlertEscalationPolicy, state *
 	state.EnabledMode = types.StringValue(resp.EnabledMode)
 
 	if isMSP {
-		// MSP scope: included_clients is always present ([] means "all clients").
-		elems := make([]attr.Value, 0, len(resp.IncludedClients))
-		for _, c := range resp.IncludedClients {
-			elems = append(elems, types.StringValue(c.UniqueId))
+		// included_clients/organization_matching_type are Computed. On Read/Import (fromRead),
+		// always resolve them from the response so remote targeting changes (e.g. a different
+		// client, or a switch to ALL) are reflected, while keeping the prior client-name/UUID
+		// representation for any client the response still includes. On Create/Update (write
+		// responses), only resolve a field when Terraform doesn't already have a known
+		// (user-configured) value, so the plan's representation is preserved untouched. Either
+		// way, an empty response list must map to a null set, not an empty one, or Terraform
+		// reports a "produced an unexpected new value" plan inconsistency for ALL-scoped
+		// policies.
+		oldIncludedClients := decodeStringSet(state.IncludedClients)
+		if len(resp.IncludedClients) > 0 {
+			if fromRead || state.OrganizationMatchingType.IsNull() || state.OrganizationMatchingType.IsUnknown() {
+				state.OrganizationMatchingType = types.StringValue("INCLUDE")
+			}
+			if fromRead || state.IncludedClients.IsNull() || state.IncludedClients.IsUnknown() {
+				elems := make([]attr.Value, len(resp.IncludedClients))
+				for i, c := range resp.IncludedClients {
+					if fromRead {
+						elems[i] = types.StringValue(resolveClientRepresentation(oldIncludedClients, c))
+					} else {
+						elems[i] = types.StringValue(c.UniqueId)
+					}
+				}
+				set, _ := types.SetValue(types.StringType, elems)
+				state.IncludedClients = set
+			}
+		} else {
+			if fromRead || state.OrganizationMatchingType.IsNull() || state.OrganizationMatchingType.IsUnknown() {
+				if resp.AllClients {
+					state.OrganizationMatchingType = types.StringValue("ALL")
+				} else {
+					state.OrganizationMatchingType = types.StringValue("INCLUDE")
+				}
+			}
+			if fromRead || state.IncludedClients.IsNull() || state.IncludedClients.IsUnknown() {
+				state.IncludedClients = types.SetNull(types.StringType)
+			}
 		}
-		set, _ := types.SetValue(types.StringType, elems)
-		state.IncludedClients = set
 	} else {
 		// CLIENT scope: not applicable.
 		state.IncludedClients = types.SetNull(types.StringType)
+		state.OrganizationMatchingType = types.StringNull()
 	}
 
 	if resp.Precedence != nil {
@@ -832,6 +902,35 @@ func mapAlertEscalationPolicyToState(resp *client.AlertEscalationPolicy, state *
 	}
 }
 
+// decodeStringSet extracts a []string from a types.Set of strings, returning nil for a null,
+// unknown, or zero-value set.
+func decodeStringSet(set types.Set) []string {
+	if set.IsNull() || set.IsUnknown() {
+		return nil
+	}
+	var elems []string
+	_ = set.ElementsAs(context.Background(), &elems, false)
+
+	return elems
+}
+
+// resolveClientRepresentation returns the prior state representation (client name or UUID) for
+// a ClientRef when one of the prior elements still identifies it, so a user's configured
+// representation survives a refresh. Otherwise it falls back to the API's own name, or its UUID
+// if no name is known.
+func resolveClientRepresentation(oldElems []string, c client.ClientRef) string {
+	for _, old := range oldElems {
+		if old == c.UniqueId || (c.Name != "" && old == c.Name) {
+			return old
+		}
+	}
+	if c.Name != "" {
+		return c.Name
+	}
+
+	return c.UniqueId
+}
+
 // Create handles the creation of the resource.
 func (r *AlertEscalationPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan AlertEscalationPolicyModel
@@ -856,7 +955,7 @@ func (r *AlertEscalationPolicyResource) Create(ctx context.Context, req resource
 	}
 
 	isMSP := r.apiClient.Scope == "MSP" && (plan.Client.IsNull() || plan.Client.ValueString() == "")
-	mapAlertEscalationPolicyToState(created, &plan, isMSP)
+	mapAlertEscalationPolicyToState(created, &plan, isMSP, false)
 
 	diags = resp.State.Set(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -892,6 +991,7 @@ func (r *AlertEscalationPolicyResource) Read(ctx context.Context, req resource.R
 		existing,
 		&state,
 		r.apiClient.Scope == "MSP" && (state.Client.IsNull() || state.Client.ValueString() == ""),
+		true,
 	)
 
 	diags = resp.State.Set(ctx, &state)
@@ -924,7 +1024,7 @@ func (r *AlertEscalationPolicyResource) Update(ctx context.Context, req resource
 	}
 
 	isMSPUpdate := r.apiClient.Scope == "MSP" && (plan.Client.IsNull() || plan.Client.ValueString() == "")
-	mapAlertEscalationPolicyToState(updated, &plan, isMSPUpdate)
+	mapAlertEscalationPolicyToState(updated, &plan, isMSPUpdate, false)
 
 	diags = resp.State.Set(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -986,7 +1086,7 @@ func (r *AlertEscalationPolicyResource) ImportState(
 	}
 
 	mapAlertEscalationPolicyToState(
-		existing, &state, r.apiClient.Scope == "MSP" && (parsed.Client.IsNull() || parsed.Client.ValueString() == ""),
+		existing, &state, r.apiClient.Scope == "MSP" && (parsed.Client.IsNull() || parsed.Client.ValueString() == ""), true,
 	)
 
 	diags := resp.State.Set(ctx, &state)

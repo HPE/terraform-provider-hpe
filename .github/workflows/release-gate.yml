@@ -1,0 +1,306 @@
+# Copyright 2026 Hewlett Packard Enterprise Development LP
+
+# The gate on the release line. Pull requests merge into dev-X.Y as soon as
+# they are reviewed, and QA tests them there; a change is released only when it
+# is copied to rel-X.Y. This job is what makes that copy safe: every commit in
+# a pull request into rel-* must name, in an Original-Commit trailer, the
+# dev-* commit it was picked from, and the pull request that produced that
+# commit must be merged and labelled "QA Approved" or "QA Not Required".
+#
+# A pull request still labelled "Needs QA", or carrying none of the three
+# labels, is refused: an unknown QA state is never read as approved.
+#
+# The trailer is only a claim, so the commit's content is checked against it.
+# The job repeats the pick itself (the cited commit applied to this commit's
+# parent) and requires the commit to be exactly the result: same files, same
+# lines in the same places, same binary content. A commit that is not is
+# refused, because an unrelated or altered change could otherwise cite an
+# approved one and pass. A pick that git trimmed because the release line
+# already had part of the change is still an exact pick, and passes.
+#
+# One honest copy does differ: a pick whose conflict was resolved by hand. For
+# that a person adds the "Adapted Pick" label to THIS pull request to say the
+# difference was reviewed, and the commits are then accepted and listed.
+#
+# That label vouches for one head commit, the one the pull request was at when
+# it was added, and no other. The job records that head in a comment of its
+# own, and honours the label only when such a record exists for the head it is
+# checking. After a push the label is therefore worthless until a person adds
+# it again, whatever happened to the runs in between; the job also removes it
+# and says so, so the pull request does not look vouched for when it is not.
+#
+# The rel-* ruleset should list this job as a required status check. The pick
+# branches are built by `task release-pick` in the tooling workspace.
+#
+# A label changed on an ORIGINAL pull request is an event on another pull
+# request and cannot re-run this job by itself. release-gate-recheck.yml does
+# that: it re-runs this job on every open pull request into a release branch
+# whenever a QA label changes on a merged pull request, so an approval that is
+# withdrawn turns the check red before the release pull request is merged.
+#
+# It runs on pull_request_target, not pull_request, and that matters: the
+# workflow is then taken from the repository's default branch (the current dev
+# branch), not from the pull request. On pull_request a pull request brings its
+# own copy of this file, so it could change the gate it has to pass, or simply
+# carry an older one. The pull request's commits are only ever read as data
+# here; nothing from them is run.
+#
+# The consequence is that the gate works on every release branch as soon as
+# this file is on the default branch. A release branch does not need its own
+# copy, and a change to the gate takes effect everywhere at once.
+name: release-gate
+
+on:
+  pull_request_target:
+    branches:
+      - 'rel-*'
+    # labeled/unlabeled so that adding or removing "Adapted Pick" re-runs it.
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+permissions:
+  contents: read
+  # write: to remove "Adapted Pick" when new commits are pushed, and to say so
+  # in a comment. Nothing from the pull request is ever run by this job.
+  pull-requests: write
+
+env:
+  LABEL_APPROVED: 'QA Approved'
+  LABEL_EXEMPT: 'QA Not Required'
+  # Exact label name; the same string the QA digests match on.
+  LABEL_HOLD: 'Needs QA'
+  # On the release pull request itself: a person has reviewed the commits
+  # whose content differs from the change they cite.
+  LABEL_ADAPTED: 'Adapted Pick'
+
+jobs:
+  release-gate:
+    name: release-gate
+    runs-on: ubuntu-latest
+    steps:
+      # The default branch (what pull_request_target checks out), with full
+      # history of every branch: the content check compares each commit with
+      # the commit it cites, which is on a dev branch. The pull request itself
+      # is NOT checked out; its commits are fetched by id below.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Every commit is a QA-approved change picked from a dev branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_ACTION: ${{ github.event.action }}
+          EVENT_LABEL: ${{ github.event.label.name }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+
+          # Read live, not from the event: a re-run must see today's state.
+          # Through the pulls API: this job may read pull requests, not issues.
+          if ! pr_now=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" \
+                          --jq '{head: .head.sha, commits: .commits, labels: [.labels[].name]} | @json'); then
+            echo "::error::Could not read this pull request."
+            exit 1
+          fi
+          head_sha=$(jq -r '.head' <<<"$pr_now")
+          pr_commits=$(jq -r '.commits' <<<"$pr_now")
+          has_adapted=false
+          if jq -e --arg l "$LABEL_ADAPTED" 'any(.labels[]; . == $l)' <<<"$pr_now" >/dev/null; then has_adapted=true; fi
+
+          # "Adapted Pick" counts only for the head it was added on. That head
+          # is recorded in a comment written by this job, which nobody else can
+          # write as: a later push changes the head, no record matches, and the
+          # label stops counting. This does not depend on the label having been
+          # removed, or on any earlier run having finished.
+          marker="<!-- release-gate adapted-pick ${head_sha} -->"
+          recorded() {
+            local ids
+            ids=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
+                    --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | contains(\"${marker}\"))) | .id") || return 2
+            [ -n "$ids" ]
+          }
+          rec=0; recorded || rec=$?
+          if [ "$rec" -eq 2 ]; then
+            echo "::error::Could not read this pull request's comments to see whether '${LABEL_ADAPTED}' was recorded for ${head_sha:0:12}."
+            exit 1
+          fi
+
+          # The label was just added, to the head this pull request is still
+          # at: record it. EVENT_HEAD is the head when the label was added, so
+          # re-running this run after a later push records nothing. A label
+          # given at creation (gh pr create --label) arrives as a labeled event
+          # beside the opened one; the opened run records it too, so whichever
+          # of the two finishes last does not fail for want of the record.
+          just_added=false
+          if [ "$EVENT_ACTION" = "labeled" ] && [ "$EVENT_LABEL" = "$LABEL_ADAPTED" ]; then just_added=true; fi
+          if [ "$EVENT_ACTION" = "opened" ]; then just_added=true; fi
+          if [ "$rec" -ne 0 ] && [ "$has_adapted" = true ] && [ "$just_added" = true ] \
+             && [ "$EVENT_HEAD" = "$head_sha" ]; then
+            if gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+                 -f body="${marker}
+          \`${LABEL_ADAPTED}\` recorded for \`${head_sha:0:12}\`. It vouches for the commits on this pull request as of that head only; after a push it has to be added again." >/dev/null; then
+              rec=0
+            else
+              echo "::error::Could not record '${LABEL_ADAPTED}' for ${head_sha:0:12}. Remove the label and add it again."
+              exit 1
+            fi
+          fi
+
+          adapted_ok=false
+          if [ "$has_adapted" = true ] && [ "$rec" -eq 0 ]; then
+            adapted_ok=true
+          elif [ "$has_adapted" = true ]; then
+            # The label is on the pull request but was not added to this head.
+            if [ "$EVENT_ACTION" = "synchronize" ] && [ "$RUN_ATTEMPT" = "1" ]; then
+              # A push: take the stale label off, so the pull request does not
+              # look vouched for. Only tidying; the label already counts for
+              # nothing. Not on a re-run, which could race a label being added.
+              label_path=$(jq -rn --arg l "$LABEL_ADAPTED" '$l | @uri')
+              if gh api -X DELETE "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels/${label_path}" >/dev/null; then
+                gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+                  -f body="New commits were pushed, so the \`${LABEL_ADAPTED}\` label was removed: it only vouches for the head it was added on. If a commit still differs from the change it cites, review it again and re-add the label." \
+                  >/dev/null || echo "::warning::Could not comment on the pull request about the removed label."
+                echo "::warning::New commits were pushed, so the '${LABEL_ADAPTED}' label was removed. Review them and re-add it if a commit still differs from the change it cites."
+              else
+                echo "::warning::The '${LABEL_ADAPTED}' label could not be removed. It does not count for ${head_sha:0:12}; remove it and add it again after reviewing."
+              fi
+            else
+              echo "::warning::The '${LABEL_ADAPTED}' label was not added on ${head_sha:0:12}, so it does not count. Remove it and add it again after reviewing this head."
+            fi
+          fi
+
+          # Is <commit> exactly what picking <origin> onto <commit>'s parent
+          # gives? The pick is repeated here, in memory, the way git does it:
+          # a three-way merge of the cited commit onto this commit's parent,
+          # based on the cited commit's own parent. The resulting tree must be
+          # this commit's tree. That is exact about where each line lands and
+          # about binary content, and it accepts a pick git trimmed because the
+          # release line already had part of the change.
+          # Returns 0 exact, 1 not (or the pick conflicts), 2 could not tell.
+          faithful() {
+            local out rc=0
+            out=$(git merge-tree --write-tree --merge-base="${2}^1" "${1}^1" "$2" 2>/dev/null) || rc=$?
+            case "$rc" in
+              0) [ "$(head -n1 <<<"$out")" = "$(git rev-parse "${1}^{tree}")" ] ;;
+              1) return 1 ;;
+              *) return 2 ;;
+            esac
+          }
+          have() { git cat-file -e "$1^{commit}" 2>/dev/null || git fetch --quiet --no-tags origin "$1" 2>/dev/null; git cat-file -e "$1^{commit}" 2>/dev/null; }
+          differing=0
+
+          commits=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits" \
+                      --jq '.[] | {sha, message: .commit.message, parents: (.parents | length)} | @json')
+
+          total=0
+          failed=0
+          bad() { echo "::error::$1"; failed=$((failed + 1)); }
+
+          while IFS= read -r row; do
+            [ -n "$row" ] || continue
+            total=$((total + 1))
+            sha=$(jq -r '.sha' <<<"$row")
+            subject=$(jq -r '.message | split("\n")[0]' <<<"$row")
+            short=${sha:0:12}
+
+            # One commit per change, and no merge commits: the release line is
+            # replayed commit by commit onto the public repository.
+            if [ "$(jq -r '.parents' <<<"$row")" != 1 ]; then
+              bad "${short} (${subject}) is a merge commit. The release line takes one picked commit per change."
+              continue
+            fi
+
+            # Exactly one trailer, and it must be a full commit id.
+            origins=$(jq -r '.message' <<<"$row" | grep -E '^Original-Commit:' || true)
+            if [ "$(grep -c . <<<"$origins" || true)" != 1 ]; then
+              bad "${short} (${subject}) must carry exactly one Original-Commit trailer naming the dev branch commit it was picked from. Build pick branches with 'task release-pick'."
+              continue
+            fi
+            origin=$(sed -E 's/^Original-Commit:[[:space:]]*//; s/[[:space:]]*$//' <<<"$origins")
+            if ! grep -qE '^[0-9a-f]{40}$' <<<"$origin"; then
+              bad "${short} (${subject}) has a malformed Original-Commit trailer: '${origin}'."
+              continue
+            fi
+
+            # The pull request whose merge produced that commit. Matching on
+            # merge_commit_sha means the trailer must name the commit that
+            # landed on the dev branch, not some commit from inside a branch.
+            if ! pr=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${origin}/pulls" --jq \
+                        "[.[] | select(.merged_at != null and .merge_commit_sha == \"${origin}\")][0] // empty | {number, base: .base.ref, labels: [.labels[].name]} | @json"); then
+              bad "${short} (${subject}): could not look up the pull request for ${origin:0:12}."
+              continue
+            fi
+            if [ -z "$pr" ]; then
+              bad "${short} (${subject}): ${origin:0:12} is not the merge commit of a merged pull request."
+              continue
+            fi
+            number=$(jq -r '.number' <<<"$pr")
+            base=$(jq -r '.base' <<<"$pr")
+
+            case "$base" in
+              dev-*) ;;
+              *) bad "${short} (${subject}): #${number} was merged into '${base}', not a dev branch."; continue ;;
+            esac
+
+            # Held wins over approved, so a pull request sent back to QA after
+            # an approval is not released on the strength of the old label.
+            if jq -e --arg l "$LABEL_HOLD" 'any(.labels[]; . == $l)' <<<"$pr" >/dev/null; then
+              bad "${short} (${subject}): #${number} is still labelled '${LABEL_HOLD}'."
+              continue
+            fi
+            if ! jq -e --arg a "$LABEL_APPROVED" --arg e "$LABEL_EXEMPT" \
+                   'any(.labels[]; . == $a or . == $e)' <<<"$pr" >/dev/null; then
+              bad "${short} (${subject}): #${number} carries neither '${LABEL_APPROVED}' nor '${LABEL_EXEMPT}'."
+              continue
+            fi
+
+            # The content: this commit must make the change it cites.
+            if ! have "$sha" || ! have "$origin"; then
+              bad "${short} (${subject}): could not fetch this commit or ${origin:0:12} to compare their changes."
+              continue
+            fi
+            # A commit that changes nothing is not a pick of anything. (It
+            # would also pass the check below when the release branch already
+            # has the whole change.)
+            if [ "$(git rev-parse "${sha}^{tree}")" = "$(git rev-parse "${sha}^1^{tree}")" ]; then
+              bad "${short} (${subject}) changes nothing. A commit that changes nothing cannot be released."
+              continue
+            fi
+            same=0; faithful "$sha" "$origin" || same=$?
+            if [ "$same" -eq 2 ]; then
+              bad "${short} (${subject}): could not repeat the pick of ${origin:0:12} (#${number}) to compare it with this commit."
+              continue
+            fi
+            if [ "$same" -ne 0 ]; then
+              if [ "$adapted_ok" != "true" ]; then
+                bad "${short} (${subject}) is not what picking ${origin:0:12} (#${number}) onto its parent gives. Compare them with: git range-diff ${origin}^1..${origin} ${sha}^1..${sha}. If the difference is a reviewed adaptation (a conflict resolved by hand), add the '${LABEL_ADAPTED}' label to this pull request."
+                continue
+              fi
+              differing=$((differing + 1))
+              echo "::warning::${short} (${subject}) differs from a pick of ${origin:0:12} (#${number}); accepted because '${LABEL_ADAPTED}' was added on this head."
+              echo "ok* ${short}  #${number} (${base})  ${subject}"
+              continue
+            fi
+
+            echo "ok  ${short}  #${number} (${base})  ${subject}"
+          done <<<"$commits"
+
+          if [ "$total" -eq 0 ]; then
+            echo "::error::This pull request has no commits to check."
+            exit 1
+          fi
+          # The commits listing stops at 250. A commit that was not listed was
+          # not checked, so a pull request with more must not pass.
+          if [ "$total" -ne "$pr_commits" ]; then
+            echo "::error::This pull request has ${pr_commits} commits but only ${total} could be listed and checked. Split it into smaller pull requests."
+            exit 1
+          fi
+          if [ "$failed" -gt 0 ]; then
+            echo "::error::${failed} of ${total} commit(s) may not be released. Fix the labels on the original pull requests and re-run this job, or rebuild the pick branch without them."
+            exit 1
+          fi
+          echo "All ${total} commit(s) are QA-approved changes picked from a dev branch."
+          if [ "$differing" -gt 0 ]; then
+            echo "${differing} of them differ from a pick of the change they cite and were accepted on the '${LABEL_ADAPTED}' label (marked ok* above)."
+          fi

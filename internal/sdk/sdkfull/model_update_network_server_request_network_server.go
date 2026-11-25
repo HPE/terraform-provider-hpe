@@ -25,12 +25,19 @@ var _ fmt.Stringer
 
 // UpdateNetworkServerRequestNetworkServer - Payload for updating a Network Server
 type UpdateNetworkServerRequestNetworkServer struct {
-	NSXNetworkServerUpdate *NSXNetworkServerUpdate
+	HPEMorpheusSDNNetworkServerUpdate *HPEMorpheusSDNNetworkServerUpdate
+	NSXNetworkServerUpdate            *NSXNetworkServerUpdate
 }
 
 func (dst *UpdateNetworkServerRequestNetworkServer) UnmarshalMapstructure(data any) (any, error) {
 	if dst == nil {
 		dst = &UpdateNetworkServerRequestNetworkServer{}
+	}
+
+	mapstructDecode(data, &dst.HPEMorpheusSDNNetworkServerUpdate)
+
+	if IsEmpty(dst.HPEMorpheusSDNNetworkServerUpdate) {
+		dst.HPEMorpheusSDNNetworkServerUpdate = nil
 	}
 
 	mapstructDecode(data, &dst.NSXNetworkServerUpdate)
@@ -46,6 +53,23 @@ func (dst *UpdateNetworkServerRequestNetworkServer) UnmarshalMapstructure(data a
 func (dst *UpdateNetworkServerRequestNetworkServer) UnmarshalJSON(data []byte) error {
 	var err error
 	match := 0
+	// try to unmarshal data into HPEMorpheusSDNNetworkServerUpdate
+	err = newStrictDecoder(data).Decode(&dst.HPEMorpheusSDNNetworkServerUpdate)
+	if err == nil {
+		jsonHPEMorpheusSDNNetworkServerUpdate, _ := json.Marshal(dst.HPEMorpheusSDNNetworkServerUpdate)
+		if string(jsonHPEMorpheusSDNNetworkServerUpdate) == "{}" { // empty struct
+			dst.HPEMorpheusSDNNetworkServerUpdate = nil
+		} else {
+			if err = validator.Validate(dst.HPEMorpheusSDNNetworkServerUpdate); err != nil {
+				dst.HPEMorpheusSDNNetworkServerUpdate = nil
+			} else {
+				match++
+			}
+		}
+	} else {
+		dst.HPEMorpheusSDNNetworkServerUpdate = nil
+	}
+
 	// try to unmarshal data into NSXNetworkServerUpdate
 	err = newStrictDecoder(data).Decode(&dst.NSXNetworkServerUpdate)
 	if err == nil {
@@ -65,6 +89,7 @@ func (dst *UpdateNetworkServerRequestNetworkServer) UnmarshalJSON(data []byte) e
 
 	if match > 1 { // more than 1 match
 		// reset to nil
+		dst.HPEMorpheusSDNNetworkServerUpdate = nil
 		dst.NSXNetworkServerUpdate = nil
 
 		return NewResponseValidationError("data matches more than one schema in oneOf(UpdateNetworkServerRequestNetworkServer)")
@@ -77,6 +102,10 @@ func (dst *UpdateNetworkServerRequestNetworkServer) UnmarshalJSON(data []byte) e
 
 // Marshal data from the first non-nil pointers in the struct to JSON
 func (src UpdateNetworkServerRequestNetworkServer) MarshalJSON() ([]byte, error) {
+	if src.HPEMorpheusSDNNetworkServerUpdate != nil {
+		return json.Marshal(&src.HPEMorpheusSDNNetworkServerUpdate)
+	}
+
 	if src.NSXNetworkServerUpdate != nil {
 		return json.Marshal(&src.NSXNetworkServerUpdate)
 	}
@@ -89,6 +118,10 @@ func (obj *UpdateNetworkServerRequestNetworkServer) GetActualInstance() interfac
 	if obj == nil {
 		return nil
 	}
+	if obj.HPEMorpheusSDNNetworkServerUpdate != nil {
+		return obj.HPEMorpheusSDNNetworkServerUpdate
+	}
+
 	if obj.NSXNetworkServerUpdate != nil {
 		return obj.NSXNetworkServerUpdate
 	}
@@ -99,6 +132,10 @@ func (obj *UpdateNetworkServerRequestNetworkServer) GetActualInstance() interfac
 
 // Get the actual instance value
 func (obj UpdateNetworkServerRequestNetworkServer) GetActualInstanceValue() interface{} {
+	if obj.HPEMorpheusSDNNetworkServerUpdate != nil {
+		return *obj.HPEMorpheusSDNNetworkServerUpdate
+	}
+
 	if obj.NSXNetworkServerUpdate != nil {
 		return *obj.NSXNetworkServerUpdate
 	}

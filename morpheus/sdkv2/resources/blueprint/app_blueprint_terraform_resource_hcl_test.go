@@ -99,13 +99,13 @@ func TestAccMorpheusAppBlueprintTerraformHclExampleOk(t *testing.T) {
 			// Apply
 			{
 				Config:             providerConfig + resourceConfig,
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 			// Plan after apply
 			{
 				Config:             providerConfig + resourceConfig,
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
 		},

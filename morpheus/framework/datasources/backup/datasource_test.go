@@ -14,6 +14,7 @@ import (
 	databackup "github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupinstance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupjob"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
@@ -45,8 +46,8 @@ func backupDataSourceChecks(name string) resource.TestCheckFunc {
 		),
 		resource.TestCheckResourceAttr(dataSourceName, "name", name),
 		resource.TestCheckResourceAttr(dataSourceName, "enabled", "true"),
-		resource.TestCheckResourceAttr(dataSourceName, "instance.id", "26"),
-		resource.TestCheckResourceAttr(dataSourceName, "storage_provider.id", "1"),
+		resource.TestCheckResourceAttrPair(dataSourceName, "instance.id", testhelpers.BackupInstanceDataSource, "id"),
+		resource.TestCheckResourceAttrPair(dataSourceName, "storage_provider.id", testhelpers.BackupBucketDataSource, "id"),
 		resource.TestCheckResourceAttrPair(
 			dataSourceName, "job.id",
 			"hpe_morpheus_backup_job.example", "id",
@@ -63,12 +64,16 @@ func TestAccMorpheusFindBackupById(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.Backup)
 
+	instanceName := testhelpers.BackupInstanceName(t)
+	bucketName := testhelpers.BackupBucketName(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	fixtureConfig := testhelpers.BackupFixtureBlock(instanceName, "", bucketName, "")
 	name := acctest.RandomWithPrefix(t.Name())
 
 	backupJobConfig, err := backupjob.RenderBackupJobConfig(t, map[string]string{
@@ -81,9 +86,9 @@ func TestAccMorpheusFindBackupById(t *testing.T) {
 
 	backupInstanceConfig, err := backupinstance.RenderBackupInstanceConfig(t, map[string]string{
 		"Name":              name,
-		"InstanceId":        "26",
+		"InstanceId":        testhelpers.BackupInstanceIDRef,
 		"JobId":             "hpe_morpheus_backup_job.example.id",
-		"StorageProviderId": "1",
+		"StorageProviderId": testhelpers.BackupBucketIDRef,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -97,17 +102,17 @@ func TestAccMorpheusFindBackupById(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			// Create the backup job + instance backup and read it back by ID.
 			{
-				Config: providerConfig + backupJobConfig + backupInstanceConfig + dataSourceConfig,
+				Config: providerConfig + fixtureConfig + backupJobConfig + backupInstanceConfig + dataSourceConfig,
 				Check:  backupDataSourceChecks(name),
 			},
 			// Tear down the backup first (backup_job destroyed as a side-effect
 			// of the backup_instance destroy)...
 			{
-				Config:             providerConfig + backupJobConfig,
+				Config:             providerConfig + fixtureConfig + backupJobConfig,
 				ExpectNonEmptyPlan: true,
 			},
 			// ...followed by a call to terraform apply -refresh-only.
@@ -126,12 +131,16 @@ func TestAccMorpheusFindBackupByName(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.Backup)
 
+	instanceName := testhelpers.BackupInstanceName(t)
+	bucketName := testhelpers.BackupBucketName(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	fixtureConfig := testhelpers.BackupFixtureBlock(instanceName, "", bucketName, "")
 	name := acctest.RandomWithPrefix(t.Name())
 
 	backupJobConfig, err := backupjob.RenderBackupJobConfig(t, map[string]string{
@@ -144,9 +153,9 @@ func TestAccMorpheusFindBackupByName(t *testing.T) {
 
 	backupInstanceConfig, err := backupinstance.RenderBackupInstanceConfig(t, map[string]string{
 		"Name":              name,
-		"InstanceId":        "26",
+		"InstanceId":        testhelpers.BackupInstanceIDRef,
 		"JobId":             "hpe_morpheus_backup_job.example.id",
-		"StorageProviderId": "1",
+		"StorageProviderId": testhelpers.BackupBucketIDRef,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -160,22 +169,22 @@ func TestAccMorpheusFindBackupByName(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			// Create the backup job + instance backup first so it can be found
 			// by name.
 			{
-				Config: providerConfig + backupJobConfig + backupInstanceConfig,
+				Config: providerConfig + fixtureConfig + backupJobConfig + backupInstanceConfig,
 			},
 			// Read the backup back by name.
 			{
-				Config: providerConfig + backupJobConfig + backupInstanceConfig + dataSourceConfig,
+				Config: providerConfig + fixtureConfig + backupJobConfig + backupInstanceConfig + dataSourceConfig,
 				Check:  backupDataSourceChecks(name),
 			},
 			// Tear down the backup first (backup_job destroyed as a side-effect
 			// of the backup_instance destroy)...
 			{
-				Config:             providerConfig + backupJobConfig,
+				Config:             providerConfig + fixtureConfig + backupJobConfig,
 				ExpectNonEmptyPlan: true,
 			},
 			// ...followed by a call to terraform apply -refresh-only.
@@ -209,7 +218,7 @@ data "hpe_morpheus_backup" "example" {
 `
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -238,7 +247,7 @@ data "hpe_morpheus_backup" "example" {
 `
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -265,7 +274,7 @@ data "hpe_morpheus_backup" "example" {
 `
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,

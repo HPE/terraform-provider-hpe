@@ -104,6 +104,8 @@ func getLoadBalancerAsState(
 	planHasConfig := !plan.Config.IsNull() && !plan.Config.IsUnknown()
 	planHasHAProxy := !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown()
 	planHasNsxt := !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown()
+	planHasJuniperSdn := !plan.ConfigJuniperSdn.IsNull() && !plan.ConfigJuniperSdn.IsUnknown()
+	isJuniperSdn := data.Type.Code != nil && *data.Type.Code == typeCodeJuniperSdn
 
 	switch {
 	case planHasConfig:
@@ -112,6 +114,7 @@ func getLoadBalancerAsState(
 		state.Config = plan.Config
 		state.ConfigHaproxy = NewConfigHaproxyValueNull()
 		state.ConfigNsxt = NewConfigNsxtValueNull()
+		state.ConfigJuniperSdn = NewConfigJuniperSdnValueNull()
 	case planHasHAProxy || isHAProxy:
 		haproxyCfg, err := parseHAProxyConfig(ctx, getsafe.Get(&data.Config))
 		if err != nil {
@@ -120,6 +123,7 @@ func getLoadBalancerAsState(
 
 		state.ConfigHaproxy = haproxyCfg
 		state.ConfigNsxt = NewConfigNsxtValueNull()
+		state.ConfigJuniperSdn = NewConfigJuniperSdnValueNull()
 		state.Config = types.DynamicNull()
 	case planHasNsxt || isNSXT:
 		nsxtCfg, err := parseNsxtConfig(ctx, data.Config)
@@ -129,10 +133,22 @@ func getLoadBalancerAsState(
 
 		state.ConfigNsxt = nsxtCfg
 		state.ConfigHaproxy = NewConfigHaproxyValueNull()
+		state.ConfigJuniperSdn = NewConfigJuniperSdnValueNull()
+		state.Config = types.DynamicNull()
+	case planHasJuniperSdn || isJuniperSdn:
+		sdnCfg, err := parseJuniperSdnConfig(ctx, data.Config)
+		if err != nil {
+			return state, fmt.Errorf("failed to parse HPE Morpheus SDN config: %w", err)
+		}
+
+		state.ConfigJuniperSdn = sdnCfg
+		state.ConfigNsxt = NewConfigNsxtValueNull()
+		state.ConfigHaproxy = NewConfigHaproxyValueNull()
 		state.Config = types.DynamicNull()
 	default:
 		state.ConfigHaproxy = NewConfigHaproxyValueNull()
 		state.ConfigNsxt = NewConfigNsxtValueNull()
+		state.ConfigJuniperSdn = NewConfigJuniperSdnValueNull()
 
 		state.Config, err = convert.MapToDynamic(ctx, data.Config)
 		if err != nil {

@@ -23,15 +23,18 @@ var _ MappedNullable = &AddBaremetalHost200ResponseServer{}
 
 // AddBaremetalHost200ResponseServer struct for AddBaremetalHost200ResponseServer
 type AddBaremetalHost200ResponseServer struct {
-	Id                       *int64                                                    `json:"id,omitempty"`
-	Uuid                     *string                                                   `json:"uuid,omitempty"`
-	ExternalId               NullableString                                            `json:"externalId,omitempty"`
-	InternalId               NullableString                                            `json:"internalId,omitempty"`
-	ExternalUniqueId         NullableString                                            `json:"externalUniqueId,omitempty"`
-	Name                     *string                                                   `json:"name,omitempty"`
-	ExternalName             *string                                                   `json:"externalName,omitempty"`
-	Hostname                 *string                                                   `json:"hostname,omitempty"`
-	ParentServer             *AddBaremetalHost200ResponseServerParentServer            `json:"parentServer,omitempty"`
+	Id               *int64                                         `json:"id,omitempty"`
+	Uuid             *string                                        `json:"uuid,omitempty"`
+	ExternalId       NullableString                                 `json:"externalId,omitempty"`
+	InternalId       NullableString                                 `json:"internalId,omitempty"`
+	ExternalUniqueId NullableString                                 `json:"externalUniqueId,omitempty"`
+	Name             *string                                        `json:"name,omitempty"`
+	ExternalName     *string                                        `json:"externalName,omitempty"`
+	Hostname         *string                                        `json:"hostname,omitempty"`
+	ParentServer     *AddBaremetalHost200ResponseServerParentServer `json:"parentServer,omitempty"`
+	// Host placement strategy for the virtual machine. `auto` lets Morpheus choose the host, `failover` keeps the VM on its current host but allows automatic failover, and `pinned` pins the VM to a specific preferred host.
+	PlacementStrategy        NullableString                                            `json:"placementStrategy,omitempty"`
+	PreferredParentServer    *AddBaremetalHost200ResponseServerPreferredParentServer   `json:"preferredParentServer,omitempty"`
 	AccountId                *int64                                                    `json:"accountId,omitempty"`
 	Account                  *AddBaremetalHost200ResponseServerAccount                 `json:"account,omitempty"`
 	Owner                    *AddBaremetalHost200ResponseServerOwner                   `json:"owner,omitempty"`
@@ -71,6 +74,9 @@ type AddBaremetalHost200ResponseServer struct {
 	StatusPercent            NullableString                                            `json:"statusPercent,omitempty"`
 	StatusEta                NullableString                                            `json:"statusEta,omitempty"`
 	PowerState               *string                                                   `json:"powerState,omitempty"`
+	MaintenanceMode          NullableBool                                              `json:"maintenanceMode,omitempty"`
+	Managed                  *bool                                                     `json:"managed,omitempty"`
+	DisplayName              NullableString                                            `json:"displayName,omitempty"`
 	AgentInstalled           *bool                                                     `json:"agentInstalled,omitempty"`
 	LastAgentUpdate          NullableString                                            `json:"lastAgentUpdate,omitempty"`
 	AgentVersion             NullableString                                            `json:"agentVersion,omitempty"`
@@ -145,6 +151,12 @@ func (o AddBaremetalHost200ResponseServer) ToMap() (map[string]interface{}, erro
 	}
 	if !IsNil(o.ParentServer) {
 		toSerialize["parentServer"] = o.ParentServer
+	}
+	if o.PlacementStrategy.IsSet() {
+		toSerialize["placementStrategy"] = o.PlacementStrategy.Get()
+	}
+	if !IsNil(o.PreferredParentServer) {
+		toSerialize["preferredParentServer"] = o.PreferredParentServer
 	}
 	if !IsNil(o.AccountId) {
 		toSerialize["accountId"] = o.AccountId
@@ -262,6 +274,15 @@ func (o AddBaremetalHost200ResponseServer) ToMap() (map[string]interface{}, erro
 	}
 	if !IsNil(o.PowerState) {
 		toSerialize["powerState"] = o.PowerState
+	}
+	if o.MaintenanceMode.IsSet() {
+		toSerialize["maintenanceMode"] = o.MaintenanceMode.Get()
+	}
+	if !IsNil(o.Managed) {
+		toSerialize["managed"] = o.Managed
+	}
+	if o.DisplayName.IsSet() {
+		toSerialize["displayName"] = o.DisplayName.Get()
 	}
 	if !IsNil(o.AgentInstalled) {
 		toSerialize["agentInstalled"] = o.AgentInstalled

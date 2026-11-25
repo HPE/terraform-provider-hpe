@@ -601,7 +601,7 @@ func imageToValue(
 		MinRam:             bytesToGB(img.MinRam.Get()),
 		Name:               convert.StrToType(img.Name),
 		OsTypeId:           convert.Int64ToType(osTypeID(img)),
-		OwnerId:            convert.Int64ToType(img.OwnerId),
+		OwnerId:            convert.Int64ToType(img.OwnerId.Get()),
 		RawSize:            convert.Int64ToType(img.RawSize.Get()),
 		SshKey:             convert.StrToType(img.SshKey.Get()),
 		SshUsername:        convert.StrToType(img.SshUsername.Get()),

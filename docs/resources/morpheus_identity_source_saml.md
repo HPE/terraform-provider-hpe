@@ -11,7 +11,7 @@ Provides a saml identity source resource
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_identity_source_saml" "samldemo" {
+resource "hpe_morpheus_identity_source_saml" "tf_example_saml_identity_source" {
   tenant_id                      = 1
   name                           = "samldemo"
   description                    = "TF example SAML identity source"
@@ -26,6 +26,8 @@ resource "hpe_morpheus_identity_source_saml" "samldemo" {
   default_account_role_id        = 4
   role_attribute_name            = "memberOf"
   required_role_attribute_value  = "test"
+  enable_role_mapping_permission = false
+
   role_mapping {
     role_id             = 4
     role_name           = "Demo"
@@ -35,23 +37,22 @@ resource "hpe_morpheus_identity_source_saml" "samldemo" {
   role_mapping {
     role_id             = 5
     role_name           = "tf-example-user-role"
-    assertion_attribute = "developers"
+    assertion_attribute = "operators"
   }
-  enable_role_mapping_permission = false
 }
 
 # Morpheus computes the SAML Service Provider metadata. Expose it as outputs so
 # the SP can be registered in the IdP (e.g. Zitadel) within the same apply.
 output "saml_entity_id" {
-  value = hpe_morpheus_identity_source_saml.samldemo.entity_id
+  value = hpe_morpheus_identity_source_saml.tf_example_saml_identity_source.entity_id
 }
 
 output "saml_acs_url" {
-  value = hpe_morpheus_identity_source_saml.samldemo.acs_url
+  value = hpe_morpheus_identity_source_saml.tf_example_saml_identity_source.acs_url
 }
 
 output "saml_sp_metadata" {
-  value = hpe_morpheus_identity_source_saml.samldemo.sp_metadata
+  value = hpe_morpheus_identity_source_saml.tf_example_saml_identity_source.sp_metadata
 }
 ```
 

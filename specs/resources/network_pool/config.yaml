@@ -7,17 +7,76 @@ network_pool:
         description: The code of the network pool type. Default available codes are morpheus, morpheusipv6, vcd, and nsx-t. Plugins can add additional pool types.
     ipRanges:
       object:
-        computed_optional_required: required
-        description: The IPv4 IP address pool IP ranges.
+        # Optional+Computed so that a configuration moving to ip_address_ranges
+        # plans no change: Terraform keeps the prior value of an absent
+        # Optional+Computed attribute, and the provider keeps mirroring the first
+        # range into it once it has been used. Exactly-one-of is enforced on the
+        # configuration by the validators.
+        computed_optional_required: computed_optional
+        description: |-
+          Deprecated: a single IP range as `{ starting_address, ending_address }`. Use `ip_address_ranges`, which
+          holds every range of the pool. Only one of the two may be set in the configuration. A pool with more
+          than one range cannot be managed through this attribute. Will be removed in the 2.6 release.
+        deprecation_message: "Use ip_address_ranges instead; it holds every range of the pool. This attribute will be removed in the 2.6 release."
         attribute_types:
           - name: starting_address
             string: {}
           - name: ending_address
             string: {}
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator
+            - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: objectvalidator.ExactlyOneOf(path.MatchRoot("ip_address_ranges"))
+    ipAddressRanges:
+      list_nested:
+        computed_optional_required: computed_optional
+        description: |-
+          The IP address ranges of the pool, in configuration order. Each range is edited in place by its `id`,
+          so a range's reservations survive a change to its addresses; a range removed from the list is deleted
+          (Morpheus refuses when it still has reservations). Exactly one of `ip_address_ranges` and the deprecated
+          `ip_ranges` must be set.
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/listvalidator
+            - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: listvalidator.ExactlyOneOf(path.MatchRoot("ip_ranges"))
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/listvalidator
+            schema_definition: listvalidator.SizeAtLeast(1)
+        nested_object:
+          attributes:
+          - name: id
+            int64:
+              computed_optional_required: computed
+              description: The ID of the range in Morpheus.
+              plan_modifiers:
+              - custom:
+                  imports:
+                  - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+                  schema_definition: int64planmodifier.UseStateForUnknown()
+          # Optional+Computed rather than Required: Terraform proposes the prior
+          # value for an absent Optional+Computed nested attribute only when
+          # none of its children is non-computed, and ip_address_ranges must
+          # keep its prior value while the deprecated ip_ranges is configured.
+          # Both addresses are still required: the resource's ValidateConfig
+          # enforces it for configured elements.
+          - name: starting_address
+            string:
+              computed_optional_required: computed_optional
+              description: The first address of the range. Required.
+          - name: ending_address
+            string:
+              computed_optional_required: computed_optional
+              description: The last address of the range. Required.
   moves:
     - network_pool: ""
     - template-typeCode: type_code
     - template-ipRanges: ip_ranges
+    - template-ipAddressRanges: ip_address_ranges
   removes:
     - account
     - boot_file
@@ -57,7 +116,7 @@ network_pool:
               - path: github.com/HPE/terraform-provider-hpe/utils/modifiers
               - path: github.com/hashicorp/terraform-plugin-framework/path
             schema_definition: |-
-              modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges"))
+              modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges"), path.Root("ip_address_ranges"))
     gateway:
       computed_optional_required: computed_optional
       description: The gateway IP address.
@@ -74,7 +133,7 @@ network_pool:
               - path: github.com/HPE/terraform-provider-hpe/utils/modifiers
               - path: github.com/hashicorp/terraform-plugin-framework/path
             schema_definition: |-
-              modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges"))
+              modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges"), path.Root("ip_address_ranges"))
     name:
       computed_optional_required: required
       description: The name of the network pool.

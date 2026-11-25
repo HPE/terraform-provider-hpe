@@ -1,0 +1,502 @@
+host:
+  enable_timeouts: true
+  templates:
+    id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the host (compute server).
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    name:
+      string:
+        computed_optional_required: required
+        description: The name of the host.
+    cloud_id:
+      int64:
+        computed_optional_required: required
+        description: The ID of the cloud to add the host to. Changing it forces replacement.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.RequiresReplace()
+    group_id:
+      int64:
+        computed_optional_required: required
+        description: The ID of the group to add the host to. Changing it forces replacement.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.RequiresReplace()
+    compute_server_type:
+      string:
+        computed_optional_required: required
+        description: |-
+          The code of the compute server type to create (for example
+          `omega.baremetal.stub-server` or an iLO bare-metal type). The type must be
+          creatable. Changing it forces replacement.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+            schema_definition: stringplanmodifier.RequiresReplace()
+    plan_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: The ID of the service plan (sizing) for the host. When omitted, Morpheus assigns a default plan for the compute server type. Changing it forces replacement.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.RequiresReplace()
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    description:
+      string:
+        computed_optional_required: optional
+        description: A description of the host.
+    labels:
+      set:
+        computed_optional_required: computed_optional
+        element_type:
+          string: {}
+        description: |-
+          Organization labels (keywords) assigned to the host. When not configured, labels set on the
+          appliance are read into state without planning a change.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
+            schema_definition: setplanmodifier.UseStateForUnknown()
+    visibility:
+      string:
+        computed_optional_required: computed_optional
+        default:
+          static: private
+        description: The visibility of the host (private or public).
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+            schema_definition: stringvalidator.OneOf("private", "public")
+    enabled:
+      bool:
+        computed_optional_required: computed_optional
+        description: Whether the host is enabled.
+    ssh_username:
+      string:
+        computed_optional_required: computed_optional
+        description: |-
+          SSH username Morpheus uses to reach the host when it is added. Morpheus's own provisioning may
+          replace it with the account it creates on the node (for example `cloudinit`); the configured value
+          is the one the provider manages, and the appliance's current value is only read into state when
+          the attribute is not configured (such as on import).
+    ssh_password_wo:
+      string:
+        computed_optional_required: optional
+        description: SSH password (Write Only). Also requires ssh_username to be set.
+        sensitive: true
+        write_only: true
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+            - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: |-
+              stringvalidator.AlsoRequires(path.Expressions{
+                path.MatchRoot("ssh_username"),
+              }...)
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which a write-only value (ssh_password_wo,
+          config_bmaas.ilo_password_wo or config_omega_bmaas.console_password_wo) was last sent to
+          Morpheus. Changes whenever one of those values changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    ssh_key_pair_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: The ID of the SSH key pair to assign to the host.
+    user_data:
+      string:
+        computed_optional_required: computed_optional
+        description: |-
+          Cloud-init user data for the host, carried in config.userData. Updatable in place.
+    network_interfaces:
+      list_nested:
+        computed_optional_required: optional
+        description: |-
+          Network interface configuration for the host. Create-only; changing it forces
+          replacement.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier
+            schema_definition: listplanmodifier.RequiresReplace()
+        nested_object:
+          attributes:
+          - name: network_id
+            int64:
+              computed_optional_required: optional
+              description: The ID of the network to attach this interface to.
+          - name: network_interface_type_id
+            int64:
+              computed_optional_required: optional
+              description: The ID of the network interface type (adapter model), when the cloud offers a choice.
+          - name: ip_address
+            string:
+              computed_optional_required: optional
+              description: The static IP address for this interface. Not applicable with DHCP or IP pools.
+          - name: ip_mode
+            string:
+              computed_optional_required: optional
+              description: The mode for determining the IP address (static, dhcp, or "").
+              validators:
+              - custom:
+                  imports:
+                  - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                  schema_definition: stringvalidator.OneOf("static", "dhcp", "")
+    volumes:
+      list_nested:
+        computed_optional_required: optional
+        description: |-
+          Volume (storage) configuration for the host. Create-only; changing it forces
+          replacement.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier
+            schema_definition: listplanmodifier.RequiresReplace()
+        nested_object:
+          attributes:
+          - name: root_volume
+            bool:
+              computed_optional_required: optional
+              description: Whether this is the root volume.
+          - name: name
+            string:
+              computed_optional_required: optional
+              description: The name of the volume.
+          - name: size
+            int64:
+              computed_optional_required: optional
+              description: The size of the volume in GB.
+          - name: storage_type_id
+            int64:
+              computed_optional_required: optional
+              description: The ID of the storage type for the volume.
+          - name: datastore_id
+            int64:
+              computed_optional_required: optional
+              description: The ID of the datastore for the volume.
+    delete_options:
+      single_nested:
+        computed_optional_required: optional
+        description: |-
+          Options controlling what happens to the underlying resources when the host is
+          deleted. Each flag is optional with no provider default; an unset flag is omitted
+          from the DELETE request so Morpheus applies its own type-aware default.
+        attributes:
+        - name: remove_resources
+          bool:
+            computed_optional_required: optional
+            description: |-
+              Whether to destroy the underlying machine. For a virtual host this deletes the
+              VM; for a bare-metal host it runs the plugin's destructive wipe (sanitizes
+              disks, resets iLO). When unset, Morpheus defaults to the compute server type's
+              managed flag.
+        - name: preserve_volumes
+          bool:
+            computed_optional_required: optional
+            description: Whether to preserve volumes when removing resources.
+        - name: force
+          bool:
+            computed_optional_required: optional
+            description: Whether to force removal even if errors occur.
+        - name: remove_instances
+          bool:
+            computed_optional_required: optional
+            description: Whether to also remove instances associated with the host.
+    config:
+      dynamic:
+        computed_optional_required: optional
+        description: |-
+          Free-form, type-specific configuration for host types that have no typed config_*
+          block, as a map of the keys the type's option types read. Mutually exclusive with
+          the typed config_* blocks. Changing it forces replacement.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/dynamicplanmodifier
+            schema_definition: dynamicplanmodifier.RequiresReplace()
+        validators:
+        - custom:
+            imports:
+            - path: github.com/HPE/terraform-provider-hpe/utils/validators
+            schema_definition: validators.ValidObjectMap()
+    uuid:
+      string:
+        computed_optional_required: computed
+        description: The UUID of the host.
+    external_id:
+      string:
+        computed_optional_required: computed
+        description: The external ID of the host.
+    status:
+      string:
+        computed_optional_required: computed
+        description: The status of the host (e.g. provisioning, provisioned, running).
+    power_state:
+      string:
+        computed_optional_required: computed
+        description: The power state of the host (e.g. on, off).
+    internal_ip:
+      string:
+        computed_optional_required: computed
+        description: The internal IP address of the host.
+    external_ip:
+      string:
+        computed_optional_required: computed
+        description: The external IP address of the host.
+    hostname:
+      string:
+        computed_optional_required: computed
+        description: The hostname of the host.
+    agent_installed:
+      bool:
+        computed_optional_required: computed
+        description: Whether the Morpheus agent is installed on the host.
+    agent_version:
+      string:
+        computed_optional_required: computed
+        description: The version of the Morpheus agent installed on the host.
+    managed:
+      bool:
+        computed_optional_required: computed
+        description: Whether the host is managed by Morpheus.
+    bare_metal:
+      bool:
+        computed_optional_required: computed
+        description: Whether the host is a bare-metal host (from the compute server type).
+    parent_host_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the parent hypervisor host, if any.
+    compute_server_type_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the compute server type.
+    date_created:
+      string:
+        computed_optional_required: computed
+        description: The date the host was created.
+    last_updated:
+      string:
+        computed_optional_required: computed
+        description: The date the host was last updated.
+  moves:
+    - server: ""                                            # unnest server wrapper (components/schemas/serverBaremetalCreate.yaml)
+    - compute_server_type: _compute_server_type_obj         # (serverBaremetalCreate.yaml server.computeServerType) object out of the way; replaced by flat string template
+    - config.bmaas_host_config_object: config_bmaas         # extract Bmaas Host Config Object (serverBaremetalCreateConfigBmaas.yaml)
+    - config.omega_bmaas_host_config_object: config_omega_bmaas  # extract Omega Bmaas Host Config Object (serverBaremetalCreateConfigOmegaBmaas.yaml)
+    - config.host_config_generic: _config_generic          # (serverBaremetalCreateConfigGeneric.yaml) generic variant, replaced by the free-form config attribute
+    - config_bmaas.ilo_password: config_bmaas.ilo_password_wo               # write-only rename (serverBaremetalCreateConfigBmaas.yaml iloPassword)
+    - config_omega_bmaas.console_password: config_omega_bmaas.console_password_wo  # write-only rename (serverBaremetalCreateConfigOmegaBmaas.yaml consolePassword)
+    - template-config: config                               # (serverBaremetalCreate.yaml server.config, generic variant) free-form fallback
+    - template-id: id                                       # (server.yaml id)
+    - template-name: name                                   # (serverBaremetalCreate.yaml server.name)
+    - template-cloud_id: cloud_id                           # (serverBaremetalCreate.yaml server.cloud.id)
+    - template-group_id: group_id                           # (serverBaremetalCreate.yaml server.group.id)
+    - template-compute_server_type: compute_server_type     # (serverBaremetalCreate.yaml server.computeServerType.code)
+    - template-plan_id: plan_id                             # (serverBaremetalCreate.yaml server.plan.id)
+    - template-description: description                      # (serverBaremetalCreate.yaml server.description)
+    - template-labels: labels                               # (serverBaremetalCreate.yaml server.labels)
+    - template-visibility: visibility                       # (serverBaremetalCreate.yaml server.visibility)
+    - template-enabled: enabled                             # (hostUpdate.yaml enabled)
+    - template-ssh_username: ssh_username                   # (serverBaremetalCreate.yaml server.sshUsername)
+    - template-ssh_password_wo: ssh_password_wo             # (serverBaremetalCreate.yaml server.sshPassword)
+    - template-write_only_revision: write_only_revision     # (provider) time a write-only value was last sent
+    - template-ssh_key_pair_id: ssh_key_pair_id             # (hostUpdate.yaml sshKeyPair.id; create: server.config.provisionKey)
+    - template-user_data: user_data                         # (serverBaremetalCreate.yaml server.config.userData)
+    - template-network_interfaces: network_interfaces       # (serverBaremetalCreate.yaml networkInterfaces)
+    - template-volumes: volumes                             # (serverBaremetalCreate.yaml volumes; volumes[].id is not exposed: it is omitted on an add, which the API treats as a new volume)
+    - template-delete_options: delete_options               # (paths/api@servers@id.yaml DELETE query parameters: four of the six; releaseEIPs and releaseFloatingIps are not exposed)
+    - template-uuid: uuid                                   # (components/schemas/server.yaml uuid)
+    - template-external_id: external_id                     # (server.yaml externalId)
+    - template-status: status                               # (server.yaml status)
+    - template-power_state: power_state                     # (server.yaml powerState)
+    - template-internal_ip: internal_ip                     # (server.yaml internalIp)
+    - template-external_ip: external_ip                     # (server.yaml externalIp)
+    - template-hostname: hostname                           # (server.yaml hostname)
+    - template-agent_installed: agent_installed             # (server.yaml agentInstalled)
+    - template-agent_version: agent_version                 # (server.yaml agentVersion)
+    - template-managed: managed                             # (server.yaml managed)
+    - template-bare_metal: bare_metal                       # (derived) /api/server-types bareMetalHost for the host's type; not in the server rendering
+    - template-parent_host_id: parent_host_id               # (server.yaml parentServer.id)
+    - template-compute_server_type_id: compute_server_type_id # (server.yaml computeServerType.id)
+    - template-date_created: date_created                   # (server.yaml dateCreated)
+    - template-last_updated: last_updated                   # (server.yaml lastUpdated)
+  removes:
+    - config_bmaas.user_data            # (serverBaremetalCreateConfigBmaas.yaml userData) exposed as top-level user_data
+    - config_bmaas.provision_key        # (serverBaremetalCreateConfigBmaas.yaml provisionKey) exposed as top-level ssh_key_pair_id
+    - config_omega_bmaas.user_data      # (serverBaremetalCreateConfigOmegaBmaas.yaml userData) exposed as top-level user_data
+    - config_omega_bmaas.provision_key  # (serverBaremetalCreateConfigOmegaBmaas.yaml provisionKey) exposed as top-level ssh_key_pair_id
+    - _compute_server_type_obj                              # (serverBaremetalCreate.yaml) spec computeServerType object; replaced by flat compute_server_type string
+    - _config_generic                                       # (serverBaremetalCreateConfigGeneric.yaml) superseded by free-form config
+    - cloud                                                 # (serverBaremetalCreate.yaml) replaced by cloud_id
+    - group                                                 # (serverBaremetalCreate.yaml) replaced by group_id
+    - plan                                                  # (serverBaremetalCreate.yaml) replaced by plan_id
+    # Fields from the server response (components/schemas/server.yaml) not exposed in this release. Most are
+    # read-only. Those that hostUpdate.yaml makes writable -- enable_logs, manage_internal_firewall,
+    # server_os, tags (and its addTags/removeTags companions), power_schedule_type and the
+    # guest_console_* fields including guest_console_password -- are deliberately out of scope here:
+    # not surfaced, and Update does not send them.
+    - account                                               # (server.yaml) nested object
+    - account_id                                            # (server.yaml) internal tenant ref
+    - api_key                                               # (server.yaml) sensitive internal
+    - containers                                            # (server.yaml) nested collection
+    - controllers                                           # (server.yaml) nested collection
+    - cores_per_socket                                      # (server.yaml) low-value detail
+    - data_device                                           # (server.yaml) internal
+    - display_name                                          # (server.yaml) low-value
+    - enable_logs                                           # (server.yaml / hostUpdate.yaml) writable; deliberately not exposed
+    - error_message                                         # (server.yaml) transient
+    - external_name                                         # (server.yaml) internal
+    - external_unique_id                                    # (server.yaml) internal
+    - folder_id                                             # (server.yaml) low-value
+    - guest_agent_status                                    # (server.yaml) internal
+    - guest_console_password                                # (server.yaml / hostUpdate.yaml) sensitive, writable; deliberately not exposed
+    - guest_console_password_hash                           # (server.yaml) sensitive
+    - guest_console_port                                    # (server.yaml / hostUpdate.yaml) writable; deliberately not exposed
+    - guest_console_preferred                               # (server.yaml / hostUpdate.yaml) writable; deliberately not exposed
+    - guest_console_type                                    # (server.yaml / hostUpdate.yaml) writable; deliberately not exposed
+    - guest_console_username                                # (server.yaml / hostUpdate.yaml) writable; deliberately not exposed
+    - hourly_cost                                           # (server.yaml) billing
+    - hourly_price                                          # (server.yaml) billing
+    - instance                                              # (server.yaml) nested object
+    - interfaces                                            # (server.yaml) nested collection (read); create uses network_interfaces
+    - internal_id                                           # (server.yaml) internal
+    - last_agent_update                                     # (server.yaml) internal timestamp
+    - lvm_enabled                                           # (server.yaml) low-value
+    - maintenance_mode                                      # (server.yaml) low-value
+    - manage_internal_firewall                              # (server.yaml / hostUpdate.yaml) writable; deliberately not exposed
+    - max_cores                                             # (server.yaml) low-value detail
+    - max_cpu                                               # (server.yaml) low-value detail
+    - max_gpus                                              # (server.yaml) low-value detail
+    - max_memory                                            # (server.yaml) low-value detail
+    - max_storage                                           # (server.yaml) low-value detail
+    - os_device                                             # (server.yaml) internal
+    - os_type                                               # (server.yaml) low-value
+    - owner                                                 # (server.yaml) nested object
+    - parent_server                                         # (server.yaml) replaced by parent_host_id
+    - platform                                              # (server.yaml) low-value
+    - platform_version                                      # (server.yaml) low-value
+    - resource_pool_id                                      # (server.yaml) low-value
+    - secure_metadata_datastore                             # (server.yaml) nested object
+    - server_os                                             # (server.yaml / hostUpdate.yaml) writable nested object; deliberately not exposed
+    - site_id                                               # (server.yaml) replaced by group_id
+    - software_raid                                         # (server.yaml) low-value
+    - source_image                                          # (server.yaml) nested object
+    - ssh_host                                              # (server.yaml) sensitive
+    - ssh_key_pair                                          # (server.yaml) sensitive nested; replaced by ssh_key_pair_id
+    - ssh_password                                          # (server.yaml) sensitive; replaced by ssh_password_wo
+    - ssh_password_hash                                     # (server.yaml) sensitive
+    - ssh_port                                              # (server.yaml) sensitive
+    - stats                                                 # (server.yaml) dynamic object
+    - status_date                                           # (server.yaml) read-only timestamp
+    - status_eta                                            # (server.yaml) transient
+    - status_message                                        # (server.yaml) transient
+    - status_percent                                        # (server.yaml) transient
+    - success                                               # (server.yaml) response envelope flag
+    - tag_compliant                                         # (server.yaml) internal
+    - tags                                                  # (server.yaml / hostUpdate.yaml) writable; deliberately not exposed (labels is)
+    - volume_id                                             # (server.yaml) internal
+    - zone                                                  # (server.yaml) replaced by cloud_id
+    - zone_id                                               # (server.yaml) replaced by cloud_id
+  overrides:
+    config:
+      conflicts_with: [config_bmaas, config_omega_bmaas]
+    config_bmaas:
+      computed_optional_required: optional
+      description: |-
+        Typed configuration for an HPE iLO bare-metal host (the hpe-baremetal-plugin
+        IloBareMetalUnmanaged type). Mutually exclusive with config and config_omega_bmaas.
+        Changing it forces replacement.
+      conflicts_with: [config, config_omega_bmaas]
+      requires_replace: true
+    config_bmaas.ilo_ip_address:
+      computed_optional_required: required
+      description: The iLO IP address of the bare-metal host.
+    config_bmaas.ilo_username:
+      computed_optional_required: optional
+      description: The iLO username.
+    config_bmaas.ilo_password_wo:
+      computed_optional_required: optional
+      description: The iLO password (Write Only).
+      sensitive: true
+      write_only: true
+      plan_modifiers:
+      - custom:
+          imports:
+            - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+          schema_definition: |-
+            modifiers.NullableStringUpdateModifier{}
+    config_bmaas.ilo_mac_address:
+      computed_optional_required: optional
+      description: The iLO MAC address of the bare-metal host.
+    config_bmaas.resource_pool_id:
+      computed_optional_required: required
+      description: The ID of the resource pool to provision the host into.
+    config_bmaas.pre_provisioned:
+      computed_optional_required: optional
+      description: Whether the bare-metal host is pre-provisioned.
+    config_omega_bmaas:
+      computed_optional_required: optional
+      description: |-
+        Typed configuration for an Omega bare-metal stub host (the omega.baremetal.stub-server
+        type). Mutually exclusive with config and config_bmaas. Changing it forces replacement.
+      conflicts_with: [config, config_bmaas]
+      requires_replace: true
+    config_omega_bmaas.console_host:
+      computed_optional_required: optional
+      description: The console host address of the Omega stub host.
+    config_omega_bmaas.console_username:
+      computed_optional_required: optional
+      description: The console username.
+    config_omega_bmaas.console_password_wo:
+      computed_optional_required: optional
+      description: The console password (Write Only).
+      sensitive: true
+      write_only: true
+      plan_modifiers:
+      - custom:
+          imports:
+            - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+          schema_definition: |-
+            modifiers.NullableStringUpdateModifier{}
+    config_omega_bmaas.num_nics:
+      computed_optional_required: optional
+      description: The number of NICs for the Omega stub host.
+    config_omega_bmaas.resource_pool_id:
+      computed_optional_required: required
+      description: The ID of the resource pool to provision the host into.
+    config_omega_bmaas.pre_provisioned:
+      computed_optional_required: optional
+      description: Whether the host is pre-provisioned.

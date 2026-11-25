@@ -14,6 +14,7 @@ import (
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
@@ -744,8 +745,9 @@ func (g *Resource) Create(
 
 	// Read the instance state
 	state, found, d := getInstanceAsState(ctx, instanceId, client, plan, false)
+	// Warnings too (the tag reconciliation's, for one), not only errors.
+	resp.Diagnostics.Append(d...)
 	if d.HasError() || !found {
-		resp.Diagnostics.Append(d...)
 		resp.Diagnostics.AddError(
 			"failed to read instance state",
 			fmt.Sprintf("Instance %d was created but could not be read", instanceId),
@@ -757,6 +759,49 @@ func (g *Resource) Create(
 
 	// Set ServicePlanOptions in state.
 	state.ServicePlanOptions = plan.ServicePlanOptions
+
+	// HVM host placement is an action against each node's compute server, done
+	// after provisioning succeeds. On failure the instance still exists and is
+	// fine, so it must not be tainted: write state with the placement attributes
+	// null (so the next plan re-attempts) and return the appliance's message.
+	if strategy, preferred, want := plannedPlacement(plan); want {
+		if d := applyHostPlacement(ctx, client, instanceId, strategy, preferred); d.HasError() {
+			state.ConfigHvm.PlacementStrategy = types.StringNull()
+			state.ConfigHvm.PreferredHostId = types.Int64Null()
+			resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+			resp.Diagnostics.Append(d...)
+
+			return
+		}
+
+		// Re-read placement from the node servers for state. The instance is
+		// provisioned and placed by now, so a failed read-back must still
+		// record it: write state with the placement attributes null (the next
+		// plan re-reads and re-applies) rather than leave the instance
+		// unrecorded, which would make the next apply create a duplicate.
+		serverIDs, d := placementServerIDs(ctx, client, instanceId)
+		resp.Diagnostics.Append(d...)
+		if resp.Diagnostics.HasError() {
+			state.ConfigHvm.PlacementStrategy = types.StringNull()
+			state.ConfigHvm.PreferredHostId = types.Int64Null()
+			resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+			return
+		}
+		if len(serverIDs) > 0 {
+			ps, ph, rd := readHostPlacement(ctx, client, serverIDs[0])
+			resp.Diagnostics.Append(rd...)
+			if resp.Diagnostics.HasError() {
+				state.ConfigHvm.PlacementStrategy = types.StringNull()
+				state.ConfigHvm.PreferredHostId = types.Int64Null()
+				resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+				return
+			}
+			state.ConfigHvm.PlacementStrategy = ps
+			state.ConfigHvm.PreferredHostId = ph
+		}
+	}
 
 	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

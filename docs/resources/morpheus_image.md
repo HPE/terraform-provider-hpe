@@ -28,6 +28,30 @@ configuration clears it on the image. `min_ram` keeps its value when it is remov
 rejects an empty minimum memory; `description` and `storage_provider_id` are set when the image is
 created and keep their value too.
 
+## Local image files
+
+Set `file_path` instead of `url` to upload a local ISO or disk image directly through this resource. `file_sha256` is optional: the provider hashes an existing local file during planning and verifies an explicit checksum before uploading. Existing metadata-only and cloud-reference configurations may still omit both sources; setting both is rejected.
+
+```terraform
+resource "hpe_morpheus_image" "local" {
+  name                = "local-build"
+  image_type          = "qcow2"
+  storage_provider_id = 1
+  file_path           = "./images/disk.qcow2"
+  file_sha256         = filesha256("./images/disk.qcow2")
+}
+```
+
+File contents and basename changes update the image in place, preserving its ID. The provider streams the upload rather than buffering it in memory, allows up to two hours for the file operation, and verifies the filename and byte count in the file listing. `file_name` and `file_size` expose that listing independently of the asynchronously computed `raw_size`.
+
+This is single-file management: other files are removed after the desired file is verified. Do not use it to manage individual disks of a multi-file OVF image. Replacing content under the same filename removes the old file first, so an upload failure can leave the image without a usable file. A failed update retains the image identity for retry; a failed initial creation retains the image ID with an error and Terraform may replace the newly created image on retry.
+
+On refresh, a missing file or a changed byte count causes an in-place repair on the next apply, not replacement of the image record. Morpheus does not expose a remote checksum, so same-size remote content changes cannot be detected. Removing `file_path` relinquishes file management without deleting uploaded content; destroying the image resource still deletes the whole image.
+
+Import the existing image by its ordinary numeric ID, then configure `file_path`. The first update adopts a same-name, same-size file without re-uploading and records the local checksum. This does not prove the remote bytes match the local checksum; verify their provenance before adoption. A different filename or size uploads the configured file and removes other files after verification.
+
+For files generated during apply, make `file_path` depend on the build resource and omit `file_sha256` or supply a known expected digest. Do not use `filesha256()` on a file that does not exist at plan time. A missing file is checked again before any image is created or modified.
+
 ## Example Usage
 
 ```terraform
@@ -72,6 +96,8 @@ resource "hpe_morpheus_image" "example_image" {
 - `cloud_init` (Boolean) Cloud Init Enabled?
 - `config_azure` (Attributes) Azure Reference Virtual Image Parameters (see [below for nested schema](#nestedatt--config_azure))
 - `description` (String) A description for the virtual image
+- `file_path` (String) Local image file to stream to Morpheus. Conflicts with url. File changes update the existing image without replacing its ID. Removing this attribute stops managing the file without deleting it.
+- `file_sha256` (String) SHA-256 of file_path, computed locally when omitted. An explicit checksum is verified before uploading. A changed checksum re-uploads in place; initial adoption checks filename and size because Morpheus does not report remote checksums.
 - `fips_enabled` (Boolean) FIPS enabled?
 - `force_customization` (Boolean) Force Guest Customization?
 - `install_agent` (Boolean) Install Agent?
@@ -98,6 +124,8 @@ needed and will be removed in the 2.6 release. Changing it still re-sends ssh_pa
 ### Read-Only
 
 - `external_id` (String)
+- `file_name` (String) Basename of the managed local image file.
+- `file_size` (Number) Managed file size in bytes from the image file listing, not the asynchronously computed image raw_size.
 - `id` (Number) The ID of this resource.
 - `owner_id` (Number) ID of the user which created this image
 - `raw_size` (Number) Size of image in bytes

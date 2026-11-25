@@ -65,7 +65,7 @@ data "hpe_morpheus_service_plan" "example" {
 - `max_memory` (Number) Max memory size in bytes
 - `max_storage` (Number) Max storage size in bytes
 - `memory_size_type` (String)
-- `price_set_ids` (Set of Number)
+- `price_set_ids` (Set of Number) The IDs of the price sets included in the service plan
 - `sort_order` (Number) Sort order
 - `storage_size_type` (String)
 

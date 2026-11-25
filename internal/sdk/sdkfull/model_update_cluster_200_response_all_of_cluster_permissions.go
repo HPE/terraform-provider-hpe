@@ -22,9 +22,9 @@ var _ MappedNullable = &UpdateCluster200ResponseAllOfClusterPermissions{}
 
 // UpdateCluster200ResponseAllOfClusterPermissions struct for UpdateCluster200ResponseAllOfClusterPermissions
 type UpdateCluster200ResponseAllOfClusterPermissions struct {
-	ResourcePool         *UpdateCluster200ResponseAllOfClusterPermissionsResourcePool        `json:"resourcePool,omitempty"`
-	ResourcePermissions  *UpdateCluster200ResponseAllOfClusterPermissionsResourcePermissions `json:"resourcePermissions,omitempty"`
-	AdditionalProperties map[string]interface{}                                              `json:",remain"`
+	ResourcePool         *GetCluster200ResponseClusterPermissionsResourcePool        `json:"resourcePool,omitempty"`
+	ResourcePermissions  *GetCluster200ResponseClusterPermissionsResourcePermissions `json:"resourcePermissions,omitempty"`
+	AdditionalProperties map[string]interface{}                                      `json:",remain"`
 }
 
 type _UpdateCluster200ResponseAllOfClusterPermissions UpdateCluster200ResponseAllOfClusterPermissions

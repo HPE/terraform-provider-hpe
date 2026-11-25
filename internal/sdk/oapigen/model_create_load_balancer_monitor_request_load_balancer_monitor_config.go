@@ -22,7 +22,15 @@ var _ MappedNullable = &CreateLoadBalancerMonitorRequestLoadBalancerMonitorConfi
 type CreateLoadBalancerMonitorRequestLoadBalancerMonitorConfig struct {
 	Monitor *CreateLoadBalancerMonitorRequestLoadBalancerMonitorConfigMonitor `json:"monitor,omitempty"`
 	// Free-form monitor configuration content.
-	MonitorConfig        NullableString         `json:"monitorConfig,omitempty"`
+	MonitorConfig NullableString `json:"monitorConfig,omitempty"`
+	// HTTP method of an HTTP health check, for load balancer types that define one (such as the HPE Morpheus SDN load balancer).
+	HttpMethod NullableString `json:"httpMethod,omitempty"`
+	// URI requested by an HTTP health check.
+	HttpUri NullableString `json:"httpUri,omitempty"`
+	// Port an HTTP health check connects to.
+	HttpPort NullableInt64 `json:"httpPort,omitempty"`
+	// HTTP status code an HTTP health check expects.
+	HttpReturnCode       NullableString         `json:"httpReturnCode,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -43,6 +51,18 @@ func (o CreateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) ToMap() (map[
 	}
 	if o.MonitorConfig.IsSet() {
 		toSerialize["monitorConfig"] = o.MonitorConfig.Get()
+	}
+	if o.HttpMethod.IsSet() {
+		toSerialize["httpMethod"] = o.HttpMethod.Get()
+	}
+	if o.HttpUri.IsSet() {
+		toSerialize["httpUri"] = o.HttpUri.Get()
+	}
+	if o.HttpPort.IsSet() {
+		toSerialize["httpPort"] = o.HttpPort.Get()
+	}
+	if o.HttpReturnCode.IsSet() {
+		toSerialize["httpReturnCode"] = o.HttpReturnCode.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

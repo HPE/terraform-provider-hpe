@@ -1,0 +1,17 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+-> The `cloud_id`, `server_id`, `ip_status` and `phrase` arguments are applied server-side as query filters. The `filter` block applies additional client-side filtering (Go regular expressions) over the returned results.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_network_floating_ips/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

@@ -307,6 +307,13 @@ func (r *Resource) Create(
 		Network: createNetwork,
 	}
 
+	// A data network on a virtual switch segment needs the segment to be
+	// ready; see waitForSegmentReady.
+	resp.Diagnostics.Append(waitForSegmentReady(ctx, client, plan.CloudId.ValueInt64(), inputs.all)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	network, hresp, err := client.NetworksAPI.CreateNetworks(ctx).
 		CreateNetworksRequest(*createNetworkReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {

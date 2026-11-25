@@ -71,6 +71,9 @@ var poolIsCluster = map[string]bool{
 	"hvmPortGroupOverlayNetwork": true,
 	"hvmPortGroupPrivateNetwork": true,
 	"hvmPortGroupSriovNetwork":   true,
+	// The SDN plugin scopes its virtual network to the HVM cluster the same way
+	// (zonePool.id is its only, required, option type).
+	"juniperSdn": true,
 }
 
 // notClearable records why each remaining optional attribute is not cleared

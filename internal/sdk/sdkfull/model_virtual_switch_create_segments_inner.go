@@ -28,10 +28,12 @@ type VirtualSwitchCreateSegmentsInner struct {
 	IpAddress     *string `json:"ipAddress,omitempty"`
 	Netmask       *string `json:"netmask,omitempty"`
 	Gateway       *string `json:"gateway,omitempty"`
-	// VLAN tag (1-4094). Omit for untagged.
-	VlanId               *int32                 `json:"vlanId,omitempty"`
-	Mtu                  *int32                 `json:"mtu,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	// VLAN tag (2-4094). Omit for untagged.
+	VlanId *int32 `json:"vlanId,omitempty"`
+	Mtu    *int32 `json:"mtu,omitempty"`
+	// Optional per-host IP address assignments for this segment.
+	HostIps              []VirtualSwitchCreateSegmentsInnerHostIpsInner `json:"hostIps,omitempty"`
+	AdditionalProperties map[string]interface{}                         `json:",remain"`
 }
 
 type _VirtualSwitchCreateSegmentsInner VirtualSwitchCreateSegmentsInner
@@ -64,6 +66,9 @@ func (o VirtualSwitchCreateSegmentsInner) ToMap() (map[string]interface{}, error
 	}
 	if !IsNil(o.Mtu) {
 		toSerialize["mtu"] = o.Mtu
+	}
+	if !IsNil(o.HostIps) {
+		toSerialize["hostIps"] = o.HostIps
 	}
 
 	for key, value := range o.AdditionalProperties {

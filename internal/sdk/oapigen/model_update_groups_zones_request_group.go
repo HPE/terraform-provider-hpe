@@ -21,8 +21,8 @@ var _ MappedNullable = &UpdateGroupsZonesRequestGroup{}
 // UpdateGroupsZonesRequestGroup struct for UpdateGroupsZonesRequestGroup
 type UpdateGroupsZonesRequestGroup struct {
 	// An array of all the zones assigned to this group.
-	Zones                []map[string]interface{} `json:"zones"`
-	AdditionalProperties map[string]interface{}   `json:",remain"`
+	Zones                []UpdateGroupsZonesRequestGroupZonesInner `json:"zones"`
+	AdditionalProperties map[string]interface{}                    `json:",remain"`
 }
 
 type _UpdateGroupsZonesRequestGroup UpdateGroupsZonesRequestGroup

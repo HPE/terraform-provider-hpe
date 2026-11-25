@@ -56,8 +56,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config": schema.DynamicAttribute{
 				Optional:            true,
-				Description:         "Generic Cluster Configuration",
-				MarkdownDescription: "Generic Cluster Configuration",
+				Description:         "Generic cluster configuration, for cluster types without a typed block; kept in state as configured. On import the appliance's configuration is adopted, less any credential it carries (an External Kubernetes cluster's `apiToken` and `serviceAccess`, `serviceToken`, `kubeToken`, `kubeConfig`, `joinCommand`, and any key whose name ends in `token`, `password`, `passwd`, `secret`, `passphrase`, `privateKey`, `kubeconfig` or `serviceAccess`), so no credential reaches state. A cluster imported before this was so keeps what it imported until it is removed from state and imported again, and the resource warns while a credential key remains. Credentials written here by the configuration itself are stored like any other value; a typed block with write-only attributes is the way to supply them.",
+				MarkdownDescription: "Generic cluster configuration, for cluster types without a typed block; kept in state as configured. On import the appliance's configuration is adopted, less any credential it carries (an External Kubernetes cluster's `apiToken` and `serviceAccess`, `serviceToken`, `kubeToken`, `kubeConfig`, `joinCommand`, and any key whose name ends in `token`, `password`, `passwd`, `secret`, `passphrase`, `privateKey`, `kubeconfig` or `serviceAccess`), so no credential reaches state. A cluster imported before this was so keeps what it imported until it is removed from state and imported again, and the resource warns while a credential key remains. Credentials written here by the configuration itself are stored like any other value; a typed block with write-only attributes is the way to supply them.",
 				Validators: []validator.Dynamic{
 					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm")}...),
 				},
@@ -195,6 +195,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
+			},
+			"host_profile_id": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "ID of the host profile to attach to the cluster's hosts. Applied via the dedicated cluster host-profile attach/detach endpoints, not the cluster create body.",
+				MarkdownDescription: "ID of the host profile to attach to the cluster's hosts. Applied via the dedicated cluster host-profile attach/detach endpoints, not the cluster create body.",
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
@@ -542,6 +547,7 @@ type ClusterModel struct {
 	CpuPlacementMode  types.String   `tfsdk:"cpu_placement_mode"`
 	Description       types.String   `tfsdk:"description"`
 	GroupId           types.Int64    `tfsdk:"group_id"`
+	HostProfileId     types.Int64    `tfsdk:"host_profile_id"`
 	Id                types.Int64    `tfsdk:"id"`
 	Labels            types.Set      `tfsdk:"labels"`
 	LayoutId          types.Int64    `tfsdk:"layout_id"`

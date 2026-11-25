@@ -1,0 +1,108 @@
+# Host Profile Compliance data source. Phase 1.
+# Backed by TWO source endpoints (the builder enforces ExactlyOneOf and calls
+# the matching one):
+#   cluster: GET /api/clusters/{clusterId}/host-profile/compliance
+#   server:  GET /api/servers/{id}/host-profile/compliance
+# The spec is generated from the cluster endpoint (richest shape: overall_status
+# + hosts[]). We relax the path-param cluster_id to optional, template in the
+# optional server_id input, and template in the flat per-server summary fields
+# (compliant/status/violations/dates) that the server variant returns at the top
+# level. The per-setting `compliance_details` map is DEFERRED / OMITTED for
+# Phase 1 (removed here and from hosts[]). Two reasons to keep it deferred:
+# (1) its `desired`/`current` values are untyped polymorphic JSON (list/bool/int
+# per setting) with no clean Terraform type; (2) it is populated only as a side
+# effect of the check-compliance / remediate actions, so in a Terraform-only
+# workflow (no such action yet) it is an empty map by default. It belongs with a
+# future compliance-actions phase that can both produce and type the data.
+host_profile_compliance:
+  templates:
+    server_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: >-
+          The ID of the server to report compliance for. Provide exactly one of
+          cluster_id or server_id.
+    compliant:
+      bool:
+        computed_optional_required: computed
+        description: Whether the host is compliant (server lookup only).
+    status:
+      string:
+        computed_optional_required: computed
+        description: >-
+          Compliance status of the host (server lookup only). One of
+          `compliant`, `non-compliant`, `error`, or `unknown`; transiently
+          `checking` while a compliance check runs or `remediating` during
+          remediation.
+    remediable_violations:
+      int64:
+        computed_optional_required: computed
+        description: Number of violations that can be auto-remediated (server lookup only).
+    manual_violations:
+      int64:
+        computed_optional_required: computed
+        description: Number of violations requiring manual remediation (server lookup only).
+    last_checked:
+      string:
+        computed_optional_required: computed
+        description: Timestamp the host was last checked (server lookup only).
+    remediated_date:
+      string:
+        computed_optional_required: computed
+        description: Timestamp the host was last remediated (server lookup only).
+
+  moves:
+    - template-server_id: server_id
+    - template-compliant: compliant
+    - template-status: status
+    - template-remediable_violations: remediable_violations
+    - template-manual_violations: manual_violations
+    - template-last_checked: last_checked
+    - template-remediated_date: remediated_date
+
+  removes:
+    - success                                  # read envelope flag
+    - cluster_name                             # out of Phase 1 output scope
+    - hosts.compliance_details                 # per-setting detail DEFERRED for Phase 1 (components/schemas/hostProfileServerCompliance.yaml)
+
+  overrides:
+    cluster_id:
+      computed_optional_required: computed_optional
+      description: >-
+        The ID of the cluster to report compliance for. Provide exactly one of
+        cluster_id or server_id.
+    profile_id:
+      computed_optional_required: computed
+      description: The ID of the host profile evaluated.
+    profile_name:
+      computed_optional_required: computed
+      description: The name of the host profile evaluated.
+    overall_status:
+      computed_optional_required: computed
+      description: >-
+        Aggregated compliance status across the cluster (cluster lookup only).
+        One of `compliant` (all hosts compliant), `non-compliant` (any host
+        non-compliant), `error` (any host errored, none non-compliant), or
+        `unknown` (no hosts evaluated, or a check in progress).
+    hosts:
+      computed_optional_required: computed
+      description: Per-host compliance summary (cluster lookup only).
+    hosts.server_id:
+      description: The ID of the server.
+    hosts.server_name:
+      description: The name of the server.
+    hosts.status:
+      description: >-
+        Compliance status of the host. One of `compliant`, `non-compliant`,
+        `error`, or `unknown`; transiently `checking` while a compliance check
+        runs or `remediating` during remediation.
+    hosts.compliant:
+      description: Whether the host is compliant.
+    hosts.last_checked:
+      description: Timestamp the host was last checked.
+    hosts.remediated_date:
+      description: Timestamp the host was last remediated.
+    hosts.remediable_violations:
+      description: Number of violations that can be auto-remediated.
+    hosts.manual_violations:
+      description: Number of violations requiring manual remediation.

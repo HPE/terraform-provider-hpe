@@ -1,0 +1,43 @@
+resource "hpe_morpheus_identity_source_saml" "tf_example_saml_identity_source" {
+  tenant_id                      = {{.TenantId}}
+  name                           = "{{.Name}}"
+  description                    = "{{.Description}}"
+  login_redirect_url             = "{{.LoginRedirectUrl}}"
+  logout_redirect_url            = "{{.LogoutRedirectUrl}}"
+  include_saml_request_parameter = {{.IncludeSamlRequestParameter}}
+  saml_request                   = "{{.SamlRequest}}"
+  validate_assertion_signature   = {{.ValidateAssertionSignature}}
+  given_name_attribute           = "{{.GivenNameAttribute}}"
+  surname_attribute              = "{{.SurnameAttribute}}"
+  email_attribute                = "{{.EmailAttribute}}"
+  default_account_role_id        = {{.DefaultAccountRoleId}}
+  role_attribute_name            = "{{.RoleAttributeName}}"
+  required_role_attribute_value  = "{{.RequiredRoleAttributeValue}}"
+  enable_role_mapping_permission = {{.EnableRoleMappingPermission}}
+
+  role_mapping {
+    role_id             = {{.RoleMappingRoleId}}
+    role_name           = "{{.RoleMappingRoleName}}"
+    assertion_attribute = "{{.RoleMappingAssertionAttribute}}"
+  }
+
+  role_mapping {
+    role_id             = {{.RoleMapping2RoleId}}
+    role_name           = "{{.RoleMapping2RoleName}}"
+    assertion_attribute = "{{.RoleMapping2AssertionAttribute}}"
+  }
+}
+
+# Morpheus computes the SAML Service Provider metadata. Expose it as outputs so
+# the SP can be registered in the IdP (e.g. Zitadel) within the same apply.
+output "saml_entity_id" {
+  value = hpe_morpheus_identity_source_saml.tf_example_saml_identity_source.entity_id
+}
+
+output "saml_acs_url" {
+  value = hpe_morpheus_identity_source_saml.tf_example_saml_identity_source.acs_url
+}
+
+output "saml_sp_metadata" {
+  value = hpe_morpheus_identity_source_saml.tf_example_saml_identity_source.sp_metadata
+}

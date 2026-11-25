@@ -72,12 +72,24 @@ func (r *cloudAffinityGroupResource) Update(
 	// they cannot interleave with a membership resource doing the same thing.
 	defer affinitylock.Acquire(affinitylock.Cloud, cloudID, id)()
 
-	currentServers, ok := readCurrentServers(ctx, client, cloudID, id, &resp.Diagnostics)
-	if !ok {
-		return
-	}
+	// Which membership is sent depends on whether servers is configured (see
+	// the cluster resource for the full rationale): configured, the plan's set
+	// is the whole truth and anything that arrived by other means is removed;
+	// unconfigured, the live membership is re-asserted so the member resource
+	// and provisioning-time placement are not evicted.
+	if !plan.Servers.IsNull() && !plan.Servers.IsUnknown() {
+		resp.Diagnostics.Append(plan.Servers.ElementsAs(ctx, &ag.Servers, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	} else {
+		currentServers, ok := readCurrentServers(ctx, client, cloudID, id, &resp.Diagnostics)
+		if !ok {
+			return
+		}
 
-	ag.Servers = currentServers
+		ag.Servers = currentServers
+	}
 
 	// tenant_ids is deliberately NOT sent. See the note in Create and MORPH-15806.
 

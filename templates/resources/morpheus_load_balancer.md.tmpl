@@ -8,7 +8,7 @@ description: |-
 
 {{ .Description | trimspace }}
 
--> Use `config_haproxy` for HAProxy container load balancers — the type code is automatically set to `haproxyContainer`. For other load balancer types, use the generic `config` attribute with `type_code`. The `config_haproxy` and `type_code` attributes are mutually exclusive.
+-> Use a typed block where one exists — `config_haproxy` for HAProxy container load balancers (the type code is then `haproxyContainer` and `type_code` stays null), `config_nsxt` for NSX-T and `config_juniper_sdn` for the HPE Morpheus SDN load balancer, where `type_code` is read from the appliance and may be omitted. For other load balancer types, use the generic `config` attribute with `type_code`. The `config_haproxy` and `type_code` attributes are mutually exclusive.
 
 ## Example Usage
 
@@ -19,6 +19,10 @@ description: |-
 ### HAProxy Container Load Balancer (Generic Config)
 
 {{ tffile "examples/resources/morpheus_load_balancer/example_haproxy_generic.tf" }}
+
+### HPE Morpheus SDN (Juniper CN2)
+
+{{ tffile "examples/resources/morpheus_load_balancer/example_juniper_sdn.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 

@@ -1,0 +1,21 @@
+# Auto-allocate: omit ip_address and Morpheus reserves the pool's next free
+# address, returned as the computed ip_address.
+resource "hpe_morpheus_network_pool_ip" "auto" {
+  network_pool_id = {{.NetworkPoolId}}
+  hostname        = "{{.Hostname}}"
+}
+
+# Pinned address: the given ip_address must lie within the pool's IP ranges.
+resource "hpe_morpheus_network_pool_ip" "pinned" {
+  network_pool_id = {{.NetworkPoolId}}
+  hostname        = "{{.Hostname}}-pinned"
+  ip_address      = "{{.IpAddress}}"
+}
+
+# Attached to a server: associate the reservation with a resource by type/id.
+resource "hpe_morpheus_network_pool_ip" "attached" {
+  network_pool_id = {{.NetworkPoolId}}
+  hostname        = "{{.Hostname}}-attached"
+  ref_type        = "{{.RefType}}"
+  ref_id          = {{.RefId}}
+}

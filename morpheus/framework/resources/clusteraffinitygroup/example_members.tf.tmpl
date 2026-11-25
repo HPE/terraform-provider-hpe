@@ -1,0 +1,26 @@
+{{- if .ClusterName -}}
+data "hpe_morpheus_cluster" "hvm" {
+  name = "{{.ClusterName}}"
+}
+
+# The members, looked up by name. Each is a compute server -- the machine
+# record backing an instance -- of that cluster.
+data "hpe_morpheus_compute_server" "member" {
+  for_each = toset([{{.ServerNames}}])
+
+  name = each.value
+}
+
+{{end -}}
+resource "hpe_morpheus_cluster_affinity_group" "members" {
+  cluster_id    = {{.ClusterId}}
+  name          = "{{.Name}}"
+  affinity_type = "{{.AffinityType}}"
+{{- if .Servers}}
+
+  # Terraform owns the membership: the group is created with these servers and
+  # every apply re-asserts exactly this set. Do not also manage members of this
+  # group with hpe_morpheus_cluster_affinity_group_member.
+  servers = {{.Servers}}
+{{- end}}
+}

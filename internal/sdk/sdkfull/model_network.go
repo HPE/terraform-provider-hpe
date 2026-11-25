@@ -27,12 +27,12 @@ type Network struct {
 	// Name
 	Name *string `json:"name,omitempty"`
 	// Network Display Name
-	DisplayName NullableString                              `json:"displayName,omitempty"`
-	Labels      []string                                    `json:"labels,omitempty"`
-	Group       *CreateNetworks200ResponseAllOfNetworkGroup `json:"group,omitempty"`
-	Zone        *CreateNetworks200ResponseAllOfNetworkZone  `json:"zone,omitempty"`
-	Type        *CreateNetworks200ResponseAllOfNetworkType  `json:"type,omitempty"`
-	Owner       *CreateNetworks200ResponseAllOfNetworkOwner `json:"owner,omitempty"`
+	DisplayName NullableString `json:"displayName,omitempty"`
+	Labels      []string       `json:"labels,omitempty"`
+	Group       *NetworkGroup  `json:"group,omitempty"`
+	Zone        *NetworkZone   `json:"zone,omitempty"`
+	Type        *NetworkType   `json:"type,omitempty"`
+	Owner       *NetworkOwner  `json:"owner,omitempty"`
 	// Network Code
 	Code        NullableString `json:"code,omitempty"`
 	Ipv4Enabled *bool          `json:"ipv4Enabled,omitempty"`
@@ -79,30 +79,30 @@ type Network struct {
 	TftpServer NullableString `json:"tftpServer,omitempty"`
 	BootFile   NullableString `json:"bootFile,omitempty"`
 	// Network switch identifier
-	SwitchId                NullableString                                           `json:"switchId,omitempty"`
-	FabricId                NullableString                                           `json:"fabricId,omitempty"`
-	NetworkRole             NullableString                                           `json:"networkRole,omitempty"`
-	Status                  NullableString                                           `json:"status,omitempty"`
-	AvailabilityZone        NullableString                                           `json:"availabilityZone,omitempty"`
-	Pool                    *CreateNetworks200ResponseAllOfNetworkPool               `json:"pool,omitempty"`
-	PoolIPv6                *CreateNetworks200ResponseAllOfNetworkPoolIPv6           `json:"poolIPv6,omitempty"`
-	NetworkProxy            *CreateNetworks200ResponseAllOfNetworkNetworkProxy       `json:"networkProxy,omitempty"`
-	NetworkDomain           *CreateNetworks200ResponseAllOfNetworkNetworkDomain      `json:"networkDomain,omitempty"`
-	SearchDomains           NullableString                                           `json:"searchDomains,omitempty"`
-	PrefixLength            NullableString                                           `json:"prefixLength,omitempty"`
-	Visibility              *string                                                  `json:"visibility,omitempty"`
-	EnableAdmin             *bool                                                    `json:"enableAdmin,omitempty"`
-	Active                  *bool                                                    `json:"active,omitempty"`
-	DefaultNetwork          *bool                                                    `json:"defaultNetwork,omitempty"`
-	AssignPublicIp          *bool                                                    `json:"assignPublicIp,omitempty"`
-	NoProxy                 NullableString                                           `json:"noProxy,omitempty"`
-	ApplianceUrlProxyBypass *bool                                                    `json:"applianceUrlProxyBypass,omitempty"`
-	ZonePool                *CreateNetworks200ResponseAllOfNetworkZonePool           `json:"zonePool,omitempty"`
-	AllowStaticOverride     *bool                                                    `json:"allowStaticOverride,omitempty"`
-	Config                  *CreateNetworks200ResponseAllOfNetworkConfig             `json:"config,omitempty"`
-	Tenants                 []CreateNetworks200ResponseAllOfNetworkTenantsInner      `json:"tenants,omitempty"`
-	ResourcePermission      *CreateNetworks200ResponseAllOfNetworkResourcePermission `json:"resourcePermission,omitempty"`
-	AdditionalProperties    map[string]interface{}                                   `json:",remain"`
+	SwitchId                NullableString             `json:"switchId,omitempty"`
+	FabricId                NullableString             `json:"fabricId,omitempty"`
+	NetworkRole             NullableString             `json:"networkRole,omitempty"`
+	Status                  NullableString             `json:"status,omitempty"`
+	AvailabilityZone        NullableString             `json:"availabilityZone,omitempty"`
+	Pool                    *NetworkPool               `json:"pool,omitempty"`
+	PoolIPv6                *NetworkPoolIPv6           `json:"poolIPv6,omitempty"`
+	NetworkProxy            *NetworkNetworkProxy       `json:"networkProxy,omitempty"`
+	NetworkDomain           *NetworkNetworkDomain      `json:"networkDomain,omitempty"`
+	SearchDomains           NullableString             `json:"searchDomains,omitempty"`
+	PrefixLength            NullableString             `json:"prefixLength,omitempty"`
+	Visibility              *string                    `json:"visibility,omitempty"`
+	EnableAdmin             *bool                      `json:"enableAdmin,omitempty"`
+	Active                  *bool                      `json:"active,omitempty"`
+	DefaultNetwork          *bool                      `json:"defaultNetwork,omitempty"`
+	AssignPublicIp          *bool                      `json:"assignPublicIp,omitempty"`
+	NoProxy                 NullableString             `json:"noProxy,omitempty"`
+	ApplianceUrlProxyBypass *bool                      `json:"applianceUrlProxyBypass,omitempty"`
+	ZonePool                *NetworkZonePool           `json:"zonePool,omitempty"`
+	AllowStaticOverride     *bool                      `json:"allowStaticOverride,omitempty"`
+	Config                  *NetworkConfig             `json:"config,omitempty"`
+	Tenants                 []NetworkTenantsInner      `json:"tenants,omitempty"`
+	ResourcePermission      *NetworkResourcePermission `json:"resourcePermission,omitempty"`
+	AdditionalProperties    map[string]interface{}     `json:",remain"`
 }
 
 type _Network Network

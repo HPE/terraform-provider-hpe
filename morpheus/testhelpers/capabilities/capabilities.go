@@ -54,6 +54,16 @@ const (
 	NSXV Capability = "nsxv"
 	ACI  Capability = "aci"
 
+	// JuniperSDN marks tests that exercise the HPE Morpheus SDN (Juniper CN2)
+	// network surfaces: the SDN network server, SDN virtual networks, SDN and
+	// BGP routers, the SDN load balancer and its monitors, and floating IPs.
+	// These need the HPE Morpheus SDN network plugin installed, Morpheus >=
+	// 9.1.0, and an HVM cluster whose cloud points at the SDN network server.
+	// No reference appliance has the plugin, so these tests skip unless that
+	// infrastructure is advertised and the matching fixture (see
+	// testhelpers.RequireSdnFixture) is supplied.
+	JuniperSDN Capability = "juniper_sdn"
+
 	// Network Features
 	Network             Capability = "network"
 	NetworkDHCP         Capability = "network_dhcp"
@@ -86,6 +96,20 @@ const (
 	// group tests on this alongside VMware or HVM so they skip on older or
 	// unsupported environments.
 	AffinityGroup Capability = "affinity_group"
+
+	// VirtualSwitch marks tests that create or read HVM virtual switches. These
+	// need a Morpheus >= 9.1.0 appliance with an HVM (mvm-cluster) cluster on a
+	// virtual-switch-capable (2.0+) layout and hosts with spare NICs. That is
+	// more than the "hvm" capability advertises, so it is declared separately.
+	VirtualSwitch Capability = "virtual_switch"
+
+	// HostProfile marks tests that exercise the host profile API, introduced in
+	// Morpheus 9.1.0 (alongside HVM 2.0). Host profiles are an HVM/MVM feature --
+	// compliance enforcement runs only on MVM/KVM hosts -- but the profile
+	// document CRUD API lives in morpheus-core and does NOT require a live HVM
+	// cluster to exercise. Gate host profile tests on this so they skip (rather
+	// than 404) on appliances older than 9.1.0. Not paired with hvm.
+	HostProfile Capability = "host_profile"
 
 	// Automation Integrations
 	Ansible      Capability = "ansible"
@@ -144,6 +168,12 @@ const (
 
 	// Bare Metal
 	Metal Capability = "metal"
+
+	// BareMetalStub marks tests that create bare-metal hosts against an Omega
+	// bare-metal stub cloud (omega.baremetal.stub-server). These need an Omega
+	// Cloud seeded on the appliance plus the TF_VAR_testacc_morpheus_bmaas_*
+	// fixtures (cloud/group/resource-pool IDs).
+	BareMetalStub Capability = "bare_metal_stub"
 
 	// PCE - For tests against a live PCE Cloud system.
 	PCE Capability = "pce"

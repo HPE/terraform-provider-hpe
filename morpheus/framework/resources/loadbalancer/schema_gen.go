@@ -50,11 +50,13 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 					dynamicvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("config_haproxy"),
 						path.MatchRoot("config_nsxt"),
+						path.MatchRoot("config_juniper_sdn"),
 					}...),
 					dynamicvalidator.ExactlyOneOf(path.Expressions{
 						path.MatchRoot("config"),
 						path.MatchRoot("config_haproxy"),
 						path.MatchRoot("config_nsxt"),
+						path.MatchRoot("config_juniper_sdn"),
 					}...),
 				},
 			},
@@ -81,6 +83,72 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Configuration for HAProxy container load balancer type",
 				Validators: []validator.Object{
 					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("type_code")}...),
+				},
+			},
+			"config_juniper_sdn": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"destination_port": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "Port the traffic is forwarded to.",
+						MarkdownDescription: "Port the traffic is forwarded to.",
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.RequiresReplace(),
+						},
+					},
+					"protocol": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Protocol of the port mapping (from the `portMappingProtocols` option source, for example `TCP` or `UDP`).",
+						MarkdownDescription: "Protocol of the port mapping (from the `portMappingProtocols` option source, for example `TCP` or `UDP`).",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+					"resource_pool_id": schema.Int64Attribute{
+						Required:            true,
+						Description:         "ID of the HVM cluster resource pool the load balancer is scoped to.",
+						MarkdownDescription: "ID of the HVM cluster resource pool the load balancer is scoped to.",
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.RequiresReplace(),
+						},
+					},
+					"source_port": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "Port the virtual IP listens on.",
+						MarkdownDescription: "Port the virtual IP listens on.",
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.RequiresReplace(),
+						},
+					},
+					"virtual_ip": schema.StringAttribute{
+						Required:            true,
+						Description:         "The virtual IP address.",
+						MarkdownDescription: "The virtual IP address.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+					"virtual_network_uid": schema.StringAttribute{
+						Required:            true,
+						Description:         "The SDN virtual network the virtual IP is on, given by the network's `unique_id` (`hpe_morpheus_network.<name>.unique_id`).",
+						MarkdownDescription: "The SDN virtual network the virtual IP is on, given by the network's `unique_id` (`hpe_morpheus_network.<name>.unique_id`).",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+				},
+				CustomType: ConfigJuniperSdnType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigJuniperSdnValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "Configuration for the HPE Morpheus SDN load balancer type (`juniper-sdn-lb`): a virtual IP on an SDN virtual network of an HVM cluster, with an optional port mapping. The type has no pools, profiles or virtual servers of its own; health monitors are managed with `hpe_morpheus_load_balancer_monitor`.",
+				MarkdownDescription: "Configuration for the HPE Morpheus SDN load balancer type (`juniper-sdn-lb`): a virtual IP on an SDN virtual network of an HVM cluster, with an optional port mapping. The type has no pools, profiles or virtual servers of its own; health monitors are managed with `hpe_morpheus_load_balancer_monitor`.",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_haproxy"), path.MatchRoot("config_nsxt")}...),
 				},
 			},
 			"config_nsxt": schema.SingleNestedAttribute{
@@ -136,7 +204,7 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 					objectplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.Object{
-					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_haproxy")}...),
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_haproxy"), path.MatchRoot("config_juniper_sdn")}...),
 				},
 			},
 			"description": schema.StringAttribute{
@@ -244,9 +312,11 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"type_code": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The type code of the load balancer (e.g. haproxyContainer)",
-				MarkdownDescription: "The type code of the load balancer (e.g. haproxyContainer)",
+				Computed:            true,
+				Description:         "The type code of the load balancer (e.g. `haproxyContainer`, `nsx-t`, `juniper-sdn-lb`). A typed config block implies it, so it may be omitted and is then read from the appliance (except for `config_haproxy`, where it stays null); changing it replaces the load balancer.",
+				MarkdownDescription: "The type code of the load balancer (e.g. `haproxyContainer`, `nsx-t`, `juniper-sdn-lb`). A typed config block implies it, so it may be omitted and is then read from the appliance (except for `config_haproxy`, where it stays null); changing it replaces the load balancer.",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -273,23 +343,24 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type LoadBalancerModel struct {
-	CloudId                types.Int64        `tfsdk:"cloud_id"`
-	Config                 types.Dynamic      `tfsdk:"config"`
-	ConfigHaproxy          ConfigHaproxyValue `tfsdk:"config_haproxy"`
-	ConfigNsxt             ConfigNsxtValue    `tfsdk:"config_nsxt"`
-	Description            types.String       `tfsdk:"description"`
-	Enabled                types.Bool         `tfsdk:"enabled"`
-	GroupId                types.Int64        `tfsdk:"group_id"`
-	GroupIdVersion         types.Int64        `tfsdk:"group_id_version"`
-	Id                     types.Int64        `tfsdk:"id"`
-	Name                   types.String       `tfsdk:"name"`
-	NetworkServerId        types.Int64        `tfsdk:"network_server_id"`
-	NetworkServerIdVersion types.Int64        `tfsdk:"network_server_id_version"`
-	Permissions            PermissionsValue   `tfsdk:"permissions"`
-	Tenants                types.Set          `tfsdk:"tenants"`
-	TypeCode               types.String       `tfsdk:"type_code"`
-	Visibility             types.String       `tfsdk:"visibility"`
-	WriteOnlyRevision      types.Int64        `tfsdk:"write_only_revision"`
+	CloudId                types.Int64           `tfsdk:"cloud_id"`
+	Config                 types.Dynamic         `tfsdk:"config"`
+	ConfigHaproxy          ConfigHaproxyValue    `tfsdk:"config_haproxy"`
+	ConfigJuniperSdn       ConfigJuniperSdnValue `tfsdk:"config_juniper_sdn"`
+	ConfigNsxt             ConfigNsxtValue       `tfsdk:"config_nsxt"`
+	Description            types.String          `tfsdk:"description"`
+	Enabled                types.Bool            `tfsdk:"enabled"`
+	GroupId                types.Int64           `tfsdk:"group_id"`
+	GroupIdVersion         types.Int64           `tfsdk:"group_id_version"`
+	Id                     types.Int64           `tfsdk:"id"`
+	Name                   types.String          `tfsdk:"name"`
+	NetworkServerId        types.Int64           `tfsdk:"network_server_id"`
+	NetworkServerIdVersion types.Int64           `tfsdk:"network_server_id_version"`
+	Permissions            PermissionsValue      `tfsdk:"permissions"`
+	Tenants                types.Set             `tfsdk:"tenants"`
+	TypeCode               types.String          `tfsdk:"type_code"`
+	Visibility             types.String          `tfsdk:"visibility"`
+	WriteOnlyRevision      types.Int64           `tfsdk:"write_only_revision"`
 }
 
 var _ basetypes.ObjectTypable = ConfigHaproxyType{}
@@ -672,6 +743,605 @@ func (v ConfigHaproxyValue) AttributeTypes(ctx context.Context) map[string]attr.
 	return map[string]attr.Type{
 		"plan_id": basetypes.Int64Type{},
 		"pool":    basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigJuniperSdnType{}
+
+type ConfigJuniperSdnType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigJuniperSdnType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigJuniperSdnType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigJuniperSdnType) String() string {
+	return "ConfigJuniperSdnType"
+}
+
+func (t ConfigJuniperSdnType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigJuniperSdnValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigJuniperSdnValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	destinationPortAttribute, ok := attributes["destination_port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`destination_port is missing from object`)
+
+		return nil, diags
+	}
+
+	destinationPortVal, ok := destinationPortAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`destination_port expected to be basetypes.Int64Value, was: %T`, destinationPortAttribute))
+	}
+
+	protocolAttribute, ok := attributes["protocol"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`protocol is missing from object`)
+
+		return nil, diags
+	}
+
+	protocolVal, ok := protocolAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`protocol expected to be basetypes.StringValue, was: %T`, protocolAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return nil, diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.Int64Value, was: %T`, resourcePoolIdAttribute))
+	}
+
+	sourcePortAttribute, ok := attributes["source_port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`source_port is missing from object`)
+
+		return nil, diags
+	}
+
+	sourcePortVal, ok := sourcePortAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`source_port expected to be basetypes.Int64Value, was: %T`, sourcePortAttribute))
+	}
+
+	virtualIpAttribute, ok := attributes["virtual_ip"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virtual_ip is missing from object`)
+
+		return nil, diags
+	}
+
+	virtualIpVal, ok := virtualIpAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virtual_ip expected to be basetypes.StringValue, was: %T`, virtualIpAttribute))
+	}
+
+	virtualNetworkUidAttribute, ok := attributes["virtual_network_uid"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virtual_network_uid is missing from object`)
+
+		return nil, diags
+	}
+
+	virtualNetworkUidVal, ok := virtualNetworkUidAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virtual_network_uid expected to be basetypes.StringValue, was: %T`, virtualNetworkUidAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigJuniperSdnValue{
+		DestinationPort:   destinationPortVal,
+		Protocol:          protocolVal,
+		ResourcePoolId:    resourcePoolIdVal,
+		SourcePort:        sourcePortVal,
+		VirtualIp:         virtualIpVal,
+		VirtualNetworkUid: virtualNetworkUidVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigJuniperSdnValueNull() ConfigJuniperSdnValue {
+	return ConfigJuniperSdnValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigJuniperSdnValueUnknown() ConfigJuniperSdnValue {
+	return ConfigJuniperSdnValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigJuniperSdnValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigJuniperSdnValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigJuniperSdnValue Attribute Value",
+				"While creating a ConfigJuniperSdnValue value, a missing attribute value was detected. "+
+					"A ConfigJuniperSdnValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigJuniperSdnValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigJuniperSdnValue Attribute Type",
+				"While creating a ConfigJuniperSdnValue value, an invalid attribute value was detected. "+
+					"A ConfigJuniperSdnValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigJuniperSdnValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigJuniperSdnValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigJuniperSdnValue Attribute Value",
+				"While creating a ConfigJuniperSdnValue value, an extra attribute value was detected. "+
+					"A ConfigJuniperSdnValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigJuniperSdnValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	destinationPortAttribute, ok := attributes["destination_port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`destination_port is missing from object`)
+
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	destinationPortVal, ok := destinationPortAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`destination_port expected to be basetypes.Int64Value, was: %T`, destinationPortAttribute))
+	}
+
+	protocolAttribute, ok := attributes["protocol"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`protocol is missing from object`)
+
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	protocolVal, ok := protocolAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`protocol expected to be basetypes.StringValue, was: %T`, protocolAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.Int64Value, was: %T`, resourcePoolIdAttribute))
+	}
+
+	sourcePortAttribute, ok := attributes["source_port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`source_port is missing from object`)
+
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	sourcePortVal, ok := sourcePortAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`source_port expected to be basetypes.Int64Value, was: %T`, sourcePortAttribute))
+	}
+
+	virtualIpAttribute, ok := attributes["virtual_ip"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virtual_ip is missing from object`)
+
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	virtualIpVal, ok := virtualIpAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virtual_ip expected to be basetypes.StringValue, was: %T`, virtualIpAttribute))
+	}
+
+	virtualNetworkUidAttribute, ok := attributes["virtual_network_uid"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virtual_network_uid is missing from object`)
+
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	virtualNetworkUidVal, ok := virtualNetworkUidAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virtual_network_uid expected to be basetypes.StringValue, was: %T`, virtualNetworkUidAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigJuniperSdnValueUnknown(), diags
+	}
+
+	return ConfigJuniperSdnValue{
+		DestinationPort:   destinationPortVal,
+		Protocol:          protocolVal,
+		ResourcePoolId:    resourcePoolIdVal,
+		SourcePort:        sourcePortVal,
+		VirtualIp:         virtualIpVal,
+		VirtualNetworkUid: virtualNetworkUidVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigJuniperSdnValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigJuniperSdnValue {
+	object, diags := NewConfigJuniperSdnValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigJuniperSdnValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigJuniperSdnType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigJuniperSdnValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigJuniperSdnValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigJuniperSdnValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigJuniperSdnValueMust(ConfigJuniperSdnValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigJuniperSdnType) ValueType(ctx context.Context) attr.Value {
+	return ConfigJuniperSdnValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigJuniperSdnValue{}
+
+type ConfigJuniperSdnValue struct {
+	DestinationPort   basetypes.Int64Value  `tfsdk:"destination_port"`
+	Protocol          basetypes.StringValue `tfsdk:"protocol"`
+	ResourcePoolId    basetypes.Int64Value  `tfsdk:"resource_pool_id"`
+	SourcePort        basetypes.Int64Value  `tfsdk:"source_port"`
+	VirtualIp         basetypes.StringValue `tfsdk:"virtual_ip"`
+	VirtualNetworkUid basetypes.StringValue `tfsdk:"virtual_network_uid"`
+	state             attr.ValueState
+}
+
+func (v ConfigJuniperSdnValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 6)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["destination_port"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["protocol"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["resource_pool_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["source_port"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["virtual_ip"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["virtual_network_uid"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 6)
+
+		val, err = v.DestinationPort.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["destination_port"] = val
+
+		val, err = v.Protocol.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["protocol"] = val
+
+		val, err = v.ResourcePoolId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["resource_pool_id"] = val
+
+		val, err = v.SourcePort.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["source_port"] = val
+
+		val, err = v.VirtualIp.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["virtual_ip"] = val
+
+		val, err = v.VirtualNetworkUid.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["virtual_network_uid"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigJuniperSdnValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigJuniperSdnValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigJuniperSdnValue) String() string {
+	return "ConfigJuniperSdnValue"
+}
+
+func (v ConfigJuniperSdnValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"destination_port":    basetypes.Int64Type{},
+		"protocol":            basetypes.StringType{},
+		"resource_pool_id":    basetypes.Int64Type{},
+		"source_port":         basetypes.Int64Type{},
+		"virtual_ip":          basetypes.StringType{},
+		"virtual_network_uid": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"destination_port":    v.DestinationPort,
+			"protocol":            v.Protocol,
+			"resource_pool_id":    v.ResourcePoolId,
+			"source_port":         v.SourcePort,
+			"virtual_ip":          v.VirtualIp,
+			"virtual_network_uid": v.VirtualNetworkUid,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigJuniperSdnValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigJuniperSdnValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.DestinationPort.Equal(other.DestinationPort) {
+		return false
+	}
+
+	if !v.Protocol.Equal(other.Protocol) {
+		return false
+	}
+
+	if !v.ResourcePoolId.Equal(other.ResourcePoolId) {
+		return false
+	}
+
+	if !v.SourcePort.Equal(other.SourcePort) {
+		return false
+	}
+
+	if !v.VirtualIp.Equal(other.VirtualIp) {
+		return false
+	}
+
+	if !v.VirtualNetworkUid.Equal(other.VirtualNetworkUid) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigJuniperSdnValue) Type(ctx context.Context) attr.Type {
+	return ConfigJuniperSdnType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigJuniperSdnValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"destination_port":    basetypes.Int64Type{},
+		"protocol":            basetypes.StringType{},
+		"resource_pool_id":    basetypes.Int64Type{},
+		"source_port":         basetypes.Int64Type{},
+		"virtual_ip":          basetypes.StringType{},
+		"virtual_network_uid": basetypes.StringType{},
 	}
 }
 

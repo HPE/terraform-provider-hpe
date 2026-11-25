@@ -3,9 +3,10 @@ package networkpool
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -86,14 +87,16 @@ func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateReq
 	if !plan.SubnetAddress.IsNull() && !plan.SubnetAddress.IsUnknown() {
 		additionalProps["subnetAddress"] = plan.SubnetAddress.ValueString()
 	}
-	if !plan.IpRanges.IsNull() && !plan.IpRanges.IsUnknown() {
-		attrs := plan.IpRanges.Attributes()
-		startAddr := attrs["starting_address"].(types.String).ValueString()
-		endAddr := attrs["ending_address"].(types.String).ValueString()
-		additionalProps["ipRanges"] = []map[string]interface{}{
-			{"startAddress": startAddr, "endAddress": endAddr},
-		}
+	// Ranges: every element of ip_address_ranges, or the deprecated single
+	// ip_ranges object. Exactly one is configured (schema validators).
+	planned, diags := rangesFromList(ctx, plan.IpAddressRanges)
+	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
+		return
 	}
+	if single, ok := singleRangeFromObject(plan.IpRanges); ok {
+		planned = []ipRange{single}
+	}
+	poolReq.IpRanges = rangesToCreateRequest(planned)
 	if len(additionalProps) > 0 {
 		poolReq.AdditionalProperties = additionalProps
 	}
@@ -134,7 +137,7 @@ func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateReq
 
 		return
 	}
-	mapReadResponseToModel(&plan, readResult.NetworkPool)
+	resp.Diagnostics.Append(mapReadResponseToModel(&plan, readResult.NetworkPool)...)
 
 	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -174,7 +177,7 @@ func (r *networkPoolResource) Read(ctx context.Context, req resource.ReadRequest
 
 		return
 	}
-	mapReadResponseToModel(&state, pool)
+	resp.Diagnostics.Append(mapReadResponseToModel(&state, pool)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -187,8 +190,9 @@ func (r *networkPoolResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	var plan NetworkPoolModel
+	var plan, state NetworkPoolModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -238,14 +242,58 @@ func (r *networkPoolResource) Update(ctx context.Context, req resource.UpdateReq
 	case !plan.SubnetAddress.IsNull() && !plan.SubnetAddress.IsUnknown():
 		additionalProps["subnetAddress"] = plan.SubnetAddress.ValueString()
 	}
-	if !plan.IpRanges.IsNull() && !plan.IpRanges.IsUnknown() {
-		attrs := plan.IpRanges.Attributes()
-		startAddr := attrs["starting_address"].(types.String).ValueString()
-		endAddr := attrs["ending_address"].(types.String).ValueString()
-		additionalProps["ipRanges"] = []map[string]interface{}{
-			{"startAddress": startAddr, "endAddress": endAddr},
-		}
+	// Ranges. Morpheus reconciles by id (see ranges.go): send each planned
+	// range with the id carried in state so it is edited in place; a range
+	// missing from the plan is deleted by the appliance.
+	priorRanges, diags := rangesFromList(ctx, state.IpAddressRanges)
+	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
+		return
 	}
+	planned, diags := rangesFromList(ctx, plan.IpAddressRanges)
+	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
+		return
+	}
+	// What the appliance holds now: the managed ranges, and any range
+	// ip_address_ranges cannot express (CIDR / IPv6), which must be sent back
+	// unchanged or Morpheus deletes it.
+	currentPool := getPool(ctx, client, id, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	current, unmanaged := rangesFromAPI(currentPool)
+
+	// Which attribute is in use is decided by the CONFIGURATION, as in
+	// carryRangeIDs: ip_ranges is computed and stays mirrored in state (and
+	// so in the plan) after a move to ip_address_ranges.
+	var config NetworkPoolModel
+	if resp.Diagnostics.Append(req.Config.Get(ctx, &config)...); resp.Diagnostics.HasError() {
+		return
+	}
+	if single, ok := singleRangeFromObject(config.IpRanges); ok {
+		// The deprecated single-range attribute would delete every other range
+		// of a multi-range pool (or add one beside a CIDR range it cannot
+		// express). Refuse rather than lose data.
+		if total, ok := singleRangeUpdatable(current, unmanaged); !ok {
+			resp.Diagnostics.AddError(
+				"ip_ranges cannot manage a pool with several ranges",
+				fmt.Sprintf("network pool %d has %d range(s) the deprecated ip_ranges attribute cannot manage as a single "+
+					"start/end range; applying it would delete or duplicate them. Switch to ip_address_ranges, "+
+					"listing every range.", id, total),
+			)
+
+			return
+		}
+		// The pool's one range is edited in place under its current id, taken
+		// from the appliance rather than from prior state: state may not hold
+		// ip_address_ranges yet (first apply after upgrading, -refresh=false).
+		planned = []ipRange{single}
+		if len(current) == 1 {
+			planned[0].id = current[0].id
+		}
+	} else {
+		planned = withIDsFromPrior(planned, priorRanges)
+	}
+	poolReq.IpRanges = append(rangesToUpdateRequest(planned), unmanagedToUpdateRequest(unmanaged)...)
 	if len(additionalProps) > 0 {
 		poolReq.AdditionalProperties = additionalProps
 	}
@@ -255,6 +303,16 @@ func (r *networkPoolResource) Update(ctx context.Context, req resource.UpdateReq
 			NetworkPool: &poolReq,
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		if httpResp != nil && httpResp.StatusCode == http.StatusBadRequest && isReservationConflict(err.Error()) {
+			resp.Diagnostics.AddError(
+				"a removed IP range still has reserved addresses",
+				"Morpheus refused to delete a range of network pool "+plan.Name.ValueString()+" because addresses in it are "+
+					"still reserved (for example by hpe_morpheus_network_pool_ip resources or instance allocations). "+
+					"Release them before removing the range from ip_address_ranges.",
+			)
+
+			return
+		}
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "network_pool", plan.Name.ValueString(), err, httpResp)
 
 		return
@@ -274,7 +332,29 @@ func (r *networkPoolResource) Update(ctx context.Context, req resource.UpdateReq
 
 		return
 	}
-	mapReadResponseToModel(&plan, pool)
+	resp.Diagnostics.Append(mapReadResponseToModel(&plan, pool)...)
+
+	// Morpheus keeps (and answers 200 for) a range it will not delete because
+	// addresses in it are reserved. Record what the appliance holds, then
+	// report it, so the plan keeps showing the removal until the
+	// reservations are released.
+	if apiRanges, _ := rangesFromAPI(pool); len(planned) > 0 {
+		if kept := rangesNotRemoved(planned, apiRanges); len(kept) > 0 {
+			resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+			// The other attributes of this apply did go through: record them.
+			resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
+			for _, k := range kept {
+				resp.Diagnostics.AddError(
+					"a removed IP range still has reserved addresses",
+					fmt.Sprintf("Morpheus kept range %s-%s of network pool %s because addresses in it are still reserved "+
+						"(for example by hpe_morpheus_network_pool_ip resources or instance allocations). "+
+						"Release them before removing the range from ip_address_ranges.", k.start, k.end, plan.Name.ValueString()),
+				)
+			}
+
+			return
+		}
+	}
 
 	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -318,7 +398,9 @@ func (r *networkPoolResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapReadResponseToModel(model *NetworkPoolModel, pool *sdk.GetNetworkPool200ResponseNetworkPool) {
+func mapReadResponseToModel(model *NetworkPoolModel, pool *sdk.GetNetworkPool200ResponseNetworkPool) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	if pool.Id != nil {
 		model.Id = types.Int64Value(*pool.Id)
 	}
@@ -360,30 +442,52 @@ func mapReadResponseToModel(model *NetworkPoolModel, pool *sdk.GetNetworkPool200
 	} else {
 		model.SubnetAddress = types.StringNull()
 	}
-	if len(pool.IpRanges) > 0 {
-		r := pool.IpRanges[0]
-		startAddr := types.StringNull()
-		endAddr := types.StringNull()
-		if r.StartAddress.IsSet() && r.StartAddress.Get() != nil {
-			startAddr = types.StringValue(*r.StartAddress.Get())
-		}
-		if r.EndAddress.IsSet() && r.EndAddress.Get() != nil {
-			endAddr = types.StringValue(*r.EndAddress.Get())
-		}
-		model.IpRanges, _ = types.ObjectValue(
-			map[string]attr.Type{
-				"starting_address": types.StringType,
-				"ending_address":   types.StringType,
-			},
-			map[string]attr.Value{
-				"starting_address": startAddr,
-				"ending_address":   endAddr,
-			},
-		)
-	} else {
-		model.IpRanges = types.ObjectNull(map[string]attr.Type{
-			"starting_address": types.StringType,
-			"ending_address":   types.StringType,
-		})
+	// Ranges. ip_address_ranges always reflects the appliance (in the prior
+	// state's order), so a configuration moving from ip_ranges to
+	// ip_address_ranges with the same values plans no change. The deprecated
+	// ip_ranges is only populated when the prior state used it, so the two
+	// never appear set together.
+	ctx := context.Background()
+	apiRanges, unmanaged := rangesFromAPI(pool)
+	for _, u := range unmanaged {
+		diags.AddWarning("IP range not represented",
+			fmt.Sprintf("network pool %s has %s without start and end addresses (a CIDR range); "+
+				"ip_address_ranges cannot represent it. It is left as it is on every update.", model.Name.ValueString(), u))
 	}
+	prior, _ := rangesFromList(ctx, model.IpAddressRanges)
+	ordered := orderLikePrior(apiRanges, prior)
+	if ordered == nil {
+		ordered = []ipRange{}
+	}
+	list, d := rangesToList(ctx, ordered)
+	diags.Append(d...)
+	model.IpAddressRanges = list
+
+	if _, usedSingle := singleRangeFromObject(model.IpRanges); usedSingle && len(ordered) > 0 {
+		model.IpRanges = singleRangeToObject(&ordered[0])
+	} else {
+		model.IpRanges = singleRangeToObject(nil)
+	}
+
+	return diags
+}
+
+// getPool fetches the pool. On failure it adds a diagnostic and returns nil;
+// callers must check diags (or nil) before using the result.
+func getPool(
+	ctx context.Context, client *sdk.APIClient, id int64, diags *diag.Diagnostics,
+) *sdk.GetNetworkPool200ResponseNetworkPool {
+	result, httpResp, err := client.NetworksAPI.GetNetworkPool(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(diags, errfmt.OpRead, "network_pool", "", err, httpResp)
+
+		return nil
+	}
+	if result.NetworkPool == nil {
+		diags.AddError("API returned nil", "NetworkPool is nil in the response")
+
+		return nil
+	}
+
+	return result.NetworkPool
 }

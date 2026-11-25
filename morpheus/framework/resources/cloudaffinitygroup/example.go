@@ -22,6 +22,9 @@ func RenderCloudAffinityGroupConfig(t *testing.T, overrides map[string]string) (
 		// Morpheus rejects a cloud affinity group created without a pool, so
 		// the template always renders one and the default keeps it valid HCL.
 		"PoolId": "1",
+		// Rendered only when set; MergeOverrides drops empty overrides.
+		"Active":   "",
+		"ServerId": "",
 	}
 
 	merged := testhelpers.MergeOverrides(defaults, overrides)

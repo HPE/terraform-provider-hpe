@@ -29,12 +29,13 @@ func TestAccMorpheusFindClusterAffinityGroupByName(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
 
 	clusterID := testhelpers.AffinityClusterID(t)
+	serverID := testhelpers.AffinityMemberServerID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Parallel()
+	testhelpers.LockFixture(t, "affinity-member-server")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -42,6 +43,7 @@ func TestAccMorpheusFindClusterAffinityGroupByName(t *testing.T) {
 	resourceConfig, err := agresource.RenderClusterAffinityGroupConfig(t, map[string]string{
 		"ClusterId": clusterID,
 		"Name":      name,
+		"Servers":   "[" + serverID + "]",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -74,12 +76,13 @@ func TestAccMorpheusFindClusterAffinityGroupById(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
 
 	clusterID := testhelpers.AffinityClusterID(t)
+	serverID := testhelpers.AffinityMemberServerID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Parallel()
+	testhelpers.LockFixture(t, "affinity-member-server")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -87,6 +90,7 @@ func TestAccMorpheusFindClusterAffinityGroupById(t *testing.T) {
 	resourceConfig, err := agresource.RenderClusterAffinityGroupConfig(t, map[string]string{
 		"ClusterId": clusterID,
 		"Name":      name,
+		"Servers":   "[" + serverID + "]",
 	})
 	if err != nil {
 		t.Fatal(err)

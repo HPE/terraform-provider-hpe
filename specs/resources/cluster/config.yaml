@@ -3,7 +3,17 @@ cluster:
   templates:
     config:
       dynamic:
-        description: Generic Cluster Configuration
+        description: >-
+          Generic cluster configuration, for cluster types without a typed block; kept in state as
+          configured. On import the appliance's configuration is adopted, less any credential it
+          carries (an External Kubernetes cluster's `apiToken` and `serviceAccess`, `serviceToken`,
+          `kubeToken`, `kubeConfig`, `joinCommand`, and any key whose name ends in `token`,
+          `password`, `passwd`, `secret`, `passphrase`, `privateKey`, `kubeconfig` or
+          `serviceAccess`), so no credential reaches state. A cluster imported before this was
+          so keeps what it imported until it is removed from state and imported again, and the
+          resource warns while a credential key remains. Credentials written here by the
+          configuration itself are stored like any other value; a typed block with write-only
+          attributes is the way to supply them.
         computed_optional_required: optional
         validators:
         - custom:
@@ -139,6 +149,10 @@ cluster:
             imports:
             - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
             schema_definition: int64planmodifier.UseStateForUnknown()
+    host_profile_id:
+      int64:
+        computed_optional_required: optional
+        description: ID of the host profile to attach to the cluster's hosts. Applied via the dedicated cluster host-profile attach/detach endpoints, not the cluster create body.
   moves:
     - cluster: "" # unnest cluster
     - cluster_id: id
@@ -175,6 +189,7 @@ cluster:
     - template-ssh_password_wo: server.ssh_password_wo
     - template-ssh_password_wo_version: server.ssh_password_wo_version
     - template-write_only_revision: write_only_revision
+    - template-host_profile_id: host_profile_id
     # HKS on HVM
     - template-node_count: config_hks_hvm.node_count
     # HVM

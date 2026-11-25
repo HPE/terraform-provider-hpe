@@ -36,7 +36,8 @@ resource "hpe_opsramp_alert_prediction_policy" "default_alert_prediction_policy"
 - `enabled_mode` (String) The enabled mode of the policy. Valid values: `ON`, `OFF`.
 - `filter_query` (String) Filter query to scope which alerts are evaluated by this policy.
 - `generate_prediction_alert` (Boolean) Whether to generate predictions based on the policy.
-- `organization_matching_type` (String) Organization matching type. Required when using MSP credentials. Valid values: `ALL`, `INCLUDE`.
+- `included_clients` (List of String) List of client names or UUIDs to include when `organization_matching_type` is `INCLUDE`. Required and must be non-empty in that case; must not be set at the client level.
+- `organization_matching_type` (String) The organization matching type for the policy. Applies only when the operation is performed at the MSP level; must not be set at the client level. Defaults to `ALL` when omitted at the MSP level. Valid values: `ALL`, `INCLUDE`.
 - `seasonality_time_frame` (String) Learning based on the data for last N days. Valid values: `7D`, `10D`, `30D`, `60D`, `90D`.
 
 ### Read-Only

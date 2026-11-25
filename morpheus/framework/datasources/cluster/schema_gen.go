@@ -61,7 +61,9 @@ func ClusterDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"config": schema.DynamicAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The cluster's configuration as Morpheus returns it, less any credential it carries. An External Kubernetes cluster's configuration holds `apiToken` (a cluster-admin token) and `serviceAccess` (the kubeconfig carrying it), which the appliance returns in clear; those keys, `serviceToken`, `kubeToken`, `kubeConfig`, `joinCommand`, and any key whose name ends in `token`, `password`, `passwd`, `secret`, `passphrase`, `privateKey`, `kubeconfig` or `serviceAccess` are withheld, at any depth, so that no credential reaches state or plan output.",
+				MarkdownDescription: "The cluster's configuration as Morpheus returns it, less any credential it carries. An External Kubernetes cluster's configuration holds `apiToken` (a cluster-admin token) and `serviceAccess` (the kubeconfig carrying it), which the appliance returns in clear; those keys, `serviceToken`, `kubeToken`, `kubeConfig`, `joinCommand`, and any key whose name ends in `token`, `password`, `passwd`, `secret`, `passphrase`, `privateKey`, `kubeconfig` or `serviceAccess` are withheld, at any depth, so that no credential reaches state or plan output.",
 			},
 			"containers_count": schema.Int64Attribute{
 				Computed: true,

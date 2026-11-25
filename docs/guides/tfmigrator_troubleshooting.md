@@ -180,4 +180,4 @@ If the original configuration used title-cased or additional tag names, do not a
 
 ### Suppressing the version-availability notice
 
-In air-gapped or egress-restricted environments `tfmigrator` cannot reach GitHub to check for a newer release, and prints an advisory notice at the end of its output. The notice is harmless and never affects the migration, but to suppress it set `HPE_IGNORE_VERSION_CHECK` in your environment before running `tfmigrator`.
+In air-gapped or egress-restricted environments `tfmigrator` cannot reach GitHub to check for a newer release. The check then fails quietly: no notice is printed and the migration is unaffected, but a command that finishes quickly can wait a few seconds for the request to time out before it exits. To skip the check, and the notice it prints when a newer release is found, set `HPE_IGNORE_VERSION_CHECK` in your environment before running `tfmigrator`.

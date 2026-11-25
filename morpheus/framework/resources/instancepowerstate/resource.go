@@ -23,6 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -46,7 +47,27 @@ var (
 	errorStatuses   = []string{"failed", "denied", "cancelled"}
 )
 
+// Server power states confirmed after an instance status transition. An
+// instance status of "stopped" is set by the Morpheus "Stop Service" path too,
+// so the server's own powerState is the only reliable signal that the
+// workload has in fact been powered off (or on).
+var (
+	powerStateOn  = []string{"on"}
+	powerStateOff = []string{"off"}
+)
+
 const defaultTimeout = 5 * time.Minute
+
+// pollInterval is the pause between status polls against a real appliance.
+// The polling functions take the interval as a parameter so that unit tests
+// can shorten it for themselves without affecting anything else in the test
+// binary -- the acceptance tests run the provider in-process.
+const pollInterval = 5 * time.Second
+
+// retryAfter asks backoff to try again after one poll interval.
+func retryAfter(interval time.Duration) error {
+	return &backoff.RetryAfterError{Duration: interval}
+}
 
 // InstancePowerStateModel is the Terraform state model.
 type InstancePowerStateModel struct {
@@ -189,7 +210,7 @@ func (r *Resource) Create(
 	}
 
 	// Fire the appropriate power action.
-	if err := r.fireAction(ctx, instanceID, desiredState, hresp); err != nil {
+	if err := fireAction(ctx, client, instanceID, desiredState); err != nil {
 		resp.Diagnostics.AddError(
 			"failed to execute power action",
 			fmt.Sprintf("instance %d → %s: %s", instanceID, desiredState, err.Error()),
@@ -199,7 +220,7 @@ func (r *Resource) Create(
 	}
 
 	// Poll until target state reached.
-	finalStatus, pollErr := r.pollStatus(ctx, instanceID, desiredState, createTimeout)
+	finalStatus, pollErr := pollStatus(ctx, client, instanceID, desiredState, createTimeout, pollInterval)
 	if pollErr != nil {
 		resp.Diagnostics.AddError(
 			"instance power state transition timed out or failed",
@@ -302,7 +323,7 @@ func (r *Resource) Update(
 	instanceID := plan.InstanceId.ValueInt64()
 	desiredState := plan.DesiredState.ValueString()
 
-	// Fire the appropriate power action.
+	// Confirm the instance is reachable before acting on it.
 	_, hresp, getErr := client.InstancesAPI.GetInstance(ctx, instanceID).Execute()
 	if getErr != nil {
 		resp.Diagnostics.AddError(
@@ -313,7 +334,8 @@ func (r *Resource) Update(
 		return
 	}
 
-	if err := r.fireAction(ctx, instanceID, desiredState, hresp); err != nil {
+	// Fire the appropriate power action.
+	if err := fireAction(ctx, client, instanceID, desiredState); err != nil {
 		resp.Diagnostics.AddError(
 			"failed to execute power action",
 			fmt.Sprintf("instance %d → %s: %s", instanceID, desiredState, err.Error()),
@@ -323,7 +345,7 @@ func (r *Resource) Update(
 	}
 
 	// Poll until target state reached.
-	finalStatus, pollErr := r.pollStatus(ctx, instanceID, desiredState, updateTimeout)
+	finalStatus, pollErr := pollStatus(ctx, client, instanceID, desiredState, updateTimeout, pollInterval)
 	if pollErr != nil {
 		resp.Diagnostics.AddError(
 			"instance power state transition timed out or failed",
@@ -409,25 +431,28 @@ func (r *Resource) ModifyPlan(
 }
 
 // fireAction calls the appropriate SDK power action.
-func (r *Resource) fireAction(
+//
+// Start and stop are sent with server=true so that Morpheus powers the
+// underlying server(s) off and on, as its own Stop/Start buttons do. Without
+// the flag the API only runs the instance's "Stop Service"/"Start Service"
+// path: on a layout with start/stop-phase scripts it executes those scripts,
+// marks the instance stopped and leaves the VM running. The generated client
+// does not send the parameter's documented default, so it must be explicit.
+// Suspend ignores the flag server-side.
+func fireAction(
 	ctx context.Context,
+	client *sdk.APIClient,
 	instanceID int64,
 	desiredState string,
-	_ *http.Response,
 ) error {
-	client, err := r.NewClient(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to create API client: %w", err)
-	}
-
 	switch desiredState {
 	case "running":
-		_, hresp, err := client.InstancesAPI.StartInstance(ctx, instanceID).Execute()
+		_, hresp, err := client.InstancesAPI.StartInstance(ctx, instanceID).Server(true).Execute()
 		if err != nil {
 			return fmt.Errorf("StartInstance failed: %s", errfmt.ErrMsg(err, hresp))
 		}
 	case "stopped":
-		_, hresp, err := client.InstancesAPI.StopInstance(ctx, instanceID).Execute()
+		_, hresp, err := client.InstancesAPI.StopInstance(ctx, instanceID).Server(true).Execute()
 		if err != nil {
 			return fmt.Errorf("StopInstance failed: %s", errfmt.ErrMsg(err, hresp))
 		}
@@ -443,19 +468,23 @@ func (r *Resource) fireAction(
 	return nil
 }
 
-// pollStatus polls GetInstance until the target state is reached.
-func (r *Resource) pollStatus(
+// pollStatus polls GetInstance until the target state is reached, then — for
+// running and stopped — polls each of the instance's servers until its
+// powerState agrees, since the instance status alone does not prove the
+// workload was powered on or off. An instance that reports no servers cannot
+// be confirmed and is an error. Returns the final instance status.
+func pollStatus(
 	ctx context.Context,
+	client *sdk.APIClient,
 	instanceID int64,
 	desiredState string,
 	timeout time.Duration,
+	interval time.Duration,
 ) (string, error) {
-	client, err := r.NewClient(ctx)
-	if err != nil {
-		return "", fmt.Errorf("failed to create API client: %w", err)
-	}
-
 	target := targetForState(desiredState)
+	deadline := time.Now().Add(timeout)
+
+	var servers []int64
 
 	waitForState := func() (string, error) {
 		getResp, hresp, err := client.InstancesAPI.GetInstance(ctx, instanceID).Execute()
@@ -473,29 +502,106 @@ func (r *Resource) pollStatus(
 			)
 		}
 
+		servers = getResp.Instance.Servers
 		status := *getResp.Instance.Status
 
-		return status, checkStatusDone(status, target, errorStatuses)
+		return status, checkStatusDone(status, target, errorStatuses, interval)
 	}
 
-	return backoff.Retry(
+	status, err := backoff.Retry(
 		ctx,
 		waitForState,
-		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
+		backoff.WithBackOff(backoff.NewConstantBackOff(interval)),
 		backoff.WithMaxElapsedTime(timeout),
 	)
+	if err != nil {
+		return status, err
+	}
+
+	want := powerStateForState(desiredState)
+	if want == nil {
+		return status, nil
+	}
+
+	if len(servers) == 0 {
+		return status, fmt.Errorf(
+			"instance %d reports status %q but no servers, so the power state cannot be confirmed",
+			instanceID, status,
+		)
+	}
+
+	for _, serverID := range servers {
+		remaining := time.Until(deadline)
+		if remaining <= 0 {
+			return status, fmt.Errorf(
+				"instance %d: timed out before confirming the power state of server %d",
+				instanceID, serverID,
+			)
+		}
+
+		if err := pollServerPowerState(ctx, client, serverID, want, remaining, interval); err != nil {
+			return status, fmt.Errorf("instance %d: %w", instanceID, err)
+		}
+	}
+
+	return status, nil
+}
+
+// pollServerPowerState polls GetHost until the server reports one of the
+// wanted power states or the timeout elapses; a timeout shorter than one
+// poll interval allows exactly one attempt.
+func pollServerPowerState(
+	ctx context.Context,
+	client *sdk.APIClient,
+	serverID int64,
+	want []string,
+	timeout time.Duration,
+	interval time.Duration,
+) error {
+	getID := sdk.GetHostIdParameter{Int64: &serverID}
+
+	poll := func() (struct{}, error) {
+		ret, hresp, err := client.HostsAPI.GetHost(ctx, getID).Execute()
+		if err != nil {
+			return struct{}{}, backoff.Permanent(
+				fmt.Errorf("GetHost failed: %s", errfmt.ErrMsg(err, hresp)),
+			)
+		}
+
+		if ret.Server == nil || ret.Server.PowerState == nil {
+			return struct{}{}, retryAfter(interval)
+		}
+
+		if slices.Contains(want, *ret.Server.PowerState) {
+			return struct{}{}, nil
+		}
+
+		return struct{}{}, retryAfter(interval)
+	}
+
+	_, err := backoff.Retry(
+		ctx,
+		poll,
+		backoff.WithBackOff(backoff.NewConstantBackOff(interval)),
+		backoff.WithMaxElapsedTime(timeout),
+	)
+	if err != nil {
+		return fmt.Errorf("waiting for server %d power state %v: %w", serverID, want, err)
+	}
+
+	return nil
 }
 
 // checkStatusDone returns nil if target is reached, a permanent error if in
 // an error state, or a retryable error otherwise.
-func checkStatusDone(status string, targetStatuses, errStatuses []string) error {
+func checkStatusDone(status string, targetStatuses, errStatuses []string, interval time.Duration) error {
 	switch {
 	case slices.Contains(errStatuses, status):
 		return backoff.Permanent(errors.New("reached error status: " + status))
 	case slices.Contains(targetStatuses, status):
 		return nil
 	default:
-		return backoff.RetryAfter(5)
+		return retryAfter(interval)
 	}
 }
 
@@ -508,6 +614,20 @@ func targetForState(desired string) []string {
 		return targetStopped
 	case "suspended":
 		return targetSuspended
+	default:
+		return nil
+	}
+}
+
+// powerStateForState returns the server power states that confirm the desired
+// instance state, or nil when the instance status is the only signal (suspend
+// is reported differently per cloud).
+func powerStateForState(desired string) []string {
+	switch desired {
+	case "running":
+		return powerStateOn
+	case "stopped":
+		return powerStateOff
 	default:
 		return nil
 	}

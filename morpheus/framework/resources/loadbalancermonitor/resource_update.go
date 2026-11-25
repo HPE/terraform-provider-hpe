@@ -175,6 +175,8 @@ func (r *Resource) Update(
 
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
 		sdkConfig := &sdk.UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig{}
+		method, uri, code, port := httpHealthCheckUpdateConfig(plan.Config, currentState.Config)
+		sdkConfig.HttpMethod, sdkConfig.HttpUri, sdkConfig.HttpReturnCode, sdkConfig.HttpPort = method, uri, code, port
 
 		if !plan.Config.Monitor.IsNull() && !plan.Config.Monitor.IsUnknown() {
 			attrs := plan.Config.Monitor.Attributes()
@@ -204,9 +206,18 @@ func (r *Resource) Update(
 		}
 
 		monitor.Config = sdkConfig
+	} else if config.Config.IsNull() {
+		// The whole block was removed from the configuration (the plan shows
+		// it unknown, as the attribute is computed): clear every HTTP
+		// health-check value the prior state carried, as removing the fields
+		// one by one would.
+		monitor.Config = httpHealthCheckClearConfig(currentState.Config)
 	}
 
 	updateReq := &sdk.UpdateLoadBalancerMonitorRequest{LoadBalancerMonitor: monitor}
+	if monitor.Config != nil {
+		updateReq.AdditionalProperties = topLevelConfig(monitor.Config.ToMap())
+	}
 
 	id := currentState.Id.ValueInt64()
 
@@ -249,10 +260,10 @@ func (r *Resource) Update(
 	// re-baseline the appliance-side drift hash from the read-back object.
 	resp.Diagnostics.Append(wo.StoreObserved(ctx, resp.Private, req.Config, apiObj)...)
 
-	// Preserve plan config since the API may not return it verbatim.
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		state.Config = plan.Config
-	}
+	// Keep the planned config values the API may not echo verbatim, but take
+	// the read-back for anything the plan left unknown (monitor,
+	// monitor_config), so no unknown survives into state.
+	state.Config = overlayPlanConfig(ctx, plan.Config, state.Config)
 
 	// Restore fields the API accepts but does not return.
 	preserveUnreturnedFields(&state, plan)

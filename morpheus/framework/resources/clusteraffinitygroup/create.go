@@ -4,6 +4,8 @@ package clusteraffinitygroup
 
 import (
 	"context"
+	"net/http"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -75,6 +77,27 @@ func (r *clusterAffinityGroupResource) Create(
 		ag.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
+	// CRITICAL BEHAVIOUR 8: servers is sent on create when it is configured.
+	//
+	// Configured, the practitioner owns the membership and the group is created
+	// with exactly that set. Unconfigured, the attribute is unknown in the plan,
+	// nothing is sent, and membership is left to
+	// hpe_morpheus_cluster_affinity_group_member or to provisioning.
+	//
+	// Morpheus 9.1 refuses to create a group with no members ("An affinity rule
+	// requires either a Servers list ... or both a VM Group and a Host Group"),
+	// so against 9.1 a configuration that omits servers cannot create a group
+	// at all; the hint added below says so where the API's own answer does not.
+	// An empty set is sent as given -- 9.0 accepts it and 9.1 rejects it with
+	// that same message -- rather than being second-guessed here.
+	serversConfigured := !plan.Servers.IsNull() && !plan.Servers.IsUnknown()
+	if serversConfigured {
+		resp.Diagnostics.Append(plan.Servers.ElementsAs(ctx, &ag.Servers, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	// CRITICAL BEHAVIOUR 6: pool is COMPUTED ONLY for clusters — the API force-assigns it.
 	// Never send it on create or update; only read it back.
 
@@ -125,6 +148,13 @@ func (r *clusterAffinityGroupResource) Create(
 			plan.Name.ValueString(), err, httpResp,
 		)
 
+		// A second diagnostic, beside the API's own answer, when that answer
+		// is Morpheus 9.1 refusing a group with no members and the
+		// configuration sent none.
+		if !serversConfigured && refusedForWantOfMembers(ctx, client, err, httpResp) {
+			resp.Diagnostics.AddError(noMembersSummary, noMembersHint)
+		}
+
 		return
 	}
 
@@ -171,4 +201,64 @@ func (r *clusterAffinityGroupResource) Create(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+// membersRequiredSince is the first Morpheus release that refuses to create an
+// affinity group with no members (AffinityGroup.isValidRuleShape).
+const membersRequiredSince = ">= 9.1.0"
+
+// noMembersSummary and noMembersHint explain a create that Morpheus refused
+// for want of members, in the terms the practitioner can act on.
+const (
+	noMembersSummary = "The affinity group needs its first members"
+	noMembersHint    = "Morpheus 9.1 and later refuse to create an affinity group " +
+		"with no members, and some releases report that refusal as a 403 rather than " +
+		"as the rule-shape error. If these credentials can otherwise manage this " +
+		"cluster's affinity groups, set servers so the group is created with its " +
+		"first members; membership can then be managed there, or one server at a " +
+		"time with hpe_morpheus_cluster_affinity_group_member."
+)
+
+// refusalKind classifies a failed create: Morpheus's rule-shape refusal
+// (its errors map carries affinityGroup.ruleShape.invalid), a bare 403, or
+// neither.
+type refusalKind int
+
+const (
+	refusalOther refusalKind = iota
+	refusalRuleShape
+	refusalForbidden
+)
+
+func classifyRefusal(err error, httpResp *http.Response) refusalKind {
+	if err != nil && strings.Contains(err.Error(), "ruleShape.invalid") {
+		return refusalRuleShape
+	}
+
+	if httpResp != nil && httpResp.StatusCode == http.StatusForbidden {
+		return refusalForbidden
+	}
+
+	return refusalOther
+}
+
+// refusedForWantOfMembers reports whether a failed create looks like Morpheus
+// 9.1's refusal of a group with no members. The rule-shape error is that
+// refusal wherever it appears. A bare 403 is it only on 9.1 and later: with
+// servers absent from the request, 9.1.0 fails to render the refusal and
+// answers "You do not have permissions to access this api endpoint" instead
+// -- but before 9.1 there is no such refusal, so a 403 there is a genuine
+// permission denial and gets no hint. An appliance whose version cannot be
+// read gets none either.
+func refusedForWantOfMembers(ctx context.Context, client *sdk.APIClient, err error, httpResp *http.Response) bool {
+	switch classifyRefusal(err, httpResp) {
+	case refusalRuleShape:
+		return true
+	case refusalForbidden:
+		atLeast, verr := versioncheck.AtLeast(ctx, client, membersRequiredSince)
+
+		return verr == nil && atLeast
+	default:
+		return false
+	}
 }

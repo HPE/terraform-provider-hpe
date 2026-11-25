@@ -3,6 +3,17 @@ network_router:
     bool:
       bool:
         computed_optional_required: computed_optional
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which the write-only value (`config_juniper_bgp.md5_key_wo`)
+          was last sent to Morpheus. Changes whenever that value changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
     config:
       dynamic:
         computed_optional_required: optional
@@ -20,6 +31,8 @@ network_router:
                 dynamicvalidator.ConflictsWith(path.Expressions{
                   path.MatchRoot("config_nsxt_gateway_tier0"),
                   path.MatchRoot("config_nsxt_gateway_tier1"),
+                  path.MatchRoot("config_juniper_sdn"),
+                  path.MatchRoot("config_juniper_bgp"),
                 }...)
           - custom:
               imports:
@@ -30,6 +43,8 @@ network_router:
                   path.MatchRoot("config"),
                   path.MatchRoot("config_nsxt_gateway_tier0"),
                   path.MatchRoot("config_nsxt_gateway_tier1"),
+                  path.MatchRoot("config_juniper_sdn"),
+                  path.MatchRoot("config_juniper_bgp"),
                 }...)
     group_id:
       int64:
@@ -127,6 +142,7 @@ network_router:
                 )
   moves:
     - network_router: ""
+    - template-write_only_revision: write_only_revision
     - permissions: ""
     - tenant_permissions.accounts: tenant_ids
     - zone: cloud
@@ -138,6 +154,23 @@ network_router:
     - template-type_id: type_id
     - config.anyof0.oneof0: config_nsxt_gateway_tier0
     - config.anyof0.oneof1: config_nsxt_gateway_tier1
+    - config.juniper_sdnrouter_config: config_juniper_sdn
+    - config.juniper_bgpsdnrouter_config: config_juniper_bgp
+    # the plugin stores the BGP fields under dotted keys, which the generator flattens
+    - config_juniper_bgp.junipersdnvendor: config_juniper_bgp.vendor
+    - config_juniper_bgp.junipersdnasnnumber: config_juniper_bgp.asn
+    - config_juniper_bgp.junipersdnaddress1: config_juniper_bgp.peer_address_1
+    - config_juniper_bgp.junipersdnaddress2: config_juniper_bgp.peer_address_2
+    - config_juniper_bgp.junipersdnaddress3: config_juniper_bgp.peer_address_3
+    - config_juniper_bgp.junipersdnaddress4: config_juniper_bgp.peer_address_4
+    - config_juniper_bgp.bgp_address_families: config_juniper_bgp.address_families
+    - config_juniper_bgp.junipersdnbgpport: config_juniper_bgp.port
+    - config_juniper_bgp.junipersdnbgphold_time: config_juniper_bgp.hold_time
+    - config_juniper_bgp.junipersdnbgpadmin_down: config_juniper_bgp.admin_down
+    - config_juniper_bgp.junipersdnbgpmd5key: config_juniper_bgp.md5_key_wo # write-only: never stored in state
+    - config_juniper_sdn.juniper_resource_pool: config_juniper_sdn.resource_pool_id
+    - config_juniper_sdn.juniper_virtual_networks: config_juniper_sdn.virtual_network_uids
+    - config_juniper_sdn.juniper_floating_ip_pools: config_juniper_sdn.floating_ip_pool_ids
     - config_nsxt_gateway_tier1.tier0gateway: config_nsxt_gateway_tier1.tier0_gateway
     - template-config: config
     - template-fail_over: config_nsxt_gateway_tier0.fail_over
@@ -339,3 +372,109 @@ network_router:
       computed_optional_required: computed_optional
       description: List of tenant account IDs that are allowed access.
       state_for_unknown: true
+
+    # config_juniper_sdn (juniperSdnRouter): edited in place by the plugin, except resource_pool_id (replaces)
+    config_juniper_sdn:
+      computed_optional_required: optional
+      description: >-
+        Configuration of an HPE Morpheus SDN logical router (`juniperSdnRouter`), which joins SDN
+        virtual networks on an HVM cluster. Set exactly one of `config`, `config_nsxt_gateway_tier0`,
+        `config_nsxt_gateway_tier1`, `config_juniper_sdn` or `config_juniper_bgp`; adding or removing
+        the block changes the router's type and replaces the router.
+      plan_modifiers:
+        - custom:
+            imports:
+              - path: github.com/HPE/terraform-provider-hpe/utils/modifiers
+            schema_definition: modifiers.ObjectRequiresReplaceOnPresenceChange()
+    config_juniper_sdn.resource_pool_id:
+      computed_optional_required: optional
+      description: >-
+        ID of the HVM cluster resource pool the router is scoped to. The router lives on that
+        cluster, so changing or removing it replaces the router.
+      requires_replace: true
+    config_juniper_sdn.virtual_network_uids:
+      computed_optional_required: optional
+      description: >-
+        The SDN virtual networks the router joins, each given by the network's `unique_id`
+        (`hpe_morpheus_network.<name>.unique_id`).
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+            schema_definition: setvalidator.SizeAtLeast(1)
+    config_juniper_sdn.floating_ip_pool_ids:
+      computed_optional_required: optional
+      description: IDs of the floating IP pools the router serves.
+
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+            schema_definition: setvalidator.SizeAtLeast(1)
+    # config_juniper_bgp (juniperBGPSdnRouter)
+    config_juniper_bgp:
+      computed_optional_required: optional
+      description: >-
+        Configuration of an HPE Morpheus SDN BGP router (`juniperBGPSdnRouter`), a BGP peering
+        between the SDN controller and up to four external peers. Set exactly one of `config`,
+        `config_nsxt_gateway_tier0`, `config_nsxt_gateway_tier1`, `config_juniper_sdn` or
+        `config_juniper_bgp`; adding or removing the block changes the router's type and replaces
+        the router.
+      plan_modifiers:
+        - custom:
+            imports:
+              - path: github.com/HPE/terraform-provider-hpe/utils/modifiers
+            schema_definition: modifiers.ObjectRequiresReplaceOnPresenceChange()
+    config_juniper_bgp.vendor:
+      computed_optional_required: required
+      description: Vendor of the peer router.
+    config_juniper_bgp.asn:
+      computed_optional_required: computed_optional
+      default: 65000
+      description: Autonomous system number. Defaults to 65000.
+    config_juniper_bgp.peer_address_1:
+      computed_optional_required: required
+      description: First BGP peer address.
+    config_juniper_bgp.peer_address_2:
+      computed_optional_required: optional
+      description: Second BGP peer address.
+    config_juniper_bgp.peer_address_3:
+      computed_optional_required: optional
+      description: Third BGP peer address.
+    config_juniper_bgp.peer_address_4:
+      computed_optional_required: optional
+      description: Fourth BGP peer address.
+    config_juniper_bgp.address_families:
+      computed_optional_required: required
+      description: Address families to exchange with the peers, from the `juniperBgpAddressFamilies` option source (for example `inet`, `inet6`).
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+            schema_definition: setvalidator.SizeAtLeast(1)
+    config_juniper_bgp.port:
+      computed_optional_required: computed_optional
+      default: 179
+      description: BGP port. Defaults to 179.
+    config_juniper_bgp.hold_time:
+      computed_optional_required: computed_optional
+      default: 90
+      description: BGP hold time in seconds. Defaults to 90.
+    config_juniper_bgp.admin_down:
+      computed_optional_required: computed_optional
+      default: "off"
+      description: Administratively down (`on` or `off`). Defaults to `off`.
+    config_juniper_bgp.md5_key_wo:
+      computed_optional_required: optional
+      sensitive: true
+      write_only: true
+      description: >-
+        MD5 authentication key for the peering (write-only). It is never stored in state; a change is detected
+        from a digest kept in private state and re-sent on the next apply. Removing the attribute leaves the
+        key as it is on the appliance; set it to `""` to clear it.
+      plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}

@@ -88,11 +88,16 @@ test-json:
 	go test -json -cover -count 1 -timeout $(TEST_TIMEOUT) $$pkgs
 
 unit-tests:
-	# exclude the framework and sdkv2 packages, the
-	# terraform-provider-hpe/morpheus package (but NOT its subpackages), and the
-	# vendored SDK under internal/sdk (generated/third-party, no provider tests)
-	pkgs=$$(go list ./... | grep -Ev 'sdkv2/(resources|datasources)|framework/(resources|datasources)|terraform-provider-hpe/morpheus$$|/internal/sdk'); \
-	go test -v -count=1 -short -skip "TestAcc*" $$pkgs
+	# The unit tests of every package but the generated SDK trees (oapigen,
+	# sdkfull): plugin-framework and SDKv2 resources and data sources, the
+	# provider package and the hand-written legacy SDK. Acceptance tests are
+	# skipped by name (anchored: an unanchored `TestAcc` would also drop
+	# TestActive*/TestAccount*...), which also skips the few plan-time tests
+	# that carry the TestAcc prefix with IsUnitTest; sweep tests sit behind
+	# the `sweep` build tag and are not listed.
+	pkgs=$$(go list ./... | grep -Ev '/internal/sdk/(oapigen|sdkfull)(/|$$)'); \
+	go test -v -count=1 -short -skip '^TestAcc' $$pkgs
+	TF_ACC= go test -race -count=1 -short -run '^TestUnit' ./morpheus/framework/resources/appliancesetup
 
 collect-test-results:
 	./scripts/collect-test-results.bash

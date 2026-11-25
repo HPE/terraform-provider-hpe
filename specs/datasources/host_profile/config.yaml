@@ -1,0 +1,48 @@
+# Host Profile data source (singular). Lookup by id (required).
+# The read response wraps the detail under `hostProfile`; flatten its children
+# to top level (mirroring the resource schema) then drop the wrapper and the
+# `success` envelope flag. The wrapper's own `id` is dropped with the wrapper
+# (the top-level `id` lookup key is kept).
+host_profile:
+  moves:
+    - host_profile.code: code                               # (components/schemas/hostProfileDetail.yaml)
+    - host_profile.name: name                               # (components/schemas/hostProfileDetail.yaml)
+    - host_profile.description: description                  # (components/schemas/hostProfileDetail.yaml)
+    - host_profile.enabled: enabled                         # (components/schemas/hostProfileDetail.yaml)
+    - host_profile.server_count: server_count               # (components/schemas/hostProfileDetail.yaml)
+    - host_profile.compliance_status: compliance_status     # (components/schemas/hostProfileDetail.yaml)
+    - host_profile.config: config                           # (components/schemas/hostProfileConfig.yaml)
+    - host_profile.versions: versions                       # (components/schemas/hostProfileDetail.yaml)
+
+  removes:
+    - host_profile                                          # emptied read wrapper (also drops duplicate nested id)
+    - success                                               # read envelope flag
+
+  overrides:
+    id:
+      computed_optional_required: required
+      description: The Morpheus ID of the host profile to look up.
+    name:
+      computed_optional_required: computed
+      description: Profile name.
+    code:
+      computed_optional_required: computed
+      description: Read-only unique code identifying the profile.
+    description:
+      computed_optional_required: computed
+      description: Description of the host profile.
+    enabled:
+      computed_optional_required: computed
+      description: Whether the host profile is enabled.
+    server_count:
+      computed_optional_required: computed
+      description: Number of servers currently attached to this profile.
+    compliance_status:
+      computed_optional_required: computed
+      description: Aggregated compliance status across all attached hosts.
+    config:
+      computed_optional_required: computed
+      description: Host profile configuration document.
+    versions:
+      computed_optional_required: computed
+      description: Version history of the host profile configuration document.

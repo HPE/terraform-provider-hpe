@@ -30,6 +30,22 @@ type NetworkServerUpdateNSX struct {
 	ServiceUsername NullableString `json:"serviceUsername,omitempty"`
 	// Password
 	ServicePassword NullableString `json:"servicePassword,omitempty"`
+	// Controller host, for types that take it separately from the URL.
+	ServiceHost NullableString `json:"serviceHost,omitempty"`
+	// Controller port, for types that take it separately from the URL.
+	ServicePort NullableInt64 `json:"servicePort,omitempty"`
+	// Service mode, for types that have one.
+	ServiceMode NullableString `json:"serviceMode,omitempty"`
+	// API token, for types that authenticate with one.
+	ServiceToken NullableString `json:"serviceToken,omitempty"`
+	// Filter limiting the networks synced from the controller.
+	NetworkFilter NullableString `json:"networkFilter,omitempty"`
+	// Tenant match expression, for types that scope networks to tenants.
+	TenantMatch NullableString `json:"tenantMatch,omitempty"`
+	// ID of the Cloud the network server integration is attached to.
+	ZoneId     NullableInt64                     `json:"zoneId,omitempty"`
+	Config     *NetworkServerUpdateNSXConfig     `json:"config,omitempty"`
+	Credential *NetworkServerUpdateNSXCredential `json:"credential,omitempty"`
 	// Visibility - Set to public to allow all tenants
 	Visibility *string `json:"visibility,omitempty"`
 	// Array of tenant account ids that are allowed access
@@ -60,6 +76,33 @@ func (o NetworkServerUpdateNSX) ToMap() (map[string]interface{}, error) {
 	}
 	if o.ServicePassword.IsSet() {
 		toSerialize["servicePassword"] = o.ServicePassword.Get()
+	}
+	if o.ServiceHost.IsSet() {
+		toSerialize["serviceHost"] = o.ServiceHost.Get()
+	}
+	if o.ServicePort.IsSet() {
+		toSerialize["servicePort"] = o.ServicePort.Get()
+	}
+	if o.ServiceMode.IsSet() {
+		toSerialize["serviceMode"] = o.ServiceMode.Get()
+	}
+	if o.ServiceToken.IsSet() {
+		toSerialize["serviceToken"] = o.ServiceToken.Get()
+	}
+	if o.NetworkFilter.IsSet() {
+		toSerialize["networkFilter"] = o.NetworkFilter.Get()
+	}
+	if o.TenantMatch.IsSet() {
+		toSerialize["tenantMatch"] = o.TenantMatch.Get()
+	}
+	if o.ZoneId.IsSet() {
+		toSerialize["zoneId"] = o.ZoneId.Get()
+	}
+	if !IsNil(o.Config) {
+		toSerialize["config"] = o.Config
+	}
+	if !IsNil(o.Credential) {
+		toSerialize["credential"] = o.Credential
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility

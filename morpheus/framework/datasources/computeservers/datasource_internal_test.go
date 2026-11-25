@@ -4,6 +4,7 @@ package computeservers
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -119,5 +120,62 @@ func serverFixtures() map[string]*sdk.ListHosts200ResponseAllOfServersInner {
 	return map[string]*sdk.ListHosts200ResponseAllOfServersInner{
 		"minimal": minimal,
 		"full":    full,
+	}
+}
+
+// TestUnitListDecodesStatsTimestampWithNumericOffset pins the server list
+// against an appliance that mixes two timestamp forms in one response. Morpheus
+// writes a server's statistics sample time with a "Z" offset for most servers
+// and with "+0000" for the node of an external Kubernetes cluster. The second
+// form is not RFC 3339, and while the field was typed as a date-time one such
+// server made the whole list undecodable, failing every lookup on the
+// appliance.
+func TestUnitListDecodesStatsTimestampWithNumericOffset(t *testing.T) {
+	t.Parallel()
+
+	const body = `{"servers":[
+		{"id":1,"name":"hvm-host","stats":{"ts":"2026-11-02T15:39:25Z","usedMemory":1024}},
+		{"id":2,"name":"k8s-node","stats":{"ts":"2026-11-02T15:39:25+0000","usedMemory":2048}},
+		{"id":3,"name":"no-stats-yet","stats":{}}
+	]}`
+
+	var list sdk.ListHosts200Response
+	if err := json.Unmarshal([]byte(body), &list); err != nil {
+		t.Fatalf("server list did not decode: %v", err)
+	}
+
+	if got := len(list.Servers); got != 3 {
+		t.Fatalf("decoded %d servers, want 3", got)
+	}
+
+	want := []string{"2026-11-02T15:39:25Z", "2026-11-02T15:39:25+0000", ""}
+	for i, srv := range list.Servers {
+		got := ""
+		if srv.Stats != nil && srv.Stats.Ts != nil {
+			got = *srv.Stats.Ts
+		}
+
+		if got != want[i] {
+			t.Errorf("server %d: stats timestamp %q, want %q", i+1, got, want[i])
+		}
+	}
+
+	// The lookup by id reads one server through a different response model,
+	// with a statistics model of its own.
+	const numericOffset = "2026-11-02T15:39:25+0000"
+
+	var one sdk.GetHost200Response
+	if err := json.Unmarshal([]byte(
+		`{"server":{"id":2,"name":"k8s-node","stats":{"ts":"`+numericOffset+`"}}}`,
+	), &one); err != nil {
+		t.Fatalf("single server did not decode: %v", err)
+	}
+
+	if one.Server == nil || one.Server.Stats == nil || one.Server.Stats.Ts == nil {
+		t.Fatalf("single server: stats timestamp missing after decode: %+v", one.Server)
+	}
+
+	if got := *one.Server.Stats.Ts; got != numericOffset {
+		t.Errorf("single server: stats timestamp %q, want %q", got, numericOffset)
 	}
 }

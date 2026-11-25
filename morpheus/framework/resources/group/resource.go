@@ -128,10 +128,10 @@ func updateClouds(
 	id int64,
 	cloudIDs []int64,
 ) error {
-	clouds := make([]map[string]interface{}, 0, len(cloudIDs))
+	clouds := make([]sdk.UpdateGroupsZonesRequestGroupZonesInner, 0, len(cloudIDs))
 
 	for _, cloudID := range cloudIDs {
-		clouds = append(clouds, map[string]interface{}{"id": cloudID})
+		clouds = append(clouds, sdk.UpdateGroupsZonesRequestGroupZonesInner{Id: cloudID})
 	}
 
 	reqGrp := &sdk.UpdateGroupsZonesRequestGroup{

@@ -27,9 +27,9 @@ type NetworkCreateConfigAnyOf1 struct {
 	// Network CIDR
 	Cidr string `json:"cidr"`
 	// Assign public IPs by default.
-	AssignPublicIp       bool                              `json:"assignPublicIp"`
-	ZonePool             NetworkCreateConfigAnyOf1ZonePool `json:"zonePool"`
-	AdditionalProperties map[string]interface{}            `json:",remain"`
+	AssignPublicIp       bool                         `json:"assignPublicIp"`
+	ZonePool             NetworkTypeAwsConfigZonePool `json:"zonePool"`
+	AdditionalProperties map[string]interface{}       `json:",remain"`
 }
 
 type _NetworkCreateConfigAnyOf1 NetworkCreateConfigAnyOf1

@@ -43,6 +43,21 @@ instance:
         element_type:
           string: {}
         description: Organization labels (keywords) assigned to the instance.
+    tags_all:
+      set_nested:
+        computed_optional_required: computed
+        description: |-
+          Every metadata tag Morpheus holds for the instance, including the ones it adds itself
+          (tag policies, provisioning workflows, cloud tag sync) -- read-only. `tags` carries only
+          the tags this resource manages (MORPH-20973).
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: computed
+            - name: value
+              string:
+                computed_optional_required: computed
     compute_servers:
       set:
         computed_optional_required: computed
@@ -379,6 +394,27 @@ instance:
       int64:
         computed_optional_required: optional
         description: The id of the KVM host to use for provisioning.
+    placementStrategy:
+      string:
+        computed_optional_required: computed_optional
+        description: >-
+          How firmly the virtual machine is kept on `preferred_host_id`: `auto` (the cluster's
+          placement loop may move it), `failover` (kept on the preferred host while that host is
+          healthy, moved only on failure) or `pinned` (never moved automatically; a pin outranks
+          affinity group rules, which then raise an alarm instead of moving the VM). Applied through the
+          host placement operation after provisioning; changing it does not replace the instance.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+              schema_definition: stringvalidator.OneOf("auto", "failover", "pinned")
+    preferredHostId:
+      int64:
+        computed_optional_required: computed_optional
+        description: >-
+          The id of the hypervisor host (its compute server id) the virtual machine should run on, used
+          with `placement_strategy`. Must be a provisioned host in the instance's cluster. Changing it
+          live-migrates the VM to the new host; set `timeouts.update` to bound the migration.
     layoutSize:
       int64:
         computed_optional_required: computed_optional
@@ -635,6 +671,7 @@ instance:
     - template-id: id
     - template-host_name: host_name
     - template-labels: labels
+    - template-tags_all: tags_all                            # (components/schemas/instance.yaml tags) the unfiltered tag list
     - template-compute_servers: compute_servers
     - template-server_uuid: server_uuid
     - template-server_uuids: server_uuids
@@ -655,6 +692,8 @@ instance:
     - template-nestedVirtualization: config_hvm.nested_virtualization
     - template-resourcePoolId: config_hvm.resource_pool_id
     - template-kvmHostId: config_hvm.kvm_host_id
+    - template-placementStrategy: config_hvm.placement_strategy
+    - template-preferredHostId: config_hvm.preferred_host_id
     - template-userData: config_hvm.user_data
     - template-affinityGroupId: config_hvm.affinity_group_id
     - template-virtualImageId: config_hvm.image_id
@@ -849,6 +888,13 @@ instance:
       computed_optional_required: required
     tags:
       computed_optional_required: optional
+      description: |-
+        Metadata tags this resource manages, each a name and value. Morpheus may hold further tags
+        it adds itself (tag policies, provisioning workflows, cloud tag sync): those are not managed
+        here and never cause a diff -- see `tags_all`. Names are matched ignoring case and must be
+        unique; a value differing only in case is the configured one (VMware re-cases tags).
+        Changing or removing a tag here updates only that tag (`addTags`/`removeTags`); emptying or
+        omitting the set removes the previously managed tags and leaves Morpheus's own alone.
     tags.name:
       computed_optional_required: required
     tags.value:
