@@ -107,7 +107,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | Capability | Env Value | Description |
 |------------|-----------|-------------|
 | `Kubernetes` | `kubernetes` | Kubernetes library artifacts (spec templates, blueprints, cluster layouts/types) -- no running cluster required |
-| `KubernetesCluster` | `kubernetes_cluster` | A live, healthy Kubernetes cluster that `TF_VAR_testacc_morpheus_k8s_cluster_id` names (cluster namespaces). The HKS-on-HVM provisioning test is gated on it too but is opt-in (`RUN_SKIPPED_BY_DEFAULT`): it builds four nodes from QA-appliance ids. Omit on environments that lack a usable cluster |
+| `KubernetesCluster` | `kubernetes_cluster` | A live, healthy Kubernetes cluster for namespace tests. HKS-on-HVM provisioning additionally requires `RUN_SKIPPED_BY_DEFAULT` because it builds a whole cluster from appliance-specific IDs. Leave that variable unset for ordinary namespace testing. |
 | `Docker` | `docker` | Docker/container registries |
 
 ### Storage & VDI
